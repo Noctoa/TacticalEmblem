@@ -1,0 +1,25 @@
+{
+  "name": "tactics-forge",
+  "productName": "Tactics Forge",
+  "version": "0.1.0",
+  "description": "Éditeur de Tactical RPG façon Fire Emblem : gestion de projet, maps, base de données, chapitres et playtest. Import Tiled (.tmx/.tmj).",
+  "main": "main.js",
+  "author": "Luca",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/run.js",
+    "dist": "npx electron-builder --win portable"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  },
+  "build": {
+    "appId": "fr.luca.tacticsforge",
+    "files": ["main.js", "preload.js", "src/**/*", "assets/**/*", "node_modules/**/*"],
+    "win": { "target": "portable" }
+  }
+}

@@ -1,0 +1,631 @@
+/*
+ * Règles du jeu partagées (éditeur, playtest, tests Node).
+ * Calculs façon Fire Emblem GBA : triangle des armes, doublé à +4 en vitesse,
+ * vrai hit (moyenne de 2 tirages), critiques x3, armes efficaces.
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.Rules = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
+  const STAT_LABELS = { hp: 'PV', str: 'For', mag: 'Mag', skl: 'Tec', spd: 'Vit', lck: 'Cha', def: 'Déf', res: 'Rés', mov: 'Dép' };
+  const MOVE_TYPES = [
+    { id: 'foot', name: 'Infanterie' },
+    { id: 'horse', name: 'Cavalerie' },
+    { id: 'armor', name: 'Blindé' },
+    { id: 'flier', name: 'Volant' }
+  ];
+  const WEAPON_TYPES = [
+    { id: 'sword', name: 'Épée' },
+    { id: 'lance', name: 'Lance' },
+    { id: 'axe', name: 'Hache' },
+    { id: 'bow', name: 'Arc' },
+    { id: 'anima', name: 'Anima' },
+    { id: 'light', name: 'Lumière' },
+    { id: 'dark', name: 'Ténèbres' },
+    { id: 'staff', name: 'Bâton' }
+  ];
+  const MAGIC_TYPES = ['anima', 'light', 'dark'];
+  // a bat b
+  const TRIANGLE = { sword: 'axe', axe: 'lance', lance: 'sword', anima: 'light', light: 'dark', dark: 'anima' };
+  const IMPASSABLE = 99;
+
+  const DEFAULT_SETTINGS = {
+    trueHit: true,
+    doubleThreshold: 4,
+    triangleDmg: 1,
+    triangleHit: 15,
+    effectiveMult: 3,
+    critMult: 3,
+    maxLevel: 20,
+    battleAnims: true
+  };
+
+  // ---------- utilitaires ----------
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  const key = (x, y) => x + ',' + y;
+  const byId = (list, id) => (list || []).find(e => e.id === id) || null;
+
+  function makeRng(seed) {
+    // mulberry32 : reproductible si on fournit une graine
+    let s = (seed === undefined ? Math.floor(Math.random() * 2 ** 31) : seed) >>> 0;
+    return function () {
+      s = (s + 0x6D2B79F5) >>> 0;
+      let t = s;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function triangle(atkType, defType) {
+    if (!atkType || !defType) return 0;
+    if (TRIANGLE[atkType] === defType) return 1;
+    if (TRIANGLE[defType] === atkType) return -1;
+    return 0;
+  }
+
+  // ---------- terrain ----------
+  const GID_MASK = 0x0FFFFFFF;
+
+  /** Retrouve le tileset + index local d'un gid de map. */
+  function resolveGid(map, tilesets, gid) {
+    const raw = gid & GID_MASK;
+    if (!raw) return null;
+    let best = null;
+    for (const ref of map.tilesets || []) {
+      if (ref.firstgid <= raw && (!best || ref.firstgid > best.firstgid)) best = ref;
+    }
+    if (!best) return null;
+    const ts = byId(tilesets, best.tilesetId);
+    if (!ts) return null;
+    const local = raw - best.firstgid;
+    if (local >= (ts.tileCount || Infinity)) return null;
+    return { tileset: ts, local };
+  }
+
+  /** Grille des id de terrain effectifs : surcharge peinte > propriété du tile le plus haut > terrain par défaut. */
+  function buildTerrainGrid(map, tilesets, defaultTerrainId) {
+    const n = map.width * map.height;
+    const out = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const over = map.terrain && map.terrain[i];
+      if (over) { out[i] = over; continue; }
+      let found = null;
+      const layers = map.layers || [];
+      for (let l = layers.length - 1; l >= 0 && !found; l--) {
+        const gid = layers[l].data[i];
+        if (!gid) continue;
+        const r = resolveGid(map, tilesets, gid);
+        if (r && r.tileset.tileTerrain && r.tileset.tileTerrain[r.local]) found = r.tileset.tileTerrain[r.local];
+      }
+      out[i] = found || defaultTerrainId;
+    }
+    return out;
+  }
+
+  // ---------- inventaire / armes ----------
+  function getEntry(db, id) {
+    const w = byId(db.weapons, id);
+    if (w) return { kind: 'weapon', def: w };
+    const it = byId(db.items, id);
+    if (it) return { kind: 'item', def: it };
+    return null;
+  }
+
+  function canWield(unit, weapon, db) {
+    const cls = byId(db.classes, unit.classId);
+    return !!(cls && weapon && (cls.weapons || []).includes(weapon.type));
+  }
+
+  /** Armes offensives utilisables (pas les bâtons), dans l'ordre de l'inventaire. */
+  function attackWeapons(unit, db) {
+    const res = [];
+    unit.inventory.forEach((slot, index) => {
+      const w = byId(db.weapons, slot.id);
+      if (w && w.type !== 'staff' && canWield(unit, w, db)) res.push({ index, weapon: w });
+    });
+    return res;
+  }
+  function staves(unit, db) {
+    const res = [];
+    unit.inventory.forEach((slot, index) => {
+      const w = byId(db.weapons, slot.id);
+      if (w && w.type === 'staff' && canWield(unit, w, db)) res.push({ index, weapon: w });
+    });
+    return res;
+  }
+  function equipped(unit, db) {
+    const list = attackWeapons(unit, db);
+    return list.length ? list[0] : null;
+  }
+  /** Met une arme en tête d'inventaire (= équipée), comme dans FE. */
+  function equip(unit, index) {
+    if (index <= 0 || index >= unit.inventory.length) return;
+    const [slot] = unit.inventory.splice(index, 1);
+    unit.inventory.unshift(slot);
+  }
+
+  // ---------- création des unités ----------
+  function statsFromClass(cls, level) {
+    const s = {};
+    for (const k of STATS) {
+      const base = (cls.base && cls.base[k]) || 0;
+      const g = (cls.growths && cls.growths[k]) || 0;
+      s[k] = base + Math.floor((g * (level - 1)) / 100);
+      if (cls.caps && cls.caps[k]) s[k] = Math.min(s[k], cls.caps[k]);
+    }
+    return s;
+  }
+
+  function buildInventory(list, db) {
+    return (list || []).map(e => {
+      const id = typeof e === 'string' ? e : e.id;
+      const entry = getEntry(db, id);
+      if (!entry) return null;
+      const uses = (typeof e === 'object' && e.uses) ? e.uses : (entry.def.uses || 0);
+      return { id, uses };
+    }).filter(Boolean);
+  }
+
+  let uidCounter = 1;
+  function makeUnitFromCharacter(ch, db, pos, team) {
+    const cls = byId(db.classes, ch.classId);
+    const stats = {};
+    for (const k of STATS) stats[k] = (ch.stats && ch.stats[k] !== undefined) ? ch.stats[k] : 0;
+    return {
+      uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
+      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp,
+      growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
+      mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
+      isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
+      mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',
+      x: pos.x, y: pos.y, done: false, ai: 'player'
+    };
+  }
+
+  function makeEnemyFromPlacement(pl, db, team) {
+    const cls = byId(db.classes, pl.classId);
+    if (!cls) return null;
+    const level = pl.level || 1;
+    const stats = statsFromClass(cls, level);
+    if (pl.statBonus) for (const k of STATS) stats[k] += pl.statBonus[k] || 0;
+    let inv = pl.inventory && pl.inventory.length ? pl.inventory : (cls.defaultInventory || []);
+    return {
+      uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || cls.name,
+      classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, cls.growths || {}),
+      inventory: buildInventory(inv, db), mov: cls.mov, moveType: cls.moveType,
+      isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
+      appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop,
+      mapSprite: pl.mapSprite || cls.mapSprite || '', battler: pl.battler || cls.battler || '',
+      x: pl.x, y: pl.y, done: false
+    };
+  }
+
+  // ---------- déplacement ----------
+  function moveCost(terrain, moveType) {
+    if (!terrain) return 1;
+    const c = terrain.cost && terrain.cost[moveType];
+    return (c === undefined || c === null || c === '') ? 1 : Number(c);
+  }
+
+  /**
+   * ctx = { width, height, terrainAt(x,y) -> objet terrain, unitAt(x,y) -> unité|null }
+   * Retour : Map clé -> { x, y, cost, prev, canStop }
+   */
+  function reachable(unit, ctx, maxMove) {
+    const limit = maxMove === undefined ? unit.mov : maxMove;
+    const res = new Map();
+    const start = { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true };
+    res.set(key(unit.x, unit.y), start);
+    const open = [start];
+    while (open.length) {
+      let bi = 0;
+      for (let i = 1; i < open.length; i++) if (open[i].cost < open[bi].cost) bi = i;
+      const cur = open.splice(bi, 1)[0];
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cur.x + dx, ny = cur.y + dy;
+        if (nx < 0 || ny < 0 || nx >= ctx.width || ny >= ctx.height) continue;
+        const c = moveCost(ctx.terrainAt(nx, ny), unit.moveType);
+        if (c >= IMPASSABLE) continue;
+        const nc = cur.cost + c;
+        if (nc > limit) continue;
+        const occ = ctx.unitAt(nx, ny);
+        if (occ && occ !== unit && !sameSide(occ, unit)) continue; // on ne traverse pas l'ennemi
+        const k = key(nx, ny);
+        const old = res.get(k);
+        if (old && old.cost <= nc) continue;
+        const node = { x: nx, y: ny, cost: nc, prev: cur, canStop: !occ || occ === unit };
+        res.set(k, node);
+        open.push(node);
+      }
+    }
+    return res;
+  }
+
+  function sameSide(a, b) {
+    const side = t => (t === 'enemy' ? 'enemy' : 'player'); // 'ally' joue avec le joueur
+    return side(a.team) === side(b.team);
+  }
+
+  function pathTo(reach, x, y) {
+    const path = [];
+    let n = reach.get(key(x, y));
+    while (n) { path.unshift({ x: n.x, y: n.y }); n = n.prev; }
+    return path;
+  }
+
+  function tilesInRange(x, y, min, max, ctx) {
+    const out = [];
+    for (let dy = -max; dy <= max; dy++) {
+      for (let dx = -max; dx <= max; dx++) {
+        const d = Math.abs(dx) + Math.abs(dy);
+        if (d < min || d > max) continue;
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= ctx.width || ny >= ctx.height) continue;
+        out.push({ x: nx, y: ny });
+      }
+    }
+    return out;
+  }
+
+  /** Cases menacées par une unité (déplacement + portée de ses armes). */
+  function threatTiles(unit, ctx, db, stationary) {
+    const weapons = attackWeapons(unit, db);
+    const set = new Set();
+    if (!weapons.length) return set;
+    let min = 99, max = 0;
+    weapons.forEach(w => { min = Math.min(min, w.weapon.minRange || 1); max = Math.max(max, w.weapon.maxRange || 1); });
+    const stops = stationary ? [{ x: unit.x, y: unit.y, canStop: true }] : [...reachable(unit, ctx).values()];
+    for (const s of stops) {
+      if (!s.canStop) continue;
+      for (const t of tilesInRange(s.x, s.y, min, max, ctx)) set.add(key(t.x, t.y));
+    }
+    return set;
+  }
+
+  // ---------- combat ----------
+  function isMagic(w) { return w && MAGIC_TYPES.includes(w.type); }
+
+  function attackSpeed(u, w) { return u.stats.spd - Math.max(0, ((w && w.weight) || 0) - u.stats.str); }
+
+  function strikeStats(att, aw, def, dw, defTerrain, settings, db, aBonus, dBonus) {
+    const ab = aBonus || NO_BONUS, dbn = dBonus || NO_BONUS;
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    const tri = triangle(aw.type, dw ? dw.type : null);
+    const defCls = byId(db.classes, def.classId);
+    const defMove = def.moveType || (defCls && defCls.moveType);
+    const eff = (aw.effective || []).includes(defMove) ? s.effectiveMult : 1;
+    const power = (isMagic(aw) ? att.stats.mag : att.stats.str) + (aw.might + tri * s.triangleDmg) * eff;
+    const tDef = defTerrain ? (Number(defTerrain.def) || 0) : 0;
+    const tAvo = defTerrain ? (Number(defTerrain.avoid) || 0) : 0;
+    const prot = (isMagic(aw) ? def.stats.res : def.stats.def) + tDef;
+    const dmg = Math.max(0, power + (ab.dmg || 0) - prot);
+    const hitRate = aw.hit + att.stats.skl * 2 + Math.floor(att.stats.lck / 2) + tri * s.triangleHit + (ab.hit || 0);
+    const avoid = attackSpeed(def, dw) * 2 + def.stats.lck + tAvo + (dbn.avoid || 0);
+    const hit = clamp(hitRate - avoid, 0, 100);
+    const crit = clamp((aw.crit || 0) + Math.floor(att.stats.skl / 2) + (ab.crit || 0) - def.stats.lck - (dbn.critAvoid || 0), 0, 100);
+    return { dmg, hit, crit, effective: eff > 1, tri, bonus: !!(ab.hit || ab.crit || ab.dmg || dbn.avoid) };
+  }
+
+  /**
+   * Prévisions d'un combat. att/def sont des unités à leurs positions de combat.
+   * aIndex = index d'inventaire de l'arme de l'attaquant.
+   */
+  function forecast(att, aIndex, def, opts) {
+    const { db, settings, terrainOf } = opts;
+    const bo = opts.bonusOf || (() => null);
+    const bA = bo(att), bD = bo(def);
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    const aw = byId(db.weapons, att.inventory[aIndex].id);
+    const d = dist(att, def);
+    const dEq = equipped(def, db);
+    const dw = dEq ? dEq.weapon : null;
+    const canCounter = !!(dw && d >= (dw.minRange || 1) && d <= (dw.maxRange || 1));
+    const a = strikeStats(att, aw, def, dw, terrainOf(def), s, db, bA, bD);
+    const asA = attackSpeed(att, aw);
+    const asD = attackSpeed(def, dw);
+    a.count = asA - asD >= s.doubleThreshold ? 2 : 1;
+    a.weapon = aw;
+    let b = null;
+    if (canCounter) {
+      b = strikeStats(def, dw, att, aw, terrainOf(att), s, db, bD, bA);
+      b.count = asD - asA >= s.doubleThreshold ? 2 : 1;
+      b.weapon = dw;
+      b.index = dEq.index;
+    }
+    return { att: a, def: b, distance: d };
+  }
+
+  function roll(rng, pct, trueHit) {
+    if (trueHit) return ((rng() * 100 + rng() * 100) / 2) < pct;
+    return rng() * 100 < pct;
+  }
+
+  function useWeapon(unit, index) {
+    const slot = unit.inventory[index];
+    if (!slot) return false;
+    if (slot.uses > 0) {
+      slot.uses--;
+      if (slot.uses === 0) { unit.inventory.splice(index, 1); return true; } // cassée
+    }
+    return false;
+  }
+
+  /** Résout le combat et modifie les PV / usures. Renvoie la liste des coups. */
+  function resolveCombat(att, aIndex, def, opts) {
+    const rng = opts.rng || Math.random;
+    const s = Object.assign({}, DEFAULT_SETTINGS, opts.settings || {});
+    const fc = forecast(att, aIndex, def, opts);
+    const order = [];
+    order.push('a');
+    if (fc.def) order.push('d');
+    if (fc.att.count > 1) order.push('a');
+    if (fc.def && fc.def.count > 1) order.push('d');
+    const strikes = [];
+    let aIdx = aIndex, dIdx = fc.def ? fc.def.index : -1;
+    let aBroken = false, dBroken = false;
+    const dealt = { a: false, d: false };
+    const specials = { a: opts.specialOf ? opts.specialOf(att) : null, d: opts.specialOf ? opts.specialOf(def) : null };
+    // attaque duo : juste après le premier coup de l'attaquant, le partenaire adjacent
+    // frappe à son tour (l'ennemi ne riposte pas contre lui)
+    let duo = null, duoDone = false;
+    const du = opts.dual;
+    const doDuo = () => {
+      duoDone = true;
+      if (!(du && du.partner && att.hp > 0 && def.hp > 0 && du.partner.hp > 0 && rng() * 100 < du.chance)) return;
+      const pe = equipped(du.partner, opts.db);
+      if (!pe) return;
+      const bo = opts.bonusOf || (() => null);
+      const dEq = equipped(def, opts.db);
+      const ps = strikeStats(du.partner, pe.weapon, def, dEq ? dEq.weapon : null, opts.terrainOf(def), s, opts.db, bo(du.partner), bo(def));
+      const dmgBase = ps.dmg + (du.might || 0);
+      const hit = roll(rng, clamp(ps.hit + (du.hit || 0), 0, 100), s.trueHit);
+      let crit = false, dmg = 0;
+      if (hit) {
+        crit = rng() * 100 < ps.crit;
+        dmg = dmgBase * (crit ? s.critMult : 1);
+        def.hp = Math.max(0, def.hp - dmg);
+      }
+      const broke = useWeapon(du.partner, pe.index);
+      duo = { partner: du.partner, hit, dmg };
+      strikes.push({ by: du.partner.uid, target: def.uid, hit, crit, dmg, hpAfter: def.hp, broke, weapon: pe.weapon.name, dual: du.name || 'Attaque duo' });
+    };
+    for (const who of order) {
+      if (att.hp <= 0 || def.hp <= 0) break;
+      let st = who === 'a' ? fc.att : fc.def;
+      if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
+      const src = who === 'a' ? att : def, tgt = who === 'a' ? def : att;
+      // attaque spéciale (affinité) : bonus de précision et de dégâts sur ce coup
+      const sp = specials[who];
+      let special = null;
+      if (sp && rng() * 100 < sp.chance) {
+        special = sp.name;
+        st = Object.assign({}, st, { hit: clamp(st.hit + (sp.hit || 0), 0, 100), dmg: st.dmg + (sp.dmg || 0), crit: clamp(st.crit + (sp.crit || 0), 0, 100) });
+      }
+      const hit = roll(rng, st.hit, s.trueHit);
+      let crit = false, dmg = 0;
+      if (hit) {
+        crit = rng() * 100 < st.crit;
+        dmg = st.dmg * (crit ? s.critMult : 1);
+        tgt.hp = Math.max(0, tgt.hp - dmg);
+        if (dmg > 0) dealt[who] = true;
+      }
+      const broke = useWeapon(src, who === 'a' ? aIdx : dIdx);
+      if (broke) { if (who === 'a') aBroken = true; else dBroken = true; }
+      strikes.push({ by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, broke, weapon: st.weapon.name, special });
+      if (who === 'a' && !duoDone) doDuo();
+    }
+    if (!duoDone) doDuo();
+    return { strikes, forecast: fc, dealt, duo, attackerDead: att.hp <= 0, defenderDead: def.hp <= 0 };
+  }
+
+  // ---------- affinités (soutiens) ----------
+  const NO_BONUS = {};
+  const SUPPORT_RANKS = ['', 'C', 'B', 'A', 'S'];
+  const DEFAULT_SUPPORT = {
+    thresholds: [20, 50, 90, 140], // points pour atteindre C, B, A, S
+    range: 3,                      // portée des bonus passifs
+    gainAdjacent: 3,               // points par fin de phase joueur côte à côte
+    gainCombat: 2,                 // points quand on combat à côté de son partenaire
+    bonus: { hit: 5, avoid: 5, crit: 3, critAvoid: 3 }, // par rang
+    endingRank: 'A'                // rang minimum pour finir ensemble dans l'épilogue
+  };
+  const rankIndex = (r) => Math.max(0, SUPPORT_RANKS.indexOf(r || ''));
+  function pairKey(a, b) { return [a, b].sort().join('|'); }
+  /** Rang atteignable avec ces points (sans dépasser maxRank). */
+  function rankForPoints(points, cfg, maxRank) {
+    const t = (cfg && cfg.thresholds) || DEFAULT_SUPPORT.thresholds;
+    let r = 0;
+    for (let i = 0; i < t.length; i++) if (points >= t[i]) r = i + 1;
+    return Math.min(r, rankIndex(maxRank || 'S') || 4);
+  }
+  /** État initial des paires à partir de la base (db.supports). */
+  function initSupports(db, cfg) {
+    const st = {};
+    for (const p of db.supports || []) {
+      if (!p.a || !p.b || p.a === p.b) continue;
+      const points = Number(p.startPoints) || 0;
+      st[pairKey(p.a, p.b)] = { def: p, points, rank: rankForPoints(points, cfg, p.maxRank) };
+    }
+    return st;
+  }
+  function partnersOf(unit, st) {
+    const out = [];
+    for (const k of Object.keys(st)) {
+      const e = st[k];
+      if (e.def.a === unit.sourceId) out.push({ id: e.def.b, entry: e });
+      else if (e.def.b === unit.sourceId) out.push({ id: e.def.a, entry: e });
+    }
+    return out;
+  }
+  /** Bonus passifs : somme des rangs des partenaires présents à portée. */
+  function supportBonus(unit, friends, st, cfg) {
+    if (!unit || unit.team === 'enemy' || !st) return null;
+    const c = Object.assign({}, DEFAULT_SUPPORT, cfg || {});
+    const b = { hit: 0, avoid: 0, crit: 0, critAvoid: 0, partners: [] };
+    for (const p of partnersOf(unit, st)) {
+      if (!p.entry.rank) continue;
+      const f = friends.find(u => u.sourceId === p.id && u.hp > 0 && u !== unit);
+      if (!f || dist(f, unit) > c.range) continue;
+      for (const k of ['hit', 'avoid', 'crit', 'critAvoid']) b[k] += (c.bonus[k] || 0) * p.entry.rank;
+      b.partners.push(f.name);
+    }
+    return b.partners.length ? b : null;
+  }
+  /** Attaque spéciale disponible : partenaire à portée avec le rang requis. */
+  function supportSpecial(unit, friends, st, cfg) {
+    if (!unit || unit.team === 'enemy' || !st) return null;
+    const c = Object.assign({}, DEFAULT_SUPPORT, cfg || {});
+    let best = null;
+    for (const p of partnersOf(unit, st)) {
+      const sp = p.entry.def.special;
+      if (!sp || !sp.name || p.entry.rank < rankIndex(sp.rank || 'B')) continue;
+      const f = friends.find(u => u.sourceId === p.id && u.hp > 0 && u !== unit);
+      if (!f || dist(f, unit) > c.range) continue;
+      const chance = Number(sp.chance) || 0;
+      if (!best || chance > best.chance) best = { name: sp.name, chance, dmg: Number(sp.dmg) || 0, hit: Number(sp.hit) || 0, crit: Number(sp.crit) || 0, partner: f.name };
+    }
+    return best;
+  }
+  /** Attaque duo : partenaire adjacent à l'attaquant avec le rang requis et une arme. */
+  function supportDual(unit, friends, st, db) {
+    if (!unit || unit.team === 'enemy' || !st) return null;
+    let best = null;
+    for (const p of partnersOf(unit, st)) {
+      const co = p.entry.def.combo;
+      if (!co || !co.name || p.entry.rank < rankIndex(co.rank || 'A')) continue;
+      const f = friends.find(u => u.sourceId === p.id && u.hp > 0 && u !== unit);
+      if (!f || dist(f, unit) !== 1 || !equipped(f, db)) continue;
+      const chance = Number(co.chance) || 0;
+      if (!best || chance > best.chance) best = { partner: f, name: co.name, chance, might: Number(co.might) || 0, hit: Number(co.hit) || 0 };
+    }
+    return best;
+  }
+  /**
+   * Ajoute des points à une paire. Renvoie true si un nouveau rang devient disponible
+   * (la conversation de soutien peut alors être vue en jeu).
+   */
+  function addSupportPoints(st, idA, idB, amount, cfg, sRankTaken) {
+    const e = st[pairKey(idA, idB)];
+    if (!e || !amount) return false;
+    const before = rankForPoints(e.points, cfg, e.def.maxRank);
+    e.points += amount;
+    let after = rankForPoints(e.points, cfg, e.def.maxRank);
+    if (after === 4 && sRankTaken && sRankTaken(e)) after = 3; // un seul rang S par personnage
+    return after > e.rank && after > before;
+  }
+  function pendingRank(e, cfg, sRankTaken) {
+    let r = rankForPoints(e.points, cfg, e.def.maxRank);
+    if (r === 4 && sRankTaken && sRankTaken(e)) r = 3;
+    return r > e.rank ? e.rank + 1 : 0;
+  }
+
+  // ---------- expérience ----------
+  function classTier(unit, db) {
+    const c = byId(db.classes, unit.classId);
+    return c && Number(c.tier) === 2 ? 20 : 0;
+  }
+  function combatExp(unit, foe, dealtDamage, killed, db) {
+    const diff = (foe.level + classTier(foe, db)) - (unit.level + classTier(unit, db));
+    if (!dealtDamage && !killed) return 1;
+    let exp = Math.max(1, Math.floor((31 + diff) / 3));
+    if (killed) exp += Math.max(0, diff * 3 + 20) + (foe.isBoss ? 40 : 0);
+    return clamp(exp, 1, 100);
+  }
+  function staffExp(unit) { return clamp(10 + Math.max(0, 10 - unit.level), 1, 100); }
+
+  /** Ajoute l'exp ; renvoie la liste des montées de niveau [{level, gains}] */
+  function gainExp(unit, amount, db, rng, settings) {
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    rng = rng || Math.random;
+    const ups = [];
+    if (unit.level >= s.maxLevel) return ups;
+    unit.exp += amount;
+    while (unit.exp >= 100 && unit.level < s.maxLevel) {
+      unit.exp -= 100;
+      unit.level++;
+      const cls = byId(db.classes, unit.classId);
+      const gains = {};
+      for (const k of STATS) {
+        const g = unit.growths[k] || 0;
+        let gain = Math.floor(g / 100) + (rng() * 100 < (g % 100) ? 1 : 0);
+        const cap = cls && cls.caps && cls.caps[k];
+        if (cap && unit.stats[k] + gain > cap) gain = Math.max(0, cap - unit.stats[k]);
+        if (gain) { unit.stats[k] += gain; if (k === 'hp') unit.hp += gain; }
+        gains[k] = gain;
+      }
+      ups.push({ level: unit.level, gains });
+    }
+    if (unit.level >= s.maxLevel) unit.exp = 0;
+    return ups;
+  }
+
+  // ---------- IA ennemie ----------
+  /**
+   * opts = { db, settings, ctx, terrainOf(u) }
+   * Renvoie { moveTo:{x,y}, path, target, weaponIndex } (target null = juste se déplacer).
+   */
+  function planEnemy(unit, foes, opts) {
+    const { db, ctx } = opts;
+    const stationary = unit.ai === 'stationary' || unit.ai === 'boss';
+    const reach = stationary ? new Map([[key(unit.x, unit.y), { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true }]]) : reachable(unit, ctx);
+    const weapons = attackWeapons(unit, db);
+    let best = null;
+    const ox = unit.x, oy = unit.y;
+    for (const stop of reach.values()) {
+      if (!stop.canStop) continue;
+      for (const foe of foes) {
+        const d = Math.abs(stop.x - foe.x) + Math.abs(stop.y - foe.y);
+        for (const w of weapons) {
+          if (d < (w.weapon.minRange || 1) || d > (w.weapon.maxRange || 1)) continue;
+          unit.x = stop.x; unit.y = stop.y;
+          const fc = forecast(unit, w.index, foe, opts);
+          unit.x = ox; unit.y = oy;
+          const exp = fc.att.dmg * fc.att.count * fc.att.hit / 100;
+          const kills = fc.att.dmg * fc.att.count >= foe.hp;
+          const counter = fc.def ? fc.def.dmg * fc.def.count * fc.def.hit / 100 : 0;
+          const t = ctx.terrainAt(stop.x, stop.y);
+          let score = exp * 2 + (kills ? 40 * fc.att.hit / 100 : 0) - counter + (foe.isLord ? 4 : 0)
+            + ((t && Number(t.avoid)) || 0) / 10 - stop.cost * 0.05;
+          if (!best || score > best.score) best = { score, stop, foe, index: w.index };
+        }
+      }
+    }
+    if (best) return { moveTo: { x: best.stop.x, y: best.stop.y }, path: pathTo(reach, best.stop.x, best.stop.y), target: best.foe, weaponIndex: best.index };
+    if (unit.ai !== 'aggressive' || !foes.length) return null;
+
+    // Avancer vers l'adversaire le plus proche (distance réelle de déplacement)
+    const far = reachable(unit, ctx, 999);
+    let goal = null;
+    for (const foe of foes) {
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const n = far.get(key(foe.x + dx, foe.y + dy));
+        if (n && n.canStop && (!goal || n.cost < goal.cost)) goal = n;
+      }
+    }
+    if (!goal) return null;
+    const full = pathTo(far, goal.x, goal.y);
+    let dest = null;
+    for (const p of full) {
+      const n = reach.get(key(p.x, p.y));
+      if (n && n.canStop) dest = n;
+    }
+    if (!dest || (dest.x === unit.x && dest.y === unit.y)) return null;
+    return { moveTo: { x: dest.x, y: dest.y }, path: pathTo(reach, dest.x, dest.y), target: null };
+  }
+
+  return {
+    STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
+    clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
+    attackWeapons, staves, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
+    moveCost, reachable, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
+    forecast, resolveCombat, combatExp, staffExp, gainExp, planEnemy,
+    SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,
+    addSupportPoints, pendingRank
+  };
+});

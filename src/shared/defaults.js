@@ -1,0 +1,321 @@
+/*
+ * Base de données par défaut + projet d'exemple ("Prologue — L'embuscade").
+ */
+(function (root, factory) {
+  const api = factory();
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.Defaults = api;
+})(typeof self !== 'undefined' ? self : this, function () {
+  'use strict';
+
+  const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
+  const caps = st(60, 20, 20, 20, 20, 30, 20, 20);
+  const T = (foot, horse, armor, flier) => ({ foot, horse, armor, flier });
+
+  function terrains() {
+    return [
+      { id: 'plain', name: 'Plaine', avoid: 0, def: 0, heal: 0, color: '#9ccc65', cost: T(1, 1, 1, 1) },
+      { id: 'forest', name: 'Forêt', avoid: 20, def: 1, heal: 0, color: '#2e7d32', cost: T(2, 3, 2, 1) },
+      { id: 'bush', name: 'Buisson', avoid: 10, def: 0, heal: 0, color: '#66bb6a', cost: T(1, 2, 2, 1) },
+      { id: 'thicket', name: 'Fourré', avoid: 40, def: 1, heal: 0, color: '#1b5e20', cost: T(3, 99, 99, 1) },
+      { id: 'mountain', name: 'Montagne', avoid: 30, def: 2, heal: 0, color: '#8d6e63', cost: T(4, 99, 99, 1) },
+      { id: 'peak', name: 'Pic', avoid: 40, def: 2, heal: 0, color: '#5d4037', cost: T(99, 99, 99, 1) },
+      { id: 'water', name: 'Eau', avoid: 0, def: 0, heal: 0, color: '#1e88e5', cost: T(99, 99, 99, 1) },
+      { id: 'road', name: 'Route', avoid: 0, def: 0, heal: 0, color: '#d7b77a', cost: T(1, 1, 1, 1) },
+      { id: 'bridge', name: 'Pont', avoid: 0, def: 0, heal: 0, color: '#a1887f', cost: T(1, 1, 1, 1) },
+      { id: 'sand', name: 'Sable', avoid: 5, def: 0, heal: 0, color: '#fff176', cost: T(2, 3, 3, 1) },
+      { id: 'fort', name: 'Fort', avoid: 20, def: 2, heal: 20, color: '#90a4ae', cost: T(2, 2, 2, 1) },
+      { id: 'village', name: 'Village', avoid: 10, def: 0, heal: 0, color: '#ef9a9a', cost: T(1, 1, 1, 1) },
+      { id: 'wall', name: 'Mur', avoid: 0, def: 0, heal: 0, color: '#424242', cost: T(99, 99, 99, 99) },
+      { id: 'floor', name: 'Sol', avoid: 0, def: 0, heal: 0, color: '#bcaaa4', cost: T(1, 1, 1, 1) },
+      { id: 'throne', name: 'Trône', avoid: 30, def: 3, heal: 10, color: '#c62828', cost: T(1, 1, 1, 1) },
+      { id: 'gate', name: 'Portail', avoid: 20, def: 3, heal: 10, color: '#6d4c41', cost: T(1, 1, 1, 1) }
+    ];
+  }
+
+  function weapons() {
+    return [
+      { id: 'w_iron_sword', name: 'Épée de fer', type: 'sword', might: 5, hit: 90, crit: 0, weight: 5, minRange: 1, maxRange: 1, uses: 46, effective: [], heal: 0 },
+      { id: 'w_slim_sword', name: 'Épée fine', type: 'sword', might: 3, hit: 100, crit: 5, weight: 2, minRange: 1, maxRange: 1, uses: 30, effective: [], heal: 0 },
+      { id: 'w_rapier', name: 'Rapière', type: 'sword', might: 7, hit: 95, crit: 10, weight: 5, minRange: 1, maxRange: 1, uses: 40, effective: ['horse', 'armor'], heal: 0 },
+      { id: 'w_steel_sword', name: "Épée d'acier", type: 'sword', might: 8, hit: 75, crit: 0, weight: 10, minRange: 1, maxRange: 1, uses: 30, effective: [], heal: 0 },
+      { id: 'w_killing_edge', name: 'Lame tueuse', type: 'sword', might: 9, hit: 75, crit: 30, weight: 7, minRange: 1, maxRange: 1, uses: 20, effective: [], heal: 0 },
+      { id: 'w_wind_sword', name: 'Lame du vent', type: 'sword', might: 9, hit: 75, crit: 5, weight: 9, minRange: 1, maxRange: 2, uses: 40, effective: [], heal: 0 },
+      { id: 'w_iron_lance', name: 'Lance de fer', type: 'lance', might: 7, hit: 80, crit: 0, weight: 8, minRange: 1, maxRange: 1, uses: 45, effective: [], heal: 0 },
+      { id: 'w_javelin', name: 'Javelot', type: 'lance', might: 6, hit: 65, crit: 0, weight: 11, minRange: 1, maxRange: 2, uses: 20, effective: [], heal: 0 },
+      { id: 'w_horseslayer', name: 'Lance anti-cheval', type: 'lance', might: 7, hit: 70, crit: 0, weight: 13, minRange: 1, maxRange: 1, uses: 16, effective: ['horse'], heal: 0 },
+      { id: 'w_iron_axe', name: 'Hache de fer', type: 'axe', might: 8, hit: 75, crit: 0, weight: 10, minRange: 1, maxRange: 1, uses: 45, effective: [], heal: 0 },
+      { id: 'w_hand_axe', name: 'Hachette', type: 'axe', might: 7, hit: 60, crit: 0, weight: 12, minRange: 1, maxRange: 2, uses: 20, effective: [], heal: 0 },
+      { id: 'w_iron_bow', name: 'Arc de fer', type: 'bow', might: 6, hit: 85, crit: 0, weight: 5, minRange: 2, maxRange: 2, uses: 45, effective: ['flier'], heal: 0 },
+      { id: 'w_fire', name: 'Feu', type: 'anima', might: 5, hit: 90, crit: 0, weight: 4, minRange: 1, maxRange: 2, uses: 40, effective: [], heal: 0 },
+      { id: 'w_lightning', name: 'Éclair', type: 'light', might: 4, hit: 95, crit: 5, weight: 6, minRange: 1, maxRange: 2, uses: 35, effective: [], heal: 0 },
+      { id: 'w_flux', name: 'Flux', type: 'dark', might: 7, hit: 80, crit: 0, weight: 8, minRange: 1, maxRange: 2, uses: 45, effective: [], heal: 0 },
+      { id: 'w_heal', name: 'Soin', type: 'staff', might: 0, hit: 100, crit: 0, weight: 2, minRange: 1, maxRange: 1, uses: 30, effective: [], heal: 10 },
+      { id: 'w_mend', name: 'Guérison', type: 'staff', might: 0, hit: 100, crit: 0, weight: 4, minRange: 1, maxRange: 1, uses: 20, effective: [], heal: 20 }
+    ];
+  }
+
+  function items() {
+    return [
+      { id: 'i_vulnerary', name: 'Potion', effect: 'heal', amount: 10, stat: 'hp', uses: 3 },
+      { id: 'i_elixir', name: 'Élixir', effect: 'heal', amount: 99, stat: 'hp', uses: 1 },
+      { id: 'i_energy_ring', name: 'Bague de force', effect: 'boost', amount: 2, stat: 'str', uses: 1 },
+      { id: 'i_speedwing', name: 'Aile vive', effect: 'boost', amount: 2, stat: 'spd', uses: 1 }
+    ];
+  }
+
+  const CH = (n) => 'img/characters/' + n;
+  const BT = (n) => 'img/battlers/' + n;
+
+  function classes() {
+    const c = (id, name, moveType, mov, weaponsList, base, growths, extra) => Object.assign({
+      id, name, moveType, mov, weapons: weaponsList, base, growths, caps: Object.assign({}, caps), tier: 1, promotesTo: '',
+      defaultInventory: [], mapSprite: '', battler: ''
+    }, extra || {});
+    return [
+      // Seigneurs (sprites et animations fournis dans img/)
+      c('lord', 'Seigneur', 'foot', 5, ['sword'], st(18, 5, 0, 5, 7, 7, 5, 0), st(80, 45, 5, 50, 40, 45, 30, 35),
+        { defaultInventory: ['w_iron_sword'], mapSprite: CH('Eliwood_Lord'), battler: BT('Eliwood') }),
+      c('knight_lord', 'Chevalier-Seigneur', 'horse', 7, ['sword', 'lance'], st(21, 7, 0, 7, 8, 7, 7, 3), st(80, 45, 5, 50, 40, 45, 30, 35),
+        { tier: 2, caps: st(60, 24, 20, 23, 24, 30, 22, 25), defaultInventory: ['w_iron_sword'], mapSprite: CH('Eliwood_KnightLord') }),
+      c('lyn_lord', 'Seigneur (Lyn)', 'foot', 5, ['sword'], st(16, 4, 0, 7, 9, 5, 2, 0), st(70, 40, 5, 60, 60, 55, 20, 30),
+        { defaultInventory: ['w_iron_sword'], mapSprite: CH('Lyn_Lord'), battler: BT('Lyn') }),
+      c('blade_lord', 'Lame-Seigneur', 'foot', 6, ['sword', 'bow'], st(19, 6, 0, 9, 11, 5, 4, 3), st(70, 40, 5, 60, 60, 55, 20, 30),
+        { tier: 2, caps: st(60, 24, 20, 29, 30, 30, 22, 22), defaultInventory: ['w_iron_sword'], mapSprite: CH('Lyn_BladeLord'), battler: BT('Lyn') }),
+      c('axe_lord', 'Seigneur (hache)', 'foot', 5, ['axe'], st(19, 7, 0, 4, 5, 3, 8, 0), st(90, 60, 5, 45, 35, 30, 50, 25),
+        { defaultInventory: ['w_iron_axe'], mapSprite: CH('Hector_Lord'), battler: BT('Hector') }),
+      c('great_lord', 'Grand Seigneur', 'armor', 5, ['axe', 'sword'], st(22, 11, 0, 7, 7, 3, 12, 2), st(90, 60, 5, 45, 35, 30, 50, 25),
+        { tier: 2, caps: st(60, 30, 20, 24, 24, 30, 30, 25), defaultInventory: ['w_iron_axe'], mapSprite: CH('Hector_GreatLord'), battler: BT('Hector') }),
+      // Classes génériques (pas encore de sprites : affichées en jetons)
+      c('cavalier', 'Cavalier', 'horse', 7, ['sword', 'lance'], st(20, 5, 0, 2, 5, 0, 6, 0), st(75, 35, 0, 40, 40, 30, 25, 15), { defaultInventory: ['w_iron_lance'] }),
+      c('knight', 'Chevalier', 'armor', 4, ['lance'], st(17, 5, 0, 2, 0, 0, 9, 0), st(80, 40, 0, 30, 15, 25, 55, 10), { defaultInventory: ['w_iron_lance'] }),
+      c('fighter', 'Guerrier', 'foot', 5, ['axe'], st(20, 5, 0, 2, 4, 0, 2, 0), st(85, 55, 0, 30, 30, 15, 15, 5), { defaultInventory: ['w_iron_axe'] }),
+      c('mercenary', 'Mercenaire', 'foot', 5, ['sword'], st(18, 4, 0, 8, 8, 0, 4, 0), st(80, 40, 0, 40, 32, 30, 18, 20), { defaultInventory: ['w_iron_sword'] }),
+      c('archer', 'Archer', 'foot', 5, ['bow'], st(17, 4, 0, 3, 3, 0, 3, 0), st(70, 35, 0, 40, 32, 35, 15, 20), { defaultInventory: ['w_iron_bow'] }),
+      c('mage', 'Mage', 'foot', 5, ['anima'], st(16, 0, 4, 2, 3, 0, 1, 3), st(55, 5, 55, 40, 35, 20, 5, 30), { defaultInventory: ['w_fire'] }),
+      c('cleric', 'Prêtresse', 'foot', 5, ['staff'], st(16, 0, 3, 1, 2, 0, 1, 6), st(50, 5, 50, 30, 40, 50, 10, 55), { defaultInventory: ['w_heal'] }),
+      c('pegasus', 'Chevalière Pégase', 'flier', 7, ['lance'], st(14, 4, 0, 5, 7, 0, 2, 4), st(65, 35, 10, 40, 50, 40, 12, 35), { defaultInventory: ['w_iron_lance'] }),
+      // Ennemi générique avec sprites
+      c('brigand', 'Brigand', 'foot', 5, ['axe'], st(20, 5, 0, 1, 3, 0, 3, 0), st(82, 50, 0, 30, 20, 15, 10, 13),
+        { defaultInventory: ['w_iron_axe'], mapSprite: CH('Brigand'), battler: BT('Brigand') }),
+      c('soldier', 'Soldat', 'foot', 5, ['lance'], st(20, 3, 0, 0, 1, 0, 0, 0), st(80, 50, 0, 30, 20, 25, 12, 15), { defaultInventory: ['w_iron_lance'] }),
+      c('warrior', 'Chef de guerre', 'foot', 6, ['axe', 'bow'], st(28, 8, 0, 5, 6, 0, 5, 0), st(90, 45, 0, 20, 15, 15, 10, 15), { tier: 2, defaultInventory: ['w_iron_axe'] })
+    ];
+  }
+  // Promotions
+  function linkPromotions(list) {
+    const set = (a, b) => { const c = list.find(x => x.id === a); if (c) c.promotesTo = b; };
+    set('lord', 'knight_lord'); set('lyn_lord', 'blade_lord'); set('axe_lord', 'great_lord');
+    set('fighter', 'warrior'); set('brigand', 'warrior');
+    return list;
+  }
+
+  function characters() {
+    const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', movBonus: 0, gender: '', protagonist: false, ending: '' }, o);
+    return [
+      u({ id: 'c_eliwood', name: 'Eliwood', classId: 'lord', level: 1, color: '#c0392b', convoy: true, gender: 'homme', protagonist: true,
+        ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
+        stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
+        inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
+        portrait: 'img/faces/Eliwood.png', bio: "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air." }),
+      u({ id: 'c_lyn', name: 'Lyn', classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
+        ending: "Lyn retourna dans les plaines de Sacae. Les nomades parlent encore de la cavalière qui chevauchait plus vite que le vent.",
+        stats: st(19, 6, 0, 9, 11, 5, 4, 3), growths: st(70, 40, 5, 60, 60, 55, 20, 30),
+        inventory: [{ id: 'w_iron_sword' }, { id: 'w_iron_bow' }, { id: 'i_vulnerary' }],
+        portrait: 'img/faces/Lyn.png', bio: "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc." }),
+      u({ id: 'c_hector', name: 'Hector', classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
+        ending: "Hector devint marquis d'Ostia. Il garda la même hache, le même caractère, et une fâcheuse tendance à régler les conflits lui-même.",
+        stats: st(19, 7, 0, 4, 5, 3, 8, 0), growths: st(90, 60, 5, 45, 35, 30, 50, 25),
+        inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
+        portrait: 'img/faces/Hector.png', bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
+      // Allié (unité verte) : classe générique, sprites propres à l'unité
+      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme',
+        ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
+        stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
+        inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }],
+        mapSprite: 'img/characters/Cloud', battler: 'img/battlers/Cloud',
+        portrait: 'img/faces/Cloud.png', bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." })
+    ];
+  }
+
+  // Tileset d'exemple : index -> terrain
+  const SAMPLE_TILE_TERRAIN = {
+    0: 'plain', 1: 'plain', 2: 'forest', 3: 'mountain', 4: 'peak', 5: 'water', 6: 'road', 7: 'bridge',
+    8: 'sand', 9: 'fort', 10: 'village', 11: 'wall', 12: 'floor', 13: 'throne', 14: 'wall', 15: 'gate',
+    16: 'bush', 17: 'thicket'
+  };
+  const LEGEND = { '.': 0, ',': 1, T: 2, M: 3, '^': 4, '~': 5, '=': 6, B: 7, s: 8, F: 9, V: 10, '#': 11, _: 12, K: 13, H: 14, G: 15, b: 16, D: 17 };
+
+  const SAMPLE_ASCII = [
+    '^^MMM..TT..~~...TMM^',
+    '^MM..D.TT..~~..,.TM^',
+    'MM..,....,.~~.....FM',
+    'M.....T......b.TT..M',
+    '..TT.......~~~.b...T',
+    '.TTT..H...s~~s..V...',
+    '..T...=====BB=====..',
+    '...b..=...s~~s..=...',
+    '..V...=....~~.b.=.TT',
+    '.....,=.b..~~..TT=TT',
+    '..TT..=.b..~~.....=.',
+    '.TTT..=...~~~..MM.=.',
+    '..T..F=...~~..MMM...',
+    'MM....=...~~....M..^',
+    '^MM..,=,..~~.....M^^'
+  ];
+
+  function sampleMap() {
+    const h = SAMPLE_ASCII.length, w = SAMPLE_ASCII[0].length;
+    const data = [];
+    for (const row of SAMPLE_ASCII) {
+      if (row.length !== w) throw new Error('Ligne de map invalide : ' + row);
+      for (const ch of row) data.push((LEGEND[ch] || 0) + 1);
+    }
+    return {
+      id: 'map_1', name: 'Plaine de Varenne', width: w, height: h, tileWidth: 32, tileHeight: 32,
+      tilesets: [{ tilesetId: 'ts_plaines', firstgid: 1 }],
+      layers: [
+        { id: 'l1', name: 'Sol', visible: true, data },
+        { id: 'l2', name: 'Décor', visible: true, data: new Array(w * h).fill(0) }
+      ],
+      terrain: new Array(w * h).fill(''),
+      objects: []
+    };
+  }
+
+  function sampleTileset() {
+    return {
+      id: 'ts_plaines', name: 'Plaines', image: 'img/tilesets/plaines.png', tileWidth: 32, tileHeight: 32,
+      columns: 8, tileCount: 18, margin: 0, spacing: 0, imageWidth: 256, imageHeight: 96,
+      tileTerrain: Object.assign({}, SAMPLE_TILE_TERRAIN)
+    };
+  }
+
+  function sampleChapter() {
+    const brig = (id, x, y, level, extra) => Object.assign({ id, name: 'Brigand', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
+    return {
+      id: 'ch_1', name: 'Prologue — Les brigands du fort', mapId: 'map_1',
+      objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
+      next: '', final: true, // dernier chapitre : la victoire ouvre l'épilogue
+      players: [
+        { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
+        { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
+        { id: 'p3', unitId: 'c_hector', x: 6, y: 13 }
+      ],
+      // unités vertes : jouent après la phase du joueur ; « control » = 'player' (jouable) ou 'ai'
+      allies: [
+        { id: 'a1', unitId: 'c_cloud', x: 17, y: 13, control: 'player', ai: 'aggressive' }
+      ],
+      enemies: [
+        brig('e1', 2, 4, 1),
+        brig('e2', 8, 9, 2),
+        brig('e3', 13, 5, 1, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }),
+        brig('e4', 14, 6, 2, { ai: 'range' }),
+        brig('e5', 15, 8, 2, { ai: 'range', inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }] }),
+        brig('e6', 17, 3, 3, { ai: 'stationary' }),
+        { id: 'e7', name: 'Batta', classId: 'brigand', level: 5, x: 18, y: 2, ai: 'stationary', appearTurn: 0, isBoss: true,
+          inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 6, str: 2, def: 2 } },
+        brig('e8', 19, 12, 1, { appearTurn: 3 }),
+        brig('e9', 18, 11, 2, { appearTurn: 3, inventory: [{ id: 'w_hand_axe' }] })
+      ],
+      events: [
+        { id: 'ev1', trigger: { type: 'start' }, once: true, script:
+          "Lyn: Les brigands tiennent le vieux fort depuis l'aube. Ils pillent tout ce qui traverse la rivière.\n" +
+          "Hector: Parfait. Ça fait trois jours que ma hache s'ennuie.\n" +
+          "Eliwood: Doucement, Hector. Leur chef, Batta, ne quittera pas le fort : on avance ensemble.\n" +
+          "Lyn: Je couvre le flanc gauche. Mon arc portera plus loin que leurs hachettes.\n" +
+          "Cloud: … Ces brigands bloquent ma route. Je m'en occupe, mais je ne travaille pas pour vous.\n" +
+          "Eliwood: Un mercenaire ? Tant qu'il vise les brigands, il est le bienvenu.\n" +
+          "Eliwood: Si quelqu'un a besoin d'une arme ou d'une potion, venez me voir : j'ai le convoi." },
+        { id: 'ev2', trigger: { type: 'turn', turn: 3 }, once: true, script:
+          "Lyn: Eliwood ! D'autres brigands descendent des collines, au sud-est.\n" +
+          "Hector: Tant mieux. Plus on est de fous…" },
+        { id: 'ev3', trigger: { type: 'death', target: 'e7' }, once: true, script:
+          "Batta: Grr… battu par trois gamins…" },
+        { id: 'ev4', trigger: { type: 'victory' }, once: true, script:
+          "Eliwood: Le fort est libre. Les villageois vont pouvoir rentrer chez eux.\n" +
+          "Hector: Déjà fini ? J'espérais mieux de ce Batta.\n" +
+          "Lyn: Ne te plains pas, Hector. Personne n'est blessé." }
+      ]
+    };
+  }
+
+  // Affinités : paires de personnages, conversations par rang, attaques débloquées, fin à deux
+  function supports() {
+    const conv = (C, B, A, S) => ({ C, B, A, S: S || '' });
+    return [
+      { id: 'sp_eli_lyn', a: 'c_eliwood', b: 'c_lyn', startPoints: 70, maxRank: 'S',
+        special: { rank: 'B', name: 'Lame inspirée', chance: 25, dmg: 3, hit: 10, crit: 0 },
+        combo: { rank: 'A', name: 'Danse des deux lames', chance: 40, might: 3, hit: 10 },
+        conversations: conv(
+          "Lyn: Eliwood, tu tiens ton épée comme un noble.\nEliwood: Je suis un noble.\nLyn: Justement. On va corriger ça.",
+          "Eliwood: Tu m'as couvert au pont. Merci.\nLyn: Tu m'aurais couverte aussi. C'est comme ça qu'on survit.",
+          "Lyn: Quand tout ça sera fini… tu rentreras à Pherae ?\nEliwood: Je crois. Et toi ?\nLyn: Je ne sais pas encore. C'est la première fois que je n'ai pas envie de partir seule.",
+          "Eliwood: Lyn. Viens à Pherae avec moi. Pas comme invitée.\nLyn: … Tu as mis du temps à le dire.\nEliwood: J'ai mis du temps à oser."),
+        ending: "Eliwood et Lyn partirent ensemble pour Pherae. Chaque été, ils retournaient dans les plaines de Sacae, où Lyn apprit à Eliwood à monter sans selle." },
+      { id: 'sp_eli_hec', a: 'c_eliwood', b: 'c_hector', startPoints: 90, maxRank: 'A',
+        special: { rank: 'B', name: 'Serment de frères', chance: 20, dmg: 4, hit: 0, crit: 10 },
+        combo: { rank: 'A', name: 'Assaut des marquis', chance: 50, might: 4, hit: 15 },
+        conversations: conv(
+          "Hector: Tu frappes trop poliment, Eliwood.\nEliwood: Et toi, tu frappes tout ce qui bouge.\nHector: Ça marche, non ?",
+          "Eliwood: Tu t'es jeté devant cette hache pour moi.\nHector: J'avais rien de mieux à faire.",
+          "Hector: Quoi qu'il arrive à nos maisons, toi et moi, on reste frères d'armes.\nEliwood: Je n'en ai jamais douté."),
+        ending: "Pherae et Ostia ne connurent jamais la guerre entre elles. Il paraît que les deux marquis réglaient leurs désaccords à l'entraînement, à l'aube." },
+      { id: 'sp_hec_lyn', a: 'c_hector', b: 'c_lyn', startPoints: 20, maxRank: 'S',
+        special: { rank: 'B', name: 'Coup de grâce', chance: 20, dmg: 5, hit: 0, crit: 0 },
+        combo: { rank: 'A', name: 'Hache et vent', chance: 35, might: 3, hit: 5 },
+        conversations: conv(
+          "Hector: T'es rapide, pour une fille de la plaine.\nLyn: Et toi, bruyant, pour un noble.",
+          "Lyn: Tu as encore foncé tout seul.\nHector: Je savais que tu me suivrais.\nLyn: … Ne compte pas trop là-dessus.",
+          "Hector: Lyn. Je ne sais pas faire de beaux discours.\nLyn: Alors n'en fais pas. Je suis là.",
+          "Hector: Ostia a besoin d'une marquise qui sait se battre.\nLyn: Ostia, ou toi ?\nHector: … Les deux. Surtout moi."),
+        ending: "Hector et Lyn se marièrent à Ostia, au grand désespoir des conseillers. Leur fille apprit l'arc avant de savoir marcher." },
+      { id: 'sp_lyn_cloud', a: 'c_lyn', b: 'c_cloud', startPoints: 0, maxRank: 'A',
+        special: { rank: 'B', name: 'Lame silencieuse', chance: 20, dmg: 4, hit: 10, crit: 0 },
+        combo: { rank: 'A', name: 'Tempête croisée', chance: 30, might: 5, hit: 0 },
+        conversations: conv(
+          "Lyn: Tu ne parles jamais ?\nCloud: … Pas besoin.",
+          "Cloud: Ton arc. Tu tires mieux que les soldats que j'ai connus.\nLyn: C'est un compliment ?\nCloud: … Oui.",
+          "Lyn: Tu repartiras, après ?\nCloud: Sûrement. Mais je saurai où revenir."),
+        ending: "Lyn et Cloud parcoururent ensemble les routes de l'ouest. Ils ne restaient jamais longtemps au même endroit, mais toujours au même côté du feu de camp." }
+    ];
+  }
+
+  function emptyDatabase() {
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), units: [], tilesets: [], chapters: [] };
+  }
+
+  function sampleProject(name) {
+    const db = emptyDatabase();
+    db.units = characters();
+    db.tilesets = [sampleTileset()];
+    db.chapters = [sampleChapter()];
+    db.supports = supports();
+    return {
+      meta: {
+        format: 'tactics-forge', version: 1, name: name || 'Mon Tactical RPG',
+        author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
+        settings: {
+          trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
+          effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true
+        },
+        // convoi (cargaison) : accessible au chef d'escouade, et aux unités adjacentes à lui
+        convoy: { capacity: 100, items: [
+          { id: 'i_vulnerary' }, { id: 'i_vulnerary' }, { id: 'i_elixir' }, { id: 'w_javelin' },
+          { id: 'w_hand_axe' }, { id: 'w_steel_sword' }, { id: 'w_iron_bow' }, { id: 'w_heal' }
+        ] },
+        // affinités : seuils C/B/A/S, gains, bonus par rang, rang requis pour finir ensemble
+        supports: { thresholds: [20, 50, 90, 140], range: 3, gainAdjacent: 3, gainCombat: 2, bonus: { hit: 5, avoid: 5, crit: 3, critAvoid: 3 }, endingRank: 'A' },
+        audio: {
+          volume: 0.6,
+          playerPhase: 'audio/bgm/Winning_Road.mp3', allyPhase: 'audio/bgm/Winning_Road.mp3', enemyPhase: 'audio/bgm/Advance.mp3',
+          levelUp: 'audio/me/Level_Up.mp3', gameOver: 'audio/me/Game_Over.mp3', victory: ''
+        }
+      },
+      db,
+      maps: [sampleMap()]
+    };
+  }
+
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+});

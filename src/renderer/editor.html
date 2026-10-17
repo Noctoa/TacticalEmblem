@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Tactics Forge</title>
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+<div id="app" class="no-project">
+  <header id="toolbar">
+    <div class="brand"><span class="brand-mark"></span>Tactics Forge</div>
+    <div class="tb-group">
+      <button data-cmd="new" title="Nouveau projet (Ctrl+N)" data-icon="file"></button>
+      <button data-cmd="open" title="Ouvrir (Ctrl+O)" data-icon="folder"></button>
+      <button data-cmd="save" title="Enregistrer (Ctrl+S)" data-icon="save" class="needs-project"></button>
+    </div>
+    <div class="tb-group needs-project">
+      <button data-cmd="import-tiled" title="Importer une map Tiled (Ctrl+I)" data-icon="import" class="with-label">Tiled</button>
+    </div>
+    <div class="tb-group needs-project" id="mode-group">
+      <button data-mode="tiles" title="Mode tiles (F1)" class="with-label" data-icon="layers">Tiles</button>
+      <button data-mode="terrain" title="Mode terrain (F2)" class="with-label" data-icon="terrain">Terrain</button>
+      <button data-mode="units" title="Mode unités / chapitre (F3)" class="with-label" data-icon="units">Unités</button>
+    </div>
+    <div class="tb-group needs-project" id="tool-group">
+      <button data-tool="pencil" title="Crayon (B)" data-icon="pencil"></button>
+      <button data-tool="rect" title="Rectangle (R)" data-icon="rect"></button>
+      <button data-tool="fill" title="Remplissage (F)" data-icon="fill"></button>
+      <button data-tool="eraser" title="Gomme (E)" data-icon="eraser"></button>
+      <button data-tool="picker" title="Pipette (I)" data-icon="picker"></button>
+    </div>
+    <div class="tb-group needs-project">
+      <button data-cmd="undo" title="Annuler (Ctrl+Z)" data-icon="undo"></button>
+      <button data-cmd="redo" title="Rétablir (Ctrl+Y)" data-icon="redo"></button>
+    </div>
+    <div class="tb-group needs-project">
+      <button data-cmd="zoom-out" title="Zoom −" data-icon="minus"></button>
+      <span id="zoom-label">100 %</span>
+      <button data-cmd="zoom-in" title="Zoom +" data-icon="plus"></button>
+      <button data-cmd="toggle-grid" title="Grille (Ctrl+G)" data-icon="grid" id="grid-btn"></button>
+    </div>
+    <div class="tb-spacer"></div>
+    <div class="tb-group needs-project">
+      <button data-cmd="database" title="Base de données (F9)" class="with-label" data-icon="db">Base de données</button>
+      <button data-cmd="playtest" title="Tester le chapitre (F5)" class="with-label primary" data-icon="play">Tester</button>
+    </div>
+  </header>
+
+  <div id="workspace">
+    <aside id="left" class="panel">
+      <section id="palette" class="panel-section grow"></section>
+      <section id="tree" class="panel-section">
+        <div class="section-head">
+          <h3>Projet</h3>
+          <div class="head-actions">
+            <button class="mini" data-cmd="new-map" title="Nouvelle map" data-icon="plus"></button>
+          </div>
+        </div>
+        <div id="tree-list" class="tree"></div>
+      </section>
+    </aside>
+
+    <main id="center">
+      <div id="canvas-wrap">
+        <div id="canvas-stage"><canvas id="map-canvas"></canvas></div>
+      </div>
+      <div id="center-empty" class="empty-state">Aucune map ouverte.</div>
+    </main>
+
+    <aside id="right" class="panel">
+      <div id="inspector"></div>
+    </aside>
+  </div>
+
+  <footer id="status">
+    <span id="st-project">—</span>
+    <span id="st-cell"></span>
+    <span id="st-terrain"></span>
+    <span class="st-spacer"></span>
+    <span id="st-hint"></span>
+  </footer>
+</div>
+
+<div id="welcome" class="overlay">
+  <div class="welcome-card">
+    <div class="welcome-head">
+      <div class="brand big"><span class="brand-mark"></span>Tactics Forge</div>
+      <p>Éditeur de tactical RPG façon Fire Emblem.</p>
+    </div>
+    <div class="welcome-body">
+      <div class="welcome-actions">
+        <button class="big-btn primary" data-cmd="new"><b>Nouveau projet</b><span>Avec un chapitre d'exemple jouable, ou vide</span></button>
+        <button class="big-btn" data-cmd="open"><b>Ouvrir un projet</b><span>Fichier game.tfproj</span></button>
+      </div>
+      <div class="welcome-recent">
+        <h3>Récents</h3>
+        <div id="recent-list" class="recent-list"><p class="muted">Aucun projet récent.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="db" class="overlay hidden">
+  <div class="db-window">
+    <div class="db-head">
+      <h2>Base de données</h2>
+      <nav id="db-tabs"></nav>
+      <button class="icon-close" data-db-close title="Fermer (Échap)">×</button>
+    </div>
+    <div id="db-body"></div>
+  </div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script src="../shared/rules.js"></script>
+<script src="../shared/defaults.js"></script>
+<script src="icons.js"></script>
+<script src="ui.js"></script>
+<script src="render.js"></script>
+<script src="sprites.js"></script>
+<script src="db.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<title>Playtest</title>
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="playtest.css">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div id="objective" class="win"></div>
+  <div id="terrain-win" class="win small"></div>
+  <div id="unit-win" class="win"></div>
+  <div id="combat-hud" class="hidden"></div>
+  <div id="menu" class="win menu hidden"></div>
+  <div id="forecast" class="win hidden"></div>
+  <div id="banner" class="hidden"><span></span></div>
+  <div id="dialogue" class="hidden">
+    <div class="dlg-portrait"></div>
+    <div class="dlg-box">
+      <div class="dlg-name"></div>
+      <div class="dlg-text"></div>
+      <div class="dlg-next">▼</div>
+    </div>
+    <button class="dlg-skip">Passer ⏭</button>
+  </div>
+  <div id="levelup" class="win hidden"></div>
+  <div id="convoy" class="win hidden"></div>
+  <div id="end" class="hidden"></div>
+  <div id="epilogue" class="hidden"></div>
+  <div id="help">Clic / Z : valider · Clic droit / X : annuler · D : zone de danger · M : musique · Flèches : curseur</div>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+
+<script src="../shared/rules.js"></script>
+<script src="ui.js"></script>
+<script src="render.js"></script>
+<script src="sprites.js"></script>
+<script src="audio.js"></script>
+<script src="battle.js"></script>
+<script src="playtest.js"></script>
+</body>
+</html>
