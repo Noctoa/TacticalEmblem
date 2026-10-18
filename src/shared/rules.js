@@ -561,7 +561,8 @@
         if (gain) { unit.stats[k] += gain; if (k === 'hp') unit.hp += gain; }
         gains[k] = gain;
       }
-      const learnedSkills = Skills.learnThroughLevel(unit, cls, db.skills || []);
+      const character = (db.units || []).find(ch => ch.id === unit.sourceId);
+      const learnedSkills = Skills.learnThroughLevel(unit, cls, db.skills || [], character || {});
       ups.push({ level: unit.level, gains, learnedSkills });
     }
     if (unit.level >= s.maxLevel) unit.exp = 0;

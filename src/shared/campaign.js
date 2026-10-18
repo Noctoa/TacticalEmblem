@@ -31,7 +31,7 @@
     unit.battler = character.battler || (cls && cls.battler) || '';
     unit.deathPolicy = character.deathPolicy || 'mode';
     Object.assign(unit, Skills.loadout(unit, db.skills));
-    Skills.learnThroughLevel(unit, cls, db.skills || []);
+    Skills.learnThroughLevel(unit, cls, db.skills || [], character);
     unit.hp = unit.stats.hp;
     return unit;
   }

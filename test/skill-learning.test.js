@@ -104,3 +104,77 @@ test('programme et attribution initiale sont sauvegardés ; refus avant écritur
   assert.throws(() => io.saveProject(dir, p), /niveau d’apprentissage/);
   assert.equal(fs.readFileSync(path.join(dir, 'data/classes.json'), 'utf8'), before);
 });
+
+test('paliers du personnage et de la classe : seuils exacts, ordre et doublons entre programmes', () => {
+  const { p, ch } = fixture();
+  ch.skillLearning = [{ level: 3, skillId: 'skill_precision' }, { level: 2, skillId: 'skill_sol' }, { level: 4, skillId: 'skill_esquive' }];
+  const unit = Rules.makeUnitFromCharacter(ch, p.db, { x: 0, y: 0 });
+  assert.deepEqual(unit.learnedSkills, []);
+  assert.deepEqual(Rules.gainExp(unit, 99, p.db, Rules.makeRng(1)), []);
+  const ups = Rules.gainExp(unit, 201, p.db, Rules.makeRng(1));
+  assert.deepEqual(ups.map(up => up.learnedSkills), [['skill_precision', 'skill_sol'], ['skill_luna'], []]);
+  assert.deepEqual(unit.learnedSkills, ['skill_precision', 'skill_sol', 'skill_luna']);
+  assert.equal(unit.personalSkill, 'skill_esquive');
+  assert.deepEqual(ch.learnedSkills, []);
+});
+
+test('programme propre au personnage : acquis au départ et isolation des autres personnages de même classe', () => {
+  const { p, ch } = fixture(); ch.level = 3;
+  ch.skillLearning = [{ level: 2, skillId: 'skill_sol' }, { level: 5, skillId: 'skill_miracle' }];
+  ch.equippedSkills = ['skill_miracle'];
+  assert.match(Skills.validateAssignments(p.db).join(), /doit être apprise/);
+  ch.equippedSkills = ['skill_sol'];
+  assert.deepEqual(Skills.validateAssignments(p.db), []);
+  const unit = Rules.makeUnitFromCharacter(ch, p.db, { x: 0, y: 0 });
+  assert.deepEqual(unit.learnedSkills, ['skill_precision', 'skill_sol', 'skill_luna']);
+  assert.deepEqual(unit.equippedSkills, ['skill_sol']);
+  const other = { ...ch, id: 'other', level: 1, skillLearning: [], equippedSkills: [] };
+  p.db.units.push(other);
+  const ally = Rules.makeUnitFromCharacter(other, p.db, { x: 0, y: 0 }, 'ally');
+  Rules.gainExp(ally, 200, p.db, Rules.makeRng(1));
+  assert.deepEqual(ally.learnedSkills, ['skill_precision', 'skill_luna']);
+  const enemy = Rules.makeEnemyFromPlacement({ id: 'enemy', classId: ch.classId, level: 3, x: 1, y: 0 }, p.db);
+  assert.deepEqual(enemy.learnedSkills, ['skill_precision', 'skill_luna']);
+});
+
+test('campagne : apprentissages du personnage restaurés et rattrapés sans rééquipement', () => {
+  const { p, ch } = fixture(); ch.skillLearning = [{ level: 2, skillId: 'skill_sol' }, { level: 5, skillId: 'skill_miracle' }];
+  const unit = Rules.makeUnitFromCharacter(ch, p.db, { x: 0, y: 0 });
+  Rules.gainExp(unit, 200, p.db, Rules.makeRng(1));
+  Skills.equipLearned(unit, 'skill_precision');
+  const campaign = Campaign.create('classic'); Campaign.commit(campaign, [unit]);
+  const saved = Campaign.checkpoint('ch_2', campaign, [], {});
+  const restored = Campaign.restore(saved, {}).campaign;
+  const next = Campaign.apply(restored, Rules.makeUnitFromCharacter(ch, p.db, { x: 0, y: 0 }), p.db);
+  assert.deepEqual(next.learnedSkills, unit.learnedSkills);
+  assert.deepEqual(next.equippedSkills, ['skill_precision']);
+  assert.deepEqual(Rules.gainExp(next, 200, p.db, Rules.makeRng(1)).map(up => up.learnedSkills), [[], ['skill_miracle']]);
+  delete restored.units[ch.id].learnedSkills;
+  const legacy = Campaign.apply(restored, Rules.makeUnitFromCharacter(ch, p.db, { x: 0, y: 0 }), p.db);
+  assert.ok(legacy.learnedSkills.includes('skill_sol'));
+  assert.ok(!legacy.equippedSkills.includes('skill_sol'));
+});
+
+test('validation des programmes de personnage et protection des références futures', () => {
+  const { p, ch } = fixture(); ch.skillLearning = [{ level: 5, skillId: 'skill_sol' }];
+  assert.deepEqual(Skills.validateLearning(p.db), []);
+  assert.ok(Skills.usersOf(p.db, 'skill_sol').includes(ch));
+  ch.skillLearning.push({ level: 6, skillId: 'skill_sol' });
+  assert.match(Skills.validateLearning(p.db).join(), /Personnage.*une fois/);
+  ch.skillLearning = [{ level: 0, skillId: 'missing' }];
+  assert.equal(Skills.validateLearning(p.db).length, 2);
+  ch.skillLearning = {};
+  assert.match(Skills.validateLearning(p.db).join(), /doit être une liste/);
+});
+
+test('programme de personnage : sauvegarde du projet et refus avant écriture en cas d’erreur', t => {
+  const { p, ch } = fixture(); ch.skillLearning = [{ level: 5, skillId: 'skill_sol' }];
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tf-character-learning-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  io.saveProject(dir, p);
+  assert.deepEqual(io.loadProject(dir).db.units[0].skillLearning, ch.skillLearning);
+  const before = fs.readFileSync(path.join(dir, 'data/units.json'), 'utf8');
+  ch.skillLearning[0].level = 100;
+  assert.throws(() => io.saveProject(dir, p), /Personnage.*niveau d’apprentissage/);
+  assert.equal(fs.readFileSync(path.join(dir, 'data/units.json'), 'utf8'), before);
+});

@@ -109,7 +109,7 @@
   }
   function validateAssignments(db) {
     return (db.units || []).flatMap(u => validateAssignment(u, db.skills || [],
-      availableLearning((db.classes || []).find(c => c.id === u.classId), u.level || 1, db.skills || []).map(row => row.skillId))
+      combinedLearning(u, (db.classes || []).find(c => c.id === u.classId), u.level || 1, db.skills || []).map(row => row.skillId))
       .map(e => `${u.name || u.id} : ${e}`));
   }
   function loadout(unit, catalogue) {
@@ -128,19 +128,20 @@
   }
   function usersOf(db, id) {
     return (db.units || []).filter(u => u.personalSkill === id ||
-      (Array.isArray(u.learnedSkills) && u.learnedSkills.includes(id)) || (Array.isArray(u.equippedSkills) && u.equippedSkills.includes(id)));
+      (Array.isArray(u.learnedSkills) && u.learnedSkills.includes(id)) || (Array.isArray(u.equippedSkills) && u.equippedSkills.includes(id)) ||
+      (Array.isArray(u.skillLearning) && u.skillLearning.some(row => row && row.skillId === id)));
   }
   function classUsersOf(db, id) {
     return (db.classes || []).filter(c => Array.isArray(c.skillLearning) && c.skillLearning.some(row => row && row.skillId === id));
   }
   function validateLearning(db) {
     const known = new Set((db.skills || []).map(s => s.id)), errors = [];
-    for (const cls of db.classes || []) {
-      if (cls.skillLearning === undefined) continue;
-      const prefix = `Classe ${cls.name || cls.id} : `;
-      if (!Array.isArray(cls.skillLearning)) { errors.push(prefix + 'le programme de compétences doit être une liste.'); continue; }
+    for (const [kind, owner] of [...(db.classes || []).map(c => ['Classe', c]), ...(db.units || []).map(u => ['Personnage', u])]) {
+      if (owner.skillLearning === undefined) continue;
+      const prefix = `${kind} ${owner.name || owner.id} : `;
+      if (!Array.isArray(owner.skillLearning)) { errors.push(prefix + 'le programme de compétences doit être une liste.'); continue; }
       const seen = new Set();
-      for (const row of cls.skillLearning) {
+      for (const row of owner.skillLearning) {
         if (!row || !Number.isInteger(row.level) || row.level < 1 || row.level > 99) errors.push(prefix + 'le niveau d’apprentissage doit être un entier de 1 à 99.');
         if (!row || !known.has(row.skillId)) errors.push(prefix + 'compétence à apprendre introuvable.');
         if (row && seen.has(row.skillId)) errors.push(prefix + 'une compétence ne peut apparaître qu’une fois dans le programme.');
@@ -149,23 +150,30 @@
     }
     return errors;
   }
-  function availableLearning(cls, level, catalogue = []) {
+  function availableLearning(owner, level, catalogue = []) {
     const known = new Set(catalogue.map(s => s.id));
-    return (cls && Array.isArray(cls.skillLearning) ? cls.skillLearning : [])
+    return (owner && Array.isArray(owner.skillLearning) ? owner.skillLearning : [])
       .filter(row => row && Number.isInteger(row.level) && row.level >= 1 && row.level <= level && known.has(row.skillId))
       .slice().sort((a, b) => a.level - b.level);
   }
   function initialLoadout(unit, cls, catalogue) {
-    const automatic = availableLearning(cls, unit.level || 1, catalogue || []).map(row => row.skillId);
+    const automatic = combinedLearning(unit, cls, unit.level || 1, catalogue || []).map(row => row.skillId);
     const learnedSkills = [...new Set([...(Array.isArray(unit.learnedSkills) ? unit.learnedSkills : []), ...automatic])];
     const equippedSkills = Array.isArray(unit.equippedSkills) ? unit.equippedSkills : automatic.filter(id => id !== unit.personalSkill).slice(0, EQUIPPED_SLOTS);
     return loadout(Object.assign({}, unit, { learnedSkills, equippedSkills }), catalogue);
   }
+  /** Les deux programmes se complètent ; le premier palier d'une compétence suffit. */
+  function combinedLearning(character, cls, level, catalogue = []) {
+    const rows = [...availableLearning(cls, level, catalogue), ...availableLearning(character, level, catalogue)]
+      .sort((a, b) => a.level - b.level);
+    const seen = new Set();
+    return rows.filter(row => { if (seen.has(row.skillId)) return false; seen.add(row.skillId); return true; });
+  }
   /** Apprend les paliers atteints ; l'interface traite ensuite chaque équipement, dans l'ordre. */
-  function learnThroughLevel(unit, cls, catalogue = []) {
+  function learnThroughLevel(unit, cls, catalogue = [], character = unit) {
     Object.assign(unit, loadout(unit));
     const acquired = [];
-    for (const row of availableLearning(cls, unit.level || 1, catalogue)) {
+    for (const row of combinedLearning(character, cls, unit.level || 1, catalogue)) {
       if (row.skillId === unit.personalSkill || unit.learnedSkills.includes(row.skillId)) continue;
       unit.learnedSkills.push(row.skillId); acquired.push(row.skillId);
     }
@@ -186,5 +194,5 @@
   }
   return { EFFECTS, effectOf, parameters, create, presets, validate, validateAll, describe,
     EQUIPPED_SLOTS, validateAssignment, validateAssignments, loadout, assigned, usersOf,
-    classUsersOf, validateLearning, availableLearning, initialLoadout, learnThroughLevel, equipLearned };
+    classUsersOf, validateLearning, availableLearning, combinedLearning, initialLoadout, learnThroughLevel, equipLearned };
 });

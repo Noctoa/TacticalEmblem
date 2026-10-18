@@ -253,4 +253,12 @@ Les unités créées à un niveau élevé connaissent déjà les compétences de
 
 Les apprentissages sont conservés entre chapitres et dans les sauvegardes, y compris les compétences laissées dans le répertoire. Elles ne sont pas réannoncées ni rééquipées au chapitre suivant. Les programmes sont enregistrés dans les fiches de classe ; la suppression d'une compétence référencée par un programme est bloquée.
 
+**14. Complément — apprentissages propres aux personnages**
+
+Chaque fiche Unités propose un programme « niveau → compétence » propre au personnage, dans « Apprentissages propres au personnage ». Il s’ajoute au programme de la classe actuelle. Les niveaux correspondent au niveau affiché de l’unité. Si les deux programmes enseignent une même compétence, le premier palier atteint l’accorde ; elle n’est jamais annoncée ou ajoutée une seconde fois. La personnelle fixe reste indépendante et ne consomme aucun des cinq emplacements.
+
+Les compétences futures ne deviennent pas disponibles avant leur palier. Les unités créées à un niveau élevé reçoivent les acquis des deux programmes. Les personnages alliés utilisent également leur programme propre, tandis que les ennemis génériques suivent celui de leur classe. La restauration de campagne conserve les acquis et les choix d’équipement, avec rattrapage des paliers manquants sans équipement forcé.
+
+La section « Compétences déjà acquises au départ » explicite les dons immédiats du créateur. Les anciennes attributions restent conservées ; elles ne sont pas converties automatiquement en apprentissages futurs. Les programmes de personnage sont facultatifs, enregistrés dans `data/units.json`, validés avant toute écriture et pris en compte dans la protection contre la suppression des compétences utilisées. Les effets en combat restent à implémenter.
+
 Les effets de combat constituent le prochain chantier. Les programmes des classes restent à définir par le créateur dans son projet.

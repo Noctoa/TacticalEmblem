@@ -1,4 +1,4 @@
-/* Parcours réel : programmer une classe, gagner de l'expérience par soin, choisir l'équipement. */
+/* Parcours réel : programmer une classe et un personnage, apprendre par soin, conserver les acquis. */
 'use strict';
 const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('assert/strict');
@@ -46,7 +46,7 @@ module.exports = (editor, openPlaytest) => {
       await js(ew, `Editor.open(${JSON.stringify(dir)})`);
       await js(ew, `DBEditor.open('classes', ${JSON.stringify(cls.id)})`);
       const program = ['skill_precision', 'skill_luna', 'skill_sol', 'skill_miracle'];
-      for (const [index, skillId] of program.entries()) {
+      for (const [index, skillId] of program.slice(0, 2).entries()) {
         await js(ew, `document.querySelector('[data-add-learning]').click()`);
         await set(ew, `[data-learning-level="${index}"]`, index + 2);
         await set(ew, `[data-learning-skill="${index}"]`, skillId);
@@ -57,11 +57,26 @@ module.exports = (editor, openPlaytest) => {
       assert.match(await js(ew, `document.querySelector('.modal-back').textContent`), /Classes/);
       await click(ew, '.modal-actions button', 'OK');
       await js(ew, `DBEditor.open('units', ${JSON.stringify(hero.id)})`);
+      const characterProgram = [{ level: 4, skillId: 'skill_sol' }, { level: 5, skillId: 'skill_miracle' }, { level: 3, skillId: 'skill_precision' }];
+      for (const [index, row] of characterProgram.entries()) {
+        await js(ew, `document.querySelector('.unit-learning [data-add-learning]').click()`);
+        await set(ew, `.unit-learning [data-learning-level="${index}"]`, row.level);
+        await set(ew, `.unit-learning [data-learning-skill="${index}"]`, row.skillId);
+      }
+      assert.equal(await js(ew, `document.querySelector('[data-skill-learn="skill_sol"]').getAttribute('aria-pressed')`), 'false');
+      await js(ew, `document.querySelector('.unit-learning').scrollIntoView({ block: 'start' })`); await shot(ew, 'character-program');
+      await js(ew, `DBEditor.open('skills', 'skill_sol'); document.querySelector('.db-list-actions button[title="Supprimer"]').click()`);
+      await until(ew, `!!document.querySelector('.modal-back')`);
+      assert.match(await js(ew, `document.querySelector('.modal-back').textContent`), /Personnages/);
+      await click(ew, '.modal-actions button', 'OK');
+      await js(ew, `DBEditor.open('units', ${JSON.stringify(hero.id)})`);
       await js(ew, `(() => { const label = [...document.querySelectorAll('.db-form .field-label')].find(el => el.textContent === 'Niveau'); const input = label.parentElement.querySelector('input'); input.value = 4; input.dispatchEvent(new Event('change')); })()`);
       assert.equal(await js(ew, `document.querySelector('[data-skill-learn="skill_sol"]').disabled`), true);
       await js(ew, `(() => { const label = [...document.querySelectorAll('.db-form .field-label')].find(el => el.textContent === 'Niveau'); const input = label.parentElement.querySelector('input'); input.value = 1; input.dispatchEvent(new Event('change')); })()`);
       await js(ew, 'DBEditor.close()'); ew.send('menu', 'save'); await until(ew, '!Editor.state.dirty');
-      assert.deepEqual(io.loadProject(dir).db.classes.find(c => c.id === cls.id).skillLearning, program.map((skillId, index) => ({ level: index + 2, skillId })));
+      const loaded = io.loadProject(dir);
+      assert.deepEqual(loaded.db.classes.find(c => c.id === cls.id).skillLearning, program.slice(0, 2).map((skillId, index) => ({ level: index + 2, skillId })));
+      assert.deepEqual(loaded.db.units.find(u => u.id === hero.id).skillLearning, characterProgram);
       const win = openPlaytest(dir, 'ch_1'), wc = win.webContents; watch(wc);
       await new Promise(resolve => wc.once('did-finish-load', resolve));
       await until(wc, `!!document.querySelector('.choice-list')`); await click(wc, '.choice-list button', 'Classique');
@@ -112,7 +127,7 @@ module.exports = (editor, openPlaytest) => {
       assert.equal(await js(rwc, `${heroCode}.level`), 5);
       assert.deepEqual(await js(rwc, `${heroCode}.learnedSkills`), learned); assert.deepEqual(await js(rwc, `${heroCode}.equippedSkills`), equipped); resumed.close();
       assert.deepEqual(errors, []); clearTimeout(watchdog);
-      finish({ ok: true, levelsGained: 4, automaticEquip: true, replacement: true, reserve: true, escapeKeepsSkill: true, campaignRestored: true, errors });
+      finish({ ok: true, levelsGained: 4, classAndCharacterPrograms: true, duplicateLearnedOnce: true, automaticEquip: true, replacement: true, reserve: true, escapeKeepsSkill: true, campaignRestored: true, errors });
     } catch (e) { clearTimeout(watchdog); finish({ ok: false, error: e.stack, errors }); }
   });
 };

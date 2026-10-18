@@ -75,7 +75,9 @@
     const redraw = () => {
       const catalogue = db().skills;
       const cls = byId(db().classes, unit.classId);
-      const automatic = Skills.availableLearning(cls, unit.level || 1, catalogue).map(row => row.skillId);
+      const automatic = Skills.combinedLearning(unit, cls, unit.level || 1, catalogue).map(row => row.skillId);
+      const characterSkills = Skills.availableLearning(unit, unit.level || 1, catalogue).map(row => row.skillId);
+      const classSkills = Skills.availableLearning(cls, unit.level || 1, catalogue).map(row => row.skillId);
       const manual = Array.isArray(unit.learnedSkills) ? unit.learnedSkills : [];
       const learned = [...new Set([...manual, ...automatic])];
       const equipped = Array.isArray(unit.equippedSkills) ? unit.equippedSkills : Skills.initialLoadout(unit, cls, catalogue).equippedSkills;
@@ -95,6 +97,7 @@
       });
       root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Compétence personnelle (fixe en jeu)'), personal));
       if (find(unit.personalSkill)) root.append(h('p', { class: 'form-info' }, Skills.describe(find(unit.personalSkill))));
+      root.append(learningField(unit, 'unit', update));
 
       const chips = h('div', { class: 'chips skill-repertoire' });
       const ids = [...new Set([...catalogue.map(s => s.id), ...learned])];
@@ -102,7 +105,8 @@
         const selected = learned.includes(id);
         const chip = h('button', { type: 'button', class: 'chip' + (selected ? ' on' : ''), 'data-skill-learn': id,
           disabled: automatic.includes(id), 'aria-pressed': selected ? 'true' : 'false',
-          title: automatic.includes(id) ? 'Déjà apprise grâce à la classe et au niveau de départ.' : find(id) ? Skills.describe(find(id)) : 'Retirer cette référence introuvable' }, label(id) + (automatic.includes(id) ? ' · classe' : ''));
+          title: automatic.includes(id) ? 'Déjà apprise grâce aux paliers atteints au niveau de départ.' : find(id) ? 'Accorder dès le départ, sans attendre un niveau. ' + Skills.describe(find(id)) : 'Retirer cette référence introuvable' },
+        label(id) + (characterSkills.includes(id) ? ' · personnage' : '') + (classSkills.includes(id) ? ' · classe' : ''));
         chip.addEventListener('click', () => {
           if (automatic.includes(id)) return;
           unit.learnedSkills = selected ? manual.filter(value => value !== id) : [...manual, id];
@@ -111,9 +115,9 @@
         });
         chips.append(chip);
       }
-      root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, `Répertoire appris (${learned.length})`),
+      root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, `Compétences déjà acquises au départ (${learned.length})`),
         ids.length ? chips : h('p', { class: 'muted' }, 'Le catalogue est vide. Ajoute des compétences ou leurs exemples dans l’onglet Compétences.')));
-      if (automatic.length) root.append(h('p', { class: 'form-info' }, 'Les compétences marquées « classe » sont déjà acquises au niveau de départ. Le programme se règle dans la fiche de classe.'));
+      root.append(h('p', { class: 'form-info' }, 'Cocher ici accorde immédiatement une compétence au début de la partie. Pour la débloquer plus tard, utilise les paliers ci-dessus ou ceux de la classe. Les compétences marquées « personnage » ou « classe » correspondent aux paliers déjà atteints au niveau de départ.'));
 
       const slots = h('div', { class: 'skill-slots' });
       for (let i = 0; i < Skills.EQUIPPED_SLOTS; i++) {
@@ -136,14 +140,16 @@
     redraw(); return root;
   }
 
-  function classLearningField(cls) {
-    const root = h('div', { class: 'class-learning' });
+  function learningField(owner, kind = 'class', onChange) {
+    const root = h('div', { class: kind === 'unit' ? 'unit-learning' : 'class-learning' });
     const redraw = () => {
-      const rows = Array.isArray(cls.skillLearning) ? cls.skillLearning : [];
+      const rows = Array.isArray(owner.skillLearning) ? owner.skillLearning : [];
       const catalogue = db().skills;
-      root.replaceChildren(h('div', { class: 'form-heading' }, 'Compétences apprises par niveau'),
-        h('p', { class: 'form-info' }, 'Chaque compétence est acquise une seule fois. Les unités qui commencent à un niveau supérieur connaissent déjà les paliers atteints. À la montée de niveau, une place libre est utilisée ; sinon le joueur choisit quoi remplacer ou garde la compétence dans son répertoire.'));
-      const update = () => { change(); redraw(); };
+      root.replaceChildren(h('div', { class: 'form-heading' }, kind === 'unit' ? 'Apprentissages propres au personnage' : 'Compétences apprises par niveau'),
+        h('p', { class: 'form-info' }, kind === 'unit'
+          ? 'Ces paliers s’ajoutent à ceux de la classe. Chaque compétence se débloque au niveau indiqué du personnage, une seule fois, même si sa classe la lui enseigne aussi. Les paliers déjà atteints sont acquis dès le départ.'
+          : 'Chaque compétence est acquise une seule fois. Les unités qui commencent à un niveau supérieur connaissent déjà les paliers atteints. À la montée de niveau, une place libre est utilisée ; sinon le joueur choisit quoi remplacer ou garde la compétence dans son répertoire.'));
+      const update = () => { if (onChange) onChange(); else { change(); redraw(); } };
       rows.forEach((row, index) => {
         if (!row || typeof row !== 'object') {
           root.append(h('button', { class: 'small danger', onclick: () => { rows.splice(index, 1); update(); } }, 'Retirer la ligne invalide ' + (index + 1))); return;
@@ -163,14 +169,14 @@
       });
       const available = catalogue.filter(s => !rows.some(row => row && row.skillId === s.id));
       root.append(h('button', { class: 'small', 'data-add-learning': true, disabled: !available.length, onclick: () => {
-        cls.skillLearning = rows;
+        owner.skillLearning = rows;
         const lastLevel = rows.reduce((max, row) => Math.max(max, row && Number.isInteger(row.level) ? row.level : 0), 0);
         rows.push({ level: Math.min(99, lastLevel + 1), skillId: available[0].id }); update();
       } }, '+ Ajouter un apprentissage'));
       if (!catalogue.length) root.append(h('p', { class: 'form-info' }, 'Ajoute d’abord des compétences dans le catalogue.'));
       const maxLevel = (Editor.project().meta.settings || {}).maxLevel || Rules.DEFAULT_SETTINGS.maxLevel;
       if (rows.some(row => row && row.level > maxLevel)) root.append(h('p', { class: 'note' }, 'Un palier dépasse le niveau maximum du projet (' + maxLevel + '). Il ne sera pas atteint avec ces réglages.'));
-      for (const error of Skills.validateLearning({ skills: catalogue, classes: [cls] })) root.append(h('p', { class: 'note' }, '⚠ ' + error));
+      for (const error of Skills.validateLearning({ skills: catalogue, [kind === 'unit' ? 'units' : 'classes']: [owner] })) root.append(h('p', { class: 'note' }, '⚠ ' + error));
     };
     redraw(); return root;
   }
@@ -227,7 +233,7 @@
         return { name: 'Nouvelle unité', classId: cls ? cls.id : '', level: 1, isLord: false, color: '#4f8cff',
           stats: cls ? Rules.statsFromClass(cls, 1) : {}, growths: cls ? Object.assign({}, cls.growths) : {},
           inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '',
-          personalSkill: '', learnedSkills: [], equippedSkills: [] };
+          personalSkill: '', learnedSkills: [], equippedSkills: [], skillLearning: [] };
       },
       fields: () => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
@@ -279,7 +285,7 @@
           { key: 'tier', label: 'Rang', type: 'select', numeric: true, options: [{ value: 1, label: 'Base' }, { value: 2, label: 'Promue' }] }] },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'promotesTo', label: 'Promotion vers', type: 'select', empty: '— aucune —', options: classOpts },
-        { type: 'custom', render: classLearningField },
+        { type: 'custom', render: c => learningField(c) },
         { type: 'row', fields: [
           { key: 'mapSprite', label: 'Sprite de map (img/characters)', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
           { key: 'battler', label: 'Animation de combat (img/battlers)', type: 'select', empty: '— aucune (combat sur la map) —', options: battlerOpts }] },
