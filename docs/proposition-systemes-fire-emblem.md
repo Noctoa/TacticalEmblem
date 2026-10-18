@@ -16,7 +16,7 @@ La recherche cible ces systèmes et leurs interactions. Elle ne constitue pas un
 | The Sacred Stones | Promotions à branches, recrues et compétences de classes spécialisées. | Un arbre lisible avec des rôles différents selon la branche. |
 | Path of Radiance | Les compétences ont des coûts de capacité variés. | Garder la possibilité future d'un budget de capacité, sans le rendre nécessaire en première version. |
 | Awakening | Compétences apprises par niveau de classe, conservées après changement de classe ; cinq compétences actives au maximum. | Séparer compétences apprises et compétences équipées. |
-| Fates | Une compétence personnelle fixe s'ajoute aux cinq emplacements d'autres compétences. | Donner une identité propre aux personnages. |
+| Fates | Une compétence personnelle fixe s'ajoute en plus des cinq emplacements d'autres compétences. | Donner une identité propre aux personnages. |
 | Three Houses | Compétences de classe et récompenses de maîtrise ; techniques consommant de l'usure. | Prévoir des commandes actives et, plus tard, une maîtrise de classe facultative. |
 | Engage | Héritage de compétences via les liens avec les Emblèmes et une dépense de points. | Extension possible pour des maîtres ou objets, après les trois priorités. |
 
