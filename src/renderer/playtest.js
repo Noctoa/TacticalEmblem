@@ -29,6 +29,7 @@
   // =====================================================================
   async function init() {
     try {
+      G.busy = true;
       const payload = await tf.loadProject(params.get('dir'));
       G.project = payload.project; G.baseUrl = payload.baseUrl; G.db = G.project.db;
       G.resources = G.project.resources || { characters: {}, battlers: {} };
@@ -42,7 +43,7 @@
       G.supCfg = Object.assign({}, R.DEFAULT_SUPPORT, G.project.meta.supports || {});
       G.sup = R.initSupports(G.db, G.supCfg);
       G.db.terrains.forEach(t => { G.terrains[t.id] = t; });
-      G.campaign = { dead: [], units: {} };
+      G.campaign = Campaign.create('classic');
       await Render.preloadTilesets(G.baseUrl, G.db.tilesets);
       await Promise.all(G.db.units.filter(u => u.portrait).map(u => Render.loadImage(G.baseUrl, u.portrait)));
       // sprites de map, battlers et projectiles utilisés par le projet
@@ -51,8 +52,22 @@
       for (const m of Object.values(G.resources.battlers)) { imgs.push(m.image); for (const p of Object.values(m.projectiles || {})) imgs.push(p); }
       await Promise.all(imgs.map(i => Render.loadImage(G.baseUrl, i)));
       const chId = params.get('chapter');
-      const first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
+      let first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
       if (!first) throw new Error('Aucun chapitre à jouer.');
+      let saved = null;
+      try { saved = await tf.loadCampaign(params.get('dir')); }
+      catch (e) { await UI.alert('Sauvegarde non chargée', e.message); }
+      const choice = await UI.choose('Lancer une partie', [
+        ...(saved ? [{ value: 'continue', label: 'Continuer la campagne', desc: (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId }] : []),
+        { value: 'classic', label: 'Nouvelle partie — Classique', desc: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' },
+        { value: 'casual', label: 'Nouvelle partie — Détente', desc: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' }
+      ], 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.');
+      if (!choice) { window.close(); return; }
+      if (choice === 'continue') {
+        Object.assign(G, Campaign.restore(saved, G.sup));
+        first = R.byId(G.db.chapters, saved.chapterId);
+        if (!first) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
+      } else G.campaign = Campaign.create(choice);
       requestAnimationFrame(loop);
       await loadChapter(first);
     } catch (e) {
@@ -67,10 +82,16 @@
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
+    const errors = Mission.validate(ch, G.db, G.map);
+    if (errors.length) throw new Error(errors.join('\n'));
+    G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${ch.name}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, fired: new Set(), lost: [], sel: null,
-      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [] });
+      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [] });
+    hideMenu(); hideForecast();
+    $('#convoy').classList.add('hidden');
+    $('#epilogue').classList.add('hidden');
     $('#end').className = 'hidden'; $('#end').innerHTML = '';
     buildBase();
     setupUnits();
@@ -80,18 +101,27 @@
 
   /** Mémorise l'état des survivants pour le chapitre suivant. */
   function saveCampaign() {
-    for (const u of G.units) {
-      if (u.team === 'enemy') continue;
-      if (u.dead) { if (u.team === 'player' && !G.campaign.dead.includes(u.sourceId)) G.campaign.dead.push(u.sourceId); continue; }
-      G.campaign.units[u.sourceId] = { level: u.level, exp: u.exp, stats: Object.assign({}, u.stats), growths: Object.assign({}, u.growths), inventory: u.inventory.map(x => Object.assign({}, x)), mov: u.mov };
-    }
+    Campaign.commit(G.campaign, G.units);
   }
   function applyCampaign(u) {
-    const c = G.campaign.units[u.sourceId];
-    if (!c) return u;
-    Object.assign(u, { level: c.level, exp: c.exp, stats: Object.assign({}, c.stats), growths: Object.assign({}, c.growths), inventory: c.inventory.map(x => Object.assign({}, x)), mov: c.mov });
-    u.hp = u.stats.hp;
-    return u;
+    return Campaign.apply(G.campaign, u, G.db);
+  }
+  async function saveCheckpoint() {
+    const wasBusy = G.busy; G.busy = true;
+    try {
+      const old = await tf.loadCampaign(params.get('dir'));
+      if (old && !(await UI.confirm('Remplacer la sauvegarde de campagne par le début de ce chapitre ?'))) return;
+      await tf.saveCampaign(params.get('dir'), G.checkpoint);
+      UI.toast('Début du chapitre sauvegardé — ' + (G.campaign.mode === 'classic' ? 'Classique' : 'Détente'));
+    } catch (e) { await UI.alert('Sauvegarde impossible', e.message); }
+    finally { G.busy = wasBusy; }
+  }
+  async function restartChapter() {
+    const wasBusy = G.busy; G.busy = true;
+    if (!(await UI.confirm('Recommencer ce chapitre ? Les actions et pertes de cette tentative seront annulées.'))) { G.busy = wasBusy; return; }
+    G.sup = R.initSupports(G.db, G.supCfg);
+    Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
+    await loadChapter(G.chapter);
   }
 
   function buildBase() {
@@ -307,10 +337,14 @@
       fillTiles(set, G.ui === 'staff' ? '#3ddc84' : '#ff3b30', pulse);
     }
     // case objectif
-    const ob = G.chapter.objective || {};
-    if (ob.type === 'seize') {
+    for (const ob of Mission.objectives(G.chapter).filter(o => o.type === 'seize')) {
       const [px, py, w, hh] = tileRect(ob.x, ob.y);
       ctx.strokeStyle = `rgba(242,213,138,${0.6 + Math.sin(t / 300) * 0.3})`; ctx.lineWidth = 2; ctx.strokeRect(px + 2, py + 2, w - 4, hh - 4);
+    }
+    const z = G.chapter.defendZone;
+    if (z && z.enabled) {
+      const [px, py, w, hh] = tileRect(z.x, z.y);
+      ctx.strokeStyle = '#ff7777'; ctx.lineWidth = 3; ctx.strokeRect(px + 2, py + 2, w * z.w - 4, hh * z.h - 4);
     }
 
     const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
@@ -547,12 +581,17 @@
   }
 
   function updateObjective() {
-    const ob = G.chapter.objective || {};
-    const labels = { rout: 'Mettre en déroute', boss: 'Vaincre le boss', seize: 'Prendre le point', survive: `Survivre ${ob.turns || 10} tours` };
+    const result = Mission.evaluate(G.chapter, G.db, G);
     const left = enemies().length + G.pending.length;
     $('#objective').innerHTML = '';
-    $('#objective').append(h('div', { class: 'lbl' }, 'Objectif'), h('div', { class: 'obj' }, ob.text || labels[ob.type] || labels.rout),
-      h('div', { class: 'turn' }, `Tour ${G.turn}` + (ob.type === 'survive' ? ` / ${ob.turns || 10}` : '') + ` · Ennemis ${left}`));
+    $('#objective').append(h('div', { class: 'lbl' }, 'Victoire — ' + (G.chapter.victoryMode === 'any' ? 'au moins une condition' : 'toutes les conditions')),
+      ...Mission.objectives(G.chapter).map((ob, i) => h('div', { class: 'obj' }, (result.progress[i] ? '✓ ' : '○ ') + Mission.label(ob, G.chapter))),
+      h('div', { class: 'turn' }, `Tour ${G.turn} · Ennemis ${left} · ${G.campaign.mode === 'classic' ? 'Classique' : 'Détente'}`));
+    const protectedNames = Mission.required(G.chapter, G.db).map(id => (R.byId(G.db.units, id) || {}).name || id);
+    if (protectedNames.length) $('#objective').append(h('div', { class: 'turn' }, 'À protéger : ' + protectedNames.join(', ')));
+    if (G.chapter.turnLimit) $('#objective').append(h('div', { class: 'turn' }, 'Limite : ' + G.chapter.turnLimit + ' tours complets'));
+    if (G.chapter.lossLimit) $('#objective').append(h('div', { class: 'turn' }, 'Défaite à ' + G.chapter.lossLimit + ' perte(s)'));
+    if (G.chapter.defendZone && G.chapter.defendZone.enabled) $('#objective').append(h('div', { class: 'turn' }, 'Protéger la zone rouge'));
   }
 
   // =====================================================================
@@ -590,8 +629,7 @@
   function openActionMenu() {
     const u = G.sel;
     const items = [];
-    const ob = G.chapter.objective || {};
-    if (ob.type === 'seize' && u.isLord && u.team === 'player' && u.x === ob.x && u.y === ob.y) items.push({ label: 'Prendre', action: () => { hideMenu(); seize(u); } });
+    if (Mission.canSeize(G.chapter, G.db, u) && !G.seized.includes(key(u.x, u.y))) items.push({ label: 'Prendre', action: () => { hideMenu(); seize(u); } });
     const targets = attackTargetsFrom(u);
     if (targets.length) items.push({ label: 'Attaquer', action: () => openTargets(u, targets, 'target') });
     const heals = staffTargetsFrom(u);
@@ -675,7 +713,8 @@
       { label: 'Zone de danger', sub: G.danger ? 'activée' : 'désactivée', action: () => { toggleDanger(); hideMenu(); G.ui = 'idle'; } },
       { label: G.fast ? 'Vitesse normale' : 'Vitesse rapide', action: () => { G.fast = !G.fast; hideMenu(); G.ui = 'idle'; } },
       { label: 'Animations de combat', sub: G.settings.battleAnims !== false ? 'oui' : 'non', action: () => { G.settings.battleAnims = G.settings.battleAnims === false; hideMenu(); G.ui = 'idle'; UI.toast('Animations de combat : ' + (G.settings.battleAnims ? 'oui' : 'non')); } },
-      { label: 'Recommencer', action: () => { hideMenu(); location.reload(); } },
+      { label: 'Sauvegarder', sub: 'début du chapitre', action: () => { hideMenu(); G.ui = 'idle'; saveCheckpoint(); } },
+      { label: 'Recommencer', action: () => { hideMenu(); G.ui = 'idle'; restartChapter(); } },
       { label: 'Quitter le test', action: () => window.close() }
     ], G.cursor, 'mapmenu');
   }
@@ -850,7 +889,9 @@
     G.busy = true;
     float(u.x, u.y, 'Point pris !', '#f2d58a', true);
     await sleep(700);
-    await victory();
+    G.seized.push(key(u.x, u.y));
+    G.busy = false;
+    await finishAction(u);
   }
 
   async function finishAction(u) {
@@ -976,6 +1017,7 @@
     if (u.team === 'player') G.lost.push(u.name);
     if (u.team === 'ally') float(u.x, u.y, 'Allié perdu', '#9be59b');
     await runEvents('death', { unit: u });
+    if (u.team !== 'enemy' && !Campaign.permanent(G.campaign, u)) float(u.x, u.y, 'Retraite — retour au prochain chapitre', '#9be59b');
   }
 
   function showLevelUp(u, up) {
@@ -1016,8 +1058,7 @@
 
   async function startPlayerPhase(first) {
     if (G.over) return;
-    const ob = G.chapter.objective || {};
-    if (ob.type === 'survive' && G.turn > (ob.turns || 10)) return victory();
+    if (await checkEnd()) return;
     G.phase = 'player'; G.busy = true;
     updateObjective();
     Music.bgm('playerPhase');
@@ -1025,6 +1066,7 @@
     for (const u of players()) u.done = false;
     await terrainHeal(team('player'));
     await runEvents('turn', { turn: G.turn });
+    if (await checkEnd()) return;
     G.busy = false; G.ui = 'idle';
     refreshDanger();
     const lord = team('player').find(u => u.isLord) || team('player')[0];
@@ -1062,6 +1104,8 @@
       setCursor(e.x, e.y, true);
       await sleep(160);
       if (plan.path && plan.path.length > 1) await animateMove(e, plan.path);
+      await areaEvents(e);
+      if (await checkEnd()) return true;
       if (plan.target && !plan.target.dead) {
         R.equip(e, plan.weaponIndex);
         await sleep(160);
@@ -1096,11 +1140,12 @@
     // renforts
     const arriving = G.pending.filter(u => u.appearTurn <= G.turn);
     for (const u of arriving) {
-      G.pending.splice(G.pending.indexOf(u), 1);
       const spot = freeSpotNear(u.x, u.y, u);
       if (!spot) continue;
+      G.pending.splice(G.pending.indexOf(u), 1);
       u.x = u.rx = spot.x; u.y = u.ry = spot.y; u.done = true; u.alpha = 0;
       G.units.push(u);
+      if (await checkEnd()) return;
       focus(u.x, u.y);
       for (let i = 1; i <= 8; i++) { u.alpha = i / 8; await sleep(30); }
       float(u.x, u.y, 'Renfort !', '#ff9a8a');
@@ -1134,14 +1179,9 @@
   async function checkEnd() {
     if (G.over) return true;
     updateObjective();
-    const lords = G.units.filter(u => u.isLord && u.team === 'player');
-    if ((lords.length && lords.some(l => l.dead)) || !team('player').length) { await defeat(lords.find(l => l.dead)); return true; }
-    const ob = G.chapter.objective || {};
-    const bosses = G.units.concat(G.pending).filter(u => u.isBoss);
-    if (ob.type === 'boss' && bosses.length) { if (bosses.every(b => b.dead)) { await victory(); return true; } }
-    else if (ob.type === 'rout' || (ob.type === 'boss' && !bosses.length)) {
-      if (!enemies().length && !G.pending.length) { await victory(); return true; }
-    }
+    const result = Mission.evaluate(G.chapter, G.db, G);
+    if (result.outcome === 'defeat') { await defeat(result.reason); return true; }
+    if (result.outcome === 'victory') { await victory(); return true; }
     return false;
   }
 
@@ -1152,11 +1192,11 @@
     await runEvents('victory', {});
     showEnd(true);
   }
-  async function defeat(lord) {
+  async function defeat(reason) {
     if (G.over) return;
     G.over = true; G.busy = true; deselect(); hideMenu(); hideForecast();
     Music.me('gameOver', { resume: false });
-    showEnd(false, lord ? `${lord.name} est tombé au combat.` : 'Toutes vos unités ont été vaincues.');
+    showEnd(false, reason);
   }
   function showEnd(win, why) {
     const el = $('#end'); el.className = win ? 'win-screen' : 'lose';
@@ -1167,9 +1207,14 @@
       h('div', { class: 'end-actions' },
         win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); openEpilogue(); } }, 'Épilogue') : null,
         win && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
-          saveCampaign(); await loadChapter(R.byId(G.db.chapters, G.chapter.next));
+          const next = R.byId(G.db.chapters, G.chapter.next);
+          const map = G.project.maps.find(m => m.id === next.mapId);
+          const errors = map ? Mission.validate(next, G.db, map) : ['Map du chapitre suivant introuvable.'];
+          if (errors.length) return UI.alert('Chapitre suivant invalide', errors.join('\n'));
+          saveCampaign(); await loadChapter(next);
         } }, 'Chapitre suivant →') : null,
-        h('button', { class: win && (G.chapter.final || G.chapter.next) ? '' : 'primary', onclick: () => location.reload() }, 'Rejouer depuis le début'),
+        h('button', { class: win && (G.chapter.final || G.chapter.next) ? '' : 'primary', onclick: restartChapter }, 'Recommencer ce chapitre'),
+        h('button', { onclick: saveCheckpoint }, 'Sauvegarder le début du chapitre'),
         h('button', { onclick: () => window.close() }, 'Fermer'))));
   }
 

@@ -14,6 +14,8 @@ contextBridge.exposeInMainWorld('tf', {
   newProject: (opts) => call('project:new', opts),
   openProject: (dir) => call('project:open', dir),
   loadProject: (dir) => call('project:load', dir),
+  loadCampaign: (dir) => call('campaign:load', dir),
+  saveCampaign: (dir, value) => call('campaign:save', dir, value),
   saveProject: (dir, project) => call('project:save', dir, project),
   openFolder: (dir) => call('project:openFolder', dir),
   importTiled: (dir, terrains) => call('tiled:import', dir, terrains),

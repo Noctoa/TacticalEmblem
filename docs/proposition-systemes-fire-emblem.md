@@ -1,6 +1,6 @@
 **Tactics Forge — Compétences, promotions et règles de campagne**
 
-Proposition de conception du 18 octobre 2026. Recherche et conception uniquement ; aucune fonctionnalité décrite comme proposition n'est encore implémentée. Les valeurs proposées sont des points de départ à tester, pas des règles universelles de Fire Emblem.
+Proposition de conception du 18 octobre 2026, complétée par un premier lot d'implémentation. Le détail de ce qui est livré figure à la fin du document ; le reste demeure une proposition. Les valeurs proposées sont des points de départ à tester, pas des règles universelles de Fire Emblem.
 
 **1. Direction retenue**
 
@@ -32,7 +32,7 @@ Trois origines, indépendantes de la manière dont l'effet s'active :
 - Intrinsèque à la classe : disponible tant que cette classe est utilisée.
 - Apprise : acquise à un niveau défini ou par événement, puis conservée dans le répertoire du personnage.
 
-Par défaut proposé : une personnelle, les propriétés intrinsèques de classe et trois emplacements équipables. Le créateur peut choisir cinq emplacements pour se rapprocher de Fates. Ce mélange à trois emplacements est un choix de Tactics Forge, pas une reproduction de cet épisode. Les effets intrinsèques devront rester modestes pour limiter l'empilement.
+Réglage retenu : une compétence personnelle fixe, en plus de cinq emplacements de compétences équipables. La personnelle ne consomme aucun de ces cinq emplacements. Les propriétés intrinsèques de classe restent distinctes et devront rester modestes pour limiter l'empilement.
 
 Les ennemis et alliés utilisent le même système. L'éditeur peut ajouter une compétence à un placement particulier pour créer un boss distinct sans dupliquer toute sa classe. Un même identifiant de compétence accordé par plusieurs sources ne produit qu'un effet.
 
@@ -178,7 +178,7 @@ Une combinaison n'est pas étrangère à FE8 : le chapitre 13 de la route d'Eiri
 
 **7. Conséquences pour le projet actuel**
 
-Constats issus du code local :
+Constats issus du code local avant le premier lot (conservés pour expliquer les changements) :
 
 - `src/shared/rules.js` fournit déjà prévisions, résolution, hasard injectable et expérience : base utile pour les compétences.
 - `src/renderer/db.js` ne propose qu'une destination `promotesTo` et deux paliers. Il faut des transitions multiples et la vue d'arbre.
@@ -209,3 +209,18 @@ Scénario d'acceptation : une carte avec un héros requis, un diplomate à escor
 Les techniques à coût d'usure s'intègrent naturellement à l'inventaire existant. Le déplacement après action, la maîtrise de classe, les rangs d'armes et les compétences obtenues via des maîtres peuvent enrichir les choix ensuite. Le retour en arrière pendant une bataille nécessite un historique complet de l'état et du hasard ; il mérite un chantier séparé.
 
 Je reporterais les systèmes de générations, de bataillons et d'Emblèmes complets : chacun transforme fortement les règles et l'équilibrage. L'objectif immédiat est de rendre les trois priorités configurables et fiables dans un petit jeu complet.
+
+**10. Premier lot livré — conditions, modes et campagne**
+
+- Choix Classique / Détente à la nouvelle partie et reprise d'une campagne sauvegardée.
+- Personnages requis par chapitre, incluant les alliés ; sélection vide possible pour autoriser la chute des anciens Seigneurs.
+- Autorisation de prendre un point indépendante du statut Seigneur.
+- Objectif principal et conditions supplémentaires combinées par ET / OU : déroute, boss, cible précise (condition supplémentaire), prise de point et survie.
+- Défaite par équipe vaincue, nombre de pertes, limite de tours ou ennemi dans une zone.
+- Exception individuelle de retraite : retour au chapitre suivant, même en Classique.
+- Sauvegarde manuelle du début du chapitre dans `saves/campaign.json`, avec copie de secours `.bak`. Il ne s'agit pas d'une suspension au milieu du combat. Une nouvelle partie ne remplace pas la sauvegarde sans action de sauvegarde explicite.
+- Recommencer restaure le chapitre courant, la campagne, le convoi et les soutiens tels qu'ils étaient à son début.
+- Conservation de la classe et du déplacement entre chapitres, avec des champs de persistance prêts pour les compétences futures.
+- Anciens chapitres : les protections et autorisations héritent des Seigneurs tant que le créateur ne les personnalise pas. Les configurations impossibles sont signalées avant le test, notamment un objectif de boss sans boss.
+
+Les compétences jouables (personnelle fixe + cinq équipables), leurs écrans et les promotions à branches constituent les deux prochains lots. L'évacuation, l'escorte, les conditions par variables de scénario et la suspension en milieu de bataille restent également à réaliser. La sélection des renforts bloquants n'a pas encore de contrôle dédié dans l'éditeur.

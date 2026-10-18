@@ -88,7 +88,8 @@
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
-        { key: 'isLord', label: 'Seigneur (sa mort = défaite ; peut prendre les cases objectif)', type: 'checkbox' },
+        { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par chapitre)', type: 'checkbox' },
+        { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
         { type: 'heading', label: 'Apparence' },
         { type: 'custom', render: appearanceField },
@@ -464,7 +465,7 @@
   const TRIGGERS = [
     { value: 'start', label: 'Début du chapitre' },
     { value: 'turn', label: 'Début du tour (phase joueur)' },
-    { value: 'death', label: "Mort d'une unité" },
+    { value: 'death', label: "Unité vaincue (mort ou retraite)" },
     { value: 'area', label: 'Une unité du joueur entre dans une zone' },
     { value: 'victory', label: 'Victoire' }
   ];
@@ -510,6 +511,7 @@
       { type: 'info', text: 'En playtest, « Chapitre suivant » garde les niveaux, les objets, le convoi, les affinités et les morts.' },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name') renderBody(); } }));
+    renderMissionRules(pane, ch);
     pane.append(h('div', { class: 'insp-actions', style: { margin: '10px 0 4px' } },
       h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(ch.id); } }, 'Ouvrir sur la map'),
       h('button', { class: 'small primary', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(ch.id); } }, 'Tester')));
@@ -555,6 +557,56 @@
     });
     evBox.append(h('div', {}, h('button', { class: 'small', html: Icons.icon('plus'), onclick: () => { ch.events.push({ id: Editor.uid('ev', ch.events), trigger: { type: 'start' }, once: true, script: '' }); change(); renderBody(); } }, 'Ajouter un événement')));
     pane.append(evBox);
+  }
+
+  // ------------------------------------------------------------------
+  // Règles de mission : les anciens projets restent inchangés tant qu'un champ n'est pas modifié.
+  // ------------------------------------------------------------------
+  function renderMissionRules(pane, ch) {
+    const names = db().units.map(u => ({ value: u.id, label: u.name }));
+    const model = {
+      requiredUnits: Mission.required(ch, db()).slice(), seizeUnits: Mission.seizers(ch, db()).slice(),
+      defeatAll: ch.defeatAll !== false, victoryMode: ch.victoryMode || 'all',
+      turnLimit: ch.turnLimit || 0, lossLimit: ch.lossLimit || 0,
+      defendZone: Object.assign({ enabled: false, x: 0, y: 0, w: 1, h: 1 }, ch.defendZone)
+    };
+    pane.append(UI.form([
+      { type: 'heading', label: 'Conditions de victoire et de défaite' },
+      { key: 'victoryMode', label: 'Victoire lorsque…', type: 'select', options: [
+        { value: 'all', label: 'Toutes les conditions sont remplies (ET)' }, { value: 'any', label: 'Au moins une condition est remplie (OU)' }] },
+      { key: 'requiredUnits', label: 'Personnages devant survivre (joueurs ou alliés placés sur cette map)', type: 'multicheck', options: names },
+      { type: 'info', text: 'Aucune sélection = aucune défaite liée à un personnage. Cette protection reste active en Détente et pour les personnages qui se retirent.' },
+      { key: 'seizeUnits', label: 'Personnages autorisés à prendre les points', type: 'multicheck', options: names },
+      { key: 'defeatAll', label: 'Défaite si toutes les unités du joueur sont vaincues', type: 'checkbox' },
+      { type: 'row', fields: [
+        { key: 'turnLimit', label: 'Limite de tours complets (0 = aucune)', type: 'number', min: 0, max: 999 },
+        { key: 'lossLimit', label: 'Défaite à N pertes joueur + alliés (0 = aucune)', type: 'number', min: 0, max: 999 }] },
+      { key: 'defendZone.enabled', label: 'Défaite si un ennemi atteint une zone', type: 'checkbox' },
+      { type: 'row', fields: ['x', 'y', 'w', 'h'].map(k => ({ key: 'defendZone.' + k,
+        label: { x: 'Zone X', y: 'Zone Y', w: 'Largeur', h: 'Hauteur' }[k], type: 'number', min: k === 'w' || k === 'h' ? 1 : 0, max: 499 })) }
+    ], model, { onChange: k => {
+      const key = k.split('.')[0]; ch[key] = model[key]; change();
+    } }));
+    pane.append(h('div', { class: 'form-heading' }, 'Objectifs supplémentaires'));
+    for (const [i, ob] of (ch.extraObjectives || []).entries()) {
+      const card = h('div', { class: 'event-card', style: { padding: '12px', marginTop: '8px' } });
+      card.append(UI.form([
+        { key: 'type', label: 'Condition ' + (i + 2), type: 'select', options: Editor.objectives.concat([{ value: 'target', label: 'Vaincre un ennemi précis' }]) },
+        { key: 'target', label: 'Ennemi à vaincre', type: 'select', empty: '— choisir —', when: o => o.type === 'target', options: ch.enemies.map(e => ({ value: e.id, label: e.name || e.id })) },
+        { key: 'turns', label: 'Tours complets à survivre', type: 'number', min: 1, max: 999, when: o => o.type === 'survive' },
+        { key: 'x', label: 'Point X', type: 'number', min: 0, max: 499, when: o => o.type === 'seize' },
+        { key: 'y', label: 'Point Y', type: 'number', min: 0, max: 499, when: o => o.type === 'seize' },
+        { key: 'text', label: 'Texte affiché (facultatif)', type: 'text' }
+      ], ob, { onChange: k => { change(); if (k === 'type') renderBody(); } }),
+      h('button', { class: 'small danger', onclick: () => { ch.extraObjectives.splice(i, 1); change(); renderBody(); } }, 'Retirer cette condition'));
+      pane.append(card);
+    }
+    pane.append(h('button', { class: 'small', style: { marginTop: '8px' }, onclick: () => {
+      ch.extraObjectives = ch.extraObjectives || [];
+      ch.extraObjectives.push({ type: 'survive', turns: 8, x: 0, y: 0 }); change(); renderBody();
+    } }, 'Ajouter une condition de victoire'));
+    const map = Editor.project().maps.find(m => m.id === ch.mapId);
+    if (map) for (const error of Mission.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
   }
 
   // ------------------------------------------------------------------

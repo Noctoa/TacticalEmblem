@@ -12,8 +12,12 @@ npm start
 Node 18+ suffit. Pour sortir un .exe Windows portable :
 
 ```bash
-npx electron-builder --win portable
+npm run dist
 ```
+
+Après une compilation réussie, le portable de `dist/` est automatiquement copié à la racine et remplace l'exécutable de même nom (`Tactics Forge 0.1.0.exe` pour cette version). Fermer l'application avant de reconstruire. Si le remplacement échoue parce qu'elle est ouverte, la compilation reste dans `dist/` ; fermer l'application puis lancer `npm run postdist` suffit pour refaire la copie.
+
+Le portable peut être utilisé seul. `dist/win-unpacked/` est la version décompressée : ses DLL, ressources et autres fichiers sont nécessaires lorsqu'on lance son propre exécutable. Les fichiers `builder-*.yml` / `.yaml` décrivent la compilation et servent au diagnostic. Une fois le portable copié à la racine, `dist/` peut être supprimé ; il sera recréé à la prochaine compilation. Un changement de version produit un nouveau nom de portable.
 
 Les tests (règles de combat, import Tiled, lecture/écriture de projet) :
 
@@ -50,6 +54,12 @@ npm test
 **Dialogues** — Une réplique par ligne, au format `Nom: texte`. Le portrait vient de l'unité du même nom. Déclencheurs : début du chapitre, début d'un tour, mort d'une unité, entrée dans une zone, victoire.
 
 ## Playtest (F5)
+
+Au lancement, choisir **Classique** (pertes définitives) ou **Détente** (les unités vaincues reviennent au chapitre suivant). Les personnages requis par le chapitre doivent survivre dans les deux modes. Dans la fiche d'un personnage, « Toujours se retirer » permet son retour même en Classique.
+
+**Base de données › Chapitres › Conditions de victoire et de défaite** permet de choisir les personnages à protéger et ceux autorisés à prendre les points, de combiner plusieurs objectifs avec ET / OU et d'ajouter des défaites par limite de tours, pertes ou intrusion ennemie dans une zone. Les anciens chapitres héritent des Seigneurs pour la protection et la prise de point. Les conditions invalides sont signalées avant de lancer le test.
+
+Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents. Le fichier `saves/campaign.json` est séparé des données de l'éditeur ; la sauvegarde précédente est conservée en `.bak`. **Continuer la campagne** reprend ce début de chapitre au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
 
@@ -204,4 +214,4 @@ test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAP
 
 ## Pistes pour la suite
 
-Animations de combat pour les classes génériques et pour le Chevalier-Seigneur (pour l'instant combat sur la map), échanges d'objets entre unités, villages / coffres / portes, brouillard de guerre, promotions en jeu, écran de préparation (choix des unités et de l'inventaire avant le chapitre), sauvegarde de la campagne sur disque, export d'un jeu jouable autonome.
+Priorités : compétences (une personnelle fixe + cinq équipables), promotions en jeu avec arbre à embranchements. Puis animations des classes génériques, échanges d'objets entre unités, villages / coffres / portes, brouillard de guerre, écran de préparation, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

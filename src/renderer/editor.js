@@ -1157,7 +1157,7 @@
   const OBJECTIVES = [
     { value: 'rout', label: 'Mettre en déroute (tous les ennemis)' },
     { value: 'boss', label: 'Vaincre le boss' },
-    { value: 'seize', label: 'Prendre une case (le seigneur)' },
+    { value: 'seize', label: 'Prendre une case (personnages autorisés)' },
     { value: 'survive', label: 'Survivre X tours' }
   ];
   const AIS = [
@@ -1197,10 +1197,11 @@
         h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Case à prendre'), h('span', {}, `x ${ch.objective.x ?? 0} · y ${ch.objective.y ?? 0}`)),
         h('button', { class: 'small' + (S.picking === 'seize' ? ' primary' : ''), onclick: () => { S.picking = S.picking === 'seize' ? null : 'seize'; renderInspector(); updateStatus(); } }, S.picking === 'seize' ? 'Clique sur la map…' : 'Choisir sur la map')) : null,
       ch.objective.type === 'boss' && !ch.enemies.some(e => e.isBoss) ? h('p', { class: 'note' }, '⚠ Aucun ennemi n\'est marqué comme boss.') : null,
-      ch.objective.type === 'seize' && !ch.players.some(p => (byId(DB().units, p.unitId) || {}).isLord) ? h('p', { class: 'note' }, '⚠ Aucun seigneur placé : seul un seigneur peut prendre la case.') : null,
+      ch.objective.type === 'seize' && !Mission.seizers(ch, DB()).length ? h('p', { class: 'note' }, '⚠ Aucun personnage autorisé à prendre le point. Configure les conditions du chapitre.') : null,
+      h('p', { class: 'note' }, 'À protéger : ' + (Mission.required(ch, DB()).map(id => (byId(DB().units, id) || {}).name || id).join(', ') || 'personne') + ((ch.extraObjectives || []).length ? ' · Objectifs combinés' : '')),
       UI.form([{ key: 'v', label: 'Chapitre de départ du jeu', type: 'checkbox' }], isStart, { onChange: () => { meta.startChapter = isStart.v ? ch.id : ''; change(); } }),
       h('div', { class: 'insp-actions' },
-        h('button', { class: 'small', onclick: () => DBEditor.open('chapters', ch.id), html: Icons.icon('chat') }, 'Événements & dialogues'),
+        h('button', { class: 'small', onclick: () => DBEditor.open('chapters', ch.id), html: Icons.icon('chat') }, 'Conditions & événements'),
         h('button', { class: 'small primary', onclick: () => playtest(ch.id), html: Icons.icon('play') }, 'Tester'))
     ));
 
@@ -1299,6 +1300,9 @@
     if (!id) return UI.alert('Rien à tester', "Crée d'abord un chapitre (mode Unités, F3).");
     const ch = byId(DB().chapters, id);
     if (!ch.players.length) return UI.alert('Chapitre incomplet', "Place au moins une unité du joueur.");
+    const map = S.project.maps.find(m => m.id === ch.mapId);
+    const errors = map ? Mission.validate(ch, DB(), map) : ['Map introuvable.'];
+    if (errors.length) return UI.alert('Conditions du chapitre à corriger', errors);
     await cmdSave();
     if (S.dirty) return;
     await safe(() => tf.playtest(S.dir, id));

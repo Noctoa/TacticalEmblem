@@ -28,6 +28,8 @@ module.exports = (win, openPlaytest) => {
       const key = async (k, n) => { for (let i = 0; i < (n || 1); i++) { wc.sendInputEvent({ type: 'keyDown', keyCode: k }); wc.sendInputEvent({ type: 'keyUp', keyCode: k }); await wait(90); } };
       const idle = async () => { for (let i = 0; i < 120 && await js(`BattleScene.isActive() || PlaytestState.busy || !!PlaytestState.dialogue || !!PlaytestState.waitClick`); i++) { await js(`PlaytestState.waitClick && PlaytestState.waitClick(); PlaytestState.dialogue && PlaytestState.dialogue.skip()`); await wait(200); } };
       await wait(2200);
+      await js(`[...document.querySelectorAll('.choice-list button')].find(b => b.textContent.includes('Classique')).click()`);
+      await wait(2200);
       await js(`document.querySelector('.dlg-skip').dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))`); await wait(1800);
       log('rangs', await js(`JSON.stringify(Object.values(PlaytestState.sup).map(e => [e.def.name || e.def.id, e.points, e.rank]))`));
 

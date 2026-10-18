@@ -121,6 +121,8 @@ module.exports = function (editorWin, openPlaytest) {
       pw.setSize(1100, 780);
       await wait(2200);
       const pwc = pw.webContents;
+      await js(pwc, `[...document.querySelectorAll('.choice-list button')].find(b => b.textContent.includes('Classique')).click()`);
+      await wait(2200);
       await shot(pwc, '11_playtest_dialogue');
       const idle = async (max) => {
         const t0 = Date.now();

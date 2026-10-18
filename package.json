@@ -8,8 +8,9 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "test": "node test/run.js",
-    "dist": "npx electron-builder --win portable"
+    "test": "node test/run.js && node --test test/campaign.test.js",
+    "dist": "npx electron-builder --win portable",
+    "postdist": "node tools/publish-portable.cjs"
   },
   "dependencies": {
     "fast-xml-parser": "^4.5.0"

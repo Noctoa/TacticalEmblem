@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
 const io = require('./src/main/project-io.js');
+const campaignIO = require('./src/main/campaign-io.js');
 const { importTiled } = require('./src/main/tiled.js');
 
 const ASSETS = path.join(__dirname, 'assets');
@@ -28,6 +29,7 @@ const payload = (dir, project) => ({ dir, baseUrl: pathToFileURL(dir).href.repla
 // ---------- fenêtres ----------
 function createEditor() {
   editorWin = new BrowserWindow({
+    show: !process.env.TF_SNAPSHOT,
     width: 1440, height: 900, minWidth: 1024, minHeight: 640, backgroundColor: '#15171c',
     title: 'Tactics Forge',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
@@ -48,6 +50,7 @@ function createEditor() {
 
 function openPlaytest(dir, chapterId) {
   const win = new BrowserWindow({
+    show: !process.env.TF_SNAPSHOT,
     width: 1100, height: 780, minWidth: 640, minHeight: 480, backgroundColor: '#0b0d12', title: 'Playtest',
     parent: undefined, autoHideMenuBar: true,
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, autoplayPolicy: 'no-user-gesture-required' }
@@ -146,6 +149,8 @@ handle('project:open', async (e, dir) => {
 });
 
 handle('project:load', (e, dir) => payload(dir, io.loadProject(dir)));
+handle('campaign:load', (e, dir) => campaignIO.load(dir));
+handle('campaign:save', (e, dir, value) => { campaignIO.save(dir, value); return true; });
 handle('project:save', (e, dir, project) => { io.saveProject(dir, project); return true; });
 handle('project:openFolder', (e, dir) => shell.openPath(dir));
 
