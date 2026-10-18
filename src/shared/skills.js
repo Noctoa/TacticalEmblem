@@ -1,4 +1,4 @@
-/* Catalogue de compétences. Les effets seront raccordés au moteur de combat séparément. */
+/* Catalogue, attribution, apprentissage et conditions des compétences. */
 (function (root, factory) {
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -192,7 +192,30 @@
     }
     unit.equippedSkills = equipped; return true;
   }
+  function chance(skill, unit) {
+    const value = skill.activation === 'always' ? 100 : skill.activation === 'fixed' ? skill.chance : (unit.stats || {})[skill.activation];
+    return Math.max(0, Math.min(100, Number(value) || 0));
+  }
+  /** Conditions lues sur l'état courant ; aucun tirage aléatoire ici. */
+  function active(unit, catalogue, context = {}) {
+    if (unit.dead || unit.hp <= 0) return [];
+    const allied = other => other !== unit && !other.dead && other.hp > 0 &&
+      (other.team === 'enemy') === (unit.team === 'enemy');
+    return assigned(unit, catalogue).map(entry => entry.skill).filter(skill => {
+      const spec = effectOf(skill);
+      if (!spec) return false;
+      if (spec.combat && skill.phase !== 'any' && (context.initiating === undefined ||
+          (skill.phase === 'initiate') !== context.initiating)) return false;
+      if (spec.combat && skill.weaponType && (!context.weapon || context.weapon.type !== skill.weaponType)) return false;
+      const hp = unit.hp * 100, max = unit.stats.hp;
+      if (skill.hpCondition === 'below' && hp > max * skill.hpThreshold) return false;
+      if (skill.hpCondition === 'above' && hp < max * skill.hpThreshold) return false;
+      if (skill.hpCondition === 'full' && unit.hp !== max) return false;
+      if (skill.adjacentAlly && !(context.units || []).some(other => allied(other) && Math.abs(unit.x - other.x) + Math.abs(unit.y - other.y) === 1)) return false;
+      return true;
+    });
+  }
   return { EFFECTS, effectOf, parameters, create, presets, validate, validateAll, describe,
     EQUIPPED_SLOTS, validateAssignment, validateAssignments, loadout, assigned, usersOf,
-    classUsersOf, validateLearning, availableLearning, combinedLearning, initialLoadout, learnThroughLevel, equipLearned };
+    classUsersOf, validateLearning, availableLearning, combinedLearning, initialLoadout, learnThroughLevel, equipLearned, chance, active };
 });

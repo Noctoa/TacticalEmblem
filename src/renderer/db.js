@@ -85,7 +85,7 @@
       const label = id => { const s = find(id); return s ? `${s.icon} ${s.name}` : `Introuvable : ${id}`; };
       const update = () => { change(); redraw(); };
       root.replaceChildren(h('div', { class: 'form-heading' }, 'Compétences — une personnelle + cinq équipables'),
-        h('p', { class: 'form-info' }, 'La personnelle est fixe en jeu et ne consomme aucun emplacement. Les compétences équipables sont choisies dans le répertoire appris. Les effets en combat seront raccordés à l’étape suivante.'));
+        h('p', { class: 'form-info' }, 'La personnelle est fixe en jeu et ne consomme aucun emplacement. Les compétences équipées sont actives lorsque leurs conditions sont remplies ; les autres restent dans le répertoire.'));
       const personal = h('select', { 'data-skill-personal': true, 'aria-label': 'Compétence personnelle' },
         h('option', { value: '' }, '— aucune personnelle —'), catalogue.map(s => h('option', { value: s.id }, label(s.id))));
       if (unit.personalSkill && !find(unit.personalSkill)) personal.append(h('option', { value: unit.personalSkill }, label(unit.personalSkill)));
@@ -487,7 +487,7 @@
     }));
     const pane = h('div', { class: 'db-form' });
     if (tab === 'skills') {
-      pane.append(h('p', { class: 'note' }, 'Attribue les compétences dans la fiche des unités : une personnelle fixe + cinq équipables. Les effets en combat seront raccordés à l’étape suivante.'));
+      pane.append(h('p', { class: 'note' }, 'Attribue les compétences et leurs apprentissages dans les fiches des unités et des classes. La personnelle et les cinq compétences équipées appliquent leurs effets en jeu lorsque leurs conditions sont remplies.'));
       const missing = Skills.presets().filter(s => !list.some(existing => existing.id === s.id));
       if (missing.length) pane.append(h('button', { class: 'small', style: { margin: '10px 0' }, onclick: () => {
         list.push(...missing); selected.skills = missing[0].id; change(); renderBody();

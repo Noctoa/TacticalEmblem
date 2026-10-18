@@ -81,6 +81,10 @@
         showBanner(sc, s.dual || 'Attaque duo');
         for (let i = 1; i <= 8; i++) { atk.alpha = i / 8; await wait(30, sc); }
       } else if (s.special) showBanner(sc, s.special);
+      if (s.skills && s.skills.length) {
+        showBanner(sc, s.skills.map(skill => `${skill.icon} ${skill.name}`).join(' · '));
+        await wait(350, sc);
+      }
       await strike(sc, atk, def, s);
       if (atk.helper) for (let i = 7; i >= 0; i--) { atk.alpha = i / 8; await wait(30, sc); }
       await wait(180, sc);
@@ -345,6 +349,11 @@
       sc.floats.push({ actor: def, text: s.crit ? `CRITIQUE ${s.dmg}` : (s.dmg ? String(s.dmg) : 'Aucun dégât'), color: s.crit ? '#ffd24a' : '#fff', big: s.crit, t0: performance.now() });
       def.hp = s.hpAfter;
       tweenHp(sc, def);
+      if (s.heal) {
+        atk.hp = s.srcHpAfter;
+        sc.floats.push({ actor: atk, text: '+' + s.heal, color: '#7dffa8', t0: performance.now() });
+        tweenHp(sc, atk);
+      }
     } else {
       sc.floats.push({ actor: def, text: 'RATÉ', color: '#9ad0ff', t0: performance.now() });
       dodge(sc, def);

@@ -295,7 +295,24 @@
 
   function attackSpeed(u, w) { return u.stats.spd - Math.max(0, ((w && w.weight) || 0) - u.stats.str); }
 
-  function strikeStats(att, aw, def, dw, defTerrain, settings, db, aBonus, dBonus) {
+  function skillState(unit, weapon, initiator, db, units) {
+    const own = Skills.active(unit, db.skills || [], { weapon, initiating: unit === initiator, units });
+    const auras = [];
+    for (const source of units || []) {
+      if (source === unit || !sameSide(source, unit) || source.dead || source.hp <= 0) continue;
+      for (const skill of Skills.active(source, db.skills || [], { units })) {
+        if (skill.effect === 'auraAvoid' && dist(source, unit) <= skill.range) auras.push(skill);
+      }
+    }
+    // Une seule aura d'esquive : la plus forte, quelle que soit sa source.
+    const aura = auras.sort((a, b) => b.amount - a.amount)[0];
+    return { own, aura };
+  }
+  const skillTotal = (state, effect) => state.own.filter(s => s.effect === effect).reduce((sum, s) => sum + s.amount, 0);
+  const skillInfo = (skill, unit) => ({ id: skill.id, name: skill.name, icon: skill.icon, effect: skill.effect,
+    chance: skill.activation === undefined ? skill.chance : Skills.chance(skill, unit), amount: skill.amount });
+
+  function strikeStats(att, aw, def, dw, defTerrain, settings, db, aBonus, dBonus, context = {}) {
     const ab = aBonus || NO_BONUS, dbn = dBonus || NO_BONUS;
     const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
     const tri = triangle(aw.type, dw ? dw.type : null);
@@ -305,13 +322,20 @@
     const power = (isMagic(aw) ? att.stats.mag : att.stats.str) + (aw.might + tri * s.triangleDmg) * eff;
     const tDef = defTerrain ? (Number(defTerrain.def) || 0) : 0;
     const tAvo = defTerrain ? (Number(defTerrain.avoid) || 0) : 0;
-    const prot = (isMagic(aw) ? def.stats.res : def.stats.def) + tDef;
-    const dmg = Math.max(0, power + (ab.dmg || 0) - prot);
-    const hitRate = aw.hit + att.stats.skl * 2 + Math.floor(att.stats.lck / 2) + tri * s.triangleHit + (ab.hit || 0);
-    const avoid = attackSpeed(def, dw) * 2 + def.stats.lck + tAvo + (dbn.avoid || 0);
+    const initiator = context.initiator || att, units = context.units || [att, def];
+    const aSkills = skillState(att, aw, initiator, db, units), dSkills = skillState(def, dw, initiator, db, units);
+    const protection = (isMagic(aw) ? def.stats.res : def.stats.def) + tDef;
+    const prot = context.luna ? protection - Math.floor(protection * context.luna.amount / 100) : protection;
+    const rawDmg = Math.max(0, power + (ab.dmg || 0) + skillTotal(aSkills, 'damage') - prot);
+    const guard = skillTotal(dSkills, 'guard');
+    const dmg = Math.max(0, rawDmg - guard);
+    const hitRate = aw.hit + att.stats.skl * 2 + Math.floor(att.stats.lck / 2) + tri * s.triangleHit + (ab.hit || 0) + skillTotal(aSkills, 'hit');
+    const avoid = attackSpeed(def, dw) * 2 + def.stats.lck + tAvo + (dbn.avoid || 0) + skillTotal(dSkills, 'avoid') + (dSkills.aura ? dSkills.aura.amount : 0);
     const hit = clamp(hitRate - avoid, 0, 100);
     const crit = clamp((aw.crit || 0) + Math.floor(att.stats.skl / 2) + (ab.crit || 0) - def.stats.lck - (dbn.critAvoid || 0), 0, 100);
-    return { dmg, hit, crit, effective: eff > 1, tri, bonus: !!(ab.hit || ab.crit || ab.dmg || dbn.avoid) };
+    return { dmg, hit, crit, rawDmg, guard, protection, effective: eff > 1, tri, bonus: !!(ab.hit || ab.crit || ab.dmg || dbn.avoid),
+      skills: aSkills.own.filter(s => !['auraAvoid', 'renewal'].includes(s.effect)).map(skill => skillInfo(skill, att)),
+      aura: aSkills.aura ? skillInfo(aSkills.aura, att) : null };
   }
 
   /**
@@ -323,24 +347,103 @@
     const bo = opts.bonusOf || (() => null);
     const bA = bo(att), bD = bo(def);
     const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
-    const aw = byId(db.weapons, att.inventory[aIndex].id);
+    const slot = att.inventory[aIndex];
+    const aw = slot ? byId(db.weapons, slot.id) : null;
+    if (!aw || aw.type === 'staff' || !canWield(att, aw, db)) throw new Error('Arme offensive inutilisable.');
     const d = dist(att, def);
     const dEq = equipped(def, db);
     const dw = dEq ? dEq.weapon : null;
     const canCounter = !!(dw && d >= (dw.minRange || 1) && d <= (dw.maxRange || 1));
-    const a = strikeStats(att, aw, def, dw, terrainOf(def), s, db, bA, bD);
+    const context = { initiator: att, units: opts.units || [att, def] };
+    const a = strikeStats(att, aw, def, dw, terrainOf(def), s, db, bA, bD, context);
     const asA = attackSpeed(att, aw);
     const asD = attackSpeed(def, dw);
-    a.count = asA - asD >= s.doubleThreshold ? 2 : 1;
+    a.count = Math.min(asA - asD >= s.doubleThreshold ? 2 : 1, slot.uses > 0 ? slot.uses : Infinity);
     a.weapon = aw;
     let b = null;
     if (canCounter) {
-      b = strikeStats(def, dw, att, aw, terrainOf(att), s, db, bD, bA);
-      b.count = asD - asA >= s.doubleThreshold ? 2 : 1;
+      b = strikeStats(def, dw, att, aw, terrainOf(att), s, db, bD, bA, context);
+      b.count = Math.min(asD - asA >= s.doubleThreshold ? 2 : 1, def.inventory[dEq.index].uses > 0 ? def.inventory[dEq.index].uses : Infinity);
       b.weapon = dw;
       b.index = dEq.index;
     }
-    return { att: a, def: b, distance: d };
+    const vantage = b && b.skills.find(skill => skill.effect === 'vantage');
+    const order = vantage ? ['d', 'a'] : b ? ['a', 'd'] : ['a'];
+    if (a.count > 1) order.push('a');
+    if (b && b.count > 1) order.push('d');
+    const fc = { att: a, def: b, distance: d, order, vantage: vantage || null };
+    // Variantes pour la prévision et l'IA, sans consommer le hasard du combat.
+    for (const [unit, other, st, weapon, otherWeapon, ab, dbn] of [[att, def, a, aw, dw, bA, bD], [def, att, b, dw, aw, bD, bA]]) {
+      if (!st) continue;
+      let remaining = 1, expected = 0, healing = 0, lethal = 0;
+      st.outcomes = [{ probability: 1 - st.hit / 100, damage: 0, healPercent: 0 }];
+      const addOutcomes = (raw, probability, healPercent = 0) => {
+        for (const [multiplier, rate] of [[1, 1 - st.crit / 100], [s.critMult, st.crit / 100]]) {
+          const chance = probability * rate * st.hit / 100;
+          if (chance > 0) st.outcomes.push({ probability: chance, damage: Math.max(0, raw * multiplier - st.guard), healPercent });
+        }
+      };
+      st.procs = st.skills.filter(skill => ['luna', 'sol', 'miracle'].includes(skill.effect));
+      const damage = raw => (Math.max(0, raw - st.guard) * (1 - st.crit / 100) + Math.max(0, raw * s.critMult - st.guard) * st.crit / 100);
+      const lethalRate = raw => ((Math.max(0, raw - st.guard) >= other.hp ? 1 : 0) * (1 - st.crit / 100) +
+        (Math.max(0, raw * s.critMult - st.guard) >= other.hp ? 1 : 0) * st.crit / 100);
+      for (const effect of ['luna', 'sol']) for (const skill of st.procs.filter(p => p.effect === effect)) {
+        const probability = remaining * skill.chance / 100;
+        const variant = effect === 'luna' ? strikeStats(unit, weapon, other, otherWeapon, terrainOf(other), s, db, ab, dbn, { ...context, luna: skill }) : st;
+        skill.dmg = variant.dmg;
+        expected += probability * damage(variant.rawDmg);
+        lethal += probability * lethalRate(variant.rawDmg);
+        addOutcomes(variant.rawDmg, probability, effect === 'sol' ? skill.amount : 0);
+        if (effect === 'sol') healing += probability * Math.min(other.hp, damage(st.rawDmg)) * skill.amount / 100;
+        remaining *= 1 - skill.chance / 100;
+      }
+      st.expectedDmg = (expected + remaining * damage(st.rawDmg)) * st.hit / 100;
+      addOutcomes(st.rawDmg, remaining);
+      st.expectedHeal = healing * st.hit / 100;
+      st.killChance = (lethal + remaining * lethalRate(st.rawDmg)) * st.hit / 100;
+    }
+    // Une cible sans riposte peut tout de même posséder Miracle et des protections.
+    const defense = skillState(def, dw, att, db, context.units);
+    fc.defSkills = defense.own.map(skill => skillInfo(skill, def));
+    fc.defAura = defense.aura ? skillInfo(defense.aura, def) : null;
+    return fc;
+  }
+
+  /** Estimation de l'IA : ordre réel, probabilités de survie et soins, sans hasard. */
+  function estimateCombat(att, def, fc) {
+    let states = [{ a: att.hp, d: def.hp, probability: 1 }];
+    const damage = { a: 0, d: 0 }, healing = { a: 0, d: 0 };
+    const miracleSurvival = skills => 1 - skills.filter(skill => skill.effect === 'miracle')
+      .reduce((failure, skill) => failure * (1 - skill.chance / 100), 1);
+    for (const who of fc.order) {
+      const st = who === 'a' ? fc.att : fc.def, other = who === 'a' ? 'd' : 'a';
+      const next = new Map();
+      const add = state => {
+        const key = state.a + ',' + state.d, old = next.get(key);
+        if (old) old.probability += state.probability; else next.set(key, state);
+      };
+      for (const state of states) {
+        if (state.a <= 0 || state.d <= 0) { add(state); continue; }
+        for (const outcome of st.outcomes) {
+          if (outcome.probability <= 0) continue;
+          const probability = state.probability * outcome.probability;
+          const hp = Math.max(0, state[other] - outcome.damage);
+          const protection = hp === 0 && state[other] > 1 ? miracleSurvival(who === 'a' ? fc.defSkills : fc.att.skills) : 0;
+          for (const [after, rate] of protection ? [[1, protection], [0, 1 - protection]] : [[hp, 1]]) {
+            if (rate <= 0) continue;
+            const loss = state[other] - after, maxHp = who === 'a' ? att.stats.hp : def.stats.hp;
+            const heal = Math.min(maxHp - state[who], Math.floor(loss * outcome.healPercent / 100));
+            const branch = probability * rate;
+            damage[who] += loss * branch; healing[who] += heal * branch;
+            add({ ...state, [who]: state[who] + heal, [other]: after, probability: branch });
+          }
+        }
+      }
+      states = [...next.values()];
+    }
+    return { damage: Math.min(def.hp, damage.a), counter: Math.min(att.hp, damage.d),
+      healing: Math.min(att.stats.hp - att.hp, healing.a), killChance: states.filter(state => state.d <= 0).reduce((sum, state) => sum + state.probability, 0),
+      deathChance: states.filter(state => state.a <= 0).reduce((sum, state) => sum + state.probability, 0) };
   }
 
   function roll(rng, pct, trueHit) {
@@ -363,16 +466,61 @@
     const rng = opts.rng || Math.random;
     const s = Object.assign({}, DEFAULT_SETTINGS, opts.settings || {});
     const fc = forecast(att, aIndex, def, opts);
-    const order = [];
-    order.push('a');
-    if (fc.def) order.push('d');
-    if (fc.att.count > 1) order.push('a');
-    if (fc.def && fc.def.count > 1) order.push('d');
+    const order = fc.order;
     const strikes = [];
     let aIdx = aIndex, dIdx = fc.def ? fc.def.index : -1;
     let aBroken = false, dBroken = false;
+    const defenderEquipment = equipped(def, opts.db);
+    const defenderWeapon = defenderEquipment ? defenderEquipment.weapon : null;
     const dealt = { a: false, d: false };
     const specials = { a: opts.specialOf ? opts.specialOf(att) : null, d: opts.specialOf ? opts.specialOf(def) : null };
+    const units = opts.units || [att, def, ...(opts.dual ? [opts.dual.partner] : [])];
+    const bo = opts.bonusOf || (() => null);
+    const proc = (skill, unit) => {
+      const chance = Skills.chance(skill, unit);
+      return chance >= 100 || (chance > 0 && rng() * 100 < chance);
+    };
+    const perform = (src, index, tgt, weapon, targetWeapon, initiator, extra = {}) => {
+      const context = { units, initiator };
+      const stats = luna => strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { ...context, luna });
+      let st = stats(), special = null;
+      const skills = [], offensive = skillState(src, weapon, initiator, opts.db, units).own;
+      const defensive = skillState(tgt, targetWeapon, initiator, opts.db, units).own;
+      const note = (skill, unit) => skills.push({ ...skillInfo(skill, unit), by: unit.uid });
+      if (extra.vantage) note(extra.vantage, src);
+      // Un seul effet offensif : affinité, puis Luna, puis Sol, dans l'ordre des emplacements.
+      if (extra.special && rng() * 100 < extra.special.chance) special = extra.special.name;
+      const hit = roll(rng, clamp(st.hit + (special ? extra.special.hit || 0 : extra.hit || 0), 0, 100), s.trueHit);
+      let crit = false, dmg = 0, heal = 0, selected = null;
+      if (hit) {
+        crit = rng() * 100 < clamp(st.crit + (special ? extra.special.crit || 0 : 0), 0, 100);
+        if (!special && !extra.dual) {
+          for (const effect of ['luna', 'sol']) {
+            selected = offensive.find(skill => skill.effect === effect && proc(skill, src));
+            if (selected) { note(selected, src); break; }
+          }
+          if (selected && selected.effect === 'luna') st = stats(selected);
+        }
+        const raw = Math.max(0, st.rawDmg + (special ? extra.special.dmg || 0 : extra.might || 0));
+        const damage = Math.max(0, raw * (crit ? s.critMult : 1) - st.guard);
+        const before = tgt.hp;
+        let hpAfter = Math.max(0, before - damage);
+        if (hpAfter === 0 && before > 1) {
+          const miracle = defensive.find(skill => skill.effect === 'miracle' && proc(skill, tgt));
+          if (miracle) { hpAfter = 1; note(miracle, tgt); }
+        }
+        tgt.hp = hpAfter; dmg = before - hpAfter;
+        if (selected && selected.effect === 'sol') {
+          heal = Math.min(src.stats.hp - src.hp, Math.floor(dmg * selected.amount / 100));
+          src.hp += heal;
+        }
+      }
+      const broke = useWeapon(src, index);
+      const strike = { by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, srcHpAfter: src.hp, heal, broke,
+        weapon: weapon.name, special, skills, dual: extra.dual || null };
+      strikes.push(strike);
+      return strike;
+    };
     // attaque duo : juste après le premier coup de l'attaquant, le partenaire adjacent
     // frappe à son tour (l'ennemi ne riposte pas contre lui)
     let duo = null, duoDone = false;
@@ -382,48 +530,39 @@
       if (!(du && du.partner && att.hp > 0 && def.hp > 0 && du.partner.hp > 0 && rng() * 100 < du.chance)) return;
       const pe = equipped(du.partner, opts.db);
       if (!pe) return;
-      const bo = opts.bonusOf || (() => null);
-      const dEq = equipped(def, opts.db);
-      const ps = strikeStats(du.partner, pe.weapon, def, dEq ? dEq.weapon : null, opts.terrainOf(def), s, opts.db, bo(du.partner), bo(def));
-      const dmgBase = ps.dmg + (du.might || 0);
-      const hit = roll(rng, clamp(ps.hit + (du.hit || 0), 0, 100), s.trueHit);
-      let crit = false, dmg = 0;
-      if (hit) {
-        crit = rng() * 100 < ps.crit;
-        dmg = dmgBase * (crit ? s.critMult : 1);
-        def.hp = Math.max(0, def.hp - dmg);
-      }
-      const broke = useWeapon(du.partner, pe.index);
-      duo = { partner: du.partner, hit, dmg };
-      strikes.push({ by: du.partner.uid, target: def.uid, hit, crit, dmg, hpAfter: def.hp, broke, weapon: pe.weapon.name, dual: du.name || 'Attaque duo' });
+      const strike = perform(du.partner, pe.index, def, pe.weapon, dBroken ? null : defenderWeapon, du.partner,
+        { dual: du.name || 'Attaque duo', might: du.might, hit: du.hit });
+      duo = { partner: du.partner, hit: strike.hit, dmg: strike.dmg };
     };
     for (const who of order) {
       if (att.hp <= 0 || def.hp <= 0) break;
-      let st = who === 'a' ? fc.att : fc.def;
+      const st = who === 'a' ? fc.att : fc.def;
       if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
       const src = who === 'a' ? att : def, tgt = who === 'a' ? def : att;
-      // attaque spéciale (affinité) : bonus de précision et de dégâts sur ce coup
-      const sp = specials[who];
-      let special = null;
-      if (sp && rng() * 100 < sp.chance) {
-        special = sp.name;
-        st = Object.assign({}, st, { hit: clamp(st.hit + (sp.hit || 0), 0, 100), dmg: st.dmg + (sp.dmg || 0), crit: clamp(st.crit + (sp.crit || 0), 0, 100) });
-      }
-      const hit = roll(rng, st.hit, s.trueHit);
-      let crit = false, dmg = 0;
-      if (hit) {
-        crit = rng() * 100 < st.crit;
-        dmg = st.dmg * (crit ? s.critMult : 1);
-        tgt.hp = Math.max(0, tgt.hp - dmg);
-        if (dmg > 0) dealt[who] = true;
-      }
-      const broke = useWeapon(src, who === 'a' ? aIdx : dIdx);
-      if (broke) { if (who === 'a') aBroken = true; else dBroken = true; }
-      strikes.push({ by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, broke, weapon: st.weapon.name, special });
+      const targetWeapon = who === 'a' ? (dBroken ? null : defenderWeapon) : (aBroken ? null : fc.att.weapon);
+      const strike = perform(src, who === 'a' ? aIdx : dIdx, tgt, st.weapon, targetWeapon, att,
+        { special: specials[who], vantage: strikes.length === 0 && who === 'd' ? fc.vantage : null });
+      if (strike.dmg > 0) dealt[who] = true;
+      if (strike.broke) { if (who === 'a') aBroken = true; else dBroken = true; }
       if (who === 'a' && !duoDone) doDuo();
     }
     if (!duoDone) doDuo();
     return { strikes, forecast: fc, dealt, duo, attackerDead: att.hp <= 0, defenderDead: def.hp <= 0 };
+  }
+
+  /** Régénération une fois par appel, réservé au début de la phase de l'unité. */
+  function phaseRecovery(list, opts) {
+    const events = [];
+    for (const unit of list) {
+      if (unit.dead || unit.hp <= 0 || unit.hp >= unit.stats.hp) continue;
+      const skills = Skills.active(unit, opts.db.skills || [], { units: opts.units || list }).filter(skill => skill.effect === 'renewal');
+      if (!skills.length) continue;
+      const amount = skills.reduce((sum, skill) => sum + Math.max(1, Math.floor(unit.stats.hp * skill.amount / 100)), 0);
+      const heal = Math.min(unit.stats.hp - unit.hp, amount);
+      unit.hp += heal;
+      events.push({ unit, heal, skills: skills.map(skill => skillInfo(skill, unit)) });
+    }
+    return events;
   }
 
   // ---------- affinités (soutiens) ----------
@@ -590,11 +729,9 @@
           unit.x = stop.x; unit.y = stop.y;
           const fc = forecast(unit, w.index, foe, opts);
           unit.x = ox; unit.y = oy;
-          const exp = fc.att.dmg * fc.att.count * fc.att.hit / 100;
-          const kills = fc.att.dmg * fc.att.count >= foe.hp;
-          const counter = fc.def ? fc.def.dmg * fc.def.count * fc.def.hit / 100 : 0;
+          const estimate = estimateCombat(unit, foe, fc);
           const t = ctx.terrainAt(stop.x, stop.y);
-          let score = exp * 2 + (kills ? 40 * fc.att.hit / 100 : 0) - counter + (foe.isLord ? 4 : 0)
+          let score = estimate.damage * 2 + 40 * estimate.killChance - estimate.counter - 40 * estimate.deathChance + estimate.healing + (foe.isLord ? 4 : 0)
             + ((t && Number(t.avoid)) || 0) / 10 - stop.cost * 0.05;
           if (!best || score > best.score) best = { score, stop, foe, index: w.index };
         }
@@ -628,7 +765,7 @@
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
     attackWeapons, staves, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
     moveCost, reachable, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
-    forecast, resolveCombat, combatExp, staffExp, gainExp, planEnemy,
+    forecast, resolveCombat, estimateCombat, phaseRecovery, combatExp, staffExp, gainExp, planEnemy,
     SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,
     addSupportPoints, pendingRank
   };

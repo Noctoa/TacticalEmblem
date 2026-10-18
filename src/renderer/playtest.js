@@ -175,7 +175,7 @@
   const terrainAt = (x, y) => G.terrains[G.tgrid[y * G.map.width + x]] || null;
   const terrainOf = (u) => terrainAt(u.x, u.y);
   const rctx = () => ({ width: G.map.width, height: G.map.height, terrainAt, unitAt });
-  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf });
+  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive() });
   // ---------- affinités ----------
   const bonusOf = (u) => R.supportBonus(u, players(), G.sup, G.supCfg);
   const specialOf = (u) => R.supportSpecial(u, players(), G.sup, G.supCfg);
@@ -582,7 +582,7 @@
             skill ? h('p', {}, Skills.describe(skill)) : null);
         };
         box.append(h('h3', {}, 'Compétences de ' + unit.name),
-          h('p', {}, 'Personnelle fixe + cinq emplacements équipables. Les effets en combat seront raccordés à l’étape suivante.'),
+          h('p', {}, 'La personnelle et les compétences équipées sont actives lorsque leurs conditions sont remplies. Les compétences du répertoire non équipées restent inactives.'),
           card(set.personalSkill, 'Personnelle (fixe)'));
         for (let i = 0; i < Skills.EQUIPPED_SLOTS; i++) box.append(card(set.equippedSkills[i], 'Emplacement ' + (i + 1)));
         const inactive = set.learnedSkills.filter(id => id !== set.personalSkill && !set.equippedSkills.includes(id));
@@ -847,6 +847,21 @@
     if (fc.att.bonus) extra.push(h('div', {}, '♥ Bonus d\'affinité actif'));
     if (sp) extra.push(h('div', {}, `★ ${sp.name} (${sp.chance} %)`));
     if (duo) extra.push(h('div', {}, `⚔ Attaque duo avec ${duo.partner.name} : ${duo.name} (${duo.chance} %)`));
+    const skillExtras = (unit, st, skills, aura) => {
+      const passive = skills.filter(skill => ['hit', 'avoid', 'damage', 'guard'].includes(skill.effect));
+      if (aura) passive.push(aura);
+      if (passive.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} : ` + passive.map(skill => `${skill.icon} ${skill.name}`).join(' · ')));
+      const procs = skills.filter(skill => ['luna', 'sol', 'miracle'].includes(skill.effect));
+      if (procs.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} — ` + procs.map(skill => {
+        const variant = st && st.procs.find(p => p.id === skill.id);
+        return `${skill.icon} ${skill.name} ${skill.chance} %` + (skill.effect === 'luna' && variant ? ` → ${variant.dmg} DGT` : '');
+      }).join(' · ')));
+    };
+    skillExtras(u, fc.att, fc.att.skills, fc.att.aura);
+    skillExtras(t, fc.def, fc.defSkills, fc.defAura);
+    if (fc.vantage) extra.push(h('div', { class: 'fc-skills' }, `${fc.vantage.icon} ${fc.vantage.name} : ${t.name} riposte en premier`));
+    if ([...fc.att.skills, ...fc.defSkills].some(skill => ['luna', 'sol', 'miracle'].includes(skill.effect)))
+      extra.push(h('div', { class: 'fc-skill-note' }, 'DGT hors déclenchements. Un seul effet offensif par coup : affinité, puis Luna, puis Sol.'));
     el.innerHTML = '';
     el.append(
       extra.length ? h('div', { class: 'fc-extra' }, extra) : '',
@@ -965,7 +980,7 @@
     focus(def.x, def.y);
     const dual = att.team !== 'enemy' ? R.supportDual(att, players(), G.sup, G.db) : null;
     if (dual) hp0[dual.partner.uid] = dual.partner.hp;
-    const res = R.resolveCombat(att, aIndex, def, { db: G.db, settings: G.settings, terrainOf, rng: Math.random, bonusOf, specialOf, dual });
+    const res = R.resolveCombat(att, aIndex, def, { ...ropts(), rng: Math.random, specialOf, dual });
     const animate = G.settings.battleAnims !== false && battlerOf(att) && battlerOf(def);
     if (animate) {
       document.body.classList.add('in-battle');
@@ -987,6 +1002,11 @@
         const src = byUid(s.by), tgt = byUid(s.target);
         if (s.special) { float(src.x, src.y - 0.5, s.special, '#ff9ecb', true); await sleep(350); }
         if (s.dual) { float(src.x, src.y - 0.5, s.dual, '#ff9ecb', true); await sleep(350); }
+        for (const skill of s.skills) {
+          const owner = byUid(skill.by);
+          float(owner.x, owner.y - 0.5, `${skill.icon} ${skill.name}`, '#f2d58a', true);
+        }
+        if (s.skills.length) await sleep(350);
         await lunge(src, tgt);
         if (s.hit) {
           tgt.flash = performance.now() + 120;
@@ -994,6 +1014,7 @@
           if (s.crit) { V.shake = 14; float(tgt.x, tgt.y, `Critique ! ${s.dmg}`, '#ffd24a', true); }
           else float(tgt.x, tgt.y, s.dmg ? String(s.dmg) : 'Aucun dégât', s.dmg ? '#ffffff' : '#bbbbbb');
         } else float(tgt.x, tgt.y, 'Raté', '#9ad0ff');
+        if (s.heal) { src.dispHp = s.srcHpAfter; float(src.x, src.y, '+' + s.heal, '#7dffa8'); }
         if (s.broke) float(src.x, src.y - 0.4, 'Arme brisée !', '#ffb36b');
         combatHud(att, def);
         await sleep(420);
@@ -1115,6 +1136,7 @@
     Music.bgm('playerPhase');
     await banner('Phase joueur', '');
     for (const u of players()) u.done = false;
+    await skillRecovery(team('player'));
     await terrainHeal(team('player'));
     await runEvents('turn', { turn: G.turn });
     if (await checkEnd()) return;
@@ -1134,6 +1156,7 @@
     Music.bgm('allyPhase');
     await banner('Phase alliée', 'ally');
     for (const u of allies) u.done = false;
+    await skillRecovery(allies);
     await terrainHeal(allies);
     if (await aiTurn(allies.filter(u => u.control === 'ai'), () => team('enemy'))) return;
     G.busy = false; G.ui = 'idle';
@@ -1167,6 +1190,15 @@
       await sleep(80);
     }
     return false;
+  }
+
+  async function skillRecovery(list) {
+    const events = R.phaseRecovery(list, ropts());
+    for (const event of events) {
+      float(event.unit.x, event.unit.y - 0.5, event.skills.map(skill => skill.name).join(' · '), '#f2d58a');
+      float(event.unit.x, event.unit.y, '+' + event.heal, '#7dffa8');
+    }
+    if (events.length) { lastInfoKey = ''; await sleep(700); }
   }
 
   async function terrainHeal(list) {
@@ -1205,6 +1237,7 @@
     if (arriving.length) await sleep(300);
     updateObjective();
     for (const e of enemies()) if (!arriving.includes(e)) e.done = false;
+    await skillRecovery(enemies());
     await terrainHeal(enemies());
 
     if (await aiTurn(enemies(), players)) return;

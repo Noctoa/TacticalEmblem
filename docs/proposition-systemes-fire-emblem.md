@@ -231,7 +231,7 @@ L'onglet Compétences de la base permet de créer, dupliquer et supprimer des fi
 
 Dix exemples sont proposés : Précision, Esquive, Offensive, Garde, Présence rassurante, Régénération, Luna, Sol, Vantage et Miracle. Les nouveaux projets reçoivent le catalogue. Les anciens s'ouvrent avec un catalogue vide et peuvent ajouter les exemples manquants sans remplacer leurs fiches existantes. Les données se trouvent dans `data/skills.json` ; un fichier illisible est signalé explicitement.
 
-Ce lot concerne l'édition du catalogue. L'attribution est désormais décrite dans le troisième lot ci-dessous. Les apprentissages automatiques et le raccordement aux prévisions, à la résolution des combats et à l'IA restent à implémenter.
+Ce lot concerne l'édition du catalogue. Les lots suivants ajoutent l'attribution, les apprentissages et les effets en jeu décrits ci-dessous.
 
 **12. Troisième lot — attribution aux personnages**
 
@@ -241,7 +241,7 @@ Les compétences sont attribuées par le créateur avant le test. Les personnage
 
 Les attributions sont sauvegardées dans les fiches des unités et transmises entre chapitres, puis conservées dans les sauvegardes de campagne. Les anciennes fiches et anciennes sauvegardes sans ces champs restent prises en charge. La suppression d'une compétence du catalogue est bloquée tant qu'un personnage la référence ; une sauvegarde de projet avec référence manquante ou équipement invalide est refusée avant écriture.
 
-L'apprentissage automatique est ajouté par le quatrième lot ci-dessous. Les effets en combat restent à raccorder : aucune compétence ne modifie encore les prévisions ou la résolution du combat.
+L'apprentissage automatique est ajouté par le quatrième lot ci-dessous. Les effets en combat sont désormais décrits dans la section 15.
 
 **13. Quatrième lot — apprentissage par classe et par niveau**
 
@@ -259,6 +259,18 @@ Chaque fiche Unités propose un programme « niveau → compétence » propre au
 
 Les compétences futures ne deviennent pas disponibles avant leur palier. Les unités créées à un niveau élevé reçoivent les acquis des deux programmes. Les personnages alliés utilisent également leur programme propre, tandis que les ennemis génériques suivent celui de leur classe. La restauration de campagne conserve les acquis et les choix d’équipement, avec rattrapage des paliers manquants sans équipement forcé.
 
-La section « Compétences déjà acquises au départ » explicite les dons immédiats du créateur. Les anciennes attributions restent conservées ; elles ne sont pas converties automatiquement en apprentissages futurs. Les programmes de personnage sont facultatifs, enregistrés dans `data/units.json`, validés avant toute écriture et pris en compte dans la protection contre la suppression des compétences utilisées. Les effets en combat restent à implémenter.
+La section « Compétences déjà acquises au départ » explicite les dons immédiats du créateur. Les anciennes attributions restent conservées ; elles ne sont pas converties automatiquement en apprentissages futurs. Les programmes de personnage sont facultatifs, enregistrés dans `data/units.json`, validés avant toute écriture et pris en compte dans la protection contre la suppression des compétences utilisées.
 
-Les effets de combat constituent le prochain chantier. Les programmes des classes restent à définir par le créateur dans son projet.
+**15. Cinquième lot — effets des dix compétences en jeu**
+
+La personnelle et les cinq compétences équipées appliquent leurs effets. Les compétences en réserve restent inactives. Les conditions d’engagement du combat, d’arme du porteur, de PV et d’allié adjacent sont partagées par la prévision et la résolution. Les seuils de PV sont inclusifs et relus avant chaque coup ; Vantage et les doublés sont déterminés au début du combat.
+
+Les bonus distincts de précision, esquive et dégâts se cumulent. Garde retire sa valeur après le multiplicateur critique, avec un minimum de zéro dégât. Les auras d’esquive ne s’ajoutent pas entre elles : la plus forte protège les autres alliés vivants dans son rayon de Manhattan, y compris les unités vertes. Les morts et renforts non déployés n’émettent pas d’aura. Régénération rend au moins 1 PV par effet, avec arrondi inférieur et plafond des PV maximum, au début de la phase du porteur et avant le terrain. Elle ne ressuscite pas.
+
+Les probabilités fixes, Technique et Chance sont plafonnées entre 0 et 100 %. Les déclenchements offensifs sont exclusifs : attaque spéciale d’affinité, puis Luna, puis Sol ; dans une même famille, ordre de la personnelle puis des emplacements. En cas d’échec, l’effet suivant peut être essayé. Luna ignore une proportion de la protection applicable (Défense ou Résistance + terrain), arrondie à l’inférieur. Sol soigne sur les PV réellement retirés, après Miracle, avec arrondi inférieur et plafond de soin. Un coup raté ne déclenche ni Luna ni Sol.
+
+Vantage déplace la première riposte avant le premier coup ennemi sans ajouter de coup ; sans arme utilisable à la distance du combat, il ne s’applique pas. Miracle intervient sur un coup mortel si les PV avant le coup étaient supérieurs à 1. Le coup suivant peut donc achever le porteur. Les coups cessent dès qu’un combattant est vaincu. Une arme brisée supprime les frappes suivantes avec cette arme ; elle ne permet pas d’utiliser automatiquement l’objet suivant pendant ce combat. Les attaques duo reçoivent les passifs, Garde et Miracle, mais ne déclenchent ni Luna ni Sol du partenaire.
+
+La prévision ne consomme aucun hasard. Elle affiche les dégâts hors déclenchements, les passifs actifs, les chances de Luna/Sol/Miracle, la variante de dégâts de Luna et la priorité de Vantage. L’IA utilise ces mêmes calculs pour son estimation de dégâts, de soin et de survie, en tenant compte de l’ordre des coups ; son score reste une estimation, pas une simulation exhaustive de toutes les branches et changements de conditions de PV. Les déclenchements sont annoncés et les PV soignés actualisés dans la scène animée comme sur la map. Le changement d’équipement des compétences hors bataille et les promotions à embranchements restent à réaliser.
+
+Les promotions à embranchements constituent le prochain chantier. Les programmes d’apprentissage des classes et des personnages restent à définir par le créateur dans son projet.

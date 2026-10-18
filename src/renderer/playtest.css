@@ -51,7 +51,7 @@ body { background: #07080b; }
 .menu button small { font-weight: 400; color: #c8cde0; margin-left: 6px; }
 .menu button.disabled { opacity: .45; }
 
-#forecast { min-width: 260px; padding: 0; overflow: hidden; }
+#forecast { min-width: 260px; max-width: min(430px, calc(100vw - 16px)); max-height: calc(100vh - 16px); padding: 0; overflow: auto; }
 .fc-grid { display: grid; grid-template-columns: 1fr auto 1fr; font-variant-numeric: tabular-nums; }
 .fc-side { padding: 8px 12px; text-align: center; }
 .fc-side.p { background: rgba(60, 100, 200, .25); }
@@ -160,7 +160,9 @@ body.in-battle #hud { display: none; }
 #battle .b-panel.ally { background: linear-gradient(180deg, rgba(30, 110, 60, .96), rgba(12, 54, 28, .96)); }
 
 .tag.support { background: rgba(255, 120, 180, .18); border-color: rgba(255, 140, 190, .55); }
-.fc-extra { padding: 6px 12px; font-size: 12px; color: #ffd0e6; background: rgba(255, 110, 170, .14); border-bottom: 1px solid rgba(201, 178, 122, .35); }
+.fc-extra { padding: 6px 12px; max-height: 26vh; overflow: auto; font-size: 12px; color: #ffd0e6; background: rgba(255, 110, 170, .14); border-bottom: 1px solid rgba(201, 178, 122, .35); }
+.fc-skills { color: #f2d58a; margin-top: 3px; }
+.fc-skill-note { color: #ded5c2; margin-top: 4px; font-size: 11px; }
 
 /* ---------- épilogue ---------- */
 #epilogue { position: absolute; inset: 0; z-index: 60; overflow: auto; background: radial-gradient(900px 500px at 50% 0%, rgba(201, 178, 122, .18), transparent 70%), #07080d; display: grid; place-items: center; }
