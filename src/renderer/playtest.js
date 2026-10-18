@@ -1035,7 +1035,30 @@
     float(u.x, u.y, `+${xp} EXP`, '#c5a7ff');
     const ups = R.gainExp(u, xp, G.db, Math.random, G.settings);
     await sleep(500);
-    for (const up of ups) { Music.me('levelUp'); await showLevelUp(u, up); }
+    for (const up of ups) {
+      Music.me('levelUp'); await showLevelUp(u, up);
+      for (const id of up.learnedSkills) await announceLearning(u, id);
+    }
+  }
+
+  async function announceLearning(unit, id) {
+    const skill = R.byId(G.db.skills || [], id);
+    if (!skill) return;
+    const body = `${unit.name} apprend ${skill.icon} ${skill.name} !\n${Skills.describe(skill)}`;
+    if (Skills.equipLearned(unit, id)) {
+      await UI.alert('Compétence apprise !', body + '\n\nElle est équipée dans un emplacement libre.');
+    } else if (unit.equippedSkills.includes(id) || unit.personalSkill === id) {
+      await UI.alert('Compétence apprise !', body);
+    } else {
+      const choice = await UI.choose('Compétence apprise !', [
+        { value: 'keep', label: 'Garder dans le répertoire', desc: 'Conserver les cinq compétences actuellement équipées.' },
+        ...unit.equippedSkills.map((oldId, index) => ({ value: String(index),
+          label: 'Remplacer ' + ((R.byId(G.db.skills, oldId) || {}).name || oldId),
+          desc: 'Emplacement ' + (index + 1) + ' — l’ancienne compétence restera apprise.' }))
+      ], body + '\n\nLes cinq emplacements sont occupés. La personnelle reste fixe.', { wide: true, cancelLabel: 'Garder sans équiper' });
+      if (choice !== null && choice !== 'keep') Skills.equipLearned(unit, id, Number(choice));
+    }
+    lastInfoKey = '';
   }
 
   async function killUnit(u, instant) {

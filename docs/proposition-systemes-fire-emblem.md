@@ -241,4 +241,16 @@ Les compétences sont attribuées par le créateur avant le test. Les personnage
 
 Les attributions sont sauvegardées dans les fiches des unités et transmises entre chapitres, puis conservées dans les sauvegardes de campagne. Les anciennes fiches et anciennes sauvegardes sans ces champs restent prises en charge. La suppression d'une compétence du catalogue est bloquée tant qu'un personnage la référence ; une sauvegarde de projet avec référence manquante ou équipement invalide est refusée avant écriture.
 
-Les effets en combat et les apprentissages automatiques par classe/niveau constituent les prochaines étapes. Aucune compétence ne modifie encore les prévisions ou la résolution du combat dans ce lot.
+L'apprentissage automatique est ajouté par le quatrième lot ci-dessous. Les effets en combat restent à raccorder : aucune compétence ne modifie encore les prévisions ou la résolution du combat.
+
+**13. Quatrième lot — apprentissage par classe et par niveau**
+
+La fiche de chaque classe permet d'ajouter, modifier et retirer des paliers « niveau → compétence ». Plusieurs compétences peuvent arriver au même niveau. Une même compétence ne peut être programmée qu'une fois par classe. Les références manquantes, niveaux invalides et doublons sont signalés ; les paliers au-delà du niveau maximum du projet affichent un avertissement.
+
+Chaque montée de niveau acquiert automatiquement les compétences atteintes qui ne sont pas déjà connues. Les annonces suivent les montées de niveau, dans l'ordre. Une place libre équipe la nouvelle compétence ; sinon un choix propose de remplacer un des cinq emplacements ou de conserver la nouvelle compétence dans le répertoire. Fermer ce choix ou appuyer sur Échap conserve également l'apprentissage sans changer l'équipement. La personnelle reste fixe, et la compétence remplacée n'est jamais oubliée.
+
+Les unités créées à un niveau élevé connaissent déjà les compétences de leur classe dont le seuil est atteint. La fiche de personnage prévisualise ces acquis, marqués « classe ». Les choix d'équipement explicites sont respectés ; en leur absence, les premiers acquis de classe occupent jusqu'à cinq places. Les ennemis suivent aussi les paliers de leur classe. Les anciennes sauvegardes bénéficient d'un rattrapage des acquis manquants sans remplir de force les emplacements.
+
+Les apprentissages sont conservés entre chapitres et dans les sauvegardes, y compris les compétences laissées dans le répertoire. Elles ne sont pas réannoncées ni rééquipées au chapitre suivant. Les programmes sont enregistrés dans les fiches de classe ; la suppression d'une compétence référencée par un programme est bloquée.
+
+Les effets de combat constituent le prochain chantier. Les programmes des classes restent à définir par le créateur dans son projet.

@@ -107,7 +107,7 @@ function loadProject(dir) {
 }
 
 function saveProject(dir, project) {
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db)];
+  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db)];
   if (errors.length) throw new Error(errors.join('\n'));
   for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });

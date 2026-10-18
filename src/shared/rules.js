@@ -181,7 +181,7 @@
       uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
       classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp,
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
-      ...Skills.loadout(ch, db.skills),
+      ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
       isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
       mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',
@@ -199,6 +199,7 @@
     return {
       uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || cls.name,
       classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, cls.growths || {}),
+      ...Skills.initialLoadout(Object.assign({}, pl, { level }), cls, db.skills),
       inventory: buildInventory(inv, db), mov: cls.mov, moveType: cls.moveType,
       isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
       appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop,
@@ -540,7 +541,7 @@
   }
   function staffExp(unit) { return clamp(10 + Math.max(0, 10 - unit.level), 1, 100); }
 
-  /** Ajoute l'exp ; renvoie la liste des montées de niveau [{level, gains}] */
+  /** Ajoute l'exp ; renvoie les montées de niveau et les compétences nouvellement apprises. */
   function gainExp(unit, amount, db, rng, settings) {
     const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
     rng = rng || Math.random;
@@ -560,7 +561,8 @@
         if (gain) { unit.stats[k] += gain; if (k === 'hp') unit.hp += gain; }
         gains[k] = gain;
       }
-      ups.push({ level: unit.level, gains });
+      const learnedSkills = Skills.learnThroughLevel(unit, cls, db.skills || []);
+      ups.push({ level: unit.level, gains, learnedSkills });
     }
     if (unit.level >= s.maxLevel) unit.exp = 0;
     return ups;

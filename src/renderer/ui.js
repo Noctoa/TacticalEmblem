@@ -88,13 +88,14 @@
   }
 
   /** Choix dans une liste de boutons. options = [{value, label, desc}] */
-  function choose(title, options, text) {
+  function choose(title, options, text, settings) {
+    settings = settings || {};
     return modal((box, close) => {
       box.append(h('h3', {}, title), text ? h('p', {}, text) : '',
         h('div', { class: 'choice-list' }, options.map(o => h('button', { class: 'choice' + (o.primary ? ' primary' : ''), onclick: () => close(o.value) },
           h('b', {}, o.label), o.desc ? h('span', {}, o.desc) : null))),
-        h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Annuler')));
-    });
+        h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, settings.cancelLabel || 'Annuler')));
+    }, { wide: !!settings.wide });
   }
 
   function toast(msg, kind) {

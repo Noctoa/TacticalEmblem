@@ -42,8 +42,8 @@ npm test
 
 **Base de données** (F9)
 - Unités : stats, croissances, inventaire, portrait, seigneur (sa mort = défaite)
-- Classes : déplacement, armes maniées, stats de base, croissances, plafonds, promotion, inventaire par défaut des ennemis
-- Compétences : catalogue éditable, dix exemples, nom, symbole, description, effet, valeur, conditions de PV / arme / engagement et probabilité de déclenchement. Création, duplication et suppression ; résumé automatique et validation des réglages. Le catalogue est sauvegardé dans `data/skills.json`. Pour un ancien projet, « Ajouter les exemples manquants » remplit le catalogue. Dans **Unités › Compétences**, choisir une personnelle fixe, un répertoire appris et jusqu’à cinq compétences équipées. Retirer une compétence apprise la déséquipe ; une fiche utilisée ne peut pas être supprimée du catalogue. En playtest, le bouton **Compétences** de la fiche d’un personnage permet de consulter sa personnelle, ses cinq emplacements et ses compétences non équipées. L’attribution est conservée dans le projet et la campagne. Les effets en combat et l’apprentissage automatique par classe/niveau restent à réaliser.
+- Classes : déplacement, armes maniées, stats de base, croissances, plafonds, promotion, inventaire par défaut des ennemis, programme des compétences apprises par niveau (niveau → compétence).
+- Compétences : catalogue éditable, dix exemples, nom, symbole, description, effet, valeur, conditions de PV / arme / engagement et probabilité de déclenchement. Création, duplication et suppression ; résumé automatique et validation des réglages. Le catalogue est sauvegardé dans `data/skills.json`. Pour un ancien projet, « Ajouter les exemples manquants » remplit le catalogue. Dans **Unités › Compétences**, choisir une personnelle fixe, un répertoire appris et jusqu’à cinq compétences équipées. Retirer une compétence manuellement apprise la déséquipe ; une fiche utilisée par un personnage ou un programme de classe ne peut pas être supprimée du catalogue. En playtest, le bouton **Compétences** de la fiche d’un personnage permet de consulter sa personnelle, ses cinq emplacements et ses compétences non équipées. L’attribution est conservée dans le projet et la campagne. Les effets en combat restent à réaliser.
 - Armes : puissance, précision, critique, poids, portée, usure, efficacité (×3), bâtons de soin
 - Objets : soins, boosts de stats
 - Terrains : bonus défense / esquive, soin par tour, coût de déplacement par type (infanterie, cavalerie, blindé, volant)
@@ -53,6 +53,8 @@ npm test
 - Système : chapitre de départ, réglages de combat (vrai hit, seuil de doublé, triangle, multiplicateurs)
 
 **Dialogues** — Une réplique par ligne, au format `Nom: texte`. Le portrait vient de l'unité du même nom. Déclencheurs : début du chapitre, début d'un tour, mort d'une unité, entrée dans une zone, victoire.
+
+**Apprentissage des compétences** — Dans **Base de données › Classes › Compétences apprises par niveau**, ajouter les paliers (par exemple niveau 2 → Précision, niveau 5 → Luna). Chaque montée de niveau ajoute automatiquement les nouvelles compétences au répertoire et affiche une annonce. Un emplacement libre est utilisé automatiquement ; si les cinq sont occupés, le joueur choisit un remplacement ou garde la compétence sans l’équiper. L’ancienne compétence reste apprise et la personnelle n’est jamais remplacée. Plusieurs compétences au même niveau et plusieurs niveaux gagnés d’un coup sont traités dans l’ordre, sans doublons. Une unité qui commence à un niveau élevé connaît déjà les paliers atteints ; les emplacements explicitement choisis par le créateur restent respectés. Les apprentissages et les choix d’équipement sont conservés dans la campagne.
 
 ## Playtest (F5)
 

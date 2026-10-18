@@ -74,8 +74,11 @@
     const root = h('div', { class: 'unit-skills' });
     const redraw = () => {
       const catalogue = db().skills;
-      const learned = Array.isArray(unit.learnedSkills) ? unit.learnedSkills : [];
-      const equipped = Array.isArray(unit.equippedSkills) ? unit.equippedSkills : [];
+      const cls = byId(db().classes, unit.classId);
+      const automatic = Skills.availableLearning(cls, unit.level || 1, catalogue).map(row => row.skillId);
+      const manual = Array.isArray(unit.learnedSkills) ? unit.learnedSkills : [];
+      const learned = [...new Set([...manual, ...automatic])];
+      const equipped = Array.isArray(unit.equippedSkills) ? unit.equippedSkills : Skills.initialLoadout(unit, cls, catalogue).equippedSkills;
       const find = id => byId(catalogue, id);
       const label = id => { const s = find(id); return s ? `${s.icon} ${s.name}` : `Introuvable : ${id}`; };
       const update = () => { change(); redraw(); };
@@ -98,16 +101,19 @@
       for (const id of ids) {
         const selected = learned.includes(id);
         const chip = h('button', { type: 'button', class: 'chip' + (selected ? ' on' : ''), 'data-skill-learn': id,
-          'aria-pressed': selected ? 'true' : 'false', title: find(id) ? Skills.describe(find(id)) : 'Retirer cette référence introuvable' }, label(id));
+          disabled: automatic.includes(id), 'aria-pressed': selected ? 'true' : 'false',
+          title: automatic.includes(id) ? 'Déjà apprise grâce à la classe et au niveau de départ.' : find(id) ? Skills.describe(find(id)) : 'Retirer cette référence introuvable' }, label(id) + (automatic.includes(id) ? ' · classe' : ''));
         chip.addEventListener('click', () => {
-          unit.learnedSkills = selected ? learned.filter(value => value !== id) : [...learned, id];
-          unit.equippedSkills = equipped.filter(value => unit.learnedSkills.includes(value));
+          if (automatic.includes(id)) return;
+          unit.learnedSkills = selected ? manual.filter(value => value !== id) : [...manual, id];
+          unit.equippedSkills = equipped.filter(value => unit.learnedSkills.includes(value) || automatic.includes(value));
           update();
         });
         chips.append(chip);
       }
       root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, `Répertoire appris (${learned.length})`),
         ids.length ? chips : h('p', { class: 'muted' }, 'Le catalogue est vide. Ajoute des compétences ou leurs exemples dans l’onglet Compétences.')));
+      if (automatic.length) root.append(h('p', { class: 'form-info' }, 'Les compétences marquées « classe » sont déjà acquises au niveau de départ. Le programme se règle dans la fiche de classe.'));
 
       const slots = h('div', { class: 'skill-slots' });
       for (let i = 0; i < Skills.EQUIPPED_SLOTS; i++) {
@@ -124,8 +130,47 @@
         slots.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Emplacement ' + (i + 1)), select));
       }
       root.append(h('p', { class: 'form-info skill-slot-count' }, `${equipped.length} / ${Skills.EQUIPPED_SLOTS} compétences équipées — personnelle hors quota`), slots);
-      for (const error of Skills.validateAssignment(unit, catalogue)) root.append(h('p', { class: 'note' }, '⚠ ' + error));
+      for (const error of Skills.validateAssignment(unit, catalogue, automatic)) root.append(h('p', { class: 'note' }, '⚠ ' + error));
       root.append(h('button', { type: 'button', class: 'small', onclick: () => open('skills') }, 'Modifier le catalogue de compétences'));
+    };
+    redraw(); return root;
+  }
+
+  function classLearningField(cls) {
+    const root = h('div', { class: 'class-learning' });
+    const redraw = () => {
+      const rows = Array.isArray(cls.skillLearning) ? cls.skillLearning : [];
+      const catalogue = db().skills;
+      root.replaceChildren(h('div', { class: 'form-heading' }, 'Compétences apprises par niveau'),
+        h('p', { class: 'form-info' }, 'Chaque compétence est acquise une seule fois. Les unités qui commencent à un niveau supérieur connaissent déjà les paliers atteints. À la montée de niveau, une place libre est utilisée ; sinon le joueur choisit quoi remplacer ou garde la compétence dans son répertoire.'));
+      const update = () => { change(); redraw(); };
+      rows.forEach((row, index) => {
+        if (!row || typeof row !== 'object') {
+          root.append(h('button', { class: 'small danger', onclick: () => { rows.splice(index, 1); update(); } }, 'Retirer la ligne invalide ' + (index + 1))); return;
+        }
+        const level = h('input', { type: 'number', min: 1, max: 99, value: row.level, 'data-learning-level': String(index), 'aria-label': 'Niveau d’apprentissage ' + (index + 1) });
+        level.addEventListener('change', () => { row.level = Number(level.value); update(); });
+        const options = catalogue.filter(s => !rows.some((other, i) => i !== index && other && other.skillId === s.id));
+        const skill = h('select', { 'data-learning-skill': String(index), 'aria-label': 'Compétence à apprendre ' + (index + 1) },
+          h('option', { value: '' }, '— choisir une compétence —'), options.map(s => h('option', { value: s.id }, `${s.icon} ${s.name}`)));
+        if (row.skillId && !options.some(s => s.id === row.skillId)) skill.append(h('option', { value: row.skillId }, 'À corriger : ' + row.skillId));
+        skill.value = row.skillId || '';
+        skill.addEventListener('change', () => { row.skillId = skill.value; update(); });
+        root.append(h('div', { class: 'learning-row' },
+          h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Niveau'), level),
+          h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Compétence'), skill),
+          h('button', { class: 'small danger', title: 'Retirer cet apprentissage', onclick: () => { rows.splice(index, 1); update(); } }, 'Retirer')));
+      });
+      const available = catalogue.filter(s => !rows.some(row => row && row.skillId === s.id));
+      root.append(h('button', { class: 'small', 'data-add-learning': true, disabled: !available.length, onclick: () => {
+        cls.skillLearning = rows;
+        const lastLevel = rows.reduce((max, row) => Math.max(max, row && Number.isInteger(row.level) ? row.level : 0), 0);
+        rows.push({ level: Math.min(99, lastLevel + 1), skillId: available[0].id }); update();
+      } }, '+ Ajouter un apprentissage'));
+      if (!catalogue.length) root.append(h('p', { class: 'form-info' }, 'Ajoute d’abord des compétences dans le catalogue.'));
+      const maxLevel = (Editor.project().meta.settings || {}).maxLevel || Rules.DEFAULT_SETTINGS.maxLevel;
+      if (rows.some(row => row && row.level > maxLevel)) root.append(h('p', { class: 'note' }, 'Un palier dépasse le niveau maximum du projet (' + maxLevel + '). Il ne sera pas atteint avec ces réglages.'));
+      for (const error of Skills.validateLearning({ skills: catalogue, classes: [cls] })) root.append(h('p', { class: 'note' }, '⚠ ' + error));
     };
     redraw(); return root;
   }
@@ -225,7 +270,7 @@
       create: () => ({ name: 'Nouvelle classe', moveType: 'foot', mov: 5, weapons: ['sword'], tier: 1, promotesTo: '', mapSprite: '', battler: '',
         base: { hp: 18, str: 4, mag: 0, skl: 4, spd: 4, lck: 0, def: 3, res: 0 },
         growths: { hp: 70, str: 40, mag: 10, skl: 40, spd: 40, lck: 30, def: 20, res: 20 },
-        caps: { hp: 60, str: 20, mag: 20, skl: 20, spd: 20, lck: 30, def: 20, res: 20 }, defaultInventory: [] }),
+        caps: { hp: 60, str: 20, mag: 20, skl: 20, spd: 20, lck: 30, def: 20, res: 20 }, defaultInventory: [], skillLearning: [] }),
       fields: () => [
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'row', fields: [
@@ -234,6 +279,7 @@
           { key: 'tier', label: 'Rang', type: 'select', numeric: true, options: [{ value: 1, label: 'Base' }, { value: 2, label: 'Promue' }] }] },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'promotesTo', label: 'Promotion vers', type: 'select', empty: '— aucune —', options: classOpts },
+        { type: 'custom', render: classLearningField },
         { type: 'row', fields: [
           { key: 'mapSprite', label: 'Sprite de map (img/characters)', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
           { key: 'battler', label: 'Animation de combat (img/battlers)', type: 'select', empty: '— aucune (combat sur la map) —', options: battlerOpts }] },
@@ -422,7 +468,11 @@
         if (!cur) return;
         if (tab === 'skills') {
           const users = Skills.usersOf(db(), cur.id);
-          if (users.length) return UI.alert('Compétence utilisée', 'Retire d’abord cette compétence des personnages suivants : ' + users.map(u => u.name).join(', ') + '.');
+          const classes = Skills.classUsersOf(db(), cur.id);
+          if (users.length || classes.length) return UI.alert('Compétence utilisée',
+            (users.length ? 'Personnages : ' + users.map(u => u.name).join(', ') + '. ' : '') +
+            (classes.length ? 'Classes : ' + classes.map(c => c.name).join(', ') + '. ' : '') +
+            'Retire d’abord cette compétence de leurs fiches.');
         }
         const usage = usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;

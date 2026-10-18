@@ -148,6 +148,11 @@
 .skill-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
 .skill-slots .field { min-width: 0; }
 .skill-slots select { width: 100%; }
+.class-learning { padding: 0 0 12px; border-bottom: 1px solid var(--line); }
+.class-learning > .form-info { margin: 10px 0; }
+.learning-row { display: grid; grid-template-columns: 90px minmax(0, 1fr) auto; gap: 10px; align-items: end; margin: 10px 0; }
+.learning-row .field { min-width: 0; }
+.learning-row input, .learning-row select { width: 100%; }
 .db-list-actions { display: flex; gap: 4px; padding: 8px; border-top: 1px solid var(--line); }
 .db-list-actions button { flex: 1; justify-content: center; }
 .db-form { overflow: auto; padding: 18px 24px 30px; }
