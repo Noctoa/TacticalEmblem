@@ -134,6 +134,14 @@
 .db-item.on { background: var(--gold-dim); color: var(--gold-2); }
 .db-item .n { width: 24px; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
 .db-item .sub { margin-left: auto; font-size: 11px; color: var(--muted); }
+.db-item .skill-symbol ~ .sub { max-width: 84px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skill-symbol { width: 24px; height: 24px; flex: none; display: grid; place-items: center; border-radius: 5px; background: var(--gold-dim); color: var(--gold-2); font-size: 17px; overflow: hidden; }
+.skill-symbol.big { width: 44px; height: 44px; font-size: 26px; }
+.skill-overview { display: flex; align-items: flex-start; gap: 12px; padding: 14px; margin-bottom: 16px; background: #15181d; border: 1px solid var(--line); border-radius: 8px; max-width: 760px; }
+.skill-overview b { color: var(--gold-2); }
+.skill-summary { margin-top: 5px; line-height: 1.5; color: var(--text-2); }
+.skill-validation:empty { display: none; }
+.skill-validation .note { margin-bottom: 10px; color: #ffcc8a; }
 .db-list-actions { display: flex; gap: 4px; padding: 8px; border-top: 1px solid var(--line); }
 .db-list-actions button { flex: 1; justify-content: center; }
 .db-form { overflow: auto; padding: 18px 24px 30px; }

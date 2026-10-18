@@ -224,3 +224,11 @@ Je reporterais les systèmes de générations, de bataillons et d'Emblèmes comp
 - Anciens chapitres : les protections et autorisations héritent des Seigneurs tant que le créateur ne les personnalise pas. Les configurations impossibles sont signalées avant le test, notamment un objectif de boss sans boss.
 
 Les compétences jouables (personnelle fixe + cinq équipables), leurs écrans et les promotions à branches constituent les deux prochains lots. L'évacuation, l'escorte, les conditions par variables de scénario et la suspension en milieu de bataille restent également à réaliser. La sélection des renforts bloquants n'a pas encore de contrôle dédié dans l'éditeur.
+
+**11. Deuxième lot — catalogue de compétences**
+
+L'onglet Compétences de la base permet de créer, dupliquer et supprimer des fiches. Chaque fiche comprend un nom, un symbole, une description libre et des paramètres structurés : effet, valeur, probabilité fixe ou liée à Technique / Chance, engagement du combat, type d'arme, seuil de PV, adjacence et rayon pour l'aura. Le résumé suit les réglages ; les erreurs sont signalées et empêchent une sauvegarde invalide.
+
+Dix exemples sont proposés : Précision, Esquive, Offensive, Garde, Présence rassurante, Régénération, Luna, Sol, Vantage et Miracle. Les nouveaux projets reçoivent le catalogue. Les anciens s'ouvrent avec un catalogue vide et peuvent ajouter les exemples manquants sans remplacer leurs fiches existantes. Les données se trouvent dans `data/skills.json` ; un fichier illisible est signalé explicitement.
+
+Ce lot concerne l'édition du catalogue. L'attribution aux personnages (une personnelle fixe + cinq équipables), les apprentissages et le raccordement aux prévisions, à la résolution des combats et à l'IA restent à implémenter.

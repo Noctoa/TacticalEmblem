@@ -74,6 +74,46 @@
   // Définition des onglets « liste + fiche »
   // ------------------------------------------------------------------
   const TABS = {
+    skills: {
+      label: 'Compétences', list: () => db().skills, prefix: 'skill_',
+      sub: s => (Skills.effectOf(s) || {}).name || 'Effet inconnu', icon: s => s.icon || '✦',
+      create: () => Skills.create(),
+      onField: (key, s) => { if (key === 'effect') Object.assign(s, Skills.parameters(s.effect)); },
+      rerenderOn: ['effect', 'activation', 'hpCondition'],
+      fields: s => {
+        const effect = Skills.effectOf(s) || {};
+        return [
+          { type: 'row', fields: [
+            { key: 'name', label: 'Nom', type: 'text', live: true },
+            { key: 'icon', label: 'Symbole (1 à 6 caractères)', type: 'text', placeholder: '✦' }] },
+          { key: 'description', label: 'Description du créateur (facultative)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de la compétence.' },
+          { type: 'heading', label: 'Effet' },
+          { key: 'effect', label: 'Type d’effet', type: 'select', options: Skills.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
+          ...(effect.amount ? [{ key: 'amount', label: effect.amount, type: 'number', min: 1, max: effect.max }] : []),
+          ...(s.effect === 'auraAvoid' ? [
+            { key: 'range', label: 'Rayon autour du porteur (cases)', type: 'number', min: 1, max: 10 },
+            { type: 'info', text: 'L’aura bénéficie aux autres alliés. Plusieurs porteurs de cette même compétence ne cumulent pas le bonus.' }
+          ] : []),
+          ...(effect.proc ? [
+            { key: 'activation', label: 'Probabilité de déclenchement', type: 'select', options: [
+              { value: 'always', label: 'Toujours' }, { value: 'fixed', label: 'Pourcentage fixe' },
+              { value: 'skl', label: 'Technique de l’unité (%)' }, { value: 'lck', label: 'Chance de l’unité (%)' }] },
+            ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : [])
+          ] : []),
+          { type: 'heading', label: 'Conditions d’activation' },
+          ...(effect.combat ? [
+            { key: 'phase', label: 'Qui engage le combat ?', type: 'select', options: [
+              { value: 'any', label: 'Dans tous les cas' }, { value: 'initiate', label: 'L’unité engage' }, { value: 'defend', label: 'L’ennemi engage' }] },
+            { key: 'weaponType', label: 'Arme requise', type: 'select', empty: 'Toutes les armes', options: wtypes }
+          ] : []),
+          { key: 'hpCondition', label: 'État des PV du porteur', type: 'select', options: [
+            { value: 'any', label: 'Aucune condition' }, { value: 'below', label: 'PV inférieurs ou égaux au seuil' },
+            { value: 'above', label: 'PV supérieurs ou égaux au seuil' }, { value: 'full', label: 'PV au maximum' }] },
+          ...(['below', 'above'].includes(s.hpCondition) ? [{ key: 'hpThreshold', label: 'Seuil (% des PV maximum)', type: 'number', min: 1, max: 100 }] : []),
+          { key: 'adjacentAlly', label: 'Nécessite au moins un allié adjacent au porteur', type: 'checkbox' }
+        ];
+      }
+    },
     units: {
       label: 'Unités', list: () => db().units, prefix: 'c_',
       sub: (u) => (byId(db().classes, u.classId) || {}).name || '',
@@ -263,7 +303,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['chapters', 'Chapitres'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['chapters', 'Chapitres'], ['resources', 'Ressources'], ['system', 'Système']];
 
   function open(t, id) {
     if (t) tab = t;
@@ -298,13 +338,13 @@
     const box = h('div', { class: 'db-list-items' });
     items.forEach((it, i) => {
       box.append(h('div', { class: 'db-item' + (it.id === cur ? ' on' : ''), onclick: () => { selected[tab] = it.id; renderBody(); } },
-        opts.swatch ? h('span', { class: 'sw', style: { width: '12px', height: '12px', borderRadius: '3px', background: opts.swatch(it), flex: 'none' } }) : h('span', { class: 'n' }, String(i + 1).padStart(3, '0')),
+        opts.icon ? h('span', { class: 'skill-symbol' }, opts.icon(it)) : opts.swatch ? h('span', { class: 'sw', style: { width: '12px', height: '12px', borderRadius: '3px', background: opts.swatch(it), flex: 'none' } }) : h('span', { class: 'n' }, String(i + 1).padStart(3, '0')),
         h('span', {}, it.name), opts.sub ? h('span', { class: 'sub' }, opts.sub(it) || '') : null));
     });
     const actions = h('div', { class: 'db-list-actions' },
       opts.onAdd ? h('button', { class: 'small', onclick: opts.onAdd, html: Icons.icon('plus') }, 'Nouveau') : null,
-      opts.onCopy ? h('button', { class: 'small', onclick: opts.onCopy, html: Icons.icon('copy'), disabled: !cur }) : null,
-      opts.onDelete ? h('button', { class: 'small danger', onclick: opts.onDelete, html: Icons.icon('trash'), disabled: !cur }) : null);
+      opts.onCopy ? h('button', { class: 'small', title: 'Dupliquer', onclick: opts.onCopy, html: Icons.icon('copy'), disabled: !cur }) : null,
+      opts.onDelete ? h('button', { class: 'small danger', title: 'Supprimer', onclick: opts.onDelete, html: Icons.icon('trash'), disabled: !cur }) : null);
     return h('div', { class: 'db-list' }, box, actions);
   }
 
@@ -313,7 +353,7 @@
     if (!list.find(e => e.id === selected[tab])) selected[tab] = list[0] ? list[0].id : null;
     const cur = byId(list, selected[tab]);
     body.append(listPanel(list, cur && cur.id, {
-      sub: def.sub, swatch: def.swatch,
+      sub: def.sub, swatch: def.swatch, icon: def.icon,
       onAdd: () => { const e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create()); list.push(e); selected[tab] = e.id; change(); renderBody(); },
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
@@ -324,20 +364,47 @@
       }
     }));
     const pane = h('div', { class: 'db-form' });
+    if (tab === 'skills') {
+      pane.append(h('p', { class: 'note' }, 'Catalogue des compétences. L’attribution aux unités et les effets en combat seront ajoutés à l’étape suivante.'));
+      const missing = Skills.presets().filter(s => !list.some(existing => existing.id === s.id));
+      if (missing.length) pane.append(h('button', { class: 'small', style: { margin: '10px 0' }, onclick: () => {
+        list.push(...missing); selected.skills = missing[0].id; change(); renderBody();
+      } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
+    }
     if (!cur) { pane.append(h('div', { class: 'db-empty' }, 'Aucun élément.')); body.append(pane); return; }
     pane.append(h('h2', {}, cur.name, h('span', { class: 'id' }, cur.id)));
     if (tab === 'units') pane.append(unitPreview(cur));
+    if (tab === 'skills') {
+      pane.append(h('div', { class: 'skill-overview' }, h('span', { class: 'skill-symbol big' }, cur.icon || '✦'),
+        h('div', {}, h('b', {}, 'Résumé des réglages'), h('p', { class: 'skill-summary' }, Skills.describe(cur)))));
+      pane.append(h('div', { class: 'skill-validation', role: 'status' }));
+    }
     pane.append(UI.form(def.fields(cur), cur, {
       baseUrl: Editor.baseUrl(),
       onChange: (k) => {
         change();
         if (k === 'name') { pane.querySelector('h2').firstChild.textContent = cur.name; refreshListLabels(body, list); }
         if (def.onField) def.onField(k, cur);
+        if (tab === 'skills') {
+          pane.querySelector('.skill-summary').textContent = Skills.describe(cur);
+          pane.querySelector('.skill-symbol.big').textContent = cur.icon || '✦';
+          renderSkillErrors(pane, cur);
+          // Le symbole et le sous-titre reflètent aussi les changements de la fiche.
+          body.querySelectorAll('.db-item').forEach((el, i) => {
+            el.querySelector('.skill-symbol').textContent = list[i].icon || '✦';
+            el.querySelector('.sub').textContent = def.sub(list[i]);
+          });
+        }
         if (tab === 'units' && k === 'convoy' && cur.convoy) for (const o of list) if (o !== cur) o.convoy = false;
         if ((def.rerenderOn || []).includes(k) || (tab === 'units' && ['classId', 'level', 'stats', 'mapSprite', 'battler'].includes(k))) renderBody();
       }
     }));
     body.append(pane);
+    if (tab === 'skills') renderSkillErrors(pane, cur);
+  }
+  function renderSkillErrors(pane, skill) {
+    const box = pane.querySelector('.skill-validation');
+    box.replaceChildren(...Skills.validate(skill).map(message => h('p', { class: 'note' }, '⚠ ' + message)));
   }
   function refreshListLabels(body, list) {
     body.querySelectorAll('.db-item').forEach((el, i) => { const s = el.children[1]; if (s && list[i]) s.textContent = list[i].name; });

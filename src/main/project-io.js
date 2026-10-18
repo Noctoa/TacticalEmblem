@@ -22,9 +22,10 @@
 const fs = require('fs');
 const path = require('path');
 const Defaults = require('../shared/defaults.js');
+const Skills = require('../shared/skills.js');
 
 const PROJECT_FILE = 'game.tfproj';
-const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports'];
+const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills'];
 const RESOURCE_DIRS = ['img/tilesets', 'img/characters', 'img/battlers', 'img/faces', 'img/system', 'audio/bgm', 'audio/se', 'audio/me'];
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp)$/i;
 const AUDIO_EXT = /\.(mp3|ogg|wav|m4a)$/i;
@@ -89,6 +90,12 @@ function loadProject(dir) {
   if (!meta) throw new Error(PROJECT_FILE + ' est illisible.');
   const db = {};
   for (const k of DB_KEYS) db[k] = readJson(path.join(dir, 'data', k + '.json'), []);
+  const skillFile = path.join(dir, 'data', 'skills.json');
+  if (fs.existsSync(skillFile)) {
+    try { db.skills = JSON.parse(fs.readFileSync(skillFile, 'utf8')); }
+    catch (e) { throw new Error('Le catalogue data/skills.json est illisible : ' + e.message); }
+    if (!Array.isArray(db.skills) || db.skills.some(s => !s || typeof s !== 'object' || Array.isArray(s))) throw new Error('Le catalogue data/skills.json doit contenir une liste de fiches.');
+  }
   const maps = readMaps(dir);
   const order = meta.mapOrder || [];
   maps.sort((a, b) => {
@@ -100,6 +107,8 @@ function loadProject(dir) {
 }
 
 function saveProject(dir, project) {
+  const errors = Skills.validateAll(project.db.skills || []);
+  if (errors.length) throw new Error(errors.join('\n'));
   for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });
   const meta = Object.assign({}, project.meta, { mapOrder: project.maps.map(m => m.id), savedAt: new Date().toISOString(), layout: 2 });

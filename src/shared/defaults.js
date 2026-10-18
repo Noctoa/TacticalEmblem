@@ -2,10 +2,10 @@
  * Base de données par défaut + projet d'exemple ("Prologue — L'embuscade").
  */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Defaults = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Skills) {
   'use strict';
 
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
@@ -282,7 +282,7 @@
   }
 
   function emptyDatabase() {
-    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), units: [], tilesets: [], chapters: [] };
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [] };
   }
 
   function sampleProject(name) {

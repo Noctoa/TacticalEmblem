@@ -42,7 +42,7 @@
 
   function migrate(p) {
     p.meta.settings = Object.assign({}, Rules.DEFAULT_SETTINGS, p.meta.settings || {});
-    for (const k of ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports']) if (!Array.isArray(p.db[k])) p.db[k] = [];
+    for (const k of ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills']) if (!Array.isArray(p.db[k])) p.db[k] = [];
     const uname = (id) => { const u = p.db.units.find(x => x.id === id); return u ? u.name : '?'; };
     for (const sp of p.db.supports) if (!sp.name) sp.name = `${uname(sp.a)} ♥ ${uname(sp.b)}`;
     p.meta.supports = Object.assign({}, Rules.DEFAULT_SUPPORT, p.meta.supports || {});

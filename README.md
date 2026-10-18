@@ -43,6 +43,7 @@ npm test
 **Base de données** (F9)
 - Unités : stats, croissances, inventaire, portrait, seigneur (sa mort = défaite)
 - Classes : déplacement, armes maniées, stats de base, croissances, plafonds, promotion, inventaire par défaut des ennemis
+- Compétences : catalogue éditable, dix exemples, nom, symbole, description, effet, valeur, conditions de PV / arme / engagement et probabilité de déclenchement. Création, duplication et suppression ; résumé automatique et validation des réglages. Le catalogue est sauvegardé dans `data/skills.json`. Pour un ancien projet, « Ajouter les exemples manquants » remplit le catalogue. L’attribution aux personnages (une personnelle fixe + cinq équipables) et les effets en combat arrivent dans le prochain lot.
 - Armes : puissance, précision, critique, poids, portée, usure, efficacité (×3), bâtons de soin
 - Objets : soins, boosts de stats
 - Terrains : bonus défense / esquive, soin par tour, coût de déplacement par type (infanterie, cavalerie, blindé, volant)
@@ -128,7 +129,7 @@ Rangé comme un projet RPG Maker : les données d'un côté, les ressources tri�
 MonJeu/
   game.tfproj              nom, réglages, chapitre de départ, ordre des maps
   data/
-    units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json
+    units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json
     maps/map_1.json        une map par fichier (calques = gids façon Tiled)
   img/
     tilesets/              images des tilesets
