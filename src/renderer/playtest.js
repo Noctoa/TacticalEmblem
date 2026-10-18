@@ -544,7 +544,8 @@
 
     const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : unitAt(c.x, c.y);
     const uw = $('#unit-win');
-    const k = u ? [u.uid, u.hp, u.level, u.exp, u.x, u.y, u.inventory.map(s => s.id + s.uses).join(), leftHalf, topHalf].join('|') : '';
+    const k = u ? [u.uid, u.hp, u.level, u.exp, u.x, u.y, u.inventory.map(s => s.id + s.uses).join(),
+      u.personalSkill, (u.learnedSkills || []).join(), (u.equippedSkills || []).join(), G.busy, G.over, leftHalf, topHalf].join('|') : '';
     if (k === lastInfoKey) return;
     lastInfoKey = k;
     uw.innerHTML = '';
@@ -560,8 +561,35 @@
       h('div', { class: 'u-class' }, `${cl ? cl.name : ''} · Nv ${u.level}` + (u.team !== 'enemy' ? ` · EXP ${u.exp}` : '')),
       h('div', { class: 'u-hp' }, h('span', {}, `PV ${u.hp}/${u.stats.hp}`), hpBar(u)),
       h('div', { class: 'u-weapon' }, eq ? `⚔ ${eq.weapon.name} (${u.inventory[eq.index].uses || '∞'})` : (R.staves(u, G.db)[0] ? '✚ ' + R.staves(u, G.db)[0].weapon.name : '— sans arme —')),
-      unitTags(u)),
+      unitTags(u),
+      (u.personalSkill || (u.learnedSkills || []).length) ? h('button', { class: 'u-skill-button', disabled: G.busy || G.over,
+        onmousedown: e => e.stopPropagation(), onclick: e => { e.stopPropagation(); showUnitSkills(u); } },
+        `Compétences (${(u.personalSkill ? 1 : 0) + (u.equippedSkills || []).length})`) : null),
     h('div', { class: 'u-stats' }, stats));
+  }
+
+  async function showUnitSkills(unit) {
+    if (G.busy || G.over) return;
+    G.busy = true;
+    try {
+      await UI.modal((box, close) => {
+        box.classList.add('skill-details-modal');
+        const catalogue = G.db.skills || [];
+        const set = Skills.loadout(unit, catalogue);
+        const card = (id, label) => {
+          const skill = R.byId(catalogue, id);
+          return h('div', { class: 'game-skill-card' }, h('b', {}, label + ' — ' + (skill ? `${skill.icon} ${skill.name}` : 'Libre')),
+            skill ? h('p', {}, Skills.describe(skill)) : null);
+        };
+        box.append(h('h3', {}, 'Compétences de ' + unit.name),
+          h('p', {}, 'Personnelle fixe + cinq emplacements équipables. Les effets en combat seront raccordés à l’étape suivante.'),
+          card(set.personalSkill, 'Personnelle (fixe)'));
+        for (let i = 0; i < Skills.EQUIPPED_SLOTS; i++) box.append(card(set.equippedSkills[i], 'Emplacement ' + (i + 1)));
+        const inactive = set.learnedSkills.filter(id => id !== set.personalSkill && !set.equippedSkills.includes(id));
+        if (inactive.length) box.append(h('p', {}, 'Apprises, non équipées : ' + inactive.map(id => (R.byId(catalogue, id) || {}).name).join(', ')));
+        box.append(h('div', { class: 'modal-actions' }, h('button', { class: 'primary', onclick: () => close() }, 'Fermer')));
+      }, { wide: true, enter: close => close() });
+    } finally { G.busy = false; }
   }
 
   /** Badges : allié, chef d'escouade, bonus du terrain occupé. */

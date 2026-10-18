@@ -231,4 +231,14 @@ L'onglet Compétences de la base permet de créer, dupliquer et supprimer des fi
 
 Dix exemples sont proposés : Précision, Esquive, Offensive, Garde, Présence rassurante, Régénération, Luna, Sol, Vantage et Miracle. Les nouveaux projets reçoivent le catalogue. Les anciens s'ouvrent avec un catalogue vide et peuvent ajouter les exemples manquants sans remplacer leurs fiches existantes. Les données se trouvent dans `data/skills.json` ; un fichier illisible est signalé explicitement.
 
-Ce lot concerne l'édition du catalogue. L'attribution aux personnages (une personnelle fixe + cinq équipables), les apprentissages et le raccordement aux prévisions, à la résolution des combats et à l'IA restent à implémenter.
+Ce lot concerne l'édition du catalogue. L'attribution est désormais décrite dans le troisième lot ci-dessous. Les apprentissages automatiques et le raccordement aux prévisions, à la résolution des combats et à l'IA restent à implémenter.
+
+**12. Troisième lot — attribution aux personnages**
+
+La fiche Unités contient une personnelle fixe (hors quota), le répertoire des compétences déjà apprises et cinq emplacements équipables. Les emplacements proposent uniquement les compétences apprises, avec exclusion de la personnelle et des doublons. Une compétence retirée du répertoire est automatiquement déséquipée. Si la nouvelle personnelle occupait un emplacement, celui-ci est libéré.
+
+Les compétences sont attribuées par le créateur avant le test. Les personnages du joueur et les personnages alliés reçoivent la même attribution. En jeu, un bouton de consultation présente la personnelle, les cinq emplacements et les compétences apprises non équipées. Cette consultation ne permet pas de modifier la personnelle ou l'équipement pendant la bataille.
+
+Les attributions sont sauvegardées dans les fiches des unités et transmises entre chapitres, puis conservées dans les sauvegardes de campagne. Les anciennes fiches et anciennes sauvegardes sans ces champs restent prises en charge. La suppression d'une compétence du catalogue est bloquée tant qu'un personnage la référence ; une sauvegarde de projet avec référence manquante ou équipement invalide est refusée avant écriture.
+
+Les effets en combat et les apprentissages automatiques par classe/niveau constituent les prochaines étapes. Aucune compétence ne modifie encore les prévisions ou la résolution du combat dans ce lot.

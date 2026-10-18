@@ -4,10 +4,10 @@
  * vrai hit (moyenne de 2 tirages), critiques x3, armes efficaces.
  */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Rules = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Skills) {
   'use strict';
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
@@ -181,6 +181,7 @@
       uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
       classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp,
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
+      ...Skills.loadout(ch, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
       isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
       mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',

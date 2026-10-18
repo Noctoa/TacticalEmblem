@@ -142,6 +142,12 @@
 .skill-summary { margin-top: 5px; line-height: 1.5; color: var(--text-2); }
 .skill-validation:empty { display: none; }
 .skill-validation .note { margin-bottom: 10px; color: #ffcc8a; }
+.unit-skills { padding: 0 0 12px; border-bottom: 1px solid var(--line); }
+.unit-skills > .field, .unit-skills > .form-info { margin: 10px 0; }
+.skill-repertoire { max-height: 180px; overflow: auto; padding: 3px; }
+.skill-slots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 10px 0; }
+.skill-slots .field { min-width: 0; }
+.skill-slots select { width: 100%; }
 .db-list-actions { display: flex; gap: 4px; padding: 8px; border-top: 1px solid var(--line); }
 .db-list-actions button { flex: 1; justify-content: center; }
 .db-form { overflow: auto; padding: 18px 24px 30px; }

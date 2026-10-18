@@ -85,5 +85,49 @@
     const activation = !spec.proc || s.activation === 'always' ? '' : s.activation === 'fixed' ? ` Activation : ${s.chance} % par coup.` : ` Activation : ${s.activation === 'skl' ? 'Technique' : 'Chance'} %, plafonnée à 100 %, par coup.`;
     return text + (conditions.length ? ' Conditions : ' + conditions.join(' ; ') + '.' : '') + activation;
   }
-  return { EFFECTS, effectOf, parameters, create, presets, validate, validateAll, describe };
+  const EQUIPPED_SLOTS = 5;
+  function validateAssignment(unit, catalogue) {
+    const errors = [], personal = unit.personalSkill === undefined ? '' : unit.personalSkill;
+    const learned = unit.learnedSkills === undefined ? [] : unit.learnedSkills;
+    const equipped = unit.equippedSkills === undefined ? [] : unit.equippedSkills;
+    const known = catalogue && new Set(catalogue.map(s => s.id));
+    if (typeof personal !== 'string') errors.push('La compétence personnelle doit être un identifiant.');
+    else if (personal && known && !known.has(personal)) errors.push('Compétence personnelle introuvable : ' + personal + '.');
+    for (const [label, ids] of [['apprises', learned], ['équipées', equipped]]) {
+      if (!Array.isArray(ids) || ids.some(id => typeof id !== 'string' || !id)) { errors.push('La liste des compétences ' + label + ' est invalide.'); continue; }
+      if (new Set(ids).size !== ids.length) errors.push('Une compétence apparaît plusieurs fois dans les compétences ' + label + '.');
+      if (known) for (const id of ids) if (!known.has(id)) errors.push('Compétence ' + label + ' introuvable : ' + id + '.');
+    }
+    if (Array.isArray(equipped)) {
+      if (equipped.length > EQUIPPED_SLOTS) errors.push('Une unité peut équiper au maximum cinq compétences en plus de sa personnelle.');
+      for (const id of equipped) {
+        if (id === personal) errors.push('La personnelle ne doit pas occuper un emplacement équipable.');
+        if (Array.isArray(learned) && !learned.includes(id)) errors.push('Une compétence doit être apprise avant d’être équipée : ' + id + '.');
+      }
+    }
+    return errors;
+  }
+  function validateAssignments(db) {
+    return (db.units || []).flatMap(u => validateAssignment(u, db.skills || []).map(e => `${u.name || u.id} : ${e}`));
+  }
+  function loadout(unit, catalogue) {
+    const known = catalogue && new Set(catalogue.map(s => s.id));
+    const exists = id => typeof id === 'string' && !!id && (!known || known.has(id));
+    const personalSkill = exists(unit.personalSkill) ? unit.personalSkill : '';
+    const learnedSkills = [...new Set((Array.isArray(unit.learnedSkills) ? unit.learnedSkills : []).filter(exists))];
+    const equippedSkills = [...new Set((Array.isArray(unit.equippedSkills) ? unit.equippedSkills : [])
+      .filter(id => id !== personalSkill && learnedSkills.includes(id)))].slice(0, EQUIPPED_SLOTS);
+    return { personalSkill, learnedSkills, equippedSkills };
+  }
+  function assigned(unit, catalogue) {
+    const set = loadout(unit, catalogue);
+    return [{ id: set.personalSkill, origin: 'personal' }, ...set.equippedSkills.map(id => ({ id, origin: 'equipped' }))]
+      .filter(entry => entry.id).map(entry => Object.assign({}, entry, { skill: catalogue.find(s => s.id === entry.id) })).filter(entry => entry.skill);
+  }
+  function usersOf(db, id) {
+    return (db.units || []).filter(u => u.personalSkill === id ||
+      (Array.isArray(u.learnedSkills) && u.learnedSkills.includes(id)) || (Array.isArray(u.equippedSkills) && u.equippedSkills.includes(id)));
+  }
+  return { EFFECTS, effectOf, parameters, create, presets, validate, validateAll, describe,
+    EQUIPPED_SLOTS, validateAssignment, validateAssignments, loadout, assigned, usersOf };
 });

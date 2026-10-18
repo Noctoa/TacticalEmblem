@@ -70,6 +70,66 @@
 
   function change() { changed = true; Editor.markDirty(); }
 
+  function unitSkillsField(unit) {
+    const root = h('div', { class: 'unit-skills' });
+    const redraw = () => {
+      const catalogue = db().skills;
+      const learned = Array.isArray(unit.learnedSkills) ? unit.learnedSkills : [];
+      const equipped = Array.isArray(unit.equippedSkills) ? unit.equippedSkills : [];
+      const find = id => byId(catalogue, id);
+      const label = id => { const s = find(id); return s ? `${s.icon} ${s.name}` : `Introuvable : ${id}`; };
+      const update = () => { change(); redraw(); };
+      root.replaceChildren(h('div', { class: 'form-heading' }, 'Compétences — une personnelle + cinq équipables'),
+        h('p', { class: 'form-info' }, 'La personnelle est fixe en jeu et ne consomme aucun emplacement. Les compétences équipables sont choisies dans le répertoire appris. Les effets en combat seront raccordés à l’étape suivante.'));
+      const personal = h('select', { 'data-skill-personal': true, 'aria-label': 'Compétence personnelle' },
+        h('option', { value: '' }, '— aucune personnelle —'), catalogue.map(s => h('option', { value: s.id }, label(s.id))));
+      if (unit.personalSkill && !find(unit.personalSkill)) personal.append(h('option', { value: unit.personalSkill }, label(unit.personalSkill)));
+      personal.value = unit.personalSkill || '';
+      personal.addEventListener('change', () => {
+        unit.personalSkill = personal.value;
+        unit.equippedSkills = equipped.filter(id => id !== personal.value);
+        update();
+      });
+      root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Compétence personnelle (fixe en jeu)'), personal));
+      if (find(unit.personalSkill)) root.append(h('p', { class: 'form-info' }, Skills.describe(find(unit.personalSkill))));
+
+      const chips = h('div', { class: 'chips skill-repertoire' });
+      const ids = [...new Set([...catalogue.map(s => s.id), ...learned])];
+      for (const id of ids) {
+        const selected = learned.includes(id);
+        const chip = h('button', { type: 'button', class: 'chip' + (selected ? ' on' : ''), 'data-skill-learn': id,
+          'aria-pressed': selected ? 'true' : 'false', title: find(id) ? Skills.describe(find(id)) : 'Retirer cette référence introuvable' }, label(id));
+        chip.addEventListener('click', () => {
+          unit.learnedSkills = selected ? learned.filter(value => value !== id) : [...learned, id];
+          unit.equippedSkills = equipped.filter(value => unit.learnedSkills.includes(value));
+          update();
+        });
+        chips.append(chip);
+      }
+      root.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, `Répertoire appris (${learned.length})`),
+        ids.length ? chips : h('p', { class: 'muted' }, 'Le catalogue est vide. Ajoute des compétences ou leurs exemples dans l’onglet Compétences.')));
+
+      const slots = h('div', { class: 'skill-slots' });
+      for (let i = 0; i < Skills.EQUIPPED_SLOTS; i++) {
+        const current = equipped[i] || '';
+        const options = learned.filter(id => find(id) && id !== unit.personalSkill && !equipped.some((other, index) => index !== i && other === id));
+        const select = h('select', { 'data-skill-slot': String(i), 'aria-label': 'Compétence équipée ' + (i + 1) },
+          h('option', { value: '' }, '— emplacement libre —'), options.map(id => h('option', { value: id }, label(id))));
+        if (current && !options.includes(current)) select.append(h('option', { value: current }, label(current) + ' (à corriger)'));
+        select.value = current;
+        select.addEventListener('change', () => {
+          const next = equipped.slice(); next[i] = select.value;
+          unit.equippedSkills = next.filter(Boolean); update();
+        });
+        slots.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Emplacement ' + (i + 1)), select));
+      }
+      root.append(h('p', { class: 'form-info skill-slot-count' }, `${equipped.length} / ${Skills.EQUIPPED_SLOTS} compétences équipées — personnelle hors quota`), slots);
+      for (const error of Skills.validateAssignment(unit, catalogue)) root.append(h('p', { class: 'note' }, '⚠ ' + error));
+      root.append(h('button', { type: 'button', class: 'small', onclick: () => open('skills') }, 'Modifier le catalogue de compétences'));
+    };
+    redraw(); return root;
+  }
+
   // ------------------------------------------------------------------
   // Définition des onglets « liste + fiche »
   // ------------------------------------------------------------------
@@ -121,7 +181,8 @@
         const cls = db().classes[0];
         return { name: 'Nouvelle unité', classId: cls ? cls.id : '', level: 1, isLord: false, color: '#4f8cff',
           stats: cls ? Rules.statsFromClass(cls, 1) : {}, growths: cls ? Object.assign({}, cls.growths) : {},
-          inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '' };
+          inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '',
+          personalSkill: '', learnedSkills: [], equippedSkills: [] };
       },
       fields: () => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
@@ -131,6 +192,7 @@
         { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par chapitre)', type: 'checkbox' },
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
+        { type: 'custom', render: unitSkillsField },
         { type: 'heading', label: 'Apparence' },
         { type: 'custom', render: appearanceField },
         { type: 'custom', render: faceField },
@@ -358,6 +420,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (tab === 'skills') {
+          const users = Skills.usersOf(db(), cur.id);
+          if (users.length) return UI.alert('Compétence utilisée', 'Retire d’abord cette compétence des personnages suivants : ' + users.map(u => u.name).join(', ') + '.');
+        }
         const usage = usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(cur), 1); change(); renderBody();
@@ -365,7 +431,7 @@
     }));
     const pane = h('div', { class: 'db-form' });
     if (tab === 'skills') {
-      pane.append(h('p', { class: 'note' }, 'Catalogue des compétences. L’attribution aux unités et les effets en combat seront ajoutés à l’étape suivante.'));
+      pane.append(h('p', { class: 'note' }, 'Attribue les compétences dans la fiche des unités : une personnelle fixe + cinq équipables. Les effets en combat seront raccordés à l’étape suivante.'));
       const missing = Skills.presets().filter(s => !list.some(existing => existing.id === s.id));
       if (missing.length) pane.append(h('button', { class: 'small', style: { margin: '10px 0' }, onclick: () => {
         list.push(...missing); selected.skills = missing[0].id; change(); renderBody();

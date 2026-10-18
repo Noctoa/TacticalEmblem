@@ -38,6 +38,11 @@ body { background: #07080b; }
 .u-stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(9, auto); gap: 0 10px; font-size: 12px; font-variant-numeric: tabular-nums; border-top: 1px solid rgba(201, 178, 122, .35); padding-top: 4px; }
 .u-stats span { color: #c9b27a; }
 .u-weapon { font-size: 12px; margin-top: 2px; color: #e6dfc8; }
+.u-skill-button { margin-top: 5px; padding: 3px 8px; font-size: 12px; }
+.game-skill-card { border: 1px solid var(--line); padding: 9px 12px; border-radius: 6px; margin-top: 8px; }
+.game-skill-card b { color: var(--gold-2); }
+.game-skill-card p { color: var(--text-2); margin: 5px 0 0; font-size: 12px; }
+.skill-details-modal { max-height: 88vh; overflow-y: auto; }
 
 .menu { min-width: 150px; padding: 6px; display: flex; flex-direction: column; }
 .menu button { all: unset; padding: 6px 14px 6px 22px; border-radius: 4px; cursor: pointer; position: relative; font-weight: 600; }

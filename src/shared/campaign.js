@@ -1,12 +1,12 @@
 /* État de campagne indépendant du rendu. Les sauvegardes sont des débuts de chapitre. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Campaign = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Skills) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
-  const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
+  const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
   const create = mode => ({ mode: mode === 'casual' ? 'casual' : 'classic', dead: [], units: {} });
   const permanent = (campaign, unit) => campaign.mode === 'classic' && unit.deathPolicy !== 'retreat';
   function commit(campaign, units) {
@@ -30,6 +30,7 @@
     unit.mapSprite = character.mapSprite || (cls && cls.mapSprite) || '';
     unit.battler = character.battler || (cls && cls.battler) || '';
     unit.deathPolicy = character.deathPolicy || 'mode';
+    Object.assign(unit, Skills.loadout(unit, db.skills));
     unit.hp = unit.stats.hp;
     return unit;
   }
@@ -44,6 +45,10 @@
       !Array.isArray(save.campaign.dead) || !save.campaign.units || typeof save.campaign.units !== 'object' || Array.isArray(save.campaign.units) ||
       !Array.isArray(save.convoy) || !save.supports || typeof save.supports !== 'object') throw new Error('Sauvegarde de campagne invalide ou version non prise en charge.');
     for (const u of Object.values(save.campaign.units)) if (!u || !u.stats || !Number.isFinite(u.stats.hp) || !Array.isArray(u.inventory)) throw new Error('Une unité de la sauvegarde est illisible.');
+    for (const u of Object.values(save.campaign.units)) {
+      const errors = Skills.validateAssignment(u);
+      if (errors.length) throw new Error('Compétences invalides dans la campagne : ' + errors.join(' '));
+    }
     return save;
   }
   function restore(save, supports) {
