@@ -118,7 +118,7 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `PlaytestState.turn = 100; ${heroCode}.done = false`);
       await key('Z'); await key('Z'); await until(wc, `PlaytestState.ui === 'menu'`);
       await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Attendre').action()`); await until(wc, 'PlaytestState.over');
-      await click(wc, '#end button', 'Chapitre suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
+      await click(wc, '#end button', 'Acte suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
       assert.deepEqual(await js(wc, `${heroCode}.learnedSkills`), learned); assert.deepEqual(await js(wc, `${heroCode}.equippedSkills`), equipped);
       await js(wc, 'PlaytestState.cursor = { x: 0, y: 0 }'); await key('Z');
       await js(wc, `(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`); await until(wc, '!PlaytestState.busy'); win.close();

@@ -221,10 +221,10 @@
   function sampleChapter() {
     const brig = (id, x, y, level, extra) => Object.assign({ id, name: 'Brigand', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
     return {
-      id: 'ch_1', name: 'Prologue — Les brigands du fort', mapId: 'map_1',
+      id: 'ch_1', name: 'Le fort de Batta', mapId: 'map_1', // chapitre 1, acte 1
       objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
-      next: '', final: true, // dernier chapitre : la victoire ouvre l'épilogue
-      kind: 'story', gold: 1000, // or gagné à la première victoire (lobby)
+      next: 'ch_1_2', final: false, // sans lobby : les actes s'enchaînent par « Acte suivant »
+      kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
       players: [
         { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
         { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
@@ -299,7 +299,7 @@
     return {
       enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_eliwood', startGold: 500, music: '',
       start: { x: 7, y: 8 },
-      board: { x: 10, y: 2, label: 'Table des chapitres' },
+      board: { x: 10, y: 2, label: 'Tableau des quêtes' },
       shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal'] },
       spots: [
         { unitId: 'c_lyn', x: 4, y: 5, after: '' },
@@ -315,28 +315,67 @@
         "Lyn: Eliwood. Le fort des brigands est juste au nord de la rivière.\nEliwood: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
       { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
         "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nEliwood: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
-      { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'ch_1', alive: [], points: 15, once: true, script:
+      { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'arc_1', alive: [], points: 15, once: true, script:
         "Lyn: Tu t'es bien battu, au fort.\nEliwood: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
       { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'ch_1', alive: [], points: 0, once: true, script:
         "Cloud: … Ton camp est calme.\nEliwood: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
     ];
   }
-  /** Chapitre évènementiel d'exemple : ouvert après le prologue, rejouable, rapporte de l'or à chaque victoire. */
-  function eventChapter() {
-    const brig = (id, x, y, level, extra) => Object.assign({ id, name: 'Pillard', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
-    return {
-      id: 'ch_ev_1', name: 'Évènement — Pillards au gué', mapId: 'map_1', kind: 'event',
-      unlock: { after: 'ch_1', alive: [], from: '', to: '' }, gold: 400, goldEachClear: true, replay: true,
-      objective: { type: 'rout', turns: 10, x: 0, y: 0 }, next: '', final: false,
-      players: [
-        { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
-        { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
-        { id: 'p3', unitId: 'c_hector', x: 6, y: 13 }
-      ],
-      allies: [],
-      enemies: [brig('ev_e1', 8, 9, 2, { gold: 100 }), brig('ev_e2', 10, 6, 2), brig('ev_e3', 13, 6, 3, { ai: 'range', gold: 100 })],
-      events: [{ id: 'ev1', trigger: { type: 'start' }, once: true, script: "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nEliwood: Alors chassons-les avant qu'ils reviennent en nombre." }]
-    };
+  // ------------------------------------------------------------------
+  // Actes d'exemple : chapitre 1 (2 actes), chapitre 2 (2 actes), évènement (2 actes)
+  // ------------------------------------------------------------------
+  const foe = (id, x, y, level, extra) => Object.assign({ id, name: 'Brigand', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
+  const act = (o) => Object.assign({ mapId: 'map_1', kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true,
+    next: '', final: false, allies: [], events: [] }, o);
+  const say = (id, script, trigger) => ({ id, trigger: trigger || { type: 'start' }, once: true, script });
+  const trio = (e, l, h) => [{ id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
+
+  function extraActs() {
+    return [
+      act({ id: 'ch_1_2', name: 'Les renforts des collines', next: 'ch_2_1', gold: 600,
+        objective: { type: 'rout', turns: 10, x: 0, y: 0 },
+        players: trio([17, 2], [16, 2], [18, 3]),
+        enemies: [foe('r1', 8, 10, 2), foe('r2', 13, 10, 2, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('r3', 14, 9, 3, { gold: 100 }),
+          foe('r4', 0, 7, 2, { appearTurn: 2 }), foe('r5', 1, 8, 3, { appearTurn: 2, gold: 100 })],
+        events: [say('ev1', "Lyn: Le fort est à nous… mais regardez les collines.\nHector: Des renforts ! Ils arrivent trop tard pour sauver Batta.\nEliwood: Pas trop tard pour nous causer des ennuis. On les repousse !")] }),
+      act({ id: 'ch_2_1', name: "L'embuscade", next: 'ch_2_2', gold: 800,
+        objective: { type: 'survive', turns: 5, x: 0, y: 0 },
+        players: trio([16, 6], [17, 7], [16, 7]),
+        enemies: [foe('m1', 12, 3, 3, { name: 'Mercenaire', classId: 'mercenary', inventory: [{ id: 'w_iron_sword' }] }), foe('m2', 19, 9, 3), foe('m3', 13, 12, 3, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }),
+          foe('m4', 18, 12, 2, { gold: 150 }), foe('m5', 19, 4, 3, { appearTurn: 2 }), foe('m6', 19, 10, 3, { appearTurn: 3 }), foe('m7', 15, 13, 2, { appearTurn: 3 })],
+        events: [say('ev1', "Eliwood: La route de Pherae passe par ce pont.\nLyn: Attention… on nous attendait. Ils sont partout !\nHector: Tenez bon jusqu'à ce qu'ils se lassent. Cinq tours, pas plus !")] }),
+      act({ id: 'ch_2_2', name: 'Le fort de Zagan', final: true, gold: 1200, // dernier acte de l'histoire : la victoire ouvre l'épilogue
+        objective: { type: 'seize', turns: 10, x: 5, y: 12, text: 'Prendre le fort du sud-ouest' },
+        players: trio([17, 2], [16, 2], [18, 3]),
+        enemies: [{ id: 'z1', name: 'Zagan', classId: 'brigand', level: 6, x: 5, y: 12, ai: 'stationary', appearTurn: 0, isBoss: true,
+          inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 8, str: 2, def: 3 }, gold: 500 },
+          foe('z2', 4, 11, 3), foe('z3', 6, 11, 3, { ai: 'range' }), foe('z4', 3, 10, 2, { inventory: [{ id: 'w_hand_axe' }] }), foe('z5', 7, 9, 3), foe('z6', 9, 4, 2)],
+        events: [say('ev1', "Eliwood: Le fort du sud-ouest garde l'entrée de Pherae.\nHector: Et son chef, Zagan, n'a pas l'air de vouloir nous laisser passer.\nLyn: Alors on le prend. Ensemble."),
+          say('ev2', "Zagan: Pherae ne vous… attendra pas…", { type: 'death', target: 'z1' })] }),
+      // évènement : deux actes
+      act({ id: 'ch_ev_1', name: 'Les pillards', kind: 'event', next: 'ch_ev_2', gold: 300, goldEachClear: true,
+        objective: { type: 'rout', turns: 10, x: 0, y: 0 },
+        players: trio([5, 12], [4, 13], [6, 13]),
+        enemies: [foe('ev_e1', 8, 9, 2, { name: 'Pillard', gold: 100 }), foe('ev_e2', 10, 6, 2, { name: 'Pillard' }), foe('ev_e3', 13, 6, 3, { name: 'Pillard', ai: 'range', gold: 100 })],
+        events: [say('ev1', "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nEliwood: Alors chassons-les avant qu'ils reviennent en nombre.")] }),
+      act({ id: 'ch_ev_2', name: 'Le chef des pillards', kind: 'event', gold: 500, goldEachClear: true,
+        objective: { type: 'boss', turns: 10, x: 13, y: 5, text: 'Vaincre Kord' },
+        players: trio([5, 12], [4, 13], [6, 13]),
+        enemies: [{ id: 'k1', name: 'Kord', classId: 'brigand', level: 5, x: 13, y: 5, ai: 'stationary', appearTurn: 0, isBoss: true, inventory: [{ id: 'w_iron_axe' }], statBonus: { hp: 5, str: 1 }, gold: 300 },
+          foe('k2', 10, 5, 3, { name: 'Pillard' }), foe('k3', 12, 3, 2, { name: 'Pillard', ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('k4', 8, 10, 2, { name: 'Pillard' })],
+        events: [say('ev1', "Hector: Leur chef s'est retranché sur le banc de sable.\nEliwood: Sans lui, les pillards se disperseront. Allons-y.")] })
+    ];
+  }
+  /** Chapitres : groupes d'actes, joués dans l'ordre (data/arcs.json). */
+  function arcs() {
+    return [
+      { id: 'arc_1', name: 'Chapitre 1 — Les brigands du fort', kind: 'story', description: 'Libérer le fort tenu par Batta et ses brigands.',
+        unlock: { after: '', alive: [], from: '', to: '' }, acts: ['ch_1', 'ch_1_2'] },
+      { id: 'arc_2', name: 'Chapitre 2 — La route de Pherae', kind: 'story', description: 'Rejoindre Pherae malgré les embuscades.',
+        unlock: { after: '', alive: [], from: '', to: '' }, acts: ['ch_2_1', 'ch_2_2'] },
+      { id: 'arc_ev_1', name: 'Évènement — Pillards au gué', kind: 'event', description: 'Des pillards rôdent autour du gué. Rejouable : l\'or est gagné à chaque victoire.',
+        unlock: { after: 'arc_1', alive: [], from: '', to: '' }, acts: ['ch_ev_1', 'ch_ev_2'] }
+    ];
   }
 
   // Affinités : paires de personnages, conversations par rang, attaques débloquées, fin à deux
@@ -387,14 +426,15 @@
   }
 
   function emptyDatabase() {
-    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [] };
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [] };
   }
 
   function sampleProject(name) {
     const db = emptyDatabase();
     db.units = characters();
     db.tilesets = [sampleTileset()];
-    db.chapters = [sampleChapter(), eventChapter()];
+    db.chapters = [sampleChapter(), ...extraActs()];
+    db.arcs = arcs();
     db.supports = supports();
     db.talks = talks();
     return {
@@ -427,5 +467,5 @@
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, eventChapter, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

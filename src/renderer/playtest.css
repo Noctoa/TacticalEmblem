@@ -272,3 +272,17 @@ body.in-lobby #game { cursor: pointer; }
 body.in-settings #menu, body.in-settings #lobby-panel { display: none !important; }
 body.in-settings #unit-win, body.in-settings #terrain-win { display: none !important; }
 #settings button { white-space: nowrap; }
+/* tableau des quêtes : cartes de chapitre */
+#lobby-panel .lp-arc { border: 1px solid rgba(201, 178, 122, .35); border-radius: 8px; padding: 8px 10px 10px; background: rgba(0, 0, 0, .14); display: flex; flex-direction: column; gap: 5px; margin-bottom: 4px; }
+#lobby-panel .lp-arc.new, #lobby-panel .lp-arc.prog { border-color: rgba(242, 213, 138, .8); }
+#lobby-panel .lp-arc.off { opacity: .7; }
+#lobby-panel .lp-arc-head { display: flex; align-items: center; gap: 10px; }
+#lobby-panel .lp-arc-head .lp-name { flex: 1; font-size: 15px; color: #f2d58a; }
+#lobby-panel .lp-pips { display: inline-flex; gap: 3px; align-items: center; }
+#lobby-panel .lp-pips i { width: 9px; height: 9px; border-radius: 50%; border: 1px solid #c9b27a; display: inline-block; }
+#lobby-panel .lp-pips i.on { background: #9be59b; border-color: #9be59b; }
+#lobby-panel .lp-pips small { font-size: 11px; color: #c8cde0; margin-left: 4px; }
+#lobby-panel .lp-badge.prog { background: rgba(242, 196, 106, .3); color: #f2d58a; }
+#lobby-panel .lp-act { background: rgba(255, 255, 255, .04); }
+#lobby-panel .lp-actnum { color: #c9b27a; font-weight: 800; margin-right: 2px; }
+#objective .act { font-size: 11px; color: #f2d58a; font-weight: 700; margin-bottom: 2px; }

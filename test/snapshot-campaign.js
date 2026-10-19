@@ -66,7 +66,7 @@ module.exports = (editor, openPlaytest) => {
         // Les menus de jeu utilisent mousedown, pas click.
         await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Attendre').action()`);
         await until(wc, `PlaytestState.over && document.querySelector('#end').textContent.includes('Victoire')`);
-        await click(wc, '#end button', 'Chapitre suivant');
+        await click(wc, '#end button', 'Acte suivant');
         await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
         const hasVictim = await js(wc, `PlaytestState.units.some(u => u.sourceId === ${JSON.stringify(removed)})`);
         assert.equal(hasVictim, mode === 'Détente');

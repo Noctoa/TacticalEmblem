@@ -218,31 +218,47 @@
     }
 
     // --- table des chapitres
+    /** Tableau des quêtes : onglets Histoire / Évènements, une carte par chapitre, ses actes à jouer dans l'ordre. */
     function openChapters() {
-      openPanel(S.cfg.board.label || 'Table des chapitres', (body) => {
-        const all = Lobby.chapters(G.db, G.project.meta, G.campaign);
-        const hasEvents = all.some(e => e.kind === 'event');
+      openPanel(S.cfg.board.label || 'Tableau des quêtes', (body) => {
+        const all = Lobby.board(G.db, G.project.meta, G.campaign);
+        const acts = Lobby.chapters(G.db, G.project.meta, G.campaign);
+        const hasEvents = true; // les deux sections sont toujours affichées
         const tab = S.panel.tab = S.panel.tab || 'story';
-        if (hasEvents) body.append(tabs([['story', 'Histoire'], ['event', 'Évènements' + countNew(all, 'event')]], tab, (v) => { S.panel.tab = v; rerender(); }));
+        if (hasEvents) body.append(tabs([['story', 'Histoire' + countNew(acts, 'story')], ['event', 'Évènements' + countNew(acts, 'event')]], tab, (v) => { S.panel.tab = v; rerender(); }));
         const list = all.filter(e => e.kind === (hasEvents ? tab : 'story'));
         if (!list.length) body.append(h('p', { class: 'lp-empty' }, tab === 'event' ? 'Aucun évènement en cours.' : 'Aucun chapitre disponible.'));
-        for (const e of list) {
-          const badge = e.state === 'cleared' ? h('span', { class: 'lp-badge done' }, 'Terminé ✓') : e.upcoming ? h('span', { class: 'lp-badge soon' }, 'Bientôt') : h('span', { class: 'lp-badge new' }, 'Nouveau');
-          const obj = (Mission.objectives(e.ch)[0]);
-          body.append(h('div', { class: 'lp-row' + (e.playable ? '' : ' off') },
-            h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, e.ch.name, ' ', badge),
-              h('div', { class: 'lp-sub' }, [obj ? Mission.label(obj, e.ch) : '', e.gold ? `Récompense : ${e.gold} or` : (e.state === 'cleared' && e.ch.gold ? 'Récompense déjà reçue' : '')].filter(Boolean).join(' · ')),
-              e.reasons.length ? h('div', { class: 'lp-why' }, e.reasons.join(' · ')) : null),
-            h('button', { class: 'lp-go lp-focus', disabled: !e.playable, onclick: () => depart(e.ch) }, e.state === 'cleared' ? 'Rejouer' : 'Partir')));
-        }
+        for (const b of list) body.append(arcCard(b));
       });
+    }
+    const BADGE = { new: ['new', 'Nouveau'], progress: ['prog', 'En cours'], cleared: ['done', 'Terminé ✓'], locked: ['soon', 'Verrouillé'] };
+    function arcCard(b) {
+      const [cls, label] = b.upcoming ? ['soon', 'Bientôt'] : BADGE[b.state];
+      const single = b.arc.implicit;
+      const pips = single ? null : h('span', { class: 'lp-pips', title: `${b.done}/${b.total} actes terminés` },
+        b.acts.map(a => h('i', { class: a.state === 'cleared' ? 'on' : '' })), h('small', {}, `${b.done}/${b.total}`));
+      const card = h('div', { class: 'lp-arc' + (b.state === 'locked' ? ' off' : '') + ' ' + cls },
+        h('div', { class: 'lp-arc-head' }, h('div', { class: 'lp-name' }, b.arc.name), pips, h('span', { class: 'lp-badge ' + cls }, label)),
+        b.arc.description ? h('div', { class: 'lp-sub' }, b.arc.description) : null,
+        b.reasons.length ? h('div', { class: 'lp-why' }, b.reasons.join(' · ')) : null);
+      for (const a of b.acts) {
+        const obj = Mission.objectives(a.ch)[0];
+        const state = a.state === 'cleared' ? h('span', { class: 'lp-badge done' }, '✓') : a.state === 'new' ? h('span', { class: 'lp-badge new' }, 'Nouveau') : null;
+        card.append(h('div', { class: 'lp-row lp-act' + (a.playable ? '' : ' off') },
+          h('div', { class: 'lp-main' },
+            h('div', { class: 'lp-name' }, single ? a.ch.name : h('span', {}, h('b', { class: 'lp-actnum' }, `Acte ${a.index + 1}`), ' ', a.ch.name), ' ', state),
+            h('div', { class: 'lp-sub' }, [obj ? Mission.label(obj, a.ch) : '', a.gold ? `Récompense : ${a.gold} or` : (a.state === 'cleared' && a.ch.gold ? 'Récompense déjà reçue' : '')].filter(Boolean).join(' · ')),
+            b.state !== 'locked' && a.reasons.length ? h('div', { class: 'lp-why' }, a.reasons.join(' · ')) : null),
+          h('button', { class: 'lp-go lp-focus', disabled: !a.playable, onclick: () => depart(a.ch) }, a.state === 'cleared' ? 'Rejouer' : 'Partir')));
+      }
+      return card;
     }
     const countNew = (all, kind) => { const n = all.filter(e => e.kind === kind && e.state === 'new').length; return n ? ` (${n})` : ''; };
     async function depart(ch) {
       const map = G.project.maps.find(m => m.id === ch.mapId);
-      const errors = map ? Mission.validate(ch, G.db, map) : ['Map du chapitre introuvable.'];
-      if (errors.length) return UI.alert('Chapitre invalide', errors.join('\n'));
-      if (!(await UI.confirm(`Partir pour « ${ch.name} » ?`, { ok: 'Partir' }))) return;
+      const errors = map ? Mission.validate(ch, G.db, map) : ["Map de l'acte introuvable."];
+      if (errors.length) return UI.alert('Acte invalide', errors.join('\n'));
+      if (!(await UI.confirm(`Partir pour « ${Lobby.actLabel(G.db, ch.id)} » ?`, { ok: 'Partir' }))) return;
       Campaign.commit(G.campaign, G.units);
       leave();
       await api.loadChapter(ch);
@@ -325,7 +341,7 @@
     function openMenu() {
       const all = Lobby.chapters(G.db, G.project.meta, G.campaign);
       api.showMenu([
-        { label: 'Chapitres', sub: countNew(all, 'story').trim() + countNew(all, 'event').trim(), action: () => { api.hideMenu(); openChapters(); } },
+        { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
         { label: 'Paramètres', sub: 'sauvegarde, son… (Échap)', action: () => { api.hideMenu(); G.ui = 'idle'; api.openSettings(); } },
         { label: 'Quitter le test', action: () => window.close() }
@@ -341,7 +357,7 @@
       const talks = Lobby.talks(S.cfg, G.db, G.campaign);
       obj.innerHTML = '';
       obj.append(h('div', { class: 'lbl' }, S.cfg.name), h('div', { class: 'obj' }, goldLabel()),
-        h('div', { class: 'turn' }, fresh.length ? `${fresh.length} chapitre(s) à jouer` : 'Aucun nouveau chapitre'),
+        h('div', { class: 'turn' }, fresh.length ? `${fresh.length} acte(s) à jouer` : 'Aucun nouvel acte'),
         talks.length ? h('div', { class: 'turn' }, `${talks.length} conversation(s) — « ! »`) : null,
         h('div', { class: 'turn' }, G.campaign.mode === 'classic' ? 'Classique' : 'Détente'));
       refreshHint();
@@ -349,7 +365,7 @@
     function refreshHint() {
       if (G.mode !== 'lobby') return;
       const t = target();
-      const what = !t ? '' : t.kind === 'npc' ? `Z : parler à ${t.unit.name}` : t.kind === 'board' ? `Z : ${S.cfg.board.label || 'chapitres'}` : `Z : ${S.cfg.shop.name || 'boutique'}`;
+      const what = !t ? '' : t.kind === 'npc' ? `Z : parler à ${t.unit.name}` : t.kind === 'board' ? `Z : ${S.cfg.board.label || 'tableau des quêtes'}` : `Z : ${S.cfg.shop.name || 'boutique'}`;
       $('#help').textContent = (what ? what + ' · ' : '') + 'Flèches / clic : se déplacer · X : menu du camp · Échap : paramètres · M : son';
     }
 
@@ -369,7 +385,7 @@
       };
       const fresh = Lobby.chapters(G.db, G.project.meta, G.campaign).some(e => e.state === 'new');
       ring(S.cfg.board.x, S.cfg.board.y, '#f2d58a');
-      label(S.cfg.board.x, S.cfg.board.y, (fresh ? '! ' : '') + (S.cfg.board.label || 'Chapitres'), '#f2d58a');
+      label(S.cfg.board.x, S.cfg.board.y, (fresh ? '! ' : '') + (S.cfg.board.label || 'Tableau des quêtes'), '#f2d58a');
       if (S.cfg.shop.enabled) { ring(S.cfg.shop.x, S.cfg.shop.y, '#9fe0ff'); label(S.cfg.shop.x, S.cfg.shop.y, S.cfg.shop.name || 'Boutique', '#9fe0ff'); }
       const talking = new Set(Lobby.talks(S.cfg, G.db, G.campaign).map(e => e.unit.id));
       for (const u of S.npcs) {

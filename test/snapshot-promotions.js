@@ -106,7 +106,7 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `PlaytestState.turn = 100; H.done = false; PlaytestState.cursor = { x: H.x, y: H.y }`);
       await key('Z'); await key('Z'); await until(wc, `PlaytestState.ui === 'menu'`);
       await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Attendre').action()`); await until(wc, 'PlaytestState.over');
-      await click(wc, '#end button', 'Chapitre suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
+      await click(wc, '#end button', 'Acte suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
       const readState = `(() => { const u = PlaytestState.units.find(u => u.sourceId === ${JSON.stringify(hero.id)}); return { classId: u.classId, level: u.level, stats: u.stats, inventory: u.inventory, effectiveLevel: u.effectiveLevel, equippedSkills: u.equippedSkills }; })()`;
       assert.deepEqual(await js(wc, readState), state);
       await js(wc, `PlaytestState.cursor = { x: 0, y: 0 }`); await key('Z'); await js(wc, `(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`);

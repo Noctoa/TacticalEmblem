@@ -200,7 +200,7 @@
         h('span', { class: 'st-inline' }, item, btn('Ajouter au convoi', () => api.debug.addItem(item.value))),
         btn('Affinités +20 (toutes les paires)', api.debug.supports));
       if (G.lobbyOn) {
-        const chSel = h('select', { class: 'st-focus' }, G.db.chapters.map(c => h('option', { value: c.id }, ((G.campaign.cleared || []).includes(c.id) ? '✓ ' : '') + c.name)));
+        const chSel = h('select', { class: 'st-focus' }, G.db.chapters.map(c => h('option', { value: c.id }, ((G.campaign.cleared || []).includes(c.id) ? '✓ ' : '') + Lobby.actLabel(G.db, c.id))));
         if (S.chapter) chSel.value = S.chapter;
         chSel.addEventListener('change', () => { S.chapter = chSel.value; });
         group('Progression (lobby)',

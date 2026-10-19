@@ -227,3 +227,15 @@
 .lobby-spot select { width: auto; }
 .lobby-spot a { font-size: 12px; color: var(--gold-2); margin-left: auto; }
 #db-body.single .db-form > .form-info { max-width: 760px; }
+/* chapitres (groupes d'actes) */
+.arc-line { max-width: 760px; margin: -4px 0 10px; font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.arc-line a { color: var(--gold-2); }
+.arc-add { display: inline-flex; gap: 6px; align-items: center; }
+.arc-add select { width: auto; }
+.arc-acts { display: flex; flex-direction: column; gap: 6px; max-width: 760px; }
+.arc-act { display: grid; grid-template-columns: 64px minmax(120px, 1fr) 2fr auto; gap: 10px; align-items: center; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; }
+.arc-num { color: var(--gold-2); }
+.arc-name { font-weight: 600; }
+.arc-act .muted { font-size: 12px; }
+.arc-tools { display: flex; gap: 4px; }
+.note.arc-note { color: var(--gold-2); }

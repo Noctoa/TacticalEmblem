@@ -1,4 +1,4 @@
-/* Éditeur principal : projet, maps, calques, terrain, placements de chapitre. */
+/* Éditeur principal : projet, maps, calques, terrain, placements des actes (niveaux jouables, data/chapters.json). */
 (function () {
   'use strict';
   const { h } = UI;
@@ -62,6 +62,7 @@
     for (const c of p.db.classes) { if (c.mapSprite === undefined) c.mapSprite = ''; if (c.battler === undefined) c.battler = ''; }
     for (const u of p.db.units) { if (u.mapSprite === undefined) u.mapSprite = ''; if (u.battler === undefined) u.battler = ''; }
     if (!Array.isArray(p.db.talks)) p.db.talks = [];
+    if (!Array.isArray(p.db.arcs)) p.db.arcs = [];
     p.resources = p.resources || { characters: {}, battlers: {}, faces: [], tilesets: [], system: [] };
   }
 
@@ -121,7 +122,7 @@
     const name = await UI.prompt('Nouveau projet', 'Mon Tactical RPG', 'Nom du jeu');
     if (!name) return;
     const template = await UI.choose('Contenu de départ', [
-      { value: 'sample', label: "Projet d'exemple", desc: 'Base de données complète + un chapitre jouable (5 unités, boss, renforts, dialogues).', primary: true },
+      { value: 'sample', label: "Projet d'exemple", desc: 'Base de données complète, un camp, deux chapitres de deux actes et un évènement (boss, renforts, dialogues).', primary: true },
       { value: 'empty', label: 'Projet vide', desc: 'Base de données par défaut (classes, armes, terrains), une map vierge.' }
     ]);
     if (!template) return;
@@ -841,7 +842,7 @@
     box.append(h('div', { class: 'section-head' }, h('h3', {}, 'Placer'),
       h('div', { class: 'head-actions' }, h('button', { class: 'mini', title: 'Base de données', html: Icons.icon('db'), onclick: () => DBEditor.open('units') }))));
     const list = h('div', { class: 'pick-list' });
-    if (!ch) { list.append(h('p', { class: 'note' }, "Cette map n'a pas encore de chapitre. Crée-en un dans le panneau de droite.")); box.append(list); return; }
+    if (!ch) { list.append(h('p', { class: 'note' }, "Cette map n'a pas encore d'acte. Crée-en un dans le panneau de droite.")); box.append(list); return; }
     list.append(h('div', { class: 'pick-group' }, 'Unités du joueur'));
     for (const u of DB().units) {
       const placed = ch.players.find(p => p.unitId === u.id);
@@ -890,7 +891,7 @@
         box.append(h('div', {
           class: 'tree-item child' + (c.id === S.chapterId && m.id === S.mapId && S.mode === 'units' ? ' on' : ''),
           onclick: () => selectChapter(c.id), html: Icons.icon('flag')
-        }, h('span', {}, c.name), S.project.meta.startChapter === c.id ? h('span', { class: 'start-badge', title: 'Chapitre de départ' }, 'départ') : null));
+        }, h('span', {}, c.name), S.project.meta.startChapter === c.id ? h('span', { class: 'start-badge', title: 'Acte de départ' }, 'départ') : null));
       }
     }
     const orphans = DB().chapters.filter(c => !S.project.maps.some(m => m.id === c.mapId));
@@ -945,7 +946,7 @@
   }
   async function deleteMap(m) {
     const chs = chaptersOf(m);
-    const ok = await UI.confirm(`Supprimer « ${m.name} » ?` + (chs.length ? `\n${chs.length} chapitre(s) lié(s) seront aussi supprimés.` : ''), { danger: true, ok: 'Supprimer' });
+    const ok = await UI.confirm(`Supprimer « ${m.name} » ?` + (chs.length ? `\n${chs.length} acte(s) lié(s) seront aussi supprimés.` : ''), { danger: true, ok: 'Supprimer' });
     if (!ok) return;
     snapshot('project');
     S.project.maps = S.project.maps.filter(x => x !== m);
@@ -997,7 +998,7 @@
       let replaced = false;
       if (previous) {
         const choice = await UI.choose(`« ${fname} » a déjà été importée`, [
-          { value: 'replace', label: `Mettre à jour « ${previous.name} »`, desc: 'Garde les chapitres liés (et les surcharges de terrain si la taille est identique).', primary: true },
+          { value: 'replace', label: `Mettre à jour « ${previous.name} »`, desc: 'Garde les actes liés (et les surcharges de terrain si la taille est identique).', primary: true },
           { value: 'new', label: 'Créer une nouvelle map' }
         ]);
         if (!choice) { S.undo.pop(); continue; }
@@ -1019,7 +1020,7 @@
     await UI.alert('Import Tiled terminé', report);
     const unitObjs = lastMap.objects.filter(o => objectKind(o));
     if (unitObjs.length && !chaptersOf(lastMap).length) {
-      if (await UI.confirm(`La map contient ${unitObjs.length} objet(s) d'unités (player / enemy / boss / seize).\nCréer un chapitre avec ces placements ?`, { ok: 'Créer le chapitre' })) {
+      if (await UI.confirm(`La map contient ${unitObjs.length} objet(s) d'unités (player / enemy / boss / seize).\nCréer un acte avec ces placements ?`, { ok: "Créer l'acte" })) {
         createChapter(lastMap, true);
       }
     }
@@ -1082,7 +1083,7 @@
 
   function createChapter(map, fromObjects) {
     snapshot('project');
-    const ch = { id: uid('ch_', DB().chapters), name: 'Chapitre ' + (DB().chapters.length + 1), mapId: map.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [] };
+    const ch = { id: uid('ch_', DB().chapters), name: 'Acte ' + (DB().chapters.length + 1), mapId: map.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [] };
     DB().chapters.push(ch);
     if (fromObjects) placementsFromObjects(map, ch);
     if (!S.project.meta.startChapter) S.project.meta.startChapter = ch.id;
@@ -1114,9 +1115,9 @@
         h('button', { class: 'small', onclick: () => resizeMap(m, sz.w, sz.h) }, 'Appliquer')),
       h('dl', { class: 'kv' }, h('dt', {}, 'Tiles'), h('dd', {}, `${m.tileWidth} × ${m.tileHeight} px`),
         m.source ? [h('dt', {}, 'Source Tiled'), h('dd', {}, m.source.file)] : null,
-        h('dt', {}, 'Chapitres'), h('dd', {}, String(chaptersOf(m).length))),
+        h('dt', {}, 'Actes'), h('dd', {}, String(chaptersOf(m).length))),
       h('div', { class: 'insp-actions' },
-        h('button', { class: 'small', onclick: () => createChapter(m, false), html: Icons.icon('flag') }, 'Nouveau chapitre'),
+        h('button', { class: 'small', onclick: () => createChapter(m, false), html: Icons.icon('flag') }, 'Nouvel acte'),
         h('button', { class: 'small', onclick: () => duplicateMap(m), html: Icons.icon('copy') }, 'Dupliquer'),
         h('button', { class: 'small danger', onclick: () => deleteMap(m), html: Icons.icon('trash') }, 'Supprimer'))
     ));
@@ -1193,10 +1194,10 @@
   function renderChapterInspector(box, m) {
     const chs = chaptersOf(m);
     if (!chs.length) {
-      box.append(section('Chapitre',
-        h('p', { class: 'note' }, "Un chapitre = une bataille jouée sur cette map : unités du joueur, ennemis, objectif et dialogues."),
+      box.append(section('Acte',
+        h('p', { class: 'note' }, "Un acte = une bataille jouée sur cette map : unités du joueur, ennemis, objectif et dialogues. Les actes se regroupent en chapitres (Base de données › Chapitres)."),
         h('div', { class: 'insp-actions' },
-          h('button', { class: 'primary small', onclick: () => createChapter(m, false) }, 'Créer un chapitre'),
+          h('button', { class: 'primary small', onclick: () => createChapter(m, false) }, 'Créer un acte'),
           m.objects.some(o => objectKind(o)) ? h('button', { class: 'small', onclick: () => createChapter(m, true) }, 'Depuis les objets Tiled') : null)));
       return;
     }
@@ -1208,10 +1209,12 @@
     if (chs.length > 1) {
       const sel = h('select', {}, chs.map(c => h('option', { value: c.id }, c.name)));
       sel.value = ch.id; sel.addEventListener('change', () => { S.chapterId = sel.value; S.selected = null; renderAll(); });
-      top.push(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Chapitre de cette map'), sel));
+      top.push(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Acte de cette map'), sel));
     }
     const isStart = { v: meta.startChapter === ch.id };
-    box.append(section('Chapitre', ...top,
+    const arcInfo = Lobby.actInfo(DB(), ch.id);
+    if (arcInfo && !arcInfo.arc.implicit) top.unshift(h('p', { class: 'note arc-note' }, `${arcInfo.arc.name} · acte ${arcInfo.index + 1}/${arcInfo.arc.acts.length}`));
+    box.append(section('Acte', ...top,
       UI.form([
         { key: 'name', label: 'Nom', type: 'text' },
         { key: 'objective.type', label: 'Objectif', type: 'select', options: OBJECTIVES }
@@ -1221,9 +1224,9 @@
         h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Case à prendre'), h('span', {}, `x ${ch.objective.x ?? 0} · y ${ch.objective.y ?? 0}`)),
         h('button', { class: 'small' + (S.picking === 'seize' ? ' primary' : ''), onclick: () => { S.picking = S.picking === 'seize' ? null : 'seize'; renderInspector(); updateStatus(); } }, S.picking === 'seize' ? 'Clique sur la map…' : 'Choisir sur la map')) : null,
       ch.objective.type === 'boss' && !ch.enemies.some(e => e.isBoss) ? h('p', { class: 'note' }, '⚠ Aucun ennemi n\'est marqué comme boss.') : null,
-      ch.objective.type === 'seize' && !Mission.seizers(ch, DB()).length ? h('p', { class: 'note' }, '⚠ Aucun personnage autorisé à prendre le point. Configure les conditions du chapitre.') : null,
+      ch.objective.type === 'seize' && !Mission.seizers(ch, DB()).length ? h('p', { class: 'note' }, '⚠ Aucun personnage autorisé à prendre le point. Configure les conditions de l\'acte.') : null,
       h('p', { class: 'note' }, 'À protéger : ' + (Mission.required(ch, DB()).map(id => (byId(DB().units, id) || {}).name || id).join(', ') || 'personne') + ((ch.extraObjectives || []).length ? ' · Objectifs combinés' : '')),
-      UI.form([{ key: 'v', label: 'Chapitre de départ du jeu', type: 'checkbox' }], isStart, { onChange: () => { meta.startChapter = isStart.v ? ch.id : ''; change(); } }),
+      UI.form([{ key: 'v', label: 'Acte de départ du jeu', type: 'checkbox' }], isStart, { onChange: () => { meta.startChapter = isStart.v ? ch.id : ''; change(); } }),
       h('div', { class: 'insp-actions' },
         h('button', { class: 'small', onclick: () => DBEditor.open('chapters', ch.id), html: Icons.icon('chat') }, 'Conditions & événements'),
         h('button', { class: 'small primary', onclick: () => playtest(ch.id), html: Icons.icon('play') }, 'Tester'))
@@ -1334,12 +1337,12 @@
       return safe(() => tf.playtest(S.dir, Lobby.LOBBY_SAVE));
     }
     const id = chapterId || (curChapter() && curChapter().id) || S.project.meta.startChapter || (DB().chapters[0] && DB().chapters[0].id);
-    if (!id) return UI.alert('Rien à tester', "Crée d'abord un chapitre (mode Unités, F3).");
+    if (!id) return UI.alert('Rien à tester', "Crée d'abord un acte (mode Unités, F3).");
     const ch = byId(DB().chapters, id);
-    if (!ch.players.length) return UI.alert('Chapitre incomplet', "Place au moins une unité du joueur.");
+    if (!ch.players.length) return UI.alert('Acte incomplet', "Place au moins une unité du joueur.");
     const map = S.project.maps.find(m => m.id === ch.mapId);
     const errors = map ? Mission.validate(ch, DB(), map) : ['Map introuvable.'];
-    if (errors.length) return UI.alert('Conditions du chapitre à corriger', errors);
+    if (errors.length) return UI.alert("Conditions de l'acte à corriger", errors);
     await cmdSave();
     if (S.dirty) return;
     await safe(() => tf.playtest(S.dir, id));

@@ -108,7 +108,7 @@
     const errors = Mission.validate(ch, G.db, G.map);
     if (errors.length) throw new Error(errors.join('\n'));
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
-    document.title = `Playtest — ${ch.name}`;
+    document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, fired: new Set(), lost: [], sel: null,
       reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [] });
@@ -159,7 +159,7 @@
       G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
       return Object.assign({}, G.checkpoint, { info: { place: Lobby.defaults(G.project.meta.lobby).name, kind: 'camp' } });
     }
-    return Object.assign({}, G.checkpoint, { info: { place: G.chapter.name, kind: 'chapitre' } });
+    return Object.assign({}, G.checkpoint, { info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'acte' } });
   }
 
   function buildBase() {
@@ -672,6 +672,8 @@
     const result = Mission.evaluate(G.chapter, G.db, G);
     const left = enemies().length + G.pending.length;
     $('#objective').innerHTML = '';
+    const info = Lobby.actInfo(G.db, G.chapter.id);
+    if (info && !info.arc.implicit) $('#objective').append(h('div', { class: 'act' }, `${info.arc.name} · Acte ${info.index + 1}/${info.arc.acts.length}`));
     $('#objective').append(h('div', { class: 'lbl' }, 'Victoire — ' + (G.chapter.victoryMode === 'any' ? 'au moins une condition' : 'toutes les conditions')),
       ...Mission.objectives(G.chapter).map((ob, i) => h('div', { class: 'obj' }, (result.progress[i] ? '✓ ' : '○ ') + Mission.label(ob, G.chapter))),
       h('div', { class: 'turn' }, `Tour ${G.turn} · Ennemis ${left} · ${G.campaign.mode === 'classic' ? 'Classique' : 'Détente'}`));
@@ -1272,7 +1274,7 @@
   async function startChapter() {
     updateObjective();
     G.busy = true;
-    await banner(G.chapter.name, 'ally');
+    await banner(Lobby.actLabel(G.db, G.chapter.id, true), 'ally');
     await runEvents('start', {});
     G.busy = false;
     await startPlayerPhase(true);
@@ -1440,7 +1442,18 @@
     await lobby.enter();
     if (gold) UI.toast(`Récompense : +${gold} or`);
   }
-  /** Défaite ou abandon : retour au camp dans l'état d'avant le chapitre. */
+  /** Victoire avec un lobby : on enchaîne directement l'acte suivant du chapitre. */
+  async function continueArc() {
+    const next = Lobby.nextAct(G.db, G.chapter.id);
+    const map = next && G.project.maps.find(m => m.id === next.mapId);
+    const errors = map ? Mission.validate(next, G.db, map) : ["Map de l'acte suivant introuvable."];
+    if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
+    saveCampaign();
+    const gold = Lobby.completeChapter(G.campaign, G.chapter);
+    await loadChapter(next);
+    if (gold) UI.toast(`Récompense : +${gold} or`);
+  }
+  /** Défaite ou abandon : retour au camp dans l'état d'avant l'acte. */
   async function retreatToLobby() {
     const wasBusy = G.busy; G.busy = true;
     if (!G.over && !(await UI.confirm("Abandonner ce chapitre et retourner au camp ? Ce qui s'est passé pendant le chapitre est annulé.", { ok: 'Retour au camp' }))) { G.busy = wasBusy; return; }
@@ -1452,22 +1465,25 @@
     const el = $('#end'); el.className = win ? 'win-screen' : 'lose';
     el.innerHTML = '';
     const reward = win && G.lobbyOn ? Lobby.goldFor(G.chapter, (G.campaign.cleared || []).includes(G.chapter.id)) : 0;
+    // lobby : l'acte suivant du même chapitre peut s'enchaîner sans repasser par le camp
+    const nextInArc = win && G.lobbyOn && !G.chapter.final ? Lobby.nextAct(G.db, G.chapter.id) : null;
     el.append(h('div', { class: 'end-card' },
       h('h1', {}, win ? 'Victoire' : 'Défaite'),
-      h('p', {}, why || `${G.chapter.name} terminé en ${G.turn} tour(s).` + (G.lost.length ? ` Pertes : ${G.lost.join(', ')}.` : ' Aucune perte.')),
+      h('p', {}, why || `${Lobby.actLabel(G.db, G.chapter.id)} terminé en ${G.turn} tour(s).` + (G.lost.length ? ` Pertes : ${G.lost.join(', ')}.` : ' Aucune perte.')),
       reward ? h('p', { class: 'end-reward' }, `Récompense : ${reward} or`) : null,
       h('div', { class: 'end-actions' },
         win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); if (G.lobbyOn) Lobby.completeChapter(G.campaign, G.chapter); openEpilogue(); } }, 'Épilogue') : null,
-        win && G.lobbyOn ? h('button', { class: G.chapter.final ? '' : 'primary', onclick: backToLobbyAfterVictory }, 'Retour au camp →') : null,
+        win && G.lobbyOn && nextInArc ? h('button', { class: G.chapter.final ? '' : 'primary', onclick: continueArc }, `Acte ${Lobby.actInfo(G.db, nextInArc.id).index + 1} →`) : null,
+        win && G.lobbyOn ? h('button', { class: G.chapter.final || nextInArc ? '' : 'primary', onclick: backToLobbyAfterVictory }, 'Retour au camp') : null,
         !win && G.lobbyOn ? h('button', { class: 'primary', onclick: retreatToLobby }, 'Retour au camp') : null,
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? Mission.validate(next, G.db, map) : ['Map du chapitre suivant introuvable.'];
-          if (errors.length) return UI.alert('Chapitre suivant invalide', errors.join('\n'));
+          const errors = map ? Mission.validate(next, G.db, map) : ["Map de l'acte suivant introuvable."];
+          if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
-        } }, 'Chapitre suivant →') : null,
-        h('button', { class: (win && (G.chapter.final || G.chapter.next)) || G.lobbyOn ? '' : 'primary', onclick: restartChapter }, 'Recommencer ce chapitre'),
+        } }, 'Acte suivant →') : null,
+        h('button', { class: (win && (G.chapter.final || G.chapter.next)) || G.lobbyOn ? '' : 'primary', onclick: restartChapter }, 'Recommencer cet acte'),
         h('button', { onclick: () => settings.open('save') }, 'Sauvegarder…'),
         h('button', { onclick: () => window.close() }, 'Fermer'))));
   }

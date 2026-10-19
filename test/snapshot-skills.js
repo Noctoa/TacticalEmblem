@@ -163,7 +163,7 @@ module.exports = (editor, openPlaytest) => {
       await key('Z'); await untilGame(gwc, `PlaytestState.ui === 'menu'`);
       await gj(`PlaytestState.menu.items.find(i => i.label === 'Attendre').action()`);
       await untilGame(gwc, 'PlaytestState.over');
-      await gj(`[...document.querySelectorAll('#end button')].find(b => b.textContent.includes('Chapitre suivant')).click()`);
+      await gj(`[...document.querySelectorAll('#end button')].find(b => b.textContent.includes('Acte suivant')).click()`);
       await untilGame(gwc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
       const checkHero = contents => contents.executeJavaScript(`(() => { const hero = PlaytestState.units.find(u => u.sourceId === ${JSON.stringify(heroId)}); return { personalSkill: hero.personalSkill, equippedSkills: hero.equippedSkills }; })()`, true);
       const expected = { personalSkill: 'skill_precision', equippedSkills: learned.slice(0, 5) };

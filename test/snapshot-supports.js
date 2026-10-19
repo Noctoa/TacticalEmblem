@@ -12,7 +12,7 @@ module.exports = (win, openPlaytest) => {
       win.setSize(1440, 900);
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-sup-')), 'Jeu');
       io.createProject(dir, 'Test', 'sample', ROOT + '/assets');
-      { const q = io.loadProject(dir); q.meta.lobby.enabled = false; io.saveProject(dir, q); } // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
+      { const q = io.loadProject(dir); q.meta.lobby.enabled = false; q.db.chapters.find(c => c.id === 'ch_1').final = true; io.saveProject(dir, q); } // le scénario va jusqu'à l'épilogue après le 1er acte // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       const ejs = c => win.webContents.executeJavaScript(c, true);
       const eshot = async n => fs.writeFileSync(path.join(out, n + '.png'), (await win.webContents.capturePage()).toPNG());
       await ejs(`Editor.open(${JSON.stringify(dir)})`); await wait(800);

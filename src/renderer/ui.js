@@ -113,7 +113,7 @@
    */
   function form(fields, obj, ctx) {
     const wrap = h('div', { class: 'form' });
-    for (const f of fields) wrap.append(field(f, obj, ctx));
+    for (const f of fields) if (f) wrap.append(field(f, obj, ctx));
     return wrap;
   }
 
@@ -128,7 +128,7 @@
     switch (f.type) {
       case 'heading': return h('div', { class: 'form-heading' }, f.label);
       case 'info': return h('p', { class: 'form-info' }, typeof f.text === 'function' ? f.text(obj) : f.text);
-      case 'row': return h('div', { class: 'form-row' }, f.fields.map(sf => field(sf, obj, ctx)));
+      case 'row': return h('div', { class: 'form-row' }, f.fields.filter(Boolean).map(sf => field(sf, obj, ctx)));
       case 'custom': return f.render(obj, ctx);
       case 'textarea':
         input = h('textarea', { rows: f.rows || 4, placeholder: f.placeholder || '', spellcheck: false });

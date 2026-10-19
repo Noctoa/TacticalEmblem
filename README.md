@@ -90,13 +90,15 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 - **Debug** (masquable : Système › Playtest) : invincibilité, déplacement illimité, ennemis passifs ; victoire / défaite immédiate, vaincre tous les ennemis, soigner, faire rejouer, tour suivant ; unité sous le curseur (+1 / +5 niveaux, PV max, vaincre) ; or, objet dans le convoi, affinités +20 ; au camp, marquer des chapitres terminés et revoir les conversations.
 
 **Lobby (le camp)** — Comme dans Fire Emblem Heroes, le jeu commence dans un lobby et y revient après chaque chapitre. C'est une petite map explorable (faite dans l'éditeur comme une map de chapitre) où l'on déplace le héros au clavier (flèches) ou à la souris (clic : il y va, et interagit s'il s'agit d'un personnage ou d'un bâtiment) :
-- **Table des chapitres** : onglet *Histoire* (le chapitre de départ, puis le « Chapitre suivant » de chaque chapitre terminé) et onglet *Évènements* (chapitres optionnels). Les chapitres terminés se rejouent, sauf si on décoche *Rejouable*.
+- **Tableau des quêtes** : deux sections, *Histoire* et *Évènements*. Chaque **chapitre** y apparaît comme une carte qui contient ses **actes** (les niveaux jouables), à jouer dans l'ordre : l'acte 2 s'ouvre quand l'acte 1 est gagné, et la victoire propose « Acte 2 → » pour enchaîner sans repasser par le camp. Les chapitres d'histoire s'ouvrent l'un après l'autre ; les évènements selon leurs conditions et leurs dates (« Bientôt » avant la date). Les actes terminés se rejouent, sauf si on décoche *Rejouable*.
 - **Boutique** : achat (rangé dans le convoi ou l'inventaire d'un personnage présent) et revente à moitié prix, au prorata des utilisations restantes. Prix réglés sur chaque arme et objet ; `0` = ne se vend pas.
 - **Personnages présents** : ceux que l'on place dans le lobby, éventuellement à partir d'un chapitre (Cloud rejoint le camp après le prologue). Un « ! » au-dessus d'eux signale une **conversation de lobby** disponible : Z (ou un clic) pour la jouer. Elle peut faire gagner de l'affinité avec le héros.
 - **Or** : récompense de chapitre (la première victoire, ou à chaque victoire), bourse des ennemis vaincus (réglée sur le placement de l'ennemi), revente.
 - X (ou clic droit) : menu du camp — chapitres, boutique, sauvegarde au camp, musique. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
 
-Réglages : Base de données › **Lobby** (map, héros, départ, table, boutique et articles, personnages présents — placement en cliquant sur l'aperçu de la map —, or de départ, musique, bouton *Tester le lobby*), › **Conversations** (personnage, chapitre à terminer avant, personnages vivants requis, affinité gagnée, une seule fois, dialogue « Nom: texte »), › **Chapitres** (type Histoire / Évènement, or à la victoire, rejouable, chapitre à terminer avant, personnages vivants requis, **dates réelles** de début et de fin — un évènement daté s'affiche « Bientôt » avant sa date). Sans lobby (case décochée), les chapitres s'enchaînent comme avant. Le bouton *Tester* d'un chapitre propose aussi de le lancer directement.
+**Chapitres et actes** — Un *acte* est un niveau jouable (map, placements, objectif, dialogues : onglet **Actes**, placements en mode Unités). Un *chapitre* regroupe des actes dans l'ordre (onglet **Chapitres** : nom, section Histoire ou Évènements, description, conditions et dates de déblocage, liste ordonnée des actes avec ▲ ▼, « Nouvel acte »). Les actes rangés dans aucun chapitre (anciens projets) s'affichent chacun comme un chapitre d'un seul acte. Les conditions « disponible après » acceptent un chapitre entier ou un acte précis. Fichier : `data/arcs.json`.
+
+Réglages : Base de données › **Lobby** (map, héros, départ, table, boutique et articles, personnages présents — placement en cliquant sur l'aperçu de la map —, or de départ, musique, bouton *Tester le lobby*), › **Conversations** (personnage, chapitre à terminer avant, personnages vivants requis, affinité gagnée, une seule fois, dialogue « Nom: texte »), › **Chapitres** (section, conditions, **dates réelles**, actes) et › **Actes** (or à la victoire — une fois ou à chaque victoire —, rejouable). Sans lobby (case décochée), les chapitres s'enchaînent comme avant. Le bouton *Tester* d'un chapitre propose aussi de le lancer directement.
 
 ## Affinités (soutiens) et épilogue
 
@@ -146,7 +148,7 @@ Les données d'un côté, les ressources de l'autre, rangées **par personnage**
 MonJeu/
   game.tfproj              nom, réglages, chapitre de départ, ordre des maps, lobby
   data/
-    units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json talks.json
+    units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json (actes) arcs.json (chapitres) supports.json talks.json
     maps/map_1.json        une map par fichier (calques = gids façon Tiled)
   ressources/
     LISEZMOI.txt           rappel de l'organisation

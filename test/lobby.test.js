@@ -133,3 +133,66 @@ test('validation de la configuration', () => {
   assert.ok(errors.some(e => /déjà occupée/.test(e)));
   assert.ok(errors.some(e => /inconnu/.test(e)));
 });
+
+// ---------- chapitres à plusieurs actes ----------
+const arcDb = () => {
+  const d = db();
+  d.chapters = [
+    { id: 'a11', name: 'Le fort', gold: 100 }, { id: 'a12', name: 'Les renforts', gold: 200 },
+    { id: 'a21', name: "L'embuscade" }, { id: 'a22', name: 'Le pont', replay: false },
+    { id: 'e1', name: 'Les pillards' }, { id: 'e2', name: 'Le chef', gold: 50, goldEachClear: true },
+    { id: 'seul', name: 'Acte isolé', kind: 'event' }
+  ];
+  d.arcs = [
+    { id: 'c1', name: 'Chapitre 1', kind: 'story', acts: ['a11', 'a12'] },
+    { id: 'c2', name: 'Chapitre 2', kind: 'story', acts: ['a21', 'a22'] },
+    { id: 'ev', name: 'Pillards', kind: 'event', unlock: { after: 'c1' }, acts: ['e1', 'e2'] },
+    { id: 'halloween', name: 'Halloween', kind: 'event', unlock: { from: '2026-10-25', to: '2026-11-02' }, acts: ['seul'] }
+  ];
+  return d;
+};
+const meta2 = { startChapter: 'a11' };
+const view = (d, c, now) => L.board(d, meta2, c, now || NOW).map(b => `${b.arc.id}:${b.state}[${b.acts.map(a => a.ch.id + (a.playable ? '+' : '-')).join(',')}]`);
+
+test('chapitres : actes dans l\'ordre, chapitre suivant quand le précédent est fini', () => {
+  const d = arcDb(), c = Campaign.create('classic');
+  assert.deepStrictEqual(view(d, c), ['c1:new[a11+,a12-]', 'halloween:locked[seul-]']);
+  assert.deepStrictEqual(L.board(d, meta2, c, NOW)[0].acts[1].reasons, ["Terminer l'acte 1"]);
+  L.completeChapter(c, d.chapters[0]);
+  assert.deepStrictEqual(view(d, c), ['c1:progress[a11+,a12+]', 'halloween:locked[seul-]']);
+  L.completeChapter(c, d.chapters[1]);
+  assert.deepStrictEqual(view(d, c), ['c1:cleared[a11+,a12+]', 'c2:new[a21+,a22-]', 'ev:new[e1+,e2-]', 'halloween:locked[seul-]']);
+  assert.strictEqual(c.gold, 300);
+  L.completeChapter(c, d.chapters[2]); L.completeChapter(c, d.chapters[3]);
+  assert.deepStrictEqual(view(d, c).slice(0, 2), ['c1:cleared[a11+,a12+]', 'c2:cleared[a21+,a22-]'], 'acte non rejouable');
+  assert.deepStrictEqual(view(d, c, new Date(2026, 9, 26)).pop(), 'halloween:new[seul+]', 'évènement daté : ouvert pendant ses dates');
+});
+
+test('chapitres : libellés, acte suivant, conditions sur un chapitre entier', () => {
+  const d = arcDb(), c = Campaign.create('classic');
+  assert.strictEqual(L.actLabel(d, 'a12'), 'Chapitre 1 · Acte 2 : Les renforts');
+  assert.strictEqual(L.actLabel(d, 'a12', true), 'Acte 2 : Les renforts');
+  assert.strictEqual(L.actLabel(d, 'seul'), 'Halloween · Acte 1 : Acte isolé');
+  assert.strictEqual(L.nextAct(d, 'a11').id, 'a12');
+  assert.strictEqual(L.nextAct(d, 'a12'), null);
+  L.completeChapter(c, d.chapters[0]);
+  assert.ok(!L.isDone(d, L.progressOf(c), 'c1'));
+  assert.match(L.conditions({ after: 'c1' }, d, L.progressOf(c)).reasons[0], /Terminer « Chapitre 1 »/);
+  L.completeChapter(c, d.chapters[1]);
+  assert.ok(L.isDone(d, L.progressOf(c), 'c1'));
+  // personnage présent au camp « après le chapitre 1 » (tous ses actes)
+  const cfg = L.defaults({ spots: [{ unitId: 'lyn', x: 1, y: 1, after: 'c1' }] });
+  assert.deepStrictEqual(L.present(cfg, d, c).map(p => p.unit.id), ['lyn']);
+});
+
+test('chapitres : erreurs de rangement', () => {
+  const d = arcDb();
+  assert.deepStrictEqual(L.validateArcs(d), []);
+  d.arcs.push({ id: 'x', name: 'Doublon', acts: ['a11', 'fantome'] }, { id: 'vide', name: 'Vide', acts: [] });
+  const errors = L.validateArcs(d);
+  assert.ok(errors.some(e => /deux chapitres/.test(e)));
+  assert.ok(errors.some(e => /acte supprimé/.test(e)));
+  assert.ok(errors.some(e => /aucun acte/.test(e)));
+  // un acte en double n'apparaît qu'une fois (dans le premier chapitre)
+  assert.strictEqual(L.arcsOf(d).filter(a => a.acts.some(c => c.id === 'a11')).length, 1);
+});

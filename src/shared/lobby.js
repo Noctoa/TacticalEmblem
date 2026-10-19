@@ -7,18 +7,23 @@
  *   mapId       map explorable (faite dans l'éditeur, comme une map de chapitre)
  *   heroId      personnage que l'on déplace ('' : le premier personnage principal / seigneur)
  *   start       { x, y } case de départ du héros
- *   board       { x, y, label } table des chapitres
+ *   board       { x, y, label } tableau des quêtes (chapitres et évènements, avec leurs actes)
  *   shop        { x, y, name, stock: [id d'arme / d'objet] } boutique ; prix réglés sur l'arme / l'objet
  *   spots       [{ unitId, x, y, after }] personnages présents (after : après tel chapitre)
  *   startGold   or au début d'une nouvelle partie
  *   music       musique du lobby
  *
- * Chapitres (data/chapters.json) :
- *   kind        'story' (histoire : s'enchaînent par « Chapitre suivant ») ou 'event' (évènement, optionnel)
- *   unlock      { after, alive: [unitId], from, to } — after : chapitre à terminer avant ;
+ * Chapitres et actes :
+ *   Un ACTE est un niveau jouable (data/chapters.json : map, placements, objectif, dialogues).
+ *   Un CHAPITRE (data/arcs.json) regroupe des actes, joués dans l'ordre :
+ *     { id, name, kind, description, unlock, acts: [id d'acte] }
+ *     kind      'story' (histoire : les chapitres s'ouvrent l'un après l'autre) ou 'event' (évènement)
+ *     unlock    { after, alive: [unitId], from, to } — after : chapitre ou acte à terminer avant ;
  *               alive : personnages vivants requis ; from / to : dates réelles « AAAA-MM-JJ » (incluses)
- *   gold        or gagné à la victoire ; goldEachClear : aussi quand on le rejoue
- *   replay      false : ne peut plus être joué une fois terminé
+ *   Un chapitre est terminé quand tous ses actes le sont. Un acte qui n'appartient à aucun chapitre
+ *   s'affiche comme un chapitre d'un seul acte (anciens projets) ; il garde alors ses propres
+ *   kind / unlock, et les chapitres d'histoire s'enchaînent aussi par « Acte suivant » (next).
+ *   Par acte : gold (or à la victoire ; goldEachClear : aussi en le rejouant), replay (false : pas rejouable).
  *
  * Conversations de lobby (data/talks.json) :
  *   { id, name, unitId, script, after, alive: [unitId], points, once }
@@ -37,7 +42,7 @@
   function defaults(cfg) {
     const c = Object.assign({ enabled: false, name: 'Camp', mapId: '', heroId: '', startGold: 0, music: '' }, cfg || {});
     c.start = Object.assign({ x: 0, y: 0 }, c.start || {});
-    c.board = Object.assign({ x: 0, y: 0, label: 'Table des chapitres' }, c.board || {});
+    c.board = Object.assign({ x: 0, y: 0, label: 'Tableau des quêtes' }, c.board || {});
     c.shop = Object.assign({ enabled: true, x: 0, y: 0, name: 'Marchand' }, c.shop || {});
     c.shop.stock = Array.isArray(c.shop.stock) ? c.shop.stock : [];
     c.spots = Array.isArray(c.spots) ? c.spots : [];
@@ -70,9 +75,8 @@
     const u = unlock || {};
     const reasons = [];
     let other = 0;
-    if (u.after && !progress.cleared.includes(u.after)) {
-      const c = byId(db.chapters, u.after);
-      reasons.push(`Terminer « ${c ? c.name : u.after} »`); other++;
+    if (u.after && !isDone(db, progress, u.after)) {
+      reasons.push(`Terminer « ${nameOf(db, u.after)} »`); other++;
     }
     for (const id of u.alive || []) {
       if (progress.dead.includes(id)) { const c = byId(db.units, id); reasons.push(`${c ? c.name : id} doit être en vie`); other++; }
@@ -83,33 +87,116 @@
     return { reasons, dateOnly: reasons.length > 0 && other === 0 };
   }
 
+  // ------------------------------------------------------------------
+  // Chapitres (groupes d'actes) et actes
+  // ------------------------------------------------------------------
   /**
-   * Chapitres vus depuis le lobby :
-   * [{ ch, kind, state: 'new' | 'cleared' | 'locked', playable, reasons, upcoming }]
-   * Un chapitre d'histoire est ouvert s'il est le chapitre de départ ou le « suivant » d'un chapitre terminé.
-   * Les chapitres verrouillés ne sont listés que s'ils sont seulement bloqués par une date à venir (évènements).
+   * Tous les chapitres : ceux de data/arcs.json (actes existants seulement), puis un chapitre implicite
+   * d'un seul acte pour chaque acte rangé nulle part. [{ id, name, kind, description, unlock, acts: [acte], implicit }]
    */
-  function chapters(db, meta, campaign, now) {
-    const progress = progressOf(campaign);
-    const list = (db && db.chapters) || [];
-    const story = list.filter(c => (c.kind || 'story') !== 'event');
-    const startId = (meta && meta.startChapter && byId(story, meta.startChapter)) ? meta.startChapter : (story[0] && story[0].id);
+  function arcsOf(db) {
+    const acts = (db && db.chapters) || [];
+    const used = new Set();
     const out = [];
-    for (const ch of list) {
-      const kind = ch.kind === 'event' ? 'event' : 'story';
-      const cleared = progress.cleared.includes(ch.id);
-      const cond = conditions(ch.unlock, db, progress, now);
-      let reached = true;
-      if (kind === 'story') reached = ch.id === startId || list.some(c => c.next === ch.id && progress.cleared.includes(c.id));
-      const reasons = reached ? cond.reasons : ['Pas encore atteint'].concat(cond.reasons);
-      const open = reached && !reasons.length;
-      const state = cleared ? 'cleared' : open ? 'new' : 'locked';
-      const playable = open && (!cleared || ch.replay !== false);
-      const upcoming = !open && reached && cond.dateOnly && isDate((ch.unlock || {}).from) && today(now) < ch.unlock.from;
-      if (state === 'locked' && !upcoming && !cleared) continue;
-      out.push({ ch, kind, state, playable, reasons, upcoming, gold: goldFor(ch, cleared) });
+    for (const a of (db && db.arcs) || []) {
+      const list = (a.acts || []).map(id => byId(acts, id)).filter(c => c && !used.has(c.id));
+      list.forEach(c => used.add(c.id));
+      out.push({ id: a.id, name: a.name || a.id, kind: a.kind === 'event' ? 'event' : 'story', description: a.description || '', unlock: a.unlock || {}, acts: list, implicit: false });
+    }
+    for (const c of acts) {
+      if (used.has(c.id)) continue;
+      out.push({ id: c.id, name: c.name, kind: c.kind === 'event' ? 'event' : 'story', description: '', unlock: c.unlock || {}, acts: [c], implicit: true });
     }
     return out;
+  }
+  /** Chapitre d'un acte et son rang : { arc, index } (null si l'acte n'existe pas). */
+  function actInfo(db, actId) {
+    for (const arc of arcsOf(db)) {
+      const i = arc.acts.findIndex(c => c.id === actId);
+      if (i >= 0) return { arc, index: i };
+    }
+    return null;
+  }
+  /** Libellé d'un acte : « Chapitre 1 — … · Acte 2 : … » (ou le nom seul pour un acte isolé). */
+  function actLabel(db, actId, short) {
+    const info = actInfo(db, actId);
+    if (!info) return actId;
+    const ch = info.arc.acts[info.index];
+    if (info.arc.implicit) return ch.name;
+    const act = `Acte ${info.index + 1} : ${ch.name}`;
+    return short ? act : `${info.arc.name} · ${act}`;
+  }
+  /** Nom d'un chapitre ou d'un acte (pour les conditions). */
+  function nameOf(db, id) {
+    const arc = ((db && db.arcs) || []).find(a => a.id === id);
+    if (arc) return arc.name || id;
+    return byId((db && db.chapters) || [], id) ? actLabel(db, id) : id;
+  }
+  /** Chapitre terminé (tous ses actes) ou acte terminé. */
+  function isDone(db, progress, id) {
+    const arc = ((db && db.arcs) || []).find(a => a.id === id);
+    if (arc) {
+      const acts = arcsOf(db).find(a => a.id === id).acts;
+      return acts.length > 0 && acts.every(c => progress.cleared.includes(c.id));
+    }
+    return progress.cleared.includes(id);
+  }
+
+  /**
+   * Tableau des quêtes : [{ arc, kind, state: 'new' | 'progress' | 'cleared' | 'locked', reasons, upcoming,
+   *   done, total, acts: [{ ch, index, state, playable, reasons, gold }] }]
+   * Histoire : le premier chapitre (celui de l'acte de départ), puis chacun s'ouvre quand le précédent
+   * est terminé. Évènements : ouverts selon leurs conditions et leurs dates.
+   * Les actes d'un chapitre se jouent dans l'ordre. Les chapitres verrouillés ne sont listés que
+   * s'ils ne sont bloqués que par une date à venir.
+   */
+  function board(db, meta, campaign, now) {
+    const progress = progressOf(campaign);
+    const arcs = arcsOf(db);
+    const story = arcs.filter(a => a.kind === 'story' && a.acts.length);
+    const first = story.find(a => meta && a.acts.some(c => c.id === meta.startChapter)) || story[0];
+    const out = [];
+    for (const arc of arcs) {
+      if (!arc.acts.length) continue;
+      const done = arc.acts.filter(c => progress.cleared.includes(c.id)).length;
+      const complete = done === arc.acts.length;
+      let reached = true;
+      if (arc.kind === 'story') {
+        const i = story.indexOf(arc);
+        reached = arc === first || (i > 0 && story[i - 1].acts.every(c => progress.cleared.includes(c.id)))
+          || arc.acts.some(a => (db.chapters || []).some(c => c.next === a.id && progress.cleared.includes(c.id)));
+      }
+      const cond = conditions(arc.unlock, db, progress, now);
+      const reasons = reached ? cond.reasons : ['Pas encore atteint'].concat(cond.reasons);
+      const open = reached && !reasons.length;
+      const upcoming = !open && reached && cond.dateOnly && isDate((arc.unlock || {}).from) && today(now) < arc.unlock.from;
+      if (!open && !upcoming && !done) continue;
+      const acts = arc.acts.map((ch, index) => {
+        const cleared = progress.cleared.includes(ch.id);
+        const prev = index === 0 || progress.cleared.includes(arc.acts[index - 1].id);
+        const own = arc.implicit ? { reasons: [] } : conditions(ch.unlock, db, progress, now);
+        const why = !open ? reasons : !prev ? [`Terminer l'acte ${index}`] : own.reasons;
+        const playable = !why.length && (!cleared || ch.replay !== false);
+        return { ch, index, state: cleared ? 'cleared' : why.length ? 'locked' : 'new', playable, reasons: why, gold: goldFor(ch, cleared) };
+      });
+      const state = complete ? 'cleared' : !open ? 'locked' : done ? 'progress' : 'new';
+      out.push({ arc, kind: arc.kind, state, reasons: open ? [] : reasons, upcoming, done, total: arc.acts.length, acts });
+    }
+    return out;
+  }
+
+  /** Actes vus depuis le tableau, à plat : [{ ch, kind, state, playable, reasons, upcoming, gold, arc, index }]. */
+  function chapters(db, meta, campaign, now) {
+    const out = [];
+    for (const b of board(db, meta, campaign, now)) {
+      for (const a of b.acts) out.push(Object.assign({ kind: b.kind, upcoming: b.upcoming, arc: b.arc }, a));
+    }
+    return out;
+  }
+  /** Acte qui suit dans le même chapitre (null s'il n'y en a pas). */
+  function nextAct(db, actId) {
+    const info = actInfo(db, actId);
+    return info && !info.arc.implicit ? info.arc.acts[info.index + 1] || null : null;
   }
 
   /** Or gagné en terminant un chapitre (0 s'il a déjà été terminé, sauf goldEachClear). */
@@ -137,7 +224,7 @@
     for (const spot of (cfg && cfg.spots) || []) {
       const unit = byId(db.units, spot.unitId);
       if (!unit || (hero && unit.id === hero.id) || seen.has(unit.id) || progress.dead.includes(unit.id)) continue;
-      if (spot.after && !progress.cleared.includes(spot.after)) continue;
+      if (spot.after && !isDone(db, progress, spot.after)) continue;
       seen.add(unit.id);
       out.push({ spot, unit });
     }
@@ -198,6 +285,21 @@
     return { ok: true, amount };
   }
 
+  /** Erreurs dans les chapitres : acte inconnu, acte rangé dans deux chapitres, chapitre vide. */
+  function validateArcs(db) {
+    const errors = [];
+    const seen = new Map();
+    for (const a of (db && db.arcs) || []) {
+      if (!(a.acts || []).length) errors.push(`Le chapitre « ${a.name || a.id} » n'a aucun acte.`);
+      for (const id of a.acts || []) {
+        if (!byId(db.chapters, id)) { errors.push(`Le chapitre « ${a.name || a.id} » contient un acte supprimé (${id}).`); continue; }
+        if (seen.has(id)) errors.push(`L'acte « ${byId(db.chapters, id).name} » est dans deux chapitres (« ${seen.get(id)} » et « ${a.name || a.id} »).`);
+        seen.set(id, a.name || a.id);
+      }
+    }
+    return errors;
+  }
+
   /** Erreurs de configuration (map, cases hors map, personnages). */
   function validate(cfg, db, maps) {
     const c = defaults(cfg);
@@ -222,5 +324,5 @@
     return errors;
   }
 
-  return { LOBBY_SAVE, defaults, heroOf, today, conditions, chapters, goldFor, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
+  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
 });

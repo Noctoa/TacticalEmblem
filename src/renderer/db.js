@@ -29,6 +29,9 @@
   const charOpts = () => Object.entries(res().characters).map(([k, m]) => ({ value: k, label: resLabel(k, m) }));
   const battlerOpts = () => Object.entries(res().battlers).map(([k, m]) => ({ value: k, label: resLabel(k, m) }));
   const colorModeOpts = Palettes.MODES;
+  /** Choix « après… » : un chapitre entier ou un acte précis. */
+  const doneOpts = (exclude) => (db().arcs || []).filter(a => a.id !== exclude).map(a => ({ value: a.id, label: 'Chapitre : ' + (a.name || a.id) }))
+    .concat(db().chapters.filter(c => c.id !== exclude).map(c => ({ value: c.id, label: 'Acte : ' + Lobby.actLabel(db(), c.id) })));
   /** Prix en boutique (lobby) ; la revente rapporte la moitié, au prorata des utilisations. */
   const priceField = { key: 'price', label: 'Prix en boutique (0 = ne se vend pas)', type: 'number', min: 0, max: 999999,
     help: 'Acheté au marchand du lobby à ce prix ; revendu à la moitié, selon les utilisations restantes.' };
@@ -360,7 +363,7 @@
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
-        { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par chapitre)', type: 'checkbox' },
+        { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par acte)', type: 'checkbox' },
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
         { type: 'custom', render: unitSkillsField },
@@ -540,7 +543,7 @@
           { key: 'name', label: 'Titre (pour s\'y retrouver)', type: 'text' },
           { type: 'row', fields: [
             { key: 'unitId', label: 'Personnage à qui parler dans le lobby', type: 'select', options: db().units.map(u => ({ value: u.id, label: u.name })) },
-            { key: 'after', label: 'Disponible après le chapitre', type: 'select', empty: '— dès le début —', options: () => db().chapters.map(c => ({ value: c.id, label: c.name })) }] },
+            { key: 'after', label: 'Disponible après', type: 'select', empty: '— dès le début —', options: () => doneOpts() }] },
           !cfg.enabled ? { type: 'info', text: '⚠ Le lobby est désactivé (onglet Lobby) : les conversations ne se jouent pas.' }
             : !here ? { type: 'info', text: `⚠ ${uName(t.unitId)} n'est pas placé dans le lobby (onglet Lobby › Personnages présents) : impossible de lui parler.` } : null,
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
@@ -573,7 +576,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['chapters', 'Chapitres'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres'], ['chapters', 'Actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['resources', 'Ressources'], ['system', 'Système']];
 
   function open(t, id) {
     if (t) tab = t;
@@ -603,6 +606,7 @@
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
     if (tab === 'lobby') return renderLobby(body);
+    if (tab === 'arcs') return renderArcs(body);
   }
 
   function listPanel(items, cur, opts) {
@@ -725,7 +729,7 @@
 
   function usageOf(kind, id) {
     const chs = db().chapters;
-    if (kind === 'units') { const n = chs.filter(c => c.players.some(p => p.unitId === id)).length; return n ? `Utilisée dans ${n} chapitre(s) : les placements seront ignorés.` : ''; }
+    if (kind === 'units') { const n = chs.filter(c => c.players.some(p => p.unitId === id)).length; return n ? `Utilisée dans ${n} acte(s) : les placements seront ignorés.` : ''; }
     if (kind === 'classes') { const n = chs.reduce((a, c) => a + c.enemies.filter(e => e.classId === id).length, 0) + db().units.filter(u => u.classId === id).length; return n ? `Utilisée par ${n} unité(s) ou ennemi(s).` : ''; }
     if (kind === 'terrains') return 'Les tiles associés à ce terrain retomberont sur le terrain par défaut.';
     return '';
@@ -830,10 +834,10 @@
   }
 
   // ------------------------------------------------------------------
-  // Chapitres : objectif + événements / dialogues
+  // Actes (niveaux jouables, data/chapters.json) : objectif + événements / dialogues
   // ------------------------------------------------------------------
   const TRIGGERS = [
-    { value: 'start', label: 'Début du chapitre' },
+    { value: 'start', label: "Début de l'acte" },
     { value: 'turn', label: 'Début du tour (phase joueur)' },
     { value: 'death', label: "Unité vaincue (mort ou retraite)" },
     { value: 'area', label: 'Une unité du joueur entre dans une zone' },
@@ -846,28 +850,36 @@
     if (!list.find(e => e.id === selected.chapters)) selected.chapters = list[0] ? list[0].id : null;
     const ch = byId(list, selected.chapters);
     body.append(listPanel(list, ch && ch.id, {
-      sub: (c) => (byId(maps, c.mapId) || { name: '—' }).name,
+      sub: (c) => { const i = Lobby.actInfo(db(), c.id); return i && !i.arc.implicit ? `ch. ${(db().arcs || []).findIndex(a => a.id === i.arc.id) + 1} · acte ${i.index + 1}` : (byId(maps, c.mapId) || { name: '—' }).name; },
       onAdd: () => {
-        const m = maps.find(m => m.id === Editor.state.mapId) || maps[0];
-        if (!m) return UI.alert('Pas de map', "Crée d'abord une map.");
-        const c = { id: Editor.uid('ch_', list), name: 'Chapitre ' + (list.length + 1), mapId: m.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [] };
-        list.push(c); selected.chapters = c.id; change(); renderBody();
+        const c = newAct(); if (!c) return;
+        selected.chapters = c.id; change(); renderBody();
       },
       onDelete: async () => {
         if (!ch) return;
         if (!(await UI.confirm(`Supprimer « ${ch.name} » et tous ses placements / événements ?`, { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(ch), 1);
+        for (const a of db().arcs || []) a.acts = (a.acts || []).filter(id => id !== ch.id);
         if (Editor.project().meta.startChapter === ch.id) Editor.project().meta.startChapter = list[0] ? list[0].id : '';
         change(); renderBody();
       }
     }));
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
-    if (!ch) { pane.append(h('div', { class: 'db-empty' }, 'Aucun chapitre.')); return; }
+    if (!ch) { pane.append(h('div', { class: 'db-empty' }, 'Aucun acte.')); return; }
     if (!ch.kind) ch.kind = 'story';
     if (ch.replay === undefined) ch.replay = true;
     ch.unlock = Object.assign({ after: '', alive: [], from: '', to: '' }, ch.unlock || {});
     pane.append(h('h2', {}, ch.name, h('span', { class: 'id' }, ch.id)));
+    const info = Lobby.actInfo(db(), ch.id);
+    const inArc = info && !info.arc.implicit;
+    pane.append(inArc
+      ? h('p', { class: 'arc-line' }, h('b', {}, info.arc.name), ` · acte ${info.index + 1} sur ${info.arc.acts.length} `, h('a', { href: '#', onclick: (e) => { e.preventDefault(); selected.arcs = info.arc.id; open('arcs'); } }, 'Voir le chapitre'))
+      : h('div', { class: 'arc-line muted' }, "Cet acte n'est rangé dans aucun chapitre : il apparaît seul au tableau des quêtes. ",
+        (db().arcs || []).length ? (() => {
+          const sel = h('select', {}, (db().arcs || []).map(a => h('option', { value: a.id }, a.name || a.id)));
+          return h('span', { class: 'arc-add' }, sel, h('button', { class: 'small', onclick: () => { const a = byId(db().arcs, sel.value); a.acts = (a.acts || []).concat(ch.id); change(); renderBody(); } }, 'Ranger dans ce chapitre'));
+        })() : h('a', { href: '#', onclick: (e) => { e.preventDefault(); open('arcs'); } }, 'Créer un chapitre')));
     pane.append(UI.form([
       { type: 'row', fields: [
         { key: 'name', label: 'Nom', type: 'text' },
@@ -879,23 +891,24 @@
         { key: 'objective.y', label: 'Case Y', type: 'number', min: 0, max: 499, when: c => c.objective.type === 'seize' }] },
       { key: 'objective.text', label: "Texte de l'objectif (optionnel)", type: 'text', placeholder: 'ex. Vaincre Gorvald' },
       { type: 'row', fields: [
-        { key: 'next', label: 'Chapitre suivant', type: 'select', empty: '— aucun —', options: () => db().chapters.filter(c => c.id !== ch.id).map(c => ({ value: c.id, label: c.name })) },
-        { key: 'final', label: "Dernier chapitre : la victoire ouvre l'épilogue", type: 'checkbox' }] },
-      { type: 'info', text: 'En playtest, « Chapitre suivant » garde les niveaux, les objets, le convoi, les affinités et les morts.' },
-      { type: 'heading', label: 'Lobby : type, déblocage, récompense' },
+        { key: 'next', label: 'Acte suivant (jeu sans lobby)', type: 'select', empty: '— aucun —', options: () => db().chapters.filter(c => c.id !== ch.id).map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
+        { key: 'final', label: "Dernier acte : la victoire ouvre l'épilogue", type: 'checkbox' }] },
+      { type: 'info', text: "Sans lobby, « Acte suivant » enchaîne les actes. Avec le lobby, l'ordre vient des chapitres (onglet Chapitres). Les niveaux, objets, convoi, affinités et morts sont conservés d'un acte à l'autre." },
+      { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
-        { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire (ouvert par « Chapitre suivant »)' }, { value: 'event', label: 'Évènement (optionnel)' }] },
-        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 }] },
+        inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
+        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 }].filter(Boolean) },
       { type: 'row', fields: [
         { key: 'goldEachClear', label: "Or à chaque victoire (sinon : la première fois)", type: 'checkbox' },
         { key: 'replay', label: 'Rejouable une fois terminé', type: 'checkbox' }] },
-      { key: 'unlock.after', label: 'Disponible après le chapitre', type: 'select', empty: '— pas de condition —', options: () => db().chapters.filter(c => c.id !== ch.id).map(c => ({ value: c.id, label: c.name })) },
-      { key: 'unlock.alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
-      { type: 'row', fields: [
+      inArc ? { type: 'info', text: `Type, conditions et dates se règlent sur le chapitre « ${info.arc.name} » ; ses actes se jouent dans l'ordre.` } : null,
+      inArc ? null : { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: '— pas de condition —', options: () => doneOpts(ch.id) },
+      inArc ? null : { key: 'unlock.alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
+      inArc ? null : { type: 'row', fields: [
         { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
         { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
       { type: 'info', text: (c) => (Lobby.defaults(Editor.project().meta.lobby).enabled ? '' : '⚠ Le lobby est désactivé (onglet Lobby) : ces réglages ne servent pas encore. ') +
-        (c.kind === 'event' ? "Évènement : visible à la table des chapitres quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand le chapitre qui le désigne comme « suivant » est terminé (ou s'il est le chapitre de départ).") },
+        (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
     renderMissionRules(pane, ch);
@@ -1216,6 +1229,89 @@
   }
 
   // ------------------------------------------------------------------
+  // Chapitres : groupes d'actes (data/arcs.json), joués dans l'ordre, rangés en Histoire / Évènements
+  // ------------------------------------------------------------------
+  /** Nouvel acte vide sur la map courante (ou la première). */
+  function newAct() {
+    const maps = Editor.project().maps, list = db().chapters;
+    const m = maps.find(m => m.id === Editor.state.mapId) || maps[0];
+    if (!m) { UI.alert('Pas de map', "Crée d'abord une map."); return null; }
+    const c = { id: Editor.uid('ch_', list), name: 'Acte ' + (list.length + 1), mapId: m.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [], replay: true };
+    list.push(c);
+    return c;
+  }
+  function renderArcs(body) {
+    const list = db().arcs || (db().arcs = []);
+    if (!list.find(e => e.id === selected.arcs)) selected.arcs = list[0] ? list[0].id : null;
+    const arc = byId(list, selected.arcs);
+    body.append(listPanel(list, arc && arc.id, {
+      sub: (a) => `${a.kind === 'event' ? 'évènement' : 'histoire'} · ${(a.acts || []).length} acte(s)`,
+      onAdd: () => {
+        const a = { id: Editor.uid('arc_', list), name: 'Chapitre ' + (list.filter(x => x.kind !== 'event').length + 1), kind: 'story', description: '', unlock: { after: '', alive: [], from: '', to: '' }, acts: [] };
+        list.push(a); selected.arcs = a.id; change(); renderBody();
+      },
+      onCopy: null,
+      onDelete: async () => {
+        if (!arc) return;
+        if (!(await UI.confirm(`Supprimer le chapitre « ${arc.name} » ? Ses actes sont gardés (ils apparaîtront seuls au tableau des quêtes).`, { danger: true, ok: 'Supprimer' }))) return;
+        list.splice(list.indexOf(arc), 1); change(); renderBody();
+      }
+    }));
+    const pane = h('div', { class: 'db-form' });
+    body.append(pane);
+    pane.append(h('p', { class: 'form-info', style: { maxWidth: '760px' } }, "Un chapitre regroupe des actes (les niveaux jouables), joués dans l'ordre : l'acte 2 s'ouvre quand l'acte 1 est terminé. Au tableau des quêtes du lobby, les chapitres d'histoire s'ouvrent l'un après l'autre (dans l'ordre de cette liste) ; les évènements selon leurs conditions et leurs dates."));
+    for (const e of Lobby.validateArcs(db())) pane.append(h('p', { class: 'note' }, '⚠ ' + e));
+    if (!arc) { pane.append(h('div', { class: 'db-empty' }, 'Aucun chapitre : chaque acte apparaît seul au tableau des quêtes. « Nouveau » pour en créer un.')); return; }
+    arc.unlock = Object.assign({ after: '', alive: [], from: '', to: '' }, arc.unlock || {});
+    arc.acts = arc.acts || [];
+    pane.append(h('h2', {}, arc.name, h('span', { class: 'id' }, arc.id)));
+    pane.append(UI.form([
+      { type: 'row', fields: [
+        { key: 'name', label: 'Nom', type: 'text', placeholder: 'Chapitre 1 — …' },
+        { key: 'kind', label: 'Section du tableau', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènements' }] }] },
+      { key: 'description', label: 'Description (affichée au tableau des quêtes)', type: 'text' },
+      { type: 'heading', label: 'Déblocage' },
+      { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: arc.kind === 'event' ? '— pas de condition —' : '— le chapitre d\'histoire précédent —', options: () => doneOpts(arc.id) },
+      { key: 'unlock.alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
+      { type: 'row', fields: [
+        { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
+        { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
+      { type: 'info', text: (a) => a.kind === 'event' ? "Évènement : visible quand ses conditions sont remplies ; daté, il s'affiche « Bientôt » avant sa date et disparaît après." : "Histoire : s'ouvre quand le chapitre d'histoire précédent est terminé (le premier contient l'acte de départ, Système). Les conditions s'ajoutent à cet ordre." }
+    ], arc, { onChange: (k) => { change(); if (k === 'name' || k === 'kind') renderBody(); } }));
+
+    // actes du chapitre, dans l'ordre
+    pane.append(h('div', { class: 'form-heading', style: { maxWidth: '760px' } }, `Actes (${arc.acts.length})`));
+    const box = h('div', { class: 'arc-acts' });
+    arc.acts.forEach((id, i) => {
+      const c = byId(db().chapters, id);
+      const map = c && byId(Editor.project().maps, c.mapId);
+      const move = (d) => { const j = i + d; if (j < 0 || j >= arc.acts.length) return; [arc.acts[i], arc.acts[j]] = [arc.acts[j], arc.acts[i]]; change(); renderBody(); };
+      box.append(h('div', { class: 'arc-act' },
+        h('b', { class: 'arc-num' }, `Acte ${i + 1}`),
+        h('span', { class: 'arc-name' }, c ? c.name : `introuvable (${id})`),
+        h('span', { class: 'muted' }, c ? [map ? map.name : '—', `${c.players.length} joueur · ${c.enemies.length} ennemi`, Mission.label(Mission.objectives(c)[0] || { type: 'rout' }, c), c.gold ? c.gold + ' or' : ''].filter(Boolean).join(' · ') : ''),
+        h('span', { class: 'arc-tools' },
+          h('button', { class: 'mini', title: 'Monter', disabled: i === 0, onclick: () => move(-1) }, '▲'),
+          h('button', { class: 'mini', title: 'Descendre', disabled: i === arc.acts.length - 1, onclick: () => move(1) }, '▼'),
+          c ? h('button', { class: 'small', onclick: () => { selected.chapters = id; open('chapters'); } }, 'Modifier') : null,
+          c ? h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(id); } }, 'Placements') : null,
+          h('button', { class: 'small danger', title: 'Retirer du chapitre (l\'acte est gardé)', html: Icons.icon('trash'), onclick: () => { arc.acts.splice(i, 1); change(); renderBody(); } }))));
+    });
+    if (!arc.acts.length) box.append(h('p', { class: 'muted' }, 'Aucun acte. Crée-en un ou ajoute un acte existant.'));
+    pane.append(box);
+    const used = new Set((db().arcs || []).flatMap(a => a.acts || []));
+    const free = db().chapters.filter(c => !used.has(c.id));
+    const sel = h('select', {}, free.map(c => h('option', { value: c.id }, c.name)));
+    pane.append(h('div', { class: 'insp-actions', style: { margin: '8px 0', maxWidth: '760px' } },
+      h('button', { class: 'small primary', html: Icons.icon('plus'), onclick: () => { const c = newAct(); if (!c) return; c.name = `Acte ${arc.acts.length + 1}`; arc.acts.push(c.id); change(); renderBody(); } }, 'Nouvel acte'),
+      free.length ? sel : null,
+      free.length ? h('button', { class: 'small', onclick: () => { arc.acts.push(sel.value); change(); renderBody(); } }, 'Ajouter cet acte') : h('span', { class: 'muted' }, 'Tous les actes sont rangés dans un chapitre.')));
+    const first = byId(db().chapters, arc.acts[0]);
+    if (first) pane.append(h('div', { class: 'insp-actions', style: { margin: '6px 0' } },
+      h('button', { class: 'small', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(first.id); } }, "Tester l'acte 1")));
+  }
+
+  // ------------------------------------------------------------------
   // Lobby : le camp entre deux chapitres (map explorable, table des chapitres, boutique, personnages)
   // ------------------------------------------------------------------
   let lobbyPick = 'start';
@@ -1259,7 +1355,7 @@
       { type: 'row', fields: [
         { key: 'shop.enabled', label: 'Boutique ouverte', type: 'checkbox' },
         { key: 'shop.name', label: 'Nom du marchand', type: 'text' },
-        { key: 'board.label', label: 'Nom de la table des chapitres', type: 'text' }] },
+        { key: 'board.label', label: 'Nom du tableau des quêtes', type: 'text' }] },
       { key: 'shop.stock', label: 'Articles en vente', type: 'multicheck', options: goods, when: c => c.shop.enabled },
       { type: 'info', text: "Seuls les objets qui ont un prix sont proposés (onglets Armes et Objets › Prix en boutique). La revente rapporte la moitié du prix, selon les utilisations restantes. L'or vient des récompenses de chapitre (onglet Chapitres) et des ennemis qui portent une bourse (inspecteur d'un ennemi, mode Unités)." }
     ], cfg, { onChange: (k) => { change(); if (['enabled', 'mapId', 'shop.enabled', 'heroId', 'name', 'shop.name', 'board.label'].includes(k)) renderBody(); else redraw(); } }));
@@ -1269,7 +1365,7 @@
     const map = maps.find(m => m.id === cfg.mapId);
     if (!map) { pane.append(h('p', { class: 'note' }, 'Choisis la map du lobby (crée-la comme une map de chapitre, dans l\'éditeur).')); return lobbyFooter(pane, cfg); }
     const hero = Lobby.heroOf(cfg, db());
-    const targets = [['start', `Départ de ${hero ? hero.name : 'héros'}`], ['board', cfg.board.label || 'Table des chapitres']]
+    const targets = [['start', `Départ de ${hero ? hero.name : 'héros'}`], ['board', cfg.board.label || 'Tableau des quêtes']]
       .concat(cfg.shop.enabled ? [['shop', cfg.shop.name || 'Boutique']] : [])
       .concat(cfg.spots.map((sp, i) => ['spot' + i, uName(sp.unitId)]));
     if (!targets.some(t => t[0] === lobbyPick)) lobbyPick = 'start';
@@ -1327,7 +1423,7 @@
       const unitSel = h('select', {}, db().units.map(u => h('option', { value: u.id }, u.name)));
       unitSel.value = sp.unitId;
       unitSel.addEventListener('change', () => { sp.unitId = unitSel.value; change(); renderBody(); });
-      const afterSel = h('select', {}, [h('option', { value: '' }, 'dès le début')].concat(db().chapters.map(c => h('option', { value: c.id }, 'après « ' + c.name + ' »'))));
+      const afterSel = h('select', {}, [h('option', { value: '' }, 'dès le début')].concat(doneOpts().map(o => h('option', { value: o.value }, 'après ' + o.label.replace(/^(Chapitre|Acte) : /, (m, k) => k.toLowerCase() + ' ')))));
       afterSel.value = sp.after || '';
       afterSel.addEventListener('change', () => { sp.after = afterSel.value; change(); drawPreview(); });
       const talks = (db().talks || []).filter(t => t.unitId === sp.unitId).length;
@@ -1372,7 +1468,7 @@
     pane.append(UI.form([
       { type: 'row', fields: [{ key: 'name', label: 'Nom du jeu', type: 'text' }, { key: 'author', label: 'Auteur', type: 'text' }] },
       { type: 'row', fields: [
-        { key: 'startChapter', label: 'Chapitre de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: c.name })) },
+        { key: 'startChapter', label: 'Acte de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'defaultTerrain', label: 'Terrain par défaut', type: 'select', options: () => db().terrains.map(t => ({ value: t.id, label: t.name })), help: 'Utilisé pour les cases dont le tile n\'a pas de terrain.' }] },
       { type: 'heading', label: 'Règles de combat' },
       { key: 'settings.trueHit', label: 'Vrai hit (moyenne de 2 tirages, comme FE6–FE13)', type: 'checkbox' },
@@ -1393,7 +1489,7 @@
       { type: 'custom', render: (meta) => {
         meta.convoy = meta.convoy || { capacity: 100, items: [] };
         const tmp = { inv: meta.convoy.items.map(e => Object.assign({}, e)) };
-        return UI.form([{ key: 'inv', label: 'Contenu au début du chapitre', type: 'inventory', options: () => Editor.invOptions(), max: meta.convoy.capacity || 100 }], tmp,
+        return UI.form([{ key: 'inv', label: 'Contenu au début de la partie', type: 'inventory', options: () => Editor.invOptions(), max: meta.convoy.capacity || 100 }], tmp,
           { onChange: () => { meta.convoy.items = tmp.inv; change(); } });
       } },
       { type: 'info', text: "Le chef d'escouade (case à cocher dans la fiche d'une unité) ouvre le convoi depuis son menu ; les autres unités du joueur y accèdent en s'arrêtant à côté de lui." },
