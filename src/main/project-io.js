@@ -23,6 +23,7 @@ const fs = require('fs');
 const path = require('path');
 const Defaults = require('../shared/defaults.js');
 const Skills = require('../shared/skills.js');
+const Promotions = require('../shared/promotions.js');
 
 const PROJECT_FILE = 'game.tfproj';
 const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills'];
@@ -107,7 +108,7 @@ function loadProject(dir) {
 }
 
 function saveProject(dir, project) {
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db)];
+  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db)];
   if (errors.length) throw new Error(errors.join('\n'));
   for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });

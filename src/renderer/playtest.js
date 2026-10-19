@@ -564,7 +564,9 @@
       unitTags(u),
       (u.personalSkill || (u.learnedSkills || []).length) ? h('button', { class: 'u-skill-button', disabled: G.busy || G.over,
         onmousedown: e => e.stopPropagation(), onclick: e => { e.stopPropagation(); showUnitSkills(u); } },
-        `Compétences (${(u.personalSkill ? 1 : 0) + (u.equippedSkills || []).length})`) : null),
+        `Compétences (${(u.personalSkill ? 1 : 0) + (u.equippedSkills || []).length})`) : null,
+      h('button', { class: 'u-evolution-button', disabled: G.busy || G.over, onmousedown: e => e.stopPropagation(),
+        onclick: e => { e.stopPropagation(); showEvolution(u); } }, 'Évolution')),
     h('div', { class: 'u-stats' }, stats));
   }
 
@@ -664,6 +666,7 @@
     if (heals.length) items.push({ label: 'Bâton', action: () => openTargets(u, heals, 'staff') });
     const usable = u.inventory.map((s, i) => ({ s, i, it: iOf(s) })).filter(x => x.it);
     if (usable.length) items.push({ label: 'Objet', action: () => openItems(u) });
+    if (Promotions.branches(cls(u), G.db).length) items.push({ label: 'Promotion', action: () => openPromotion(u) });
     if (u.inventory.length > 1 && R.attackWeapons(u, G.db).length > 1) items.push({ label: 'Équiper', action: () => openEquip(u) });
     const sups = supportsAvailable(u);
     if (sups.length) items.push({ label: 'Soutien', sub: sups.map(x => x.other.name).join(', '), action: () => {
@@ -720,6 +723,11 @@
     const items = u.inventory.map((slot, i) => {
       const it = iOf(slot), w = wOf(slot);
       if (it) {
+        if (it.effect === 'promotion') {
+          const choices = Promotions.options(u, G.db, i), available = choices.some(o => o.available);
+          return { label: it.name, sub: available ? `${slot.uses} · choisir une promotion` : choices.length ? choices[0].reasons.join(' ') : 'Aucune branche ne demande cet objet.',
+            disabled: !available, action: () => openPromotion(u, i) };
+        }
         const disabled = it.effect === 'heal' && u.hp >= u.stats.hp;
         return { label: it.name, sub: `${slot.uses}`, disabled, action: () => { hideMenu(); useItem(u, i); } };
       }
@@ -731,6 +739,79 @@
     hideMenu();
     const items = R.attackWeapons(u, G.db).map(w => ({ label: w.weapon.name, sub: `${u.inventory[w.index].uses || '∞'}`, action: () => { R.equip(u, w.index); hideMenu(); lastInfoKey = ''; openActionMenu(); } }));
     showMenu(items, u, 'items');
+  }
+
+  const weaponNames = cl => (cl.weapons || []).map(id => (R.WEAPON_TYPES.find(t => t.id === id) || {}).name || id).join(', ');
+  function classSummary(cl) {
+    if (!cl) return 'Classe introuvable.';
+    return `${cl.description || ''}\nDéplacement : ${cl.mov} (${(R.MOVE_TYPES.find(t => t.id === cl.moveType) || {}).name || cl.moveType}). Armes : ${weaponNames(cl)}.\nPlafonds : ` +
+      R.STATS.map(key => `${R.STAT_LABELS[key]} ${(cl.caps || {})[key] || 99}`).join(' · ');
+  }
+  async function showEvolution(unit) {
+    const wasBusy = G.busy; G.busy = true;
+    try {
+      await UI.modal((box, close) => {
+        box.classList.add('promotion-tree-modal');
+        const info = h('p', { class: 'promotion-class-info' }, classSummary(cls(unit)));
+        box.append(h('h3', {}, 'Évolution de ' + unit.name), h('p', {}, 'La classe actuelle est encadrée en or. Clique sur une classe ou un lien pour consulter ses détails.'),
+          PromotionUI.graph(G.db, { rootId: unit.classId, currentId: unit.classId,
+            onClass: cl => { info.textContent = cl.name + '\n' + classSummary(cl); },
+            onEdge: edge => {
+              const target = R.byId(G.db.classes, edge.to), item = R.byId(G.db.items, edge.row.itemId);
+              info.textContent = `${(R.byId(G.db.classes, edge.from) || {}).name} → ${target.name}\nNiveau ${edge.row.minLevel} requis. ` +
+                (item ? item.name + ' requis dans l’inventaire.' : 'Sans objet.') + '\n' + classSummary(target);
+            } }), info, h('div', { class: 'modal-actions' }, h('button', { onclick: () => close() }, 'Fermer')));
+      }, { wide: true });
+    } finally { G.busy = wasBusy; }
+  }
+  async function openPromotion(unit, itemIndex) {
+    hideMenu(); G.busy = true; G.ui = 'promotion';
+    let completed = false;
+    try {
+      const options = Promotions.options(unit, G.db, itemIndex);
+      const destination = await UI.modal((box, close) => {
+        box.classList.add('promotion-choices');
+        box.append(h('h3', {}, 'Promotion de ' + unit.name), h('p', {}, 'Compare les branches avant de confirmer. La promotion consomme l’action de cette unité.'),
+          h('button', { onclick: () => showEvolution(unit) }, 'Voir l’arbre d’évolution'));
+        for (const option of options) {
+          const target = option.target, preview = Promotions.preview(unit, option, G.db);
+          const item = R.byId(G.db.items, option.row.itemId);
+          const character = R.byId(G.db.units, unit.sourceId) || {};
+          const grants = preview ? [...new Set([...option.row.skills, ...Skills.combinedLearning(character, target, preview.level, G.db.skills).map(row => row.skillId)])]
+            .filter(id => id !== unit.personalSkill && !unit.learnedSkills.includes(id)) : [];
+          const button = h('button', { class: 'choice', disabled: !option.available, 'data-promote-to': option.row.classId, onclick: () => close(option.row.classId) },
+            h('b', {}, target ? target.name : 'Classe introuvable'));
+          if (preview) {
+            if (target.description) button.append(h('p', {}, target.description));
+            button.append(h('p', {}, R.STATS.map(key => `${R.STAT_LABELS[key]} ${unit.stats[key]} → ${preview.stats[key]} (+${preview.gains[key]})`).join(' · ')),
+              h('p', {}, `Dép ${unit.mov} → ${preview.mov} · ${(R.MOVE_TYPES.find(t => t.id === target.moveType) || {}).name || target.moveType} · Armes : ${weaponNames(target)}`),
+              h('p', {}, 'Plafonds : ' + R.STATS.map(key => `${R.STAT_LABELS[key]} ${(target.caps || {})[key] || 99}`).join(' · ')),
+              h('p', {}, `Niveau ${unit.level} → ${preview.level} · ` + (option.row.resetLevel ? 'EXP remise à 0.' : 'EXP conservée.') + ' ' + (item ? `Coût : 1 utilisation de ${item.name}.` : 'Sans objet.')),
+              h('p', {}, 'Compétences nouvelles : ' + (grants.map(id => (R.byId(G.db.skills, id) || {}).name || id).join(', ') || 'aucune')));
+            const lost = unit.inventory.map(slot => wOf(slot)).filter(weapon => weapon && !(target.weapons || []).includes(weapon.type));
+            if (lost.length) button.append(h('p', {}, 'Conservées mais inutilisables dans cette classe : ' + lost.map(w => w.name).join(', ')));
+          }
+          if (option.reasons.length) button.append(h('p', { class: 'promotion-lock' }, option.reasons.join(' ')));
+          box.append(button);
+        }
+        if (!options.length) box.append(h('p', {}, 'Aucune promotion avec ces conditions.'));
+        box.append(h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Annuler')));
+      }, { wide: true });
+      if (!destination) return;
+      const option = options.find(o => o.row.classId === destination), item = R.byId(G.db.items, option.row.itemId);
+      if (!(await UI.confirm(`Promouvoir ${unit.name} en ${option.target.name} ? ` + (item ? `Une utilisation de ${item.name} sera consommée. ` : '') + 'Cette action termine son tour.', { title: 'Confirmer la promotion', ok: 'Promouvoir' }))) return;
+      const result = Promotions.apply(unit, destination, G.db, itemIndex);
+      if (!result.ok) { await UI.alert('Promotion impossible', result.error); return; }
+      completed = true; lastInfoKey = ''; refreshDanger();
+      Music.me('levelUp');
+      await UI.alert('Promotion réussie !', `${unit.name} devient ${result.target.name}.\n` +
+        R.STATS.filter(key => result.gains[key]).map(key => `${R.STAT_LABELS[key]} +${result.gains[key]}`).join(' · '));
+      for (const id of result.learnedSkills) await announceLearning(unit, id);
+    } finally {
+      G.busy = false;
+      if (completed) await finishAction(unit);
+      else { G.ui = 'menu'; openActionMenu(); }
+    }
   }
 
   function openMapMenu() {
@@ -907,7 +988,7 @@
     const slot = u.inventory[st.index];
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
-    if (u.team !== 'enemy') await grantExp(u, R.staffExp(u));
+    if (u.team !== 'enemy') await grantExp(u, R.staffExp(u, G.db));
     G.busy = false;
     await finishAction(u);
   }

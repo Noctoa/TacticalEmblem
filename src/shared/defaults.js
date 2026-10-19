@@ -2,10 +2,11 @@
  * Base de données par défaut + projet d'exemple ("Prologue — L'embuscade").
  */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
+    typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Defaults = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions) {
   'use strict';
 
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
@@ -60,7 +61,8 @@
       { id: 'i_vulnerary', name: 'Potion', effect: 'heal', amount: 10, stat: 'hp', uses: 3 },
       { id: 'i_elixir', name: 'Élixir', effect: 'heal', amount: 99, stat: 'hp', uses: 1 },
       { id: 'i_energy_ring', name: 'Bague de force', effect: 'boost', amount: 2, stat: 'str', uses: 1 },
-      { id: 'i_speedwing', name: 'Aile vive', effect: 'boost', amount: 2, stat: 'spd', uses: 1 }
+      { id: 'i_speedwing', name: 'Aile vive', effect: 'boost', amount: 2, stat: 'spd', uses: 1 },
+      { id: 'i_master_seal', name: 'Sceau de promotion', effect: 'promotion', uses: 1 }
     ];
   }
 
@@ -99,14 +101,27 @@
       c('brigand', 'Brigand', 'foot', 5, ['axe'], st(20, 5, 0, 1, 3, 0, 3, 0), st(82, 50, 0, 30, 20, 15, 10, 13),
         { defaultInventory: ['w_iron_axe'], mapSprite: CH('Brigand'), battler: BT('Brigand') }),
       c('soldier', 'Soldat', 'foot', 5, ['lance'], st(20, 3, 0, 0, 1, 0, 0, 0), st(80, 50, 0, 30, 20, 25, 12, 15), { defaultInventory: ['w_iron_lance'] }),
-      c('warrior', 'Chef de guerre', 'foot', 6, ['axe', 'bow'], st(28, 8, 0, 5, 6, 0, 5, 0), st(90, 45, 0, 20, 15, 15, 10, 15), { tier: 2, defaultInventory: ['w_iron_axe'] })
+      c('warrior', 'Chef de guerre', 'foot', 6, ['axe', 'bow'], st(28, 8, 0, 5, 6, 0, 5, 0), st(90, 45, 0, 20, 15, 15, 10, 15), { tier: 2, defaultInventory: ['w_iron_axe'] }),
+      c('hero', 'Héros', 'foot', 6, ['sword', 'axe'], st(22, 7, 0, 10, 10, 0, 6, 2), st(80, 40, 0, 40, 32, 30, 18, 20), { tier: 2 }),
+      c('paladin', 'Paladin', 'horse', 8, ['sword', 'lance'], st(23, 7, 0, 5, 7, 0, 8, 3), st(75, 35, 0, 40, 40, 30, 25, 15), { tier: 2 }),
+      c('great_knight', 'Grand chevalier', 'horse', 6, ['sword', 'lance', 'axe'], st(25, 8, 0, 4, 3, 0, 12, 2), st(80, 40, 0, 30, 15, 25, 55, 10), { tier: 2, effectiveTypes: ['horse', 'armor'] }),
+      c('general', 'Général', 'armor', 5, ['lance', 'axe'], st(24, 8, 0, 5, 2, 0, 14, 3), st(80, 40, 0, 30, 15, 25, 55, 10), { tier: 2 }),
+      c('recruit', 'Recrue', 'foot', 4, ['lance'], st(14, 3, 0, 1, 2, 0, 3, 0), st(80, 40, 0, 35, 35, 40, 30, 20), { tier: 0 })
     ];
   }
   // Promotions
   function linkPromotions(list) {
-    const set = (a, b) => { const c = list.find(x => x.id === a); if (c) c.promotesTo = b; };
+    const set = (a, b) => {
+      const c = list.find(x => x.id === a), target = list.find(x => x.id === b);
+      const row = Promotions.create(c, target); row.itemId = 'i_master_seal';
+      (c.promotions || (c.promotions = [])).push(row);
+    };
     set('lord', 'knight_lord'); set('lyn_lord', 'blade_lord'); set('axe_lord', 'great_lord');
     set('fighter', 'warrior'); set('brigand', 'warrior');
+    set('mercenary', 'hero'); set('mercenary', 'warrior');
+    set('recruit', 'cavalier'); set('recruit', 'knight');
+    set('cavalier', 'paladin'); set('cavalier', 'great_knight');
+    set('knight', 'general'); set('knight', 'great_knight');
     return list;
   }
 
@@ -132,7 +147,7 @@
       u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
-        inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }],
+        inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],
         mapSprite: 'img/characters/Cloud', battler: 'img/battlers/Cloud',
         portrait: 'img/faces/Cloud.png', bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." })
     ];

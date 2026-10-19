@@ -4,10 +4,11 @@
  * vrai hit (moyenne de 2 tirages), critiques x3, armes efficaces.
  */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
+    typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Rules = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions) {
   'use strict';
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
@@ -318,7 +319,8 @@
     const tri = triangle(aw.type, dw ? dw.type : null);
     const defCls = byId(db.classes, def.classId);
     const defMove = def.moveType || (defCls && defCls.moveType);
-    const eff = (aw.effective || []).includes(defMove) ? s.effectiveMult : 1;
+    const effectiveTypes = defCls && Array.isArray(defCls.effectiveTypes) ? defCls.effectiveTypes : [defMove];
+    const eff = effectiveTypes.some(type => (aw.effective || []).includes(type)) ? s.effectiveMult : 1;
     const power = (isMagic(aw) ? att.stats.mag : att.stats.str) + (aw.might + tri * s.triangleDmg) * eff;
     const tDef = defTerrain ? (Number(defTerrain.def) || 0) : 0;
     const tAvo = defTerrain ? (Number(defTerrain.avoid) || 0) : 0;
@@ -667,18 +669,17 @@
   }
 
   // ---------- expérience ----------
-  function classTier(unit, db) {
-    const c = byId(db.classes, unit.classId);
-    return c && Number(c.tier) === 2 ? 20 : 0;
-  }
   function combatExp(unit, foe, dealtDamage, killed, db) {
-    const diff = (foe.level + classTier(foe, db)) - (unit.level + classTier(unit, db));
+    const diff = Promotions.effectiveLevel(foe, db) - Promotions.effectiveLevel(unit, db);
     if (!dealtDamage && !killed) return 1;
     let exp = Math.max(1, Math.floor((31 + diff) / 3));
     if (killed) exp += Math.max(0, diff * 3 + 20) + (foe.isBoss ? 40 : 0);
     return clamp(exp, 1, 100);
   }
-  function staffExp(unit) { return clamp(10 + Math.max(0, 10 - unit.level), 1, 100); }
+  function staffExp(unit, db) {
+    const level = db ? Promotions.effectiveLevel(unit, db) : (unit.effectiveLevel || unit.level);
+    return clamp(10 + Math.max(0, 10 - level), 1, 100);
+  }
 
   /** Ajoute l'exp ; renvoie les montées de niveau et les compétences nouvellement apprises. */
   function gainExp(unit, amount, db, rng, settings) {
@@ -690,6 +691,7 @@
     while (unit.exp >= 100 && unit.level < s.maxLevel) {
       unit.exp -= 100;
       unit.level++;
+      if (Number.isFinite(unit.effectiveLevel)) unit.effectiveLevel++;
       const cls = byId(db.classes, unit.classId);
       const gains = {};
       for (const k of STATS) {

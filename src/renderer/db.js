@@ -8,6 +8,7 @@
   let tab = 'units';
   let selected = {};
   let changed = false;
+  let promotionFocus = null;
 
   const db = () => Editor.db();
   const wtypes = Rules.WEAPON_TYPES.map(t => ({ value: t.id, label: t.name }));
@@ -181,6 +182,73 @@
     redraw(); return root;
   }
 
+  async function showPromotionTree(classId) {
+    const choice = await UI.modal((box, close) => {
+      box.classList.add('promotion-tree-modal');
+      const view = h('div');
+      const filter = h('select', { 'aria-label': 'Classes affichées' }, h('option', { value: '' }, 'Toutes les classes'),
+        db().classes.map(c => h('option', { value: c.id }, 'Famille de ' + c.name)));
+      filter.value = classId || '';
+      const redraw = () => view.replaceChildren(PromotionUI.graph(db(), { rootId: filter.value, currentId: classId,
+        onClass: cls => close({ classId: cls.id }), onEdge: edge => close({ classId: edge.from, index: edge.index }) }));
+      filter.addEventListener('change', redraw); redraw();
+      box.append(h('h3', {}, 'Arbre d’évolution'), h('p', {}, 'Clique sur une classe pour ouvrir sa fiche, ou sur un lien pour modifier ses conditions et ses bonus.'), filter, view,
+        h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Fermer')));
+    }, { wide: true });
+    if (choice) {
+      promotionFocus = choice;
+      open('classes', choice.classId);
+      const row = document.querySelector('[data-promotion-index="' + choice.index + '"]');
+      if (row) row.scrollIntoView({ block: 'center' });
+    }
+  }
+
+  function promotionField(cls) {
+    const root = h('div', { class: 'promotion-editor' });
+    let rows = JSON.parse(JSON.stringify(Promotions.branches(cls, db())));
+    let expanded = promotionFocus && promotionFocus.classId === cls.id && promotionFocus.index !== undefined ? promotionFocus.index : 0;
+    const errors = h('div', { class: 'promotion-errors', role: 'status' });
+    const renderErrors = () => errors.replaceChildren(...Promotions.validate(db()).filter(e => e.startsWith('Classe ' + (cls.name || cls.id) + ' :') || e.startsWith('Cycle'))
+      .map(e => h('p', { class: 'note' }, e)));
+    const commit = () => { cls.promotions = rows; delete cls.promotesTo; change(); renderErrors(); };
+    const redraw = () => {
+      root.replaceChildren(h('div', { class: 'form-heading' }, 'Branches de promotion'),
+        h('p', { class: 'form-info' }, 'Chaque branche définit sa destination, ses conditions et ses gains. Les acquis sont conservés ; la promotion consomme l’action. Sans objet requis, elle est accessible par la commande Promotion.'),
+        h('button', { class: 'small', 'data-promotion-tree': true, onclick: () => showPromotionTree(cls.id) }, 'Voir l’arbre d’évolution'));
+      rows.forEach((row, index) => {
+        if (!row || typeof row !== 'object') { root.append(h('button', { class: 'small danger', onclick: () => { rows.splice(index, 1); commit(); redraw(); } }, 'Retirer la branche invalide')); return; }
+        const target = byId(db().classes, row.classId), body = h('div', { class: 'promotion-fields' });
+        const details = h('details', { class: 'promotion-branch', open: index === expanded, 'data-promotion-index': String(index) },
+          h('summary', {}, `${target ? target.name : 'Destination à corriger'} — niveau ${row.minLevel}`), body);
+        details.addEventListener('toggle', () => { if (details.open) expanded = index; });
+        const fields = [
+          { key: 'classId', label: 'Classe de destination', type: 'select', options: () => db().classes.filter(c => c.id !== cls.id && !rows.some((r, i) => i !== index && r && r.classId === c.id)).map(c => ({ value: c.id, label: c.name })) },
+          { type: 'row', fields: [{ key: 'minLevel', label: 'Niveau minimum', type: 'number', min: 1, max: 99 },
+            { key: 'itemId', label: 'Objet requis (dans l’inventaire)', type: 'select', empty: '— aucun —', options: () => db().items.filter(it => it.effect === 'promotion').map(it => ({ value: it.id, label: it.name })) }] },
+          { key: 'resetLevel', label: 'Remettre le niveau à 1 et l’EXP à 0', type: 'checkbox' },
+          { type: 'heading', label: 'Bonus propres à cette branche (plafonnés par la classe d’arrivée)' },
+          { key: 'bonuses', type: 'stats', keys: Rules.STATS.concat('mov'), max: 99 },
+          { key: 'skills', label: 'Compétences accordées à la promotion', type: 'multicheck', options: () => db().skills.map(s => ({ value: s.id, label: s.icon + ' ' + s.name })) }
+        ];
+        body.append(UI.form(fields, row, { onChange: key => {
+          commit();
+          if (key === 'classId') { expanded = index; redraw(); }
+          else details.querySelector('summary').textContent = `${(byId(db().classes, row.classId) || {}).name || 'Destination à corriger'} — niveau ${row.minLevel}`;
+        } }), h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: () => { const target = byId(db().classes, row.classId); if (target) { row.bonuses = Promotions.create(cls, target).bonuses; commit(); redraw(); } } }, 'Reprendre les écarts de stats entre classes'),
+          h('button', { class: 'small danger', 'data-remove-promotion': String(index), onclick: () => { rows.splice(index, 1); commit(); redraw(); } }, 'Retirer la branche')));
+        root.append(details);
+      });
+      const available = db().classes.filter(c => c.id !== cls.id && !rows.some(row => row && row.classId === c.id));
+      root.append(h('button', { class: 'small', 'data-add-promotion': true, disabled: !available.length, onclick: () => {
+        const target = available.find(c => c.tier > cls.tier) || available[0];
+        rows.push(Promotions.create(cls, target)); expanded = rows.length - 1; commit(); redraw();
+      } }, '+ Ajouter une branche'), errors);
+      renderErrors();
+    };
+    redraw(); return root;
+  }
+
   // ------------------------------------------------------------------
   // Définition des onglets « liste + fiche »
   // ------------------------------------------------------------------
@@ -273,18 +341,24 @@
     classes: {
       label: 'Classes', list: () => db().classes, prefix: 'cls_',
       sub: (c) => (Rules.MOVE_TYPES.find(m => m.id === c.moveType) || {}).name,
-      create: () => ({ name: 'Nouvelle classe', moveType: 'foot', mov: 5, weapons: ['sword'], tier: 1, promotesTo: '', mapSprite: '', battler: '',
+      create: () => ({ name: 'Nouvelle classe', moveType: 'foot', mov: 5, weapons: ['sword'], tier: 1, promotions: [], mapSprite: '', battler: '',
         base: { hp: 18, str: 4, mag: 0, skl: 4, spd: 4, lck: 0, def: 3, res: 0 },
         growths: { hp: 70, str: 40, mag: 10, skl: 40, spd: 40, lck: 30, def: 20, res: 20 },
         caps: { hp: 60, str: 20, mag: 20, skl: 20, spd: 20, lck: 30, def: 20, res: 20 }, defaultInventory: [], skillLearning: [] }),
       fields: () => [
         { key: 'name', label: 'Nom', type: 'text' },
+        { key: 'description', label: 'Rôle / description', type: 'textarea', rows: 2 },
         { type: 'row', fields: [
           { key: 'moveType', label: 'Type de déplacement', type: 'select', options: mtypes },
           { key: 'mov', label: 'Déplacement', type: 'number', min: 1, max: 15 },
-          { key: 'tier', label: 'Rang', type: 'select', numeric: true, options: [{ value: 1, label: 'Base' }, { value: 2, label: 'Promue' }] }] },
+          { key: 'tier', label: 'Palier (0 : recrue, 1 : base, 2 : promue…)', type: 'number', min: 0, max: 9 }] },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
-        { key: 'promotesTo', label: 'Promotion vers', type: 'select', empty: '— aucune —', options: classOpts },
+        { type: 'custom', render: cls => {
+          const tmp = { effectiveTypes: cls.effectiveTypes || [cls.moveType] };
+          return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: mtypes }], tmp,
+            { onChange: () => { cls.effectiveTypes = tmp.effectiveTypes; change(); } });
+        } },
+        { type: 'custom', render: promotionField },
         { type: 'custom', render: c => learningField(c) },
         { type: 'row', fields: [
           { key: 'mapSprite', label: 'Sprite de map (img/characters)', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
@@ -332,13 +406,13 @@
     },
     items: {
       label: 'Objets', list: () => db().items, prefix: 'i_',
-      sub: (i) => i.effect === 'heal' ? 'soin' : 'stat',
+      sub: (i) => i.effect === 'heal' ? 'soin' : i.effect === 'promotion' ? 'promotion' : 'stat',
       create: () => ({ name: 'Nouvel objet', effect: 'heal', amount: 10, stat: 'hp', uses: 3 }),
       fields: (it) => [
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'row', fields: [
-          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }] },
-          { key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 },
+          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }] },
+          ...(it.effect !== 'promotion' ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
           { key: 'uses', label: 'Utilisations', type: 'number', min: 1, max: 99 }] },
         it.effect === 'boost' ? { key: 'stat', label: 'Stat', type: 'select', options: Rules.STATS.map(k => ({ value: k, label: Rules.STAT_LABELS[k] })).concat([{ value: 'mov', label: 'Déplacement' }]) } : null
       ].filter(Boolean),
@@ -472,9 +546,13 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (tab === 'classes' || tab === 'items') {
+          const users = Promotions.usersOf(db(), tab, cur.id);
+          if (users.length) return UI.alert('Élément utilisé par une promotion', 'Classes : ' + users.map(c => c.name).join(', ') + '. Retire d’abord leurs branches ou change leur objet requis.');
+        }
         if (tab === 'skills') {
           const users = Skills.usersOf(db(), cur.id);
-          const classes = Skills.classUsersOf(db(), cur.id);
+          const classes = [...new Set([...Skills.classUsersOf(db(), cur.id), ...Promotions.usersOf(db(), 'skills', cur.id)])];
           if (users.length || classes.length) return UI.alert('Compétence utilisée',
             (users.length ? 'Personnages : ' + users.map(u => u.name).join(', ') + '. ' : '') +
             (classes.length ? 'Classes : ' + classes.map(c => c.name).join(', ') + '. ' : '') +
@@ -486,6 +564,26 @@
       }
     }));
     const pane = h('div', { class: 'db-form' });
+    if (tab === 'classes') {
+      pane.append(h('button', { class: 'small', 'data-add-promotion-examples': true, onclick: () => {
+        const examples = Defaults.classes(), seal = Defaults.items().find(it => it.id === 'i_master_seal');
+        if (byId(db().items, seal.id) && byId(db().items, seal.id).effect !== 'promotion') {
+          return UI.alert('Identifiant d’objet déjà utilisé', 'Un objet du projet utilise déjà l’identifiant du sceau avec un autre effet. Modifie cet identifiant avant d’ajouter les exemples.');
+        }
+        let count = 0;
+        if (!byId(db().items, seal.id)) { db().items.push(seal); count++; }
+        for (const cls of examples) if (!byId(db().classes, cls.id)) { db().classes.push(cls); count++; }
+        for (const cls of db().classes) {
+          if (cls.promotions !== undefined || cls.promotesTo) continue;
+          const example = byId(examples, cls.id);
+          const rows = Promotions.branches(example, { classes: examples }).filter(row => !row.itemId || (byId(db().items, row.itemId) || {}).effect === 'promotion');
+          if (rows.length) { cls.promotions = JSON.parse(JSON.stringify(rows)); delete cls.promotesTo; count += rows.length; }
+        }
+        if (count) { change(); renderBody(); }
+        UI.toast(count ? 'Classes, objet et branches d’exemple ajoutés.' : 'Les exemples sont déjà présents ; les branches existantes sont conservées.');
+      } }, 'Ajouter les exemples de promotions manquants'),
+      h('p', { class: 'form-info' }, 'Ajoute les classes et le sceau manquants, puis les branches d’exemple aux anciennes classes sans promotion. Les branches déjà définies restent conservées.'));
+    }
     if (tab === 'skills') {
       pane.append(h('p', { class: 'note' }, 'Attribue les compétences et leurs apprentissages dans les fiches des unités et des classes. La personnelle et les cinq compétences équipées appliquent leurs effets en jeu lorsque leurs conditions sont remplies.'));
       const missing = Skills.presets().filter(s => !list.some(existing => existing.id === s.id));
