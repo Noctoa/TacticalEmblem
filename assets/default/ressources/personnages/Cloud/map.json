@@ -1,6 +1,6 @@
 {
  "type": "mapsprite",
- "name": "Brigand",
+ "name": "Cloud",
  "frame": [
   32,
   32
@@ -10,13 +10,6 @@
   23
  ],
  "base": 16,
- "palettes": [
-  "ally",
-  "enemy",
-  "neutral",
-  "gray"
- ],
- "paletteHeight": 192,
  "anims": {
   "idle": {
    "row": 0,
@@ -109,5 +102,11 @@
    ]
   }
  },
- "source": "Fire Emblem 7 — map sprites (rip : Lexou)"
+ "source": "Cloud — sprite FE custom par Lord Zymeth",
+ "teamColors": [
+  "#42384a",
+  "#584878",
+  "#635163",
+  "#736973"
+ ]
 }

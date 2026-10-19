@@ -42,7 +42,8 @@
     effectiveMult: 3,
     critMult: 3,
     maxLevel: 20,
-    battleAnims: true
+    battleAnims: true,
+    colors: 'map' // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
   };
 
   // ---------- utilitaires ----------
@@ -186,6 +187,7 @@
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
       isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
       mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',
+      colors: ch.colors || (cls && cls.colors) || '', colorsOverride: pos.colors || '', // réglage du placement (prioritaire)
       x: pos.x, y: pos.y, done: false, ai: 'player'
     };
   }
@@ -205,6 +207,7 @@
       isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
       appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop,
       mapSprite: pl.mapSprite || cls.mapSprite || '', battler: pl.battler || cls.battler || '',
+      colors: pl.colors || cls.colors || '',
       x: pl.x, y: pl.y, done: false
     };
   }

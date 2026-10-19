@@ -43,7 +43,7 @@ test('TMX + TSX externe + base64 zlib + CSV + objets', () => {
 
 test('TMJ : tileset intégré, gzip, flips, groupes, map infinie', () => {
   const dir = path.join(tmp, 'tmj'); fs.mkdirSync(dir);
-  fs.copyFileSync(path.join(__dirname, '..', 'assets', 'default', 'img', 'tilesets', 'plaines.png'), path.join(dir, 'tiles.png'));
+  fs.copyFileSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'tilesets', 'plaines.png'), path.join(dir, 'tiles.png'));
   const chunkData = new Array(16 * 16).fill(1); chunkData[0] = 3 | 0x80000000; // flip H
   const buf = Buffer.alloc(chunkData.length * 4); chunkData.forEach((g, i) => buf.writeUInt32LE(g >>> 0, i * 4));
   const tmj = {
@@ -88,13 +88,21 @@ test('création / sauvegarde / rechargement', () => {
   assert.strictEqual(p.meta.name, 'Test');
   assert.strictEqual(p.maps.length, 1);
   // arborescence façon RPG Maker + ressources par défaut
-  for (const d of ['data/maps', 'img/tilesets', 'img/characters', 'img/battlers', 'img/faces', 'img/system', 'audio/bgm', 'audio/se'])
+  for (const d of ['data/maps', 'ressources/personnages', 'ressources/tilesets', 'ressources/interface', 'ressources/musiques', 'ressources/jingles', 'ressources/sons'])
     assert.ok(fs.existsSync(path.join(dir, d)), d);
+  assert.ok(fs.existsSync(path.join(dir, 'ressources', 'LISEZMOI.txt')));
   assert.ok(fs.existsSync(path.join(dir, 'data', 'maps', 'map_1.json')));
-  assert.ok(p.resources.characters['img/characters/Eliwood_Lord']);
-  assert.strictEqual(p.resources.battlers['img/battlers/Lyn'].facing, 'left');
-  assert.strictEqual(p.resources.battlers['img/battlers/Brigand'].facing, 'right');
-  assert.ok(p.resources.faces.includes('img/faces/Hector.png'));
+  // un dossier par personnage : sprites de map, animation de combat, portrait
+  assert.deepStrictEqual(p.resources.owners, ['Brigand', 'Cloud', 'Eliwood', 'Hector', 'Lyn']);
+  assert.ok(p.resources.characters['ressources/personnages/Eliwood/map_Lord']);
+  assert.strictEqual(p.resources.characters['ressources/personnages/Eliwood/map_Lord'].owner, 'Eliwood');
+  assert.strictEqual(p.resources.battlers['ressources/personnages/Lyn/combat'].facing, 'left');
+  assert.strictEqual(p.resources.battlers['ressources/personnages/Lyn/combat'].projectiles.arrow, 'ressources/personnages/Lyn/combat_arrow.png');
+  assert.strictEqual(p.resources.battlers['ressources/personnages/Brigand/combat'].facing, 'right');
+  assert.ok(p.resources.faces.includes('ressources/personnages/Hector/portrait.png'));
+  assert.ok(!p.resources.faces.some(f => /combat_arrow/.test(f)), 'un projectile n\'est pas un portrait');
+  // une seule palette (couleurs d'origine) : plus de planche à 4 blocs
+  for (const m of Object.values(p.resources.characters)) assert.ok(!m.palettes && Array.isArray(m.teamColors), m.image);
   assert.deepStrictEqual(p.db.units.map(u => u.name), ['Eliwood', 'Lyn', 'Hector', 'Cloud']);
   // sprites propres à une unité (Cloud), convoi, musique, allié du chapitre d'exemple
   for (const u of p.db.units) {
@@ -105,6 +113,7 @@ test('création / sauvegarde / rechargement', () => {
   assert.ok(p.meta.convoy.items.length > 0);
   for (const k of ['playerPhase', 'enemyPhase', 'levelUp', 'gameOver']) assert.ok(fs.existsSync(path.join(dir, p.meta.audio[k])), k);
   assert.ok(p.resources.bgm.length === 2 && p.resources.me.length === 2);
+  assert.ok(p.resources.bgm.every(f => f.startsWith('ressources/musiques/')));
   const ch = p.db.chapters[0];
   assert.strictEqual(ch.allies.length, 1);
   assert.ok(!ch.players.some(x => x.unitId === ch.allies[0].unitId));
@@ -133,6 +142,93 @@ test('migration d\'un projet à l\'ancienne arborescence (maps/ à la racine)', 
   io.saveProject(dir, q);
   assert.ok(fs.existsSync(path.join(dir, 'data', 'maps', 'map_1.json')));
   assert.ok(!fs.existsSync(path.join(dir, 'maps')));
+});
+
+test('migration des ressources img/ + audio/ vers ressources/', () => {
+  const Layout = require('../src/main/resources-layout.js');
+  const dir = path.join(tmp, 'OldRes');
+  io.createProject(dir, 'Ancien', 'sample', path.join(__dirname, '..', 'assets'));
+  // reconstitue l'ancienne arborescence (img/characters, img/battlers, img/faces, img/tilesets, audio/…)
+  const P = 'ressources/personnages/';
+  const back = new Map();
+  const mv = (from, to) => {
+    fs.mkdirSync(path.dirname(path.join(dir, to)), { recursive: true });
+    fs.renameSync(path.join(dir, from), path.join(dir, to));
+    back.set(from, to);
+  };
+  const sheets = { 'Eliwood/map_Lord': 'img/characters/Eliwood_Lord', 'Eliwood/map_KnightLord': 'img/characters/Eliwood_KnightLord', 'Lyn/map_Lord': 'img/characters/Lyn_Lord',
+    'Lyn/map_BladeLord': 'img/characters/Lyn_BladeLord', 'Hector/map_Lord': 'img/characters/Hector_Lord', 'Hector/map_GreatLord': 'img/characters/Hector_GreatLord',
+    'Brigand/map': 'img/characters/Brigand', 'Cloud/map': 'img/characters/Cloud',
+    'Eliwood/combat': 'img/battlers/Eliwood', 'Lyn/combat': 'img/battlers/Lyn', 'Hector/combat': 'img/battlers/Hector', 'Brigand/combat': 'img/battlers/Brigand', 'Cloud/combat': 'img/battlers/Cloud' };
+  for (const [n, old] of Object.entries(sheets)) { mv(P + n + '.png', old + '.png'); mv(P + n + '.json', old + '.json'); back.set(P + n, old); }
+  mv(P + 'Lyn/combat_arrow.png', 'img/battlers/Lyn_arrow.png');
+  const lyn = JSON.parse(fs.readFileSync(path.join(dir, 'img/battlers/Lyn.json'), 'utf8'));
+  lyn.projectiles = { arrow: 'img/battlers/Lyn_arrow.png' };
+  fs.writeFileSync(path.join(dir, 'img/battlers/Lyn.json'), JSON.stringify(lyn));
+  for (const n of ['Eliwood', 'Lyn', 'Hector', 'Brigand', 'Cloud']) mv(P + n + '/portrait.png', 'img/faces/' + n + '.png');
+  mv('ressources/tilesets/plaines.png', 'img/tilesets/plaines.png');
+  for (const f of ['Advance', 'Winning_Road']) mv('ressources/musiques/' + f + '.mp3', 'audio/bgm/' + f + '.mp3');
+  for (const f of ['Level_Up', 'Game_Over']) mv('ressources/jingles/' + f + '.mp3', 'audio/me/' + f + '.mp3');
+  fs.rmSync(path.join(dir, 'ressources'), { recursive: true });
+  const toOld = new Map([...back].map(([n, o]) => [n, o]));
+  for (const k of io.DB_KEYS) {
+    const f = path.join(dir, 'data', k + '.json');
+    fs.writeFileSync(f, JSON.stringify(Layout.rewrite(JSON.parse(fs.readFileSync(f, 'utf8')), toOld)));
+  }
+  const metaFile = path.join(dir, 'game.tfproj');
+  fs.writeFileSync(metaFile, JSON.stringify(Object.assign(Layout.rewrite(JSON.parse(fs.readFileSync(metaFile, 'utf8')), toOld), { layout: 2 })));
+  assert.ok(JSON.stringify(JSON.parse(fs.readFileSync(path.join(dir, 'data', 'units.json'), 'utf8'))).includes('img/faces/Lyn.png'));
+  // ouverture : conversion
+  const cloudJson = path.join(dir, 'img/battlers/Cloud.json');
+  const cloudMeta = JSON.parse(fs.readFileSync(cloudJson, 'utf8')); delete cloudMeta.teamColors;
+  fs.writeFileSync(cloudJson, JSON.stringify(cloudMeta)); // comme une planche d'avant les couleurs d'équipe
+  const q = io.loadProject(dir, path.join(__dirname, '..', 'assets'));
+  assert.ok(q.migration && q.migration.moved > 20, JSON.stringify(q.migration));
+  assert.deepStrictEqual(q.resources.battlers[P + 'Cloud/combat'].teamColors, ['#42384a', '#635163', '#736973'], 'couleurs reprises des ressources par défaut');
+  assert.ok(!fs.existsSync(path.join(dir, 'img')) && !fs.existsSync(path.join(dir, 'audio')));
+  assert.ok(fs.existsSync(path.join(dir, Layout.BACKUP, 'data', 'units.json')));
+  assert.strictEqual(q.meta.layout, Layout.LAYOUT);
+  const lynU = q.db.units.find(u => u.name === 'Lyn');
+  assert.strictEqual(lynU.portrait, P + 'Lyn/portrait.png');
+  assert.strictEqual(q.db.units.find(u => u.name === 'Cloud').mapSprite, P + 'Cloud/map');
+  assert.strictEqual(q.db.classes.find(c => c.id === 'blade_lord').mapSprite, P + 'Lyn/map_BladeLord');
+  assert.strictEqual(q.db.classes.find(c => c.id === 'brigand').battler, P + 'Brigand/combat');
+  assert.strictEqual(q.db.tilesets[0].image, 'ressources/tilesets/plaines.png');
+  assert.strictEqual(q.meta.audio.enemyPhase, 'ressources/musiques/Advance.mp3');
+  assert.strictEqual(q.meta.audio.levelUp, 'ressources/jingles/Level_Up.mp3');
+  assert.strictEqual(q.resources.battlers[P + 'Lyn/combat'].projectiles.arrow, P + 'Lyn/combat_arrow.png');
+  for (const c of q.db.classes) {
+    if (c.mapSprite) assert.ok(q.resources.characters[c.mapSprite], c.mapSprite);
+    if (c.battler) assert.ok(q.resources.battlers[c.battler], c.battler);
+  }
+  for (const u of q.db.units) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait);
+  // ressources par défaut sur un projet converti : rien de neuf, rien en double
+  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, 0);
+  // réouverture : plus rien à convertir
+  assert.ok(!io.loadProject(dir).migration);
+});
+
+test('restes d\'une ancienne version dans assets/default (img/, audio/) ignorés', () => {
+  const assets = path.join(tmp, 'assets-mixte');
+  fs.cpSync(path.join(__dirname, '..', 'assets'), assets, { recursive: true });
+  fs.mkdirSync(path.join(assets, 'default', 'img', 'faces'), { recursive: true });
+  fs.writeFileSync(path.join(assets, 'default', 'img', 'faces', 'Lyn.png'), 'x');
+  const dir = path.join(tmp, 'Mixte');
+  const p = io.createProject(dir, 'Mixte', 'sample', assets);
+  assert.ok(!fs.existsSync(path.join(dir, 'img')));
+  assert.ok(!io.loadProject(dir, assets).migration);
+  assert.strictEqual(io.installDefaults(dir, assets).added, 0);
+  assert.ok(p.resources.faces.length === 5);
+});
+
+test('couleurs d\'équipe enregistrées dans le .json de la planche', () => {
+  const dir = path.join(tmp, 'Proj');
+  const key = 'ressources/personnages/Brigand/map';
+  assert.deepStrictEqual(io.setTeamColors(dir, key, ['#FF0000', '#00ff00', 'nope', '#ff0000']), ['#00ff00', '#ff0000']);
+  assert.deepStrictEqual(io.scanResources(dir).characters[key].teamColors, ['#00ff00', '#ff0000']);
+  assert.strictEqual(io.setTeamColors(dir, key, null), null);
+  assert.ok(!('teamColors' in io.scanResources(dir).characters[key]));
+  assert.throws(() => io.setTeamColors(dir, '../../etc/passwd', []));
 });
 
 console.log('Règles');

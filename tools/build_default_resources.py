@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
 Construit les ressources par défaut (assets/default/) à partir des planches rippées
-de tools/sprite-sources/ :
+de tools/sprite-sources/, rangées par personnage :
 
-  img/characters/<nom>.png + .json   sprites de map (4 palettes : allié, ennemi, neutre, gris)
-  img/battlers/<nom>.png + .json     animations de combat, frames normalisées sur une grille
-  img/faces/<nom>.png                portraits (buste découpé dans la pose de garde)
+  ressources/personnages/<Perso>/map_<classe>.png + .json   sprites de map, couleurs d'origine
+  ressources/personnages/<Perso>/combat.png + .json         animation de combat, frames sur une grille
+  ressources/personnages/<Perso>/portrait.png               portrait (buste découpé dans la pose de garde)
+
+Un seul jeu de couleurs par planche : les versions bleue / rouge / verte / grise sont calculées
+par l'éditeur. Les couleurs qui changent sont listées dans le .json (« teamColors »).
 
 Usage : python3 tools/build_default_resources.py [--preview dossier]
 Dépendances : Pillow, numpy
@@ -18,6 +21,19 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'tools', 'sprite-sources')
 OUT = os.path.join(ROOT, 'assets', 'default')
 PREVIEW = sys.argv[sys.argv.index('--preview') + 1] if '--preview' in sys.argv else None
+PERSO = os.path.join(OUT, 'ressources', 'personnages')
+
+
+def out_path(name, prefix, ext):
+    """('Eliwood_Lord', 'map') -> ressources/personnages/Eliwood/map_Lord<ext> ; ('Lyn', 'combat') -> Lyn/combat<ext>."""
+    own, _, rest = name.partition('_')
+    d = os.path.join(PERSO, own)
+    os.makedirs(d, exist_ok=True)
+    return os.path.join(d, prefix + ('_' + rest if rest else '') + ext)
+
+
+def hexc(c):
+    return '#%02x%02x%02x' % tuple(c)
 
 
 def load(name):
@@ -61,8 +77,10 @@ def build_map_sprites(sheet):
     pals = {}
     for k, y in PAL_Y.items():
         pals[k] = [tuple(int(c) for c in sheet[y, PAL_X0 + 8 * i]) for i in range(15)]
-    order = ['ally', 'enemy', 'neutral', 'gray']
+    order = ['ally']  # couleurs d'origine de la planche (les autres sont calculées par l'éditeur)
     ally_index = {c: i for i, c in enumerate(pals['ally'])}
+    # couleurs d'équipe : celles qui changent entre la palette alliée et la palette ennemie
+    team = sorted({hexc(a) for a, b in zip(pals['ally'], pals['enemy']) if a != b})
     made = []
     for fname, section, block, label in MAP_SPRITES:
         g0 = SECTION[section]
@@ -92,11 +110,10 @@ def build_map_sprites(sheet):
                     if anim == 'right':
                         im = im.transpose(Image.FLIP_LEFT_RIGHT)
                     out.paste(im, (fi * 32, pi * H + ri * 32))
-        os.makedirs(os.path.join(OUT, 'img', 'characters'), exist_ok=True)
-        out.save(os.path.join(OUT, 'img', 'characters', fname + '.png'))
+        out.save(out_path(fname, 'map', '.png'))
         meta = {
             'type': 'mapsprite', 'name': label, 'frame': [32, 32], 'anchor': [16, 23], 'base': 16,
-            'palettes': order, 'paletteHeight': H,
+            'teamColors': team,
             'anims': {
                 'idle': {'row': 0, 'frames': [0, 1, 2, 1], 'durations': [500, 80, 500, 80]},
                 'left': {'row': 1, 'frames': [0, 1, 2, 3], 'durations': [110] * 4},
@@ -107,7 +124,7 @@ def build_map_sprites(sheet):
             },
             'source': 'Fire Emblem 7 — map sprites (rip : Lexou)'
         }
-        json.dump(meta, open(os.path.join(OUT, 'img', 'characters', fname + '.json'), 'w'), indent=1, ensure_ascii=False)
+        json.dump(meta, open(out_path(fname, 'map', '.json'), 'w'), indent=1, ensure_ascii=False)
         made.append(fname)
         if unknown:
             print('  ', fname, ':', len(unknown), 'couleurs hors palette conservées')
@@ -117,6 +134,8 @@ def build_map_sprites(sheet):
 # Planches custom : une rangée par animation, frames découpées automatiquement
 CUSTOM_MAP_SPRITES = [
     {'name': 'Cloud', 'label': 'Cloud', 'file': 'cloud.gif', 'bg': (0, 57, 198),
+     # tenue violet délavé : couleurs d'équipe choisies à la main
+     'team': ['#42384a', '#584878', '#635163', '#736973'],
      'rows': {'idle': [35, 53, 465, 600], 'up': [57, 78, 465, 600], 'down': [81, 101, 465, 600],
               'left': [106, 126, 465, 600], 'focus': [130, 162, 465, 600]}},
 ]
@@ -125,7 +144,7 @@ CUSTOM_MAP_SPRITES = [
 def build_custom_map_sprites(fe_sheet):
     pals = {k: [tuple(int(c) for c in fe_sheet[y, PAL_X0 + 8 * i]) for i in range(15)] for k, y in PAL_Y.items()}
     ally_index = {c: i for i, c in enumerate(pals['ally'])}
-    order = ['ally', 'enemy', 'neutral', 'gray']
+    order = ['ally']  # couleurs d'origine
     made = []
     for sp in CUSTOM_MAP_SPRITES:
         a = load(sp['file']); bg = sp['bg']
@@ -170,12 +189,11 @@ def build_custom_map_sprites(fe_sheet):
             for ri, anim in enumerate(layout):
                 for fi, t in enumerate(cells[anim][:4]):
                     sheet.paste(Image.fromarray(recolor(t, pal), 'RGBA'), (fi * 32, pi * H + ri * 32))
-        sheet.save(os.path.join(OUT, 'img', 'characters', sp['name'] + '.png'))
+        sheet.save(out_path(sp['name'], 'map', '.png'))
         n = {k: len(v) for k, v in cells.items()}
         idle = list(range(n['idle'])) + ([1] if n['idle'] == 3 else [])
         meta = {
             'type': 'mapsprite', 'name': sp['label'], 'frame': [32, 32], 'anchor': [16, 23], 'base': 16,
-            'palettes': order, 'paletteHeight': H,
             'anims': {
                 'idle': {'row': 0, 'frames': idle, 'durations': [500, 80, 500, 80][:len(idle)]},
                 'left': {'row': 1, 'frames': list(range(n['left'])), 'durations': [110] * n['left']},
@@ -186,7 +204,9 @@ def build_custom_map_sprites(fe_sheet):
             },
             'source': 'Cloud — sprite FE custom par Lord Zymeth'
         }
-        json.dump(meta, open(os.path.join(OUT, 'img', 'characters', sp['name'] + '.json'), 'w'), indent=1, ensure_ascii=False)
+        if 'team' in sp:
+            meta['teamColors'] = sp['team']
+        json.dump(meta, open(out_path(sp['name'], 'map', '.json'), 'w'), indent=1, ensure_ascii=False)
         made.append(sp['name'])
         print('  ', sp['name'], n)
     return made
@@ -256,6 +276,7 @@ R = lambda a, b: list(range(a, b + 1))
 BATTLERS = {
     'Cloud': {
         'file': 'cloud.gif', 'bg': [0, 57, 198], 'facing': 'left', 'label': 'Cloud (Mercenaire)',
+        'team': ['#42384a', '#635163', '#736973'],  # tenue (la détection automatique prendrait l'épée)
         'credit': 'Cloud : édition FE par Lord Zymeth (base Mercenaire FE, personnage Square Enix)',
         'erase': [[290, 178, 385, 200], [300, 376, 372, 399], [218, 443, 234, 458], [405, 476, 490, 503]],
         'anims': {
@@ -384,8 +405,7 @@ def extract_battler(name, spec):
     sheet = Image.new('RGBA', (cols * cw, rows * ch), (0, 0, 0, 0))
     for i, t in enumerate(tiles):
         sheet.paste(t, ((i % cols) * cw, (i // cols) * ch))
-    os.makedirs(os.path.join(OUT, 'img', 'battlers'), exist_ok=True)
-    sheet.save(os.path.join(OUT, 'img', 'battlers', name + '.png'), optimize=True)
+    sheet.save(out_path(name, 'combat', '.png'), optimize=True)
 
     anims = {}
     for anim, an in spec['anims'].items():
@@ -410,15 +430,17 @@ def extract_battler(name, spec):
     meta = {'type': 'battler', 'name': spec['label'], 'facing': spec['facing'], 'cell': [cw, ch], 'anchor': [ax, ay],
             'columns': cols, 'count': len(tiles), 'anims': anims,
             'source': 'Fire Emblem 7 — battle sprites (rip : Lexou / Grim & Bonzai)'}
+    if 'team' in spec:
+        meta['teamColors'] = spec['team']
     # projectiles intégrés (flèche de Lyn)
     if 'extra' in spec:
         meta['projectiles'] = {}
         for pname, (x0, y0, x1, y1) in spec['extra'].items():
             crop = Image.fromarray(rgba[y0:y1 + 1, x0:x1 + 1], 'RGBA')
             bb = crop.getbbox(); crop = crop.crop(bb)
-            p = os.path.join(OUT, 'img', 'battlers', f'{name}_{pname}.png'); crop.save(p)
-            meta['projectiles'][pname] = f'img/battlers/{name}_{pname}.png'
-    json.dump(meta, open(os.path.join(OUT, 'img', 'battlers', name + '.json'), 'w'), indent=1, ensure_ascii=False)
+            p = out_path(name, 'combat_' + pname, '.png'); crop.save(p)
+            meta['projectiles'][pname] = os.path.basename(p)  # à côté de la planche
+    json.dump(meta, open(out_path(name, 'combat', '.json'), 'w'), indent=1, ensure_ascii=False)
     # portrait : buste centré sur la tête, dans la pose de garde
     fa, fk = spec.get('faceFrame', ['stance', 0])
     st = tiles[remap[anim_frames[fa][fk]]]
@@ -435,13 +457,12 @@ def extract_battler(name, spec):
         face = st.crop((cx - size // 2, top - 3, cx + size // 2, top - 3 + size))
     if spec['facing'] == 'left':
         face = face.transpose(Image.FLIP_LEFT_RIGHT)  # regarde vers la droite dans la boîte de dialogue
-    os.makedirs(os.path.join(OUT, 'img', 'faces'), exist_ok=True)
     # un vrai face set (planche 128x112 façon FE GBA) fourni dans sprite-sources remplace le buste découpé
     fs = os.path.join(SRC, name.lower() + '_faceset.png')
     if os.path.exists(fs):
-        shutil.copyfile(fs, os.path.join(OUT, 'img', 'faces', name + '.png'))
+        shutil.copyfile(fs, out_path(name, 'portrait', '.png'))
     else:
-        face.save(os.path.join(OUT, 'img', 'faces', name + '.png'))
+        face.save(out_path(name, 'portrait', '.png'))
     print(f'  {name} : {len(frames)} frames -> {len(tiles)} uniques, cellule {cw}x{ch}, ' + ', '.join(f'{k} {len(v["frames"])}' for k, v in anims.items()))
     if PREVIEW:
         preview(name, meta, sheet)
@@ -481,11 +502,12 @@ def main():
     made = build_map_sprites(sheet) + build_custom_map_sprites(sheet)
     print('  ', ', '.join(made))
     if PREVIEW:
-        ims = [Image.open(os.path.join(OUT, 'img', 'characters', m + '.png')) for m in made]
+        ims = [Image.open(out_path(m, 'map', '.png')) for m in made]
         o = Image.new('RGBA', (sum(i.width + 8 for i in ims), ims[0].height), (48, 48, 60, 255))
         x = 0
         for i in ims:
             o.paste(i, (x, 0), i); x += i.width + 8
+        os.makedirs(PREVIEW, exist_ok=True)
         o = o.resize((o.width * 2, o.height * 2), Image.NEAREST); o.save(os.path.join(PREVIEW, 'mapsprites.png'))
     print('Animations de combat')
     for name, spec in BATTLERS.items():

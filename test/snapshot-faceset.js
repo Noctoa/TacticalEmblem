@@ -18,7 +18,7 @@ module.exports = (win, openPlaytest) => {
       const eshot = async n => { win.show(); win.focus(); win.webContents.invalidate(); await ejs('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))'); await wait(250); fs.writeFileSync(path.join(out, n + '.png'), (await win.webContents.capturePage()).toPNG()); };
       await ejs(`Editor.open(${JSON.stringify(dir)})`); await wait(800);
       await ejs(`DBEditor.open('resources')`); await wait(600);
-      await ejs(`(() => { const it = [...document.querySelectorAll('#db-body .db-item')].find(e => e.textContent.trim().endsWith('Eliwood.png')); it && it.click(); })()`); await wait(800);
+      await ejs(`(() => { const it = [...document.querySelectorAll('#db-body .db-item')].find(e => (e.title || '').endsWith('Eliwood/portrait.png')); it && it.click(); })()`); await wait(800);
       log('items', await ejs(`[...document.querySelectorAll('#db-body .db-item')].map(e => e.textContent.trim()).join('/')`));
       log('analyse', await ejs(`document.querySelector('.faceset-demo') ? [...document.querySelectorAll('#db-body .form-info')].map(p => p.textContent).join(' | ') : 'pas de démo'`));
       await ejs(`(() => { const b = [...document.querySelectorAll('#db-body button')].find(b => b.textContent === 'Faire parler'); b && b.click(); })()`);

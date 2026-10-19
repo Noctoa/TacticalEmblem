@@ -96,6 +96,7 @@
     const character = byId(db.units, unit.sourceId) || {};
     next.mapSprite = character.mapSprite || option.target.mapSprite || '';
     next.battler = character.battler || option.target.battler || '';
+    next.colors = character.colors || option.target.colors || '';
     Object.assign(next, Skills.loadout(next, db.skills || []));
     const learnedSkills = [];
     for (const id of option.row.skills) if (id !== next.personalSkill && !next.learnedSkills.includes(id)) { next.learnedSkills.push(id); learnedSkills.push(id); }

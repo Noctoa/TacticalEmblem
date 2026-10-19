@@ -83,6 +83,15 @@
     fitZoom();
     renderAll();
     updateTitle();
+    const mig = S.project.migration;
+    if (mig) {
+      delete S.project.migration;
+      UI.alert('Ressources réorganisées', [
+        `Ce projet utilisait l'ancienne organisation (img/, audio/). ${mig.moved} fichier(s) ont été rangés dans ressources/ :`,
+        'ressources/personnages/<Nom>/ regroupe les sprites de map, l\'animation de combat et le portrait de chaque personnage ; tilesets, musiques, jingles et sons ont chacun leur dossier.',
+        `Les références de la base de données ont été mises à jour. Copie des données d'avant : ${mig.backup}/`
+      ]);
+    }
   }
 
   async function preloadSprites() {
@@ -359,6 +368,20 @@
   }
   function charMeta(path) { return path && S.project.resources && S.project.resources.characters[path]; }
 
+  /** Palette d'un placement sur la map de l'éditeur (placement › unité › classe › réglage du projet). */
+  const TEAM_OF = { players: 'player', allies: 'ally', enemies: 'enemy' };
+  function paletteOf(pl, kind) {
+    const settings = (S.project.meta.settings || {}).colors;
+    let unitColors = '', clsColors = '';
+    if (kind === 'players' || kind === 'allies') {
+      const u = byId(DB().units, pl.unitId); const c = u && byId(DB().classes, u.classId);
+      unitColors = u && u.colors; clsColors = c && c.colors;
+    } else { const c = byId(DB().classes, pl.classId); clsColors = c && c.colors; }
+    return Palettes.paletteFor(TEAM_OF[kind] || 'player', Palettes.resolveMode(pl.colors, unitColors, clsColors, settings), 'map', false);
+  }
+  /** Palette d'une icône de liste pour un camp, selon le réglage d'une unité / classe. */
+  function iconPalette(team, ...modes) { return Palettes.paletteFor(team, Palettes.resolveMode(...modes, (S.project.meta.settings || {}).colors), 'map', false); }
+
   function drawPlacement(pl, kind, x, y, cs, opts) {
     const meta = charMeta(spritePathOf(pl, kind));
     const img = meta && Render.readyImage(S.baseUrl, meta.image);
@@ -371,7 +394,7 @@
     ctx.globalAlpha = opts.ghost ? 0.5 : 1;
     ctx.fillStyle = kind === 'players' ? 'rgba(63,124,240,.35)' : kind === 'allies' ? 'rgba(47,211,122,.45)' : 'rgba(217,71,61,.35)';
     ctx.fillRect(x * cs.w + 1, y * cs.h + 1, cs.w - 2, cs.h - 2);
-    Sprites.drawMapSprite(ctx, meta, img, x * cs.w + cs.w / 2, (y + 1) * cs.h, k, { anim: 'idle', frame: 0, palette: kind === 'players' ? 'ally' : kind === 'allies' ? 'neutral' : 'enemy', alpha: opts.ghost ? 0.55 : 1 });
+    Sprites.drawMapSprite(ctx, meta, img, x * cs.w + cs.w / 2, (y + 1) * cs.h, k, { anim: 'idle', frame: 0, palette: paletteOf(pl, kind), alpha: opts.ghost ? 0.55 : 1 });
     ctx.globalAlpha = 1;
     if (kind === 'allies') { ctx.strokeStyle = '#7dffb0'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1.5, y * cs.h + 1.5, cs.w - 3, cs.h - 3); }
     if (opts.boss) { ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1.5, y * cs.h + 1.5, cs.w - 3, cs.h - 3); }
@@ -825,7 +848,7 @@
       const cls = byId(DB().classes, u.classId);
       const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
       list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'players', unitId: u.id }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, 'ally', 24) : h('span', { class: 'token player', style: { background: u.color || '' } }, u.name.slice(0, 1)),
+        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('player', u.colors, cls && cls.colors), 24) : h('span', { class: 'token player', style: { background: u.color || '' } }, u.name.slice(0, 1)),
         h('span', {}, u.name), h('span', { class: 'meta' }, placed ? `placé ${placed.x},${placed.y}` : (cls ? cls.name : ''))));
     }
     if (!DB().units.length) list.append(h('p', { class: 'note' }, 'Aucune unité. Crée tes personnages dans la base de données.'));
@@ -836,7 +859,7 @@
       const cls = byId(DB().classes, u.classId);
       const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
       list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'allies', unitId: u.id }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, 'neutral', 24) : h('span', { class: 'token ally' }, u.name.slice(0, 1)),
+        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('ally', u.colors, cls && cls.colors), 24) : h('span', { class: 'token ally' }, u.name.slice(0, 1)),
         h('span', {}, u.name), h('span', { class: 'meta' }, placed ? `allié ${placed.x},${placed.y}` : '')));
     }
     list.append(h('div', { class: 'pick-group' }, 'Ennemis (par classe)'));
@@ -844,7 +867,7 @@
       const on = S.placeTool && S.placeTool.kind === 'enemies' && S.placeTool.classId === c.id;
       const meta = charMeta(c.mapSprite);
       list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'enemies', classId: c.id, level: 1 }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, 'enemy', 24) : h('span', { class: 'token enemy' }, c.name.slice(0, 1)), h('span', {}, c.name),
+        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('enemy', c.colors), 24) : h('span', { class: 'token enemy' }, c.name.slice(0, 1)), h('span', {}, c.name),
         h('span', { class: 'meta' }, (Rules.MOVE_TYPES.find(m => m.id === c.moveType) || {}).name || '')));
     }
     box.append(list);
@@ -1210,7 +1233,7 @@
     const row = (kind, pl) => {
       const on = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
       return h('div', { class: 'placement' + (on ? ' on' : ''), onclick: () => { S.selected = { kind, id: pl.id }; renderInspector(); draw(); } },
-        charMeta(spritePathOf(pl, kind)) ? Sprites.icon(S.baseUrl, charMeta(spritePathOf(pl, kind)), { players: 'ally', allies: 'neutral' }[kind] || 'enemy', 24)
+        charMeta(spritePathOf(pl, kind)) ? Sprites.icon(S.baseUrl, charMeta(spritePathOf(pl, kind)), paletteOf(pl, kind), 24)
           : h('span', { class: 'token ' + ({ players: 'player', allies: 'ally' }[kind] || (pl.isBoss ? 'boss' : 'enemy')), style: kind === 'players' ? { background: tokenColor(pl, kind) } : {} }, tokenLabel(pl, kind).slice(0, 1)),
         kind === 'allies' ? h('span', { class: 'turn ally' }, 'allié') : null,
         h('span', {}, tokenLabel(pl, kind) + (kind === 'enemies' ? ` Nv ${pl.level}` : '')),
@@ -1227,7 +1250,9 @@
     // placement sélectionné
     const pl = findPlacement(S.selected);
     if (!pl) return;
-    const onPl = (k) => { markDirty(); draw(); if (['classId', 'isBoss', 'name', 'unitId', 'appearTurn', 'level'].includes(k)) { renderPalette(); renderInspector(); } };
+    const onPl = (k) => { markDirty(); draw(); if (['classId', 'isBoss', 'name', 'unitId', 'appearTurn', 'level', 'colors'].includes(k)) { renderPalette(); renderInspector(); } };
+    // couleurs du sprite pour ce placement seulement (sinon celles du personnage / de la classe)
+    const colorsField = { key: 'colors', label: 'Couleurs', type: 'select', empty: 'Comme le personnage / la classe', options: Palettes.MODES };
     const snapOnce = (() => { let done = false; return () => { if (!done) { snapshot('chapter', ch.id); done = true; } }; })();
     const ctxF = { onChange: (k) => { snapOnce(); onPl(k); } };
     const del = h('button', { class: 'small danger', html: Icons.icon('trash'), onclick: () => { snapshot('chapter', ch.id); ch[S.selected.kind] = ch[S.selected.kind].filter(p => p !== pl); S.selected = null; renderAll(); } }, 'Retirer');
@@ -1238,11 +1263,13 @@
           { value: 'player', label: 'Jouable — le joueur le dirige pendant la phase alliée' },
           { value: 'ai', label: 'IA — joue seul pendant la phase alliée' }] },
         { key: 'ai', label: 'Comportement (si IA)', type: 'select', options: AIS },
+        colorsField,
         { type: 'info', text: `Position : x ${pl.x} · y ${pl.y}. La phase alliée se joue juste après la phase du joueur. Sa mort ne fait pas perdre la partie.` }
       ], pl, ctxF), h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => DBEditor.open('units', pl.unitId) }, 'Fiche du personnage'), del)));
     } else if (S.selected.kind === 'players') {
       box.append(section('Unité du joueur', UI.form([
         { key: 'unitId', label: 'Personnage', type: 'select', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
+        colorsField,
         { type: 'info', text: `Position : x ${pl.x} · y ${pl.y}` }
       ], pl, ctxF), h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => DBEditor.open('units', pl.unitId) }, 'Fiche du personnage'), del)));
     } else {
@@ -1254,6 +1281,7 @@
           { key: 'classId', label: 'Classe', type: 'select', options: DB().classes.map(c => ({ value: c.id, label: c.name })) },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40, compact: true }] },
         { key: 'ai', label: 'Comportement', type: 'select', options: AIS },
+        colorsField,
         { type: 'row', fields: [
           { key: 'appearTurn', label: 'Arrive au tour', type: 'number', min: 0, max: 99, help: '0 = présent dès le début. Sinon : renfort qui apparaît au début de la phase ennemie de ce tour.' },
           { key: 'isBoss', label: 'Boss', type: 'checkbox' }] },

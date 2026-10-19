@@ -16,11 +16,23 @@
   const classOpts = () => db().classes.map(c => ({ value: c.id, label: c.name }));
   const statsNoHp = Rules.STATS;
   const uName = (id) => { const u = byId(db().units, id); return u ? u.name : '?'; };
-  const res = () => Editor.resources() || { characters: {}, battlers: {}, faces: [], tilesets: [] };
-  const charOpts = () => Object.entries(res().characters).map(([k, m]) => ({ value: k, label: m.name || k.split('/').pop() }));
-  const battlerOpts = () => Object.entries(res().battlers).map(([k, m]) => ({ value: k, label: m.name || k.split('/').pop() }));
+  const res = () => Editor.resources() || { characters: {}, battlers: {}, faces: [], tilesets: [], owners: [] };
+  const PERSO = 'ressources/personnages/';
+  /** « Lyn — Lame-Seigneur » : dossier du personnage puis nom de la planche. */
+  const resLabel = (k, m) => {
+    const name = (m && m.name) || k.split('/').pop();
+    const own = (m && m.owner) || ownerOfKey(k);
+    return own && !name.toLowerCase().startsWith(own.toLowerCase()) ? own + ' — ' + name : name;
+  };
+  const ownerOfKey = (k) => k.startsWith(PERSO) && k.slice(PERSO.length).includes('/') ? k.slice(PERSO.length).split('/')[0] : '';
+  const shortPath = (k) => k.startsWith(PERSO) ? k.slice(PERSO.length) : k.replace(/^ressources\//, '');
+  const charOpts = () => Object.entries(res().characters).map(([k, m]) => ({ value: k, label: resLabel(k, m) }));
+  const battlerOpts = () => Object.entries(res().battlers).map(([k, m]) => ({ value: k, label: resLabel(k, m) }));
+  const colorModeOpts = Palettes.MODES;
+  const projectColors = () => Palettes.resolveMode((Editor.project().meta.settings || {}).colors);
+  const modeLabel = (v) => (Palettes.MODES.find(m => m.value === v) || {}).label || v;
 
-  /** Champ portrait : choix parmi img/faces + import. */
+  /** Champ portrait : choix parmi les images des dossiers personnages + import dans le dossier du personnage. */
   function faceField(u) {
     const prev = h('div', { class: 'img-prev' });
     const show = () => {
@@ -33,16 +45,17 @@
         prev.append(Faces.element(img, Render.imageUrl(Editor.baseUrl(), want), 'bust') || h('span', { class: 'muted' }, '?'));
       });
     };
-    const sel = h('select', {}, [h('option', { value: '' }, '— aucun —')].concat(res().faces.map(f => h('option', { value: f }, f.replace('img/faces/', '')))));
+    const sel = h('select', {}, [h('option', { value: '' }, '— aucun —')].concat(res().faces.map(f => h('option', { value: f }, shortPath(f)))));
     if (u.portrait && !res().faces.includes(u.portrait)) sel.append(h('option', { value: u.portrait }, u.portrait));
     sel.value = u.portrait || '';
     sel.addEventListener('change', () => { u.portrait = sel.value; change(); show(); });
     const imp = h('button', { class: 'small', onclick: async () => {
-      const rel = await tf.importPortrait(Editor.dir()); if (!rel) return;
+      const rel = await tf.importPortrait(Editor.dir(), u.name); if (!rel) return;
       await Editor.rescanResources(); u.portrait = rel; change(); renderBody();
     } }, 'Importer…');
     show();
-    return h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Portrait (img/faces)'), h('div', { class: 'img-field' }, prev, h('div', { class: 'img-actions', style: { flex: 1 } }, sel, imp)));
+    return h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Portrait'), h('div', { class: 'img-field' }, prev, h('div', { class: 'img-actions', style: { flex: 1 } }, sel, imp,
+      h('span', { class: 'muted', style: { fontSize: '11px' } }, `Importé dans ressources/personnages/${u.name || '…'}/`))));
   }
 
   /** Sprite de map + animation de combat d'une unité : effectifs, avec leur origine (classe ou propre à l'unité). */
@@ -52,7 +65,7 @@
     const effBattler = u.battler || (cls && cls.battler) || '';
     const sMeta = res().characters[effSprite], bMeta = res().battlers[effBattler];
     const clsName = cls ? cls.name : '?';
-    const label = (k, m) => (m && m.name) || (k ? k.split('/').pop() : '');
+    const label = (k, m) => k ? resLabel(k, m) : '';
     const mk = (key, list, effMeta, eff, kindLabel) => {
       const classVal = cls && cls[key];
       const classMeta = classVal && (key === 'mapSprite' ? res().characters : res().battlers)[classVal];
@@ -63,19 +76,46 @@
       return h('div', { class: 'field' }, h('label', { class: 'field-label' }, kindLabel), sel);
     };
     const preview = h('div', { class: 'appear-prev' });
-    if (sMeta) preview.append(Sprites.icon(Editor.baseUrl(), sMeta, 'ally', 64));
+    if (sMeta) preview.append(Sprites.icon(Editor.baseUrl(), sMeta, 'original', 64));
     else preview.append(h('span', { class: 'muted' }, 'jeton'));
     const noRes = !Object.keys(res().characters).length;
     return h('div', { class: 'appear' },
       preview,
       h('div', { class: 'appear-fields' },
-        mk('mapSprite', charOpts, sMeta, effSprite, 'Sprite de map (img/characters)'),
-        mk('battler', battlerOpts, bMeta, effBattler, 'Animation de combat (img/battlers)'),
+        mk('mapSprite', charOpts, sMeta, effSprite, 'Sprite de map'),
+        mk('battler', battlerOpts, bMeta, effBattler, 'Animation de combat'),
+        colorsField(u, cls),
         h('p', { class: 'form-info' },
-          noRes ? "Ce projet n'a aucun sprite dans img/characters. Onglet Ressources › « Ajouter les ressources par défaut »."
+          noRes ? "Ce projet n'a aucun sprite dans ressources/personnages. Onglet Ressources › « Ajouter les ressources par défaut »."
             : `En jeu : ${sMeta ? label(effSprite, sMeta) : 'jeton coloré'} sur la map, ${bMeta ? 'animation « ' + label(effBattler, bMeta) + ' »' : 'combat sur la map'}. ` +
               (u.mapSprite || u.battler ? 'Réglé pour cette unité.' : `Hérité de la classe ${clsName}.`),
           ' ', h('a', { href: '#', onclick: (e) => { e.preventDefault(); open('classes', u.classId); } }, 'Voir la classe'))));
+  }
+
+  /**
+   * Réglage « Couleurs » d'une unité (cls donné) ou d'une classe (cls absent), avec un aperçu
+   * de chaque variante : origine, bleu (joueur), rouge (ennemi), vert (allié).
+   */
+  function colorsField(obj, cls) {
+    const inherited = cls ? Palettes.resolveMode(cls.colors, projectColors()) : projectColors();
+    const sel = h('select', {}, [h('option', { value: '' }, (cls ? `Comme la classe ${cls.name}` : 'Comme le projet') + ` (${modeLabel(inherited).toLowerCase()})`)]
+      .concat(colorModeOpts.map(o => h('option', { value: o.value }, o.label))));
+    sel.value = obj.colors || '';
+    sel.addEventListener('change', () => { obj.colors = sel.value; change(); renderBody(); });
+    const mode = Palettes.resolveMode(obj.colors, inherited);
+    const spriteKey = cls ? (obj.mapSprite || cls.mapSprite) : obj.mapSprite;
+    const sMeta = spriteKey && res().characters[spriteKey];
+    const swatches = h('div', { class: 'pal-row' });
+    if (sMeta) {
+      for (const [team, label] of [['player', 'Joueur'], ['ally', 'Allié'], ['enemy', 'Ennemi']]) {
+        const mapPal = Palettes.paletteFor(team, mode, 'map'), batPal = Palettes.paletteFor(team, mode, 'battle');
+        swatches.append(h('div', { class: 'pal-cell', title: `${label} : ${Palettes.LABELS[mapPal]} sur la map, ${Palettes.LABELS[batPal].toLowerCase()} en combat` },
+          Sprites.icon(Editor.baseUrl(), sMeta, mapPal, 40), h('span', {}, label)));
+      }
+    }
+    return h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Couleurs du sprite'), sel,
+      sMeta ? swatches : null,
+      h('p', { class: 'form-info', style: { margin: '2px 0 0' } }, "Couleur d'équipe : bleu si on le joue, rouge en ennemi, vert en allié. Couleur d'origine : celle de la planche. Les couleurs qui changent se règlent dans l'onglet Ressources."));
   }
 
   function change() { changed = true; Editor.markDirty(); }
@@ -370,8 +410,9 @@
         { type: 'custom', render: promotionField },
         { type: 'custom', render: c => learningField(c) },
         { type: 'row', fields: [
-          { key: 'mapSprite', label: 'Sprite de map (img/characters)', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
-          { key: 'battler', label: 'Animation de combat (img/battlers)', type: 'select', empty: '— aucune (combat sur la map) —', options: battlerOpts }] },
+          { key: 'mapSprite', label: 'Sprite de map', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
+          { key: 'battler', label: 'Animation de combat', type: 'select', empty: '— aucune (combat sur la map) —', options: battlerOpts }] },
+        { type: 'custom', render: c => colorsField(c) },
         { type: 'heading', label: 'Stats de base (niveau 1)' },
         { key: 'base', type: 'stats', max: 99 },
         { type: 'heading', label: 'Croissances (%) — utilisées pour les ennemis génériques' },
@@ -906,11 +947,12 @@
   }
 
   // ------------------------------------------------------------------
-  // Ressources (img/…) : aperçu animé, utilisation, dossiers
+  // Ressources (ressources/…) : par personnage, aperçu animé, couleurs d'équipe, utilisation
   // ------------------------------------------------------------------
   let animToken = 0;
-  let resSel = null, resPalette = 'ally', resAnim = 'attack';
-  const PAL_LABELS = { ally: 'Allié', enemy: 'Ennemi', neutral: 'Neutre', gray: 'Gris (a joué)' };
+  let resSel = null, resPalette = 'original', resAnim = 'attack';
+  const PAL_LABELS = Palettes.LABELS;
+  const KIND_LABEL = { characters: 'Sprite de map', battlers: 'Animation de combat', faces: 'Portrait', tilesets: 'Tileset' };
 
   function usageOfResource(key) {
     const out = [];
@@ -920,40 +962,103 @@
     return out;
   }
 
+  /** Dossier (relatif au projet) qui contient une ressource. */
+  const folderOf = (key) => key.split('/').slice(0, -1).join('/');
+
   function renderResources(body) {
     const r = res();
-    const groups = [
-      ['characters', 'Sprites de map', 'img/characters', Object.keys(r.characters).map(k => ({ key: k, label: r.characters[k].name || k }))],
-      ['battlers', 'Animations de combat', 'img/battlers', Object.keys(r.battlers).map(k => ({ key: k, label: r.battlers[k].name || k }))],
-      ['faces', 'Portraits', 'img/faces', r.faces.map(k => ({ key: k, label: k.split('/').pop() }))],
-      ['tilesets', 'Tilesets', 'img/tilesets', r.tilesets.map(k => ({ key: k, label: k.split('/').pop() }))]
-    ];
-    const all = groups.flatMap(g => g[3].map(it => ({ kind: g[0], ...it })));
+    // un groupe par dossier de personnage, puis les tilesets
+    const byOwner = new Map();
+    const add = (kind, key, label) => {
+      const own = ownerOfKey(key) || '(sans dossier)';
+      if (!byOwner.has(own)) byOwner.set(own, []);
+      byOwner.get(own).push({ kind, key, label });
+    };
+    for (const own of r.owners || []) byOwner.set(own, []);
+    for (const [k, m] of Object.entries(r.characters)) add('characters', k, m.name || k.split('/').pop());
+    for (const [k, m] of Object.entries(r.battlers)) add('battlers', k, m.name || k.split('/').pop());
+    for (const k of r.faces) add('faces', k, k.split('/').pop());
+    const order = { characters: 0, battlers: 1, faces: 2 };
+    const owners = [...byOwner.keys()].sort((a, b) => a.localeCompare(b, 'fr'));
+    for (const o of owners) byOwner.get(o).sort((a, b) => order[a.kind] - order[b.kind] || a.label.localeCompare(b.label, 'fr'));
+    const tilesets = r.tilesets.map(k => ({ kind: 'tilesets', key: k, label: k.split('/').pop() }));
+    const all = owners.flatMap(o => byOwner.get(o)).concat(tilesets);
     if (!resSel || !all.find(a => a.key === resSel.key)) resSel = all[0] || null;
+
     const items = h('div', { class: 'db-list-items' });
-    for (const [kind, label, folder, list] of groups) {
-      items.append(h('div', { class: 'pick-group' }, label, h('span', { class: 'muted', style: { textTransform: 'none', letterSpacing: 0, marginLeft: '6px', fontWeight: 400 } }, folder)));
-      if (!list.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
-      for (const it of list) {
-        const ic = kind === 'characters' ? Sprites.icon(Editor.baseUrl(), r.characters[it.key], 'ally', 24) : null;
-        items.append(h('div', { class: 'db-item' + (resSel && resSel.key === it.key ? ' on' : ''), onclick: () => { resSel = { kind, key: it.key }; renderBody(); } },
-          ic || h('span', { class: 'n' }, '•'), h('span', {}, it.label)));
-      }
+    const item = (it) => {
+      const ic = it.kind === 'characters' ? Sprites.icon(Editor.baseUrl(), r.characters[it.key], 'original', 24)
+        : h('span', { class: 'res-kind', title: KIND_LABEL[it.kind] }, { battlers: '⚔', faces: '☺', tilesets: '▦' }[it.kind] || '•');
+      return h('div', { class: 'db-item' + (resSel && resSel.key === it.key ? ' on' : ''), title: it.key, onclick: () => { resSel = { kind: it.kind, key: it.key }; renderBody(); } },
+        ic, h('span', {}, it.label), h('span', { class: 'meta' }, KIND_LABEL[it.kind]));
+    };
+    items.append(h('div', { class: 'pick-group' }, 'Personnages', h('span', { class: 'muted res-folder' }, 'ressources/personnages')));
+    if (!owners.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
+    for (const own of owners) {
+      const list = byOwner.get(own);
+      items.append(h('div', { class: 'res-owner' }, own, h('span', { class: 'muted' }, list.length ? ` · ${list.length}` : ' · vide')));
+      for (const it of list) items.append(item(it));
     }
+    items.append(h('div', { class: 'pick-group' }, 'Tilesets', h('span', { class: 'muted res-folder' }, 'ressources/tilesets')));
+    if (!tilesets.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
+    for (const it of tilesets) items.append(item(it));
+
     body.append(h('div', { class: 'db-list' }, items, h('div', { class: 'db-list-actions' },
-      h('button', { class: 'small', onclick: () => tf.openResourceFolder(Editor.dir(), resSel && resSel.kind !== 'tilesets' ? 'img/' + resSel.kind : 'img') }, 'Ouvrir le dossier'),
+      h('button', { class: 'small', title: 'Ouvre le dossier de la ressource sélectionnée', onclick: () => tf.openResourceFolder(Editor.dir(), resSel ? folderOf(resSel.key) : 'ressources') }, 'Ouvrir le dossier'),
       h('button', { class: 'small', onclick: async () => { await Editor.rescanResources(); renderBody(); UI.toast('Ressources rechargées'); } }, 'Rescanner')),
       h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut'))));
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
-    if (!resSel) { pane.append(h('div', { class: 'db-empty' }, 'Aucune ressource.')); return; }
+    if (!resSel) { pane.append(h('div', { class: 'db-empty' }, 'Aucune ressource. Range tes images dans ressources/personnages/<Nom>/ puis « Rescanner ».')); return; }
     const used = usageOfResource(resSel.key);
     const usage = h('p', { class: 'form-info', style: { margin: '10px 0 0' } }, used.length ? 'Utilisé par : ' + used.join(', ') : 'Utilisé nulle part pour le moment.');
-    if (resSel.kind === 'characters') return previewCharacter(pane, r.characters[resSel.key], usage);
-    if (resSel.kind === 'battlers') return previewBattler(pane, r.battlers[resSel.key], usage);
+    if (resSel.kind === 'characters') return previewCharacter(pane, resSel.key, r.characters[resSel.key], usage);
+    if (resSel.kind === 'battlers') return previewBattler(pane, resSel.key, r.battlers[resSel.key], usage);
     pane.append(h('h2', {}, resSel.key.split('/').pop(), h('span', { class: 'id' }, resSel.key)),
       h('div', { class: 'res-stage' }, h('img', { src: Render.imageUrl(Editor.baseUrl(), resSel.key), class: 'res-img' + (resSel.kind === 'faces' ? ' big' : '') })), usage);
     if (resSel.kind === 'faces') previewFaceset(pane, resSel.key);
+  }
+
+  /**
+   * Couleurs d'équipe d'une planche : nuancier de toutes ses couleurs, celles qui changent en
+   * bleu / rouge / vert sont cochées. Un clic coche / décoche et enregistre dans le .json.
+   */
+  function teamColorsEditor(pane, key, meta) {
+    const box = h('div', { class: 'team-colors' });
+    pane.append(h('div', { class: 'form-heading' }, "Couleurs d'équipe"), box);
+    const my = animToken;
+    Render.loadImage(Editor.baseUrl(), meta.image).then(img => {
+      if (!img || my !== animToken) return;
+      const tc = Sprites.teamColors(img, meta);
+      const on = new Set(tc.list);
+      const save = async (list) => {
+        try {
+          const saved = await tf.setTeamColors(Editor.dir(), key, list);
+          if (saved === null) delete meta.teamColors; else meta.teamColors = saved;
+          renderBody();
+        } catch (e) { UI.alert('Couleurs non enregistrées', e.message); }
+      };
+      const sw = h('div', { class: 'swatches' });
+      for (const c of tc.colors.slice(0, 64)) {
+        sw.append(h('button', {
+          class: 'swatch' + (on.has(c.hex) ? ' on' : ''), style: { background: c.hex },
+          title: `${c.hex} · ${c.count} px` + (on.has(c.hex) ? ' · change de couleur selon l\'équipe' : ''),
+          onclick: () => { const next = new Set(on); if (next.has(c.hex)) next.delete(c.hex); else next.add(c.hex); save([...next]); }
+        }));
+      }
+      box.append(sw,
+        h('p', { class: 'form-info' }, (tc.auto ? 'Détection automatique' : 'Choisies à la main') +
+          ` : ${on.size} couleur(s) cochée(s) — la tenue, l'armure… Clique une couleur pour la cocher ou la décocher. Les couleurs non cochées (peau, cheveux, armes) restent celles d'origine.`),
+        h('div', { style: { display: 'flex', gap: '8px' } },
+          tc.auto ? null : h('button', { class: 'small', onclick: () => save(null) }, 'Revenir à la détection automatique'),
+          tc.auto ? h('button', { class: 'small', onclick: () => save([...on]) }, 'Garder ce choix') : null));
+    });
+  }
+  /** Boutons de palette (aperçu) : origine, bleu, rouge, vert, gris. */
+  function paletteChips(pane, withGray) {
+    const list = Palettes.LIST.filter(p => withGray || p !== 'gray');
+    if (!list.includes(resPalette)) resPalette = 'original';
+    pane.append(chips(list.map(p => ({ value: p, label: PAL_LABELS[p] })), resPalette, (v) => { resPalette = v; renderBody(); }));
   }
 
   /** Face set (128×112) : portrait animé (clignement + bouche) et mini-portrait. */
@@ -987,20 +1092,21 @@
       if (!c.battler && def.battler) { c.battler = def.battler; linked++; }
     }
     change(); renderBody();
-    UI.alert('Ressources par défaut', [`${r.added} fichier(s) copié(s) dans img/`, `${linked} lien(s) sprite ajouté(s) sur des classes existantes`, `${addedCls} classe(s) de seigneur ajoutée(s)`]);
+    UI.alert('Ressources par défaut', [`${r.added} fichier(s) copié(s) dans ressources/`, `${linked} lien(s) sprite ajouté(s) sur des classes existantes`, `${addedCls} classe(s) de seigneur ajoutée(s)`]);
   }
 
   function chips(options, cur, onPick) {
     return h('div', { class: 'chips' }, options.map(o => h('button', { class: 'chip' + (o.value === cur ? ' on' : ''), onclick: () => onPick(o.value) }, o.label)));
   }
 
-  function previewCharacter(pane, meta, usage) {
+  function previewCharacter(pane, key, meta, usage) {
     pane.append(h('h2', {}, meta.name, h('span', { class: 'id' }, meta.image)));
-    pane.append(chips(meta.palettes.map(p => ({ value: p, label: PAL_LABELS[p] || p })), resPalette, (v) => { resPalette = v; renderBody(); }));
+    paletteChips(pane, true);
     const names = Object.keys(meta.anims);
     const S = 4, cell = 32 * S;
     const cv = h('canvas', { width: names.length * (cell + 12), height: cell + 22, class: 'res-canvas' });
-    pane.append(h('div', { class: 'res-stage' }, cv), h('p', { class: 'form-info' }, `Frames ${meta.frame[0]}×${meta.frame[1]} px · ancrage ${meta.anchor.join(',')} · ${meta.palettes.length} palettes · base ${meta.base || 16} px`), usage);
+    pane.append(h('div', { class: 'res-stage' }, cv), h('p', { class: 'form-info' }, `Frames ${meta.frame[0]}×${meta.frame[1]} px · ancrage ${meta.anchor.join(',')} · base ${meta.base || 16} px` +
+      (meta.palettes ? ' · ancienne planche à 4 palettes : seul le premier bloc est utilisé' : '')), usage);
     const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
     const my = animToken;
     Render.loadImage(Editor.baseUrl(), meta.image).then(img => {
@@ -1018,12 +1124,14 @@
       };
       requestAnimationFrame(loop);
     });
+    teamColorsEditor(pane, key, meta);
   }
 
-  function previewBattler(pane, meta, usage) {
+  function previewBattler(pane, key, meta, usage) {
     const names = Object.keys(meta.anims);
     if (!meta.anims[resAnim]) resAnim = names.includes('attack') ? 'attack' : names[0];
     pane.append(h('h2', {}, meta.name, h('span', { class: 'id' }, meta.image)));
+    paletteChips(pane, false);
     pane.append(chips(names.map(n => ({ value: n, label: n + ' (' + meta.anims[n].frames.length + ')' })), resAnim, (v) => { resAnim = v; renderBody(); }));
     const [cw, ch] = meta.cell; const S = Math.max(2, Math.min(4, Math.floor(420 / ch)));
     const cv = h('canvas', { width: Math.max(cw * S + 160, 360), height: ch * S + 30, class: 'res-canvas' });
@@ -1047,13 +1155,14 @@
         const ground = ch * S - 4;
         g.fillStyle = '#20242c'; g.fillRect(0, 0, cv.width, cv.height);
         g.fillStyle = '#2c313b'; g.fillRect(0, ground, cv.width, cv.height - ground);
-        Sprites.drawBattlerFrame(g, meta, img, A.frames[idx], cv.width / 2, ground, S, false);
+        Sprites.drawBattlerFrame(g, meta, Sprites.tinted(img, meta, resPalette), A.frames[idx], cv.width / 2, ground, S, false);
         g.fillStyle = idx === A.hit ? '#f2c46a' : '#a3a9b6'; g.font = '12px sans-serif'; g.textAlign = 'left';
         g.fillText(`frame ${idx + 1}/${A.frames.length}` + (idx === A.hit ? '  ← impact' : ''), 8, cv.height - 8);
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
     });
+    teamColorsEditor(pane, key, meta);
   }
 
   // ------------------------------------------------------------------
@@ -1061,7 +1170,7 @@
   // ------------------------------------------------------------------
   function audioOpts(kind) {
     const r = res();
-    return (r[kind] || []).concat(kind === 'me' ? (r.bgm || []) : []).map(f => ({ value: f, label: f.replace(/^audio\//, '') }));
+    return (r[kind] || []).concat(kind === 'me' ? (r.bgm || []) : []).map(f => ({ value: f, label: f.replace(/^ressources\//, '') }));
   }
 
   function renderSystem(body) {
@@ -1076,6 +1185,8 @@
       { type: 'heading', label: 'Règles de combat' },
       { key: 'settings.trueHit', label: 'Vrai hit (moyenne de 2 tirages, comme FE6–FE13)', type: 'checkbox' },
       { key: 'settings.battleAnims', label: 'Animations de combat (si les deux unités ont un battler)', type: 'checkbox' },
+      { key: 'settings.colors', label: 'Couleurs des sprites (par défaut, modifiable par classe, unité ou placement)', type: 'select', empty: `Par défaut (${Palettes.MODES[0].label.toLowerCase()})`, options: Palettes.MODES,
+        help: "Couleur d'équipe : bleu pour le joueur, rouge pour les ennemis, vert pour les alliés. Couleur d'origine : celle de la planche." },
       { type: 'row', fields: [
         { key: 'settings.doubleThreshold', label: 'Écart de vitesse pour doubler', type: 'number', min: 1, max: 20 },
         { key: 'settings.critMult', label: 'Multiplicateur critique', type: 'number', min: 1, max: 5 },
@@ -1112,7 +1223,7 @@
         { key: 'supports.bonus.avoid', label: 'Esquive / rang', type: 'number', min: 0, max: 30 },
         { key: 'supports.bonus.crit', label: 'Critique / rang', type: 'number', min: 0, max: 30 },
         { key: 'supports.bonus.critAvoid', label: 'Esq. critique / rang', type: 'number', min: 0, max: 30 }] },
-      { type: 'heading', label: 'Musique (audio/bgm, audio/me)' },
+      { type: 'heading', label: 'Musique (ressources/musiques, ressources/jingles)' },
       { type: 'row', fields: [
         { key: 'audio.playerPhase', label: 'Phase joueur', type: 'select', empty: '— aucune —', options: () => audioOpts('bgm') },
         { key: 'audio.allyPhase', label: 'Phase alliée', type: 'select', empty: '— aucune —', options: () => audioOpts('bgm') },

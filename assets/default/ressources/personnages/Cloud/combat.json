@@ -239,5 +239,10 @@
    ]
   }
  },
- "source": "Fire Emblem 7 — battle sprites (rip : Lexou / Grim & Bonzai)"
+ "source": "Fire Emblem 7 — battle sprites (rip : Lexou / Grim & Bonzai)",
+ "teamColors": [
+  "#42384a",
+  "#635163",
+  "#736973"
+ ]
 }

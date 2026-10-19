@@ -1,22 +1,16 @@
 /*
- * Lecture / écriture d'un projet sur disque. Arborescence inspirée de RPG Maker :
+ * Lecture / écriture d'un projet sur disque :
  *
  * MonJeu/
  *   game.tfproj              métadonnées (nom, réglages, chapitre de départ, ordre des maps)
  *   data/                    base de données
  *     units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json
  *     maps/map_1.json        une map par fichier
- *   img/
- *     tilesets/              images de tilesets
- *     characters/            sprites de map  (<nom>.png + <nom>.json)
- *     battlers/              animations de combat (<nom>.png + <nom>.json)
- *     faces/                 portraits
- *     system/                interface (curseur, fenêtres…)
- *   audio/
- *     bgm/ se/ me/
+ *   ressources/              images et sons, détail dans resources-layout.js
+ *     personnages/<Nom>/     sprites de map, animation de combat, portrait d'un personnage
+ *     tilesets/ interface/ musiques/ jingles/ sons/
  *
- * Les anciens projets (maps/, tilesets/, portraits/ à la racine) sont lus tels quels
- * et réenregistrés dans la nouvelle arborescence.
+ * Les anciens projets (img/…, audio/…, maps/ à la racine) sont convertis à l'ouverture.
  */
 'use strict';
 const fs = require('fs');
@@ -24,12 +18,11 @@ const path = require('path');
 const Defaults = require('../shared/defaults.js');
 const Skills = require('../shared/skills.js');
 const Promotions = require('../shared/promotions.js');
+const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
 const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills'];
-const RESOURCE_DIRS = ['img/tilesets', 'img/characters', 'img/battlers', 'img/faces', 'img/system', 'audio/bgm', 'audio/se', 'audio/me'];
-const IMAGE_EXT = /\.(png|jpe?g|gif|webp)$/i;
-const AUDIO_EXT = /\.(mp3|ogg|wav|m4a)$/i;
+const RESOURCE_DIRS = Layout.ALL_DIRS;
 
 function readJson(file, fallback) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch (e) { return fallback; }
@@ -58,37 +51,18 @@ function readMaps(dir) {
   return [...maps.values()];
 }
 
-/** Inventaire des ressources graphiques (sprites de map, battlers, portraits, tilesets). */
-function scanResources(dir) {
-  const res = { characters: {}, battlers: {}, faces: [], tilesets: [], system: [], bgm: [], me: [], se: [] };
-  const list = (sub) => {
-    const d = path.join(dir, sub);
-    return fs.existsSync(d) ? fs.readdirSync(d).sort((a, b) => a.localeCompare(b)) : [];
-  };
-  for (const kind of ['characters', 'battlers']) {
-    for (const f of list('img/' + kind)) {
-      if (!f.endsWith('.json')) continue;
-      const base = f.slice(0, -5);
-      const png = 'img/' + kind + '/' + base + '.png';
-      if (!fs.existsSync(path.join(dir, png))) continue;
-      const meta = readJson(path.join(dir, 'img', kind, f), null);
-      if (!meta) continue;
-      meta.image = png;
-      res[kind]['img/' + kind + '/' + base] = meta;
-    }
-  }
-  for (const f of list('img/faces')) if (IMAGE_EXT.test(f)) res.faces.push('img/faces/' + f);
-  for (const f of list('img/tilesets')) if (IMAGE_EXT.test(f)) res.tilesets.push('img/tilesets/' + f);
-  for (const f of list('img/system')) if (IMAGE_EXT.test(f)) res.system.push('img/system/' + f);
-  for (const k of ['bgm', 'me', 'se']) for (const f of list('audio/' + k)) if (AUDIO_EXT.test(f)) res[k].push('audio/' + k + '/' + f);
-  return res;
-}
+/** Inventaire des ressources (sprites de map, animations de combat, portraits, tilesets, audio). */
+const scanResources = Layout.scanResources;
 
-function loadProject(dir) {
+/** assetsDir (facultatif) : dossier assets/ de l'application, pour la conversion des anciens projets. */
+function loadProject(dir, assetsDir) {
   const metaFile = path.join(dir, PROJECT_FILE);
   if (!fs.existsSync(metaFile)) throw new Error("Ce dossier ne contient pas de projet (" + PROJECT_FILE + " introuvable).");
   const meta = readJson(metaFile, null);
   if (!meta) throw new Error(PROJECT_FILE + ' est illisible.');
+  // ancienne arborescence des ressources (img/, audio/) : conversion sur le disque
+  const migration = Layout.migrate(dir, PROJECT_FILE, DB_KEYS, assetsDir);
+  if (migration) Object.assign(meta, readJson(metaFile, meta));
   const db = {};
   for (const k of DB_KEYS) db[k] = readJson(path.join(dir, 'data', k + '.json'), []);
   const skillFile = path.join(dir, 'data', 'skills.json');
@@ -104,15 +78,18 @@ function loadProject(dir) {
     return (ia < 0 ? 1e9 : ia) - (ib < 0 ? 1e9 : ib) || a.id.localeCompare(b.id);
   });
   delete meta.mapOrder;
-  return { meta, db, maps, resources: scanResources(dir) };
+  const project = { meta, db, maps, resources: scanResources(dir) };
+  if (migration) project.migration = migration;
+  return project;
 }
 
 function saveProject(dir, project) {
   const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db)];
   if (errors.length) throw new Error(errors.join('\n'));
-  for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
+  Layout.ensureDirs(dir);
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });
-  const meta = Object.assign({}, project.meta, { mapOrder: project.maps.map(m => m.id), savedAt: new Date().toISOString(), layout: 2 });
+  const meta = Object.assign({}, project.meta, { mapOrder: project.maps.map(m => m.id), savedAt: new Date().toISOString(), layout: Layout.LAYOUT });
+  delete meta.migration;
   writeJson(path.join(dir, PROJECT_FILE), meta);
   for (const k of DB_KEYS) writeJson(path.join(dir, 'data', k + '.json'), project.db[k] || []);
   const keep = new Set();
@@ -153,16 +130,17 @@ function installDefaults(dir, assetsDir) {
       else if (e.name !== '.gitkeep' && !fs.existsSync(d)) { fs.copyFileSync(s, d); added++; }
     }
   };
-  walk(path.join(assetsDir, 'default'), dir);
-  for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
+  // seulement assets/default/ressources : d'éventuels restes d'une ancienne version (img/, audio/) sont ignorés
+  walk(path.join(assetsDir, 'default', Layout.ROOT), path.join(dir, Layout.ROOT));
+  Layout.ensureDirs(dir);
   return { added, resources: scanResources(dir) };
 }
 
-/** Nouveau projet : copie les ressources par défaut (assets/default) puis écrit la base. */
+/** Nouveau projet : copie les ressources par défaut (assets/default/ressources) puis écrit la base. */
 function createProject(dir, name, template, assetsDir) {
   if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error('Le dossier choisi n\'est pas vide.');
-  copyDir(path.join(assetsDir, 'default'), dir);
-  for (const d of RESOURCE_DIRS) fs.mkdirSync(path.join(dir, d), { recursive: true });
+  copyDir(path.join(assetsDir, 'default', Layout.ROOT), path.join(dir, Layout.ROOT));
+  Layout.ensureDirs(dir);
   const project = Defaults.sampleProject(name);
   if (template === 'empty') {
     const map = project.maps[0];
@@ -175,4 +153,4 @@ function createProject(dir, name, template, assetsDir) {
   return loadProject(dir);
 }
 
-module.exports = { PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };
+module.exports = { PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };

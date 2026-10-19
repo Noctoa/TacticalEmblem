@@ -315,6 +315,6 @@
  },
  "source": "Fire Emblem 7 — battle sprites (rip : Lexou / Grim & Bonzai)",
  "projectiles": {
-  "arrow": "img/battlers/Lyn_arrow.png"
+  "arrow": "combat_arrow.png"
  }
 }

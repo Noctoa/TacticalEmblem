@@ -20,10 +20,11 @@ contextBridge.exposeInMainWorld('tf', {
   openFolder: (dir) => call('project:openFolder', dir),
   importTiled: (dir, terrains) => call('tiled:import', dir, terrains),
   importTilesetImage: (dir) => call('tileset:importImage', dir),
-  importPortrait: (dir) => call('portrait:import', dir),
+  importPortrait: (dir, owner) => call('portrait:import', dir, owner),
   playtest: (dir, chapterId) => call('playtest:open', dir, chapterId),
   scanResources: (dir) => call('resources:scan', dir),
   installDefaultResources: (dir) => call('resources:installDefaults', dir),
+  setTeamColors: (dir, key, colors) => call('resources:setTeamColors', dir, key, colors),
   openResourceFolder: (dir, sub) => call('resources:openFolder', dir, sub),
   onMenu: (fn) => ipcRenderer.on('menu', (e, cmd) => fn(cmd))
 });

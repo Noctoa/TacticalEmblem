@@ -393,6 +393,8 @@
     const img = meta && Render.readyImage(G.baseUrl, meta.image);
     return meta && img ? { meta, img } : null;
   }
+  /** Couleurs d'une unité : placement › unité › classe › réglage du projet. */
+  function colorMode(u) { return Palettes.resolveMode(u.colorsOverride, u.colors, G.settings.colors); }
   function battlerOf(u) {
     const meta = u.battler && G.resources.battlers[u.battler];
     return meta && Render.readyImage(G.baseUrl, meta.image) ? meta : null;
@@ -462,7 +464,8 @@
     if (u.walkDir) anim = u.walkDir;
     else if (G.sel === u && ['moving', 'menu', 'items', 'target', 'staff'].includes(G.ui)) anim = 'down';
     else if (controllable(u) && !G.busy && G.cursor.x === u.x && G.cursor.y === u.y && G.ui === 'idle') anim = 'focus';
-    const palette = u.team === 'enemy' ? 'enemy' : u.team === 'ally' ? (u.done && G.phase === 'ally' ? 'gray' : 'neutral') : (u.done && G.phase === 'player' ? 'gray' : 'ally');
+    const done = u.done && G.phase === (u.team === 'ally' ? 'ally' : 'player') && u.team !== 'enemy';
+    const palette = Palettes.paletteFor(u.team, colorMode(u), 'map', done);
     ctx.globalAlpha = u.alpha;
     if (u.flash > performance.now()) ctx.filter = 'brightness(5) saturate(0)';
     Sprites.drawMapSprite(ctx, sp.meta, sp.img, cx, bottom, k, { anim, t, palette });
@@ -1072,6 +1075,7 @@
       document.body.classList.add('in-battle');
       await BattleScene.play({
         baseUrl: G.baseUrl, battlerOf, att, def, hp0, strikes: res.strikes, forecast: res.forecast, distance,
+        paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'battle', false),
         partner: res.duo ? res.duo.partner : null,
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
         projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null

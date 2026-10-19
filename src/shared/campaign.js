@@ -29,6 +29,7 @@
     const character = db.units.find(c => c.id === unit.sourceId) || {};
     unit.mapSprite = character.mapSprite || (cls && cls.mapSprite) || '';
     unit.battler = character.battler || (cls && cls.battler) || '';
+    unit.colors = character.colors || (cls && cls.colors) || '';
     unit.deathPolicy = character.deathPolicy || 'mode';
     Object.assign(unit, Skills.loadout(unit, db.skills));
     Skills.learnThroughLevel(unit, cls, db.skills || [], character);

@@ -192,17 +192,17 @@ function sameFile(a, b) {
 }
 
 function copyImage(src, projectDir) {
-  const destDir = path.join(projectDir, 'img', 'tilesets');
+  const destDir = path.join(projectDir, 'ressources', 'tilesets');
   fs.mkdirSync(destDir, { recursive: true });
   const ext = path.extname(src);
   const base = path.basename(src, ext).replace(/[^\w\-]+/g, '_') || 'tileset';
   let name = base + ext, i = 1;
   while (fs.existsSync(path.join(destDir, name))) {
-    if (sameFile(src, path.join(destDir, name))) return 'img/tilesets/' + name;
+    if (sameFile(src, path.join(destDir, name))) return 'ressources/tilesets/' + name;
     name = base + '_' + (i++) + ext;
   }
   fs.copyFileSync(src, path.join(destDir, name));
-  return 'img/tilesets/' + name;
+  return 'ressources/tilesets/' + name;
 }
 
 // ---------- import principal ----------

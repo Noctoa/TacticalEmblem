@@ -66,8 +66,11 @@
     ];
   }
 
-  const CH = (n) => 'img/characters/' + n;
-  const BT = (n) => 'img/battlers/' + n;
+  // ressources rangées par personnage : ressources/personnages/<Perso>/map_<classe> | combat | portrait.png
+  const P = 'ressources/personnages/';
+  const CH = (n) => { const [who, cls] = n.split('_'); return P + who + '/map' + (cls ? '_' + cls : ''); };
+  const BT = (n) => P + n + '/combat';
+  const FACE = (n) => P + n + '/portrait.png';
 
   function classes() {
     const c = (id, name, moveType, mov, weaponsList, base, growths, extra) => Object.assign({
@@ -75,7 +78,7 @@
       defaultInventory: [], mapSprite: '', battler: ''
     }, extra || {});
     return [
-      // Seigneurs (sprites et animations fournis dans img/)
+      // Seigneurs (sprites et animations fournis dans ressources/personnages/)
       c('lord', 'Seigneur', 'foot', 5, ['sword'], st(18, 5, 0, 5, 7, 7, 5, 0), st(80, 45, 5, 50, 40, 45, 30, 35),
         { defaultInventory: ['w_iron_sword'], mapSprite: CH('Eliwood_Lord'), battler: BT('Eliwood') }),
       c('knight_lord', 'Chevalier-Seigneur', 'horse', 7, ['sword', 'lance'], st(21, 7, 0, 7, 8, 7, 7, 3), st(80, 45, 5, 50, 40, 45, 30, 35),
@@ -132,24 +135,24 @@
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
         stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
         inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
-        portrait: 'img/faces/Eliwood.png', bio: "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air." }),
+        portrait: FACE('Eliwood'), bio: "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air." }),
       u({ id: 'c_lyn', name: 'Lyn', classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
         ending: "Lyn retourna dans les plaines de Sacae. Les nomades parlent encore de la cavalière qui chevauchait plus vite que le vent.",
         stats: st(19, 6, 0, 9, 11, 5, 4, 3), growths: st(70, 40, 5, 60, 60, 55, 20, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_iron_bow' }, { id: 'i_vulnerary' }],
-        portrait: 'img/faces/Lyn.png', bio: "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc." }),
+        portrait: FACE('Lyn'), bio: "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc." }),
       u({ id: 'c_hector', name: 'Hector', classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
         ending: "Hector devint marquis d'Ostia. Il garda la même hache, le même caractère, et une fâcheuse tendance à régler les conflits lui-même.",
         stats: st(19, 7, 0, 4, 5, 3, 8, 0), growths: st(90, 60, 5, 45, 35, 30, 50, 25),
         inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
-        portrait: 'img/faces/Hector.png', bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
+        portrait: FACE('Hector'), bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
       // Allié (unité verte) : classe générique, sprites propres à l'unité
       u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],
-        mapSprite: 'img/characters/Cloud', battler: 'img/battlers/Cloud',
-        portrait: 'img/faces/Cloud.png', bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." })
+        mapSprite: CH('Cloud'), battler: BT('Cloud'),
+        portrait: FACE('Cloud'), bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." })
     ];
   }
 
@@ -200,7 +203,7 @@
 
   function sampleTileset() {
     return {
-      id: 'ts_plaines', name: 'Plaines', image: 'img/tilesets/plaines.png', tileWidth: 32, tileHeight: 32,
+      id: 'ts_plaines', name: 'Plaines', image: 'ressources/tilesets/plaines.png', tileWidth: 32, tileHeight: 32,
       columns: 8, tileCount: 18, margin: 0, spacing: 0, imageWidth: 256, imageHeight: 96,
       tileTerrain: Object.assign({}, SAMPLE_TILE_TERRAIN)
     };
@@ -323,8 +326,8 @@
         supports: { thresholds: [20, 50, 90, 140], range: 3, gainAdjacent: 3, gainCombat: 2, bonus: { hit: 5, avoid: 5, crit: 3, critAvoid: 3 }, endingRank: 'A' },
         audio: {
           volume: 0.6,
-          playerPhase: 'audio/bgm/Winning_Road.mp3', allyPhase: 'audio/bgm/Winning_Road.mp3', enemyPhase: 'audio/bgm/Advance.mp3',
-          levelUp: 'audio/me/Level_Up.mp3', gameOver: 'audio/me/Game_Over.mp3', victory: ''
+          playerPhase: 'ressources/musiques/Winning_Road.mp3', allyPhase: 'ressources/musiques/Winning_Road.mp3', enemyPhase: 'ressources/musiques/Advance.mp3',
+          levelUp: 'ressources/jingles/Level_Up.mp3', gameOver: 'ressources/jingles/Game_Over.mp3', victory: ''
         }
       },
       db,

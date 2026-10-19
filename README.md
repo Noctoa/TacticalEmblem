@@ -81,7 +81,7 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Terrains** — Chaque terrain donne un bonus d'esquive et de défense au défenseur, plus un coût de déplacement par type d'unité : forêt (+20 esq, +1 déf), buisson (+10 esq), fourré (+40 esq, +1 déf, interdit aux cavaliers et blindés), fort (+20 esq, +2 déf, soin 20 %)… Le bonus de la case occupée s'affiche sous l'unité en jeu, et il est déjà compté dans les prévisions de combat.
 
-**Musique** — `audio/bgm` (musiques en boucle) et `audio/me` (jingles). Système › Musique : une piste par phase (joueur, alliée, ennemie) et des jingles pour la montée de niveau, la victoire et le game over. Touche M en jeu pour couper.
+**Musique** — `ressources/musiques` (musiques en boucle) et `ressources/jingles`. Système › Musique : une piste par phase (joueur, alliée, ennemie) et des jingles pour la montée de niveau, la victoire et le game over. Touche M en jeu pour couper.
 
 ## Affinités (soutiens) et épilogue
 
@@ -125,7 +125,7 @@ Un calque d'objets peut contenir les placements du chapitre. Le champ *Class* (o
 
 ## Format du projet
 
-Rangé comme un projet RPG Maker : les données d'un côté, les ressources triées par type de l'autre.
+Les données d'un côté, les ressources de l'autre, rangées **par personnage** : tout ce qui concerne Lyn est dans `ressources/personnages/Lyn/`.
 
 ```
 MonJeu/
@@ -133,31 +133,65 @@ MonJeu/
   data/
     units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json
     maps/map_1.json        une map par fichier (calques = gids façon Tiled)
-  img/
+  ressources/
+    LISEZMOI.txt           rappel de l'organisation
+    personnages/
+      Lyn/
+        map_Lord.png       + map_Lord.json        sprite de map (une planche par classe si besoin)
+        map_BladeLord.png  + map_BladeLord.json
+        combat.png         + combat.json          animation de combat
+        combat_arrow.png                          projectile de l'animation
+        portrait.png                              portrait / face set
+      Brigand/ Cloud/ Eliwood/ Hector/
     tilesets/              images des tilesets
-    characters/            sprites de map        (Nom.png + Nom.json)
-    battlers/              animations de combat  (Nom.png + Nom.json)
-    faces/                 portraits
-    system/                interface
-  audio/
-    bgm/ se/ me/
+    interface/             curseur, fenêtres…
+    musiques/              musiques de phase
+    jingles/               montée de niveau, victoire, game over
+    sons/                  effets sonores
 ```
 
-Tout est en JSON lisible, donc versionnable avec Git. Les projets créés avec l'ancienne version (`maps/`, `tilesets/` à la racine) s'ouvrent toujours et sont réenregistrés dans la nouvelle arborescence.
+Le nom des fichiers ne compte pas : une planche avec un `.json` « `type: mapsprite` » est un sprite de map, « `type: battler` » une animation de combat, une image seule dans `personnages/` est un portrait. Les sous-dossiers sont libres (`personnages/Ennemis/Soldat/…`). Un portrait importé depuis la fiche d'une unité va directement dans le dossier de ce personnage.
+
+Tout est en JSON lisible, donc versionnable avec Git.
+
+**Anciens projets** (`img/characters`, `img/battlers`, `img/faces`, `img/tilesets`, `audio/…`) : convertis automatiquement à l'ouverture. Chaque fichier est rangé dans le dossier du personnage dont le nom commence le fichier (`Lyn_Lord.png` → `personnages/Lyn/map_Lord.png`, `img/faces/Lyn.png` → `personnages/Lyn/portrait.png`), sinon dans celui de l'unité qui l'utilise. Les références de la base de données, des maps et de la sauvegarde de campagne sont réécrites. Une copie des données d'avant la conversion reste dans `.sauvegarde-avant-ressources/`. Les projets encore plus anciens (`maps/` à la racine) s'ouvrent toujours aussi.
+
+## Couleurs des personnages
+
+Chaque planche est enregistrée **une fois, dans ses couleurs d'origine**. L'éditeur calcule les variantes :
+
+| Variante | Quand |
+|---|---|
+| Couleur d'origine | celle de la planche |
+| Bleu | unité du joueur |
+| Rouge | ennemi |
+| Vert | allié (unité verte) |
+| Gris | unité qui a déjà joué ce tour (sur la map) |
+
+Seules les **couleurs d'équipe** changent (tenue, armure…) ; la peau, les cheveux et les armes gardent leurs couleurs. Elles sont détectées automatiquement (la famille de teintes saturées la plus présente, hors tons chair). Pour corriger : Base de données › Ressources › choisir la planche › *Couleurs d'équipe* : un clic sur une couleur la coche ou la décoche. Le choix est enregistré dans le `.json` de la planche (`"teamColors": ["#2850c8", …]`) ; *Revenir à la détection automatique* efface la liste.
+
+Réglage **Couleurs du sprite** :
+
+- *Équipe sur la map, origine en combat* (par défaut, comme les Fire Emblem GBA)
+- *Couleur d'équipe partout*
+- *Couleur d'origine partout*
+
+Il se règle dans Système (pour tout le projet), sur une classe, sur une unité ou sur un placement de chapitre (inspecteur de droite en mode Unités). Le plus précis l'emporte : placement › unité › classe › projet.
 
 ## Ressources par défaut
 
-Chaque nouveau projet reçoit le contenu de `assets/default/` :
+Chaque nouveau projet reçoit le contenu de `assets/default/ressources/` :
 
 | Dossier | Contenu |
 |---|---|
-| `img/characters` | Eliwood (Seigneur, Chevalier-Seigneur), Lyn (Seigneur, Lame-Seigneur), Hector (Seigneur, Grand Seigneur), Brigand |
-| `img/battlers` | Eliwood, Lyn (épée + arc, flèche en projectile), Hector (hache + hachette lancée), Brigand |
-| `img/faces` | Eliwood en face set (planche FE GBA animée), les autres en bustes tirés des animations de combat |
-| `img/tilesets` | Plaines (dont buisson et fourré) |
-| `img/characters` + `img/battlers` | Cloud (allié, sprites propres à l'unité) |
-| `audio/bgm` | Winning Road (Roy's Hope), Advance |
-| `audio/me` | Level Up, Game Over |
+| `personnages/Eliwood` | sprites de map Seigneur et Chevalier-Seigneur, animation de combat, portrait en face set (planche FE GBA animée) |
+| `personnages/Lyn` | Seigneur et Lame-Seigneur, animation (épée + arc, flèche en projectile), portrait |
+| `personnages/Hector` | Seigneur et Grand Seigneur, animation (hache + hachette lancée), portrait |
+| `personnages/Brigand` | sprite de map, animation, portrait |
+| `personnages/Cloud` | allié, sprites propres à l'unité |
+| `tilesets` | Plaines (dont buisson et fourré) |
+| `musiques` | Winning Road (Roy's Hope), Advance |
+| `jingles` | Level Up, Game Over |
 
 ### Portraits au format face set
 
@@ -172,40 +206,44 @@ Un portrait de 128×112 px rangé comme dans les Fire Emblem GBA est reconnu tou
 
 La couleur du pixel en haut à gauche sert de fond transparent. La place des yeux et de la bouche sur le portrait est retrouvée automatiquement (elle s'affiche dans Ressources). En jeu : grand portrait qui cligne des yeux et parle pendant que le texte défile dans les dialogues, mini-portrait dans la fenêtre d'unité, buste dans l'épilogue. Les portraits d'une autre taille restent affichés tels quels.
 
-Un projet existant garde son ancien `img/faces/Eliwood.png` (l'ajout des ressources par défaut n'écrase rien) : remplace le fichier à la main pour avoir le face set.
+Un projet existant garde son ancien portrait d'Eliwood (l'ajout des ressources par défaut n'écrase rien) : remplace `ressources/personnages/Eliwood/portrait.png` à la main pour avoir le face set.
 
-Pour un projet créé avant cette version (dossier `img/` vide) : Base de données › Ressources › **Ajouter les ressources par défaut** copie les fichiers sans rien écraser et relie les classes de seigneurs et le Brigand à leurs sprites.
+Pour un projet sans ressources : Base de données › Ressources › **Ajouter les ressources par défaut** copie les fichiers sans rien écraser et relie les classes de seigneurs et le Brigand à leurs sprites.
 
-Les sprites sont liés aux **classes** (Base de données › Classes : *Sprite de map* et *Animation de combat*). Une unité peut surcharger ceux de sa classe. Une classe sans sprite s'affiche en jeton coloré ; si un des deux combattants n'a pas d'animation, le combat se joue directement sur la map. L'onglet **Ressources** de la base de données liste tout ce qu'il y a dans `img/`, avec un aperçu animé (palettes, chaque animation, frame d'impact).
+Les sprites sont liés aux **classes** (Base de données › Classes : *Sprite de map* et *Animation de combat*). Une unité peut surcharger ceux de sa classe. Une classe sans sprite s'affiche en jeton coloré ; si un des deux combattants n'a pas d'animation, le combat se joue directement sur la map. L'onglet **Ressources** de la base de données liste tout ce qu'il y a dans `ressources/`, regroupé par personnage, avec un aperçu animé (couleur d'origine / bleu / rouge / vert / gris, chaque animation, frame d'impact), les couleurs d'équipe et un bouton qui ouvre le dossier de la ressource.
 
 Le chapitre d'exemple met Eliwood, Lyn et Hector face aux brigands de Batta.
 
-### Format d'un sprite de map (`img/characters/Nom.json`)
+### Format d'un sprite de map (`personnages/Nom/map_….json`)
 
-Planche de frames 32×32, une rangée par animation (`idle`, `left`, `right`, `down`, `up`, `focus`), répétée pour chaque palette (`ally`, `enemy`, `neutral`, `gray`). Les palettes sont les vraies palettes FE (bleu / rouge / vert / gris « a déjà joué »).
+Planche de frames 32×32, une rangée par animation (`idle`, `left`, `right`, `down`, `up`, `focus`), dans les couleurs d'origine. `teamColors` (facultatif) liste les couleurs qui passent en bleu / rouge / vert.
 
 ```json
-{ "frame": [32, 32], "anchor": [16, 23], "base": 16,
-  "palettes": ["ally", "enemy", "neutral", "gray"], "paletteHeight": 192,
+{ "type": "mapsprite", "name": "Lyn — Seigneur", "frame": [32, 32], "anchor": [16, 23], "base": 16,
+  "teamColors": ["#3850d0", "#4898f8", "…"],
   "anims": { "idle": { "row": 0, "frames": [0, 1, 2, 1], "durations": [500, 80, 500, 80] }, "...": {} } }
 ```
 
+Les anciennes planches à 4 palettes précalculées (`palettes`, `paletteHeight`) restent lisibles : seul le premier bloc est utilisé.
+
 `anchor` = pied du personnage (bas-centre de la case), `base` = taille de case d'origine (le sprite est agrandi pour des cases de 32 px).
 
-### Format d'une animation de combat (`img/battlers/Nom.json`)
+### Format d'une animation de combat (`personnages/Nom/combat.json`)
 
 Toutes les frames ont la même taille (`cell`) et le même point d'ancrage au sol, rangées sur une grille de `columns` colonnes. Chaque animation liste ses frames et peut préciser :
 
 - `hit` : frame de l'impact (dégâts, flash, recul)
 - `approach` / `retreat` : frames pendant lesquelles l'attaquant avance vers l'adversaire / revient
 - `projectile`, `release`, `catch` : projectile (`arrow`, `axe`), frame du tir et frame où l'arme revient
+- `projectiles` : images des projectiles, rangées à côté de la planche (`{ "arrow": "combat_arrow.png" }`)
+- `teamColors` : comme pour les sprites de map
 - `facing` : sens dans lequel la planche regarde (les héros regardent à gauche, le brigand à droite) ; le moteur retourne l'image si besoin
 
 Animations reconnues : `stance`, `attack`, `critical`, `ranged`, `rangedCritical`, `bow`, `bowCritical`, `dodge`.
 
 ### Régénérer les ressources
 
-Les planches d'origine sont dans `tools/sprite-sources/` (dont `cloud.gif`). Le script de conversion les redécoupe, aligne les frames, génère les palettes et les portraits :
+Les planches d'origine sont dans `tools/sprite-sources/` (dont `cloud.gif`). Le script de conversion les redécoupe, aligne les frames, range chaque personnage dans son dossier, note ses couleurs d'équipe et génère les portraits :
 
 ```bash
 python3 tools/build_default_resources.py --preview apercu/
@@ -213,7 +251,7 @@ python3 tools/build_default_resources.py --preview apercu/
 
 (Pillow + numpy.) Les découpages, frames d'impact et cadrages des portraits sont réglés en haut du script.
 
-**Crédits** : sprites rippés de *Fire Emblem: The Blazing Blade* (Intelligent Systems / Nintendo) par Lexou, Grim & Bonzai. Cloud : édition FE par Lord Zymeth (personnage Square Enix, base Nintendo). Musiques : *Fire Emblem: The Binding Blade*, Yuka Tsujiyoko (Enhanced Soundtrack). À garder pour un usage perso / fan-game : à retirer de `assets/default/` (img et audio) et `tools/sprite-sources/` avant toute diffusion publique de l'outil.
+**Crédits** : sprites rippés de *Fire Emblem: The Blazing Blade* (Intelligent Systems / Nintendo) par Lexou, Grim & Bonzai. Cloud : édition FE par Lord Zymeth (personnage Square Enix, base Nintendo). Musiques : *Fire Emblem: The Binding Blade*, Yuka Tsujiyoko (Enhanced Soundtrack). À garder pour un usage perso / fan-game : à retirer de `assets/default/ressources/` et `tools/sprite-sources/` avant toute diffusion publique de l'outil.
 
 ## Code
 
@@ -222,12 +260,15 @@ main.js                    process principal Electron (fenêtres, menus, IPC)
 preload.js                 pont sécurisé vers le renderer
 src/main/tiled.js          import Tiled
 src/main/project-io.js     lecture / écriture des projets
+src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
+src/shared/palettes.js     couleurs d'équipe (détection, recoloration, réglage origine / équipe) — testées dans test/palettes.test.js
 src/shared/rules.js        règles du jeu (combat, déplacement, IA, exp) — testées dans test/run.js
 src/shared/defaults.js     base de données par défaut + chapitre d'exemple
 src/renderer/              éditeur (editor.js, db.js), playtest (playtest.js), scène de combat (battle.js), sprites (sprites.js)
 tools/                     conversion des planches de sprites
 test/snapshot.js           test de bout en bout : TF_SNAPSHOT=dossier npm start
 test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAPSHOT_SCRIPT=test/snapshot-supports.js
+test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
 **Compétences en jeu** — Précision, Esquive, Offensive et Garde modifient les calculs lorsque leurs conditions sont remplies. Présence rassurante protège les autres alliés à portée (y compris les unités vertes) ; seule l’aura d’esquive la plus forte s’applique. Régénération soigne au début de la phase du porteur, avant le soin du terrain, sans ressusciter les unités vaincues. Luna ignore une partie de la Défense / Résistance et du terrain ; Sol soigne sur les PV réellement retirés ; Vantage place la première riposte avant l’attaque ennemie ; Miracle permet de survivre à 1 PV, mais ne protège pas un nouveau coup commencé à 1 PV. Les prévisions affichent les dégâts hors déclenchements et les probabilités séparément. Un seul effet offensif peut se déclencher par coup : priorité à l’attaque spéciale d’affinité, puis Luna, puis Sol. Les attaques duo utilisent les passifs et les protections de la cible, sans Luna/Sol du partenaire. Les déclenchements et soins sont visibles dans les animations comme sur la map.

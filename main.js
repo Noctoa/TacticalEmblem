@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { pathToFileURL } = require('url');
 const io = require('./src/main/project-io.js');
+const Layout = require('./src/main/resources-layout.js');
 const campaignIO = require('./src/main/campaign-io.js');
 const { importTiled } = require('./src/main/tiled.js');
 
@@ -143,12 +144,12 @@ handle('project:open', async (e, dir) => {
     if (res.canceled || !res.filePaths.length) return null;
     dir = path.dirname(res.filePaths[0]);
   }
-  const project = io.loadProject(dir);
+  const project = io.loadProject(dir, ASSETS);
   addRecent(dir, project.meta.name);
   return payload(dir, project);
 });
 
-handle('project:load', (e, dir) => payload(dir, io.loadProject(dir)));
+handle('project:load', (e, dir) => payload(dir, io.loadProject(dir, ASSETS)));
 handle('campaign:load', (e, dir) => campaignIO.load(dir));
 handle('campaign:save', (e, dir, value) => { campaignIO.save(dir, value); return true; });
 handle('project:save', (e, dir, project) => { io.saveProject(dir, project); return true; });
@@ -170,28 +171,37 @@ handle('tiled:import', async (e, dir, terrains) => {
   });
 });
 
+/** Copie une image choisie par l'utilisateur dans un dossier du projet. sub(dir, arg) → dossier relatif. */
 function importAsset(sub) {
-  return async (e, dir) => {
+  return async (e, dir, arg) => {
     const res = await dialog.showOpenDialog(editorWin || BrowserWindow.getFocusedWindow(), {
       title: 'Choisir une image', properties: ['openFile'], filters: [{ name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] }]
     });
     if (res.canceled || !res.filePaths.length) return null;
     const src = res.filePaths[0];
-    const destDir = path.join(dir, sub);
+    const rel = typeof sub === 'function' ? sub(dir, arg) : sub;
+    const destDir = path.join(dir, rel);
     fs.mkdirSync(destDir, { recursive: true });
     const ext = path.extname(src);
     const base = path.basename(src, ext).replace(/[^\w\-]+/g, '_') || 'image';
     let name = base + ext, i = 1;
     while (fs.existsSync(path.join(destDir, name))) name = base + '_' + (i++) + ext;
     fs.copyFileSync(src, path.join(destDir, name));
-    return sub + '/' + name;
+    return rel + '/' + name;
   };
 }
-handle('tileset:importImage', importAsset('img/tilesets'));
-handle('portrait:import', importAsset('img/faces'));
+handle('tileset:importImage', importAsset(io.DIRS.tilesets));
+// portrait : rangé dans le dossier du personnage (ressources/personnages/<Nom>/)
+handle('portrait:import', importAsset((dir, owner) => io.DIRS.characters + '/' + Layout.safeName(owner || 'Portraits')));
 handle('resources:scan', (e, dir) => io.scanResources(dir));
 handle('resources:installDefaults', (e, dir) => io.installDefaults(dir, ASSETS));
-handle('resources:openFolder', (e, dir, sub) => shell.openPath(path.join(dir, sub || 'img')));
+handle('resources:setTeamColors', (e, dir, key, colors) => io.setTeamColors(dir, key, colors));
+handle('resources:openFolder', (e, dir, sub) => {
+  const target = path.resolve(dir, sub || Layout.ROOT);
+  if (!target.startsWith(path.resolve(dir))) throw new Error('Dossier hors du projet.');
+  fs.mkdirSync(target, { recursive: true });
+  return shell.openPath(target);
+});
 
 handle('playtest:open', (e, dir, chapterId) => { openPlaytest(dir, chapterId); return true; });
 

@@ -32,7 +32,9 @@
   // ------------------------------------------------------------------
   function makeActor(opts, unit, side) {
     const meta = opts.battlerOf(unit);
-    const img = meta ? Render.readyImage(opts.baseUrl, meta.image) : null;
+    const raw = meta ? Render.readyImage(opts.baseUrl, meta.image) : null;
+    // couleurs : origine ou équipe (bleu / rouge / vert) selon le réglage de l'unité
+    const img = raw && opts.paletteOf ? Sprites.tinted(raw, meta, opts.paletteOf(unit)) : raw;
     const want = side === 'R' ? 'left' : 'right';
     // pose de garde : celle de l'arc si l'unité a un arc en main (Lyn), sinon la garde normale
     const w = opts.weaponOf(unit);
@@ -46,7 +48,8 @@
 
   /**
    * opts : { baseUrl, battlerOf(u), att, def, hp0: {[uid]: hp}, strikes, forecast, distance,
-   *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), projectileImg(meta, name) }
+   *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), projectileImg(meta, name),
+   *          paletteOf(u) -> 'original' | 'blue' | 'red' | 'green' }
    */
   async function play(opts) {
     const left = opts.att.team === 'enemy' ? opts.att : opts.def;
