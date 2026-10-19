@@ -22,6 +22,7 @@ module.exports = (win, openPlaytest) => {
       await ejs(`DBEditor.close()`);
 
       const pw = openPlaytest(dir, 'ch_1'); const wc = pw.webContents;
+      wc.setBackgroundThrottling(false); pw.show(); // les animations de combat avancent au rythme de l'affichage : fenêtre visible
       wc.on('console-message', (e, l, m) => { if (l >= 2) errs.push('playtest: ' + m); });
       await new Promise(r => wc.once('did-finish-load', r)); pw.setSize(1100, 780);
       const js = c => wc.executeJavaScript(c, true);
