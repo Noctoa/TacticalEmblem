@@ -91,10 +91,10 @@ module.exports = (win, openPlaytest) => {
       log('évènements', await js(`[...document.querySelectorAll('#lobby-panel .lp-row')].map(r => r.textContent).join(' || ')`));
       // sauvegarde au camp puis relecture
       await key('Escape'); await wait(200);
-      await js(`PlaytestLobby.openMenu()`); await wait(200);
-      await js(`PlaytestState.menu.items.find(i => i.label === 'Sauvegarder').action()`);
+      await js(`PlaytestSettings.open('save')`); await wait(500);
+      await js(`document.querySelectorAll('#settings .st-slot')[0].querySelector('button').click()`);
       await wait(800);
-      const save = JSON.parse(fs.readFileSync(path.join(dir, 'saves', 'campaign.json'), 'utf8'));
+      const save = JSON.parse(fs.readFileSync(path.join(dir, 'saves', 'slot-1.json'), 'utf8'));
       log('sauvegarde', { chapitre: save.chapterId, or: save.campaign.gold, terminés: save.campaign.cleared, conversations: save.campaign.talks });
     } catch (e) { errs.push(String(e.stack || e)); }
     finish();

@@ -206,8 +206,9 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
     if (c.battler) assert.ok(q.resources.battlers[c.battler], c.battler);
   }
   for (const u of q.db.units) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait);
-  // ressources par défaut sur un projet converti : rien de neuf, rien en double
-  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, 0);
+  // ressources par défaut sur un projet converti : rien en double, seuls les effets sonores (absents de l'ancienne version) arrivent
+  const sons = fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'sons')).filter(f => !f.startsWith('.')).length;
+  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, sons);
   // réouverture : plus rien à convertir
   assert.ok(!io.loadProject(dir).migration);
 });
@@ -358,6 +359,17 @@ test('combat résolu, usure des armes, pas de PV négatifs', () => {
   assert.ok(res.strikes.length >= 1);
   assert.ok(a.hp >= 0 && b.hp >= 0);
   assert.strictEqual(a.inventory[0].uses, uses - res.strikes.filter(s => s.by === a.uid).length);
+});
+
+test('debug : une unité protégée ne perd pas de PV', () => {
+  for (let seed = 1; seed < 30; seed++) {
+    const a = R.makeUnitFromCharacter(db.units[2], db, { x: 0, y: 0 });
+    const b = R.makeEnemyFromPlacement({ id: 'e', classId: 'warrior', level: 10, x: 1, y: 0 }, db);
+    const hp = a.hp;
+    const res = R.resolveCombat(a, 0, b, { db, settings: {}, terrainOf: () => null, rng: R.makeRng(seed), protect: (u) => u === a });
+    assert.strictEqual(a.hp, hp, 'seed ' + seed);
+    assert.ok(res.strikes.filter(s => s.target === a.uid && s.hit).every(s => s.dmg === 0));
+  }
 });
 
 test('déplacement : coûts, eau infranchissable, ennemis bloquants', () => {

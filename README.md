@@ -83,6 +83,12 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Musique** — `ressources/musiques` (musiques en boucle) et `ressources/jingles`. Système › Musique : une piste par phase (joueur, alliée, ennemie) et des jingles pour la montée de niveau, la victoire et le game over. Touche M en jeu pour couper.
 
+**Paramètres en jeu (Échap)** — Une fenêtre à onglets, au camp comme en chapitre (Échap annule d'abord une sélection ou un menu en cours ; X et le clic droit restent « annuler ») :
+- **Sauvegarder** : 5 emplacements (lieu, mode, or, date). Au camp, on sauvegarde le camp ; en chapitre, le début du chapitre (comme les Fire Emblem). Fichiers : `saves/slot-1.json` … `slot-5.json` (l'ancienne sauvegarde unique devient l'emplacement 1).
+- **Charger** : reprendre un emplacement, ou l'effacer. Au lancement du playtest : *Continuer* (dernière sauvegarde) et *Charger une sauvegarde…*.
+- **Son** : volumes de la musique, des jingles et des effets sonores, son coupé (M). Gardés d'une partie à l'autre sur ce poste. Les effets (curseur, valider, annuler, coup, critique, esquive, unité vaincue) se choisissent dans Système ; des sons par défaut sont fournis dans `ressources/sons` (générés par `tools/build_default_sounds.py`).
+- **Debug** (masquable : Système › Playtest) : invincibilité, déplacement illimité, ennemis passifs ; victoire / défaite immédiate, vaincre tous les ennemis, soigner, faire rejouer, tour suivant ; unité sous le curseur (+1 / +5 niveaux, PV max, vaincre) ; or, objet dans le convoi, affinités +20 ; au camp, marquer des chapitres terminés et revoir les conversations.
+
 **Lobby (le camp)** — Comme dans Fire Emblem Heroes, le jeu commence dans un lobby et y revient après chaque chapitre. C'est une petite map explorable (faite dans l'éditeur comme une map de chapitre) où l'on déplace le héros au clavier (flèches) ou à la souris (clic : il y va, et interagit s'il s'agit d'un personnage ou d'un bâtiment) :
 - **Table des chapitres** : onglet *Histoire* (le chapitre de départ, puis le « Chapitre suivant » de chaque chapitre terminé) et onglet *Évènements* (chapitres optionnels). Les chapitres terminés se rejouent, sauf si on décoche *Rejouable*.
 - **Boutique** : achat (rangé dans le convoi ou l'inventaire d'un personnage présent) et revente à moitié prix, au prorata des utilisations restantes. Prix réglés sur chaque arme et objet ; `0` = ne se vend pas.
@@ -271,6 +277,8 @@ src/main/tiled.js          import Tiled
 src/main/project-io.js     lecture / écriture des projets
 src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
+src/renderer/settings-window.js  fenêtre Paramètres du playtest (sauvegarde, chargement, son, debug)
+src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
 src/shared/palettes.js     couleurs d'équipe (détection, recoloration, réglage origine / équipe) — testées dans test/palettes.test.js
 src/shared/rules.js        règles du jeu (combat, déplacement, IA, exp) — testées dans test/run.js
@@ -279,6 +287,7 @@ src/renderer/              éditeur (editor.js, db.js), playtest (playtest.js), 
 tools/                     conversion des planches de sprites
 test/snapshot.js           test de bout en bout : TF_SNAPSHOT=dossier npm start
 test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAPSHOT_SCRIPT=test/snapshot-supports.js
+test/snapshot-settings.js  fenêtre Paramètres de bout en bout
 test/snapshot-lobby.js     lobby de bout en bout (camp, conversation, boutique, chapitre, retour) ; test/snapshot-lobby-editor.js : son édition
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```

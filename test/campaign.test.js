@@ -122,12 +122,41 @@ test('sauvegarde disque indépendante du projet, sauvegarde de secours et fichie
   try {
     assert.equal(IO.load(dir), null);
     const save = C.checkpoint('ch2', C.create('casual'), [], {});
-    IO.save(dir, save); assert.deepEqual(IO.load(dir), save);
+    IO.save(dir, save); assert.equal(IO.load(dir).chapterId, 'ch2'); assert.equal(IO.load(dir).slot, 1);
     save.chapterId = 'ch3'; IO.save(dir, save);
-    assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'saves/campaign.json.bak'))).chapterId, 'ch2');
+    assert.equal(JSON.parse(fs.readFileSync(path.join(dir, 'saves/slot-1.json.bak'))).chapterId, 'ch2');
     assert.equal(fs.existsSync(path.join(dir, 'game.tfproj')), false);
-    fs.writeFileSync(path.join(dir, 'saves/campaign.json'), '{broken');
+    fs.writeFileSync(path.join(dir, 'saves/slot-1.json'), '{broken');
     assert.throws(() => IO.load(dir), /Impossible de lire/);
     assert.throws(() => IO.save(dir, { version: 99 }), /invalide/);
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('emplacements de sauvegarde : liste, plus récente, effacement, ancienne sauvegarde unique', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tf-slots-'));
+  try {
+    // ancienne sauvegarde unique : reprise comme emplacement 1
+    fs.mkdirSync(path.join(dir, 'saves'));
+    fs.writeFileSync(path.join(dir, 'saves/campaign.json'), JSON.stringify(C.checkpoint('ch1', C.create('classic'), [], {})));
+    let list = IO.list(dir);
+    assert.equal(list.length, IO.SLOTS);
+    assert.deepEqual(list.filter(s => s.exists).map(s => [s.slot, s.chapterId, s.mode]), [[1, 'ch1', 'classic']]);
+    assert.ok(!fs.existsSync(path.join(dir, 'saves/campaign.json')));
+    const camp = C.create('casual', 300); camp.cleared.push('ch1');
+    const save = Object.assign(C.checkpoint('@lobby', camp, [], {}), { info: { place: 'Camp de Varenne' } });
+    assert.equal(IO.save(dir, save, 3), 3);
+    list = IO.list(dir);
+    assert.deepEqual([list[2].chapterId, list[2].mode, list[2].gold, list[2].info.place], ['@lobby', 'casual', 300, 'Camp de Varenne']);
+    assert.ok(list[2].info.savedAt);
+    // la plus récente
+    const t = Date.now() / 1000;
+    fs.utimesSync(path.join(dir, 'saves/slot-1.json'), t - 100, t - 100);
+    assert.equal(IO.load(dir).slot, 3);
+    assert.equal(IO.load(dir, 1).chapterId, 'ch1');
+    assert.equal(IO.load(dir, 2), null);
+    IO.remove(dir, 3);
+    assert.equal(IO.list(dir)[2].exists, false);
+    assert.ok(fs.existsSync(path.join(dir, 'saves/slot-3.json.bak')));
+    assert.throws(() => IO.save(dir, save, 9), /invalide/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

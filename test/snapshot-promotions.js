@@ -109,7 +109,7 @@ module.exports = (editor, openPlaytest) => {
       await click(wc, '#end button', 'Chapitre suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
       const readState = `(() => { const u = PlaytestState.units.find(u => u.sourceId === ${JSON.stringify(hero.id)}); return { classId: u.classId, level: u.level, stats: u.stats, inventory: u.inventory, effectiveLevel: u.effectiveLevel, equippedSkills: u.equippedSkills }; })()`;
       assert.deepEqual(await js(wc, readState), state);
-      await js(wc, `PlaytestState.cursor = { x: 0, y: 0 }`); await key('Z'); await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Sauvegarder').action()`);
+      await js(wc, `PlaytestState.cursor = { x: 0, y: 0 }`); await key('Z'); await js(wc, `(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`);
       await until(wc, '!PlaytestState.busy'); win.close();
       const resumed = openPlaytest(dir, ch.id), rwc = resumed.webContents; watch(rwc);
       await new Promise(resolve => rwc.once('did-finish-load', resolve)); await until(rwc, `!!document.querySelector('.choice-list')`);

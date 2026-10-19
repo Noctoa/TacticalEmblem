@@ -15,7 +15,8 @@
     sel: null, reach: null, atk: null, staffRange: null, origin: null, targets: [], tIndex: 0, wList: [], wIndex: 0,
     danger: false, dangerSet: null, enemyView: null, menu: null, fired: new Set(), over: false, busy: false,
     dialogue: null, fast: false, lost: [],
-    mode: 'chapter', lobbyOn: false // mode : 'chapter' (combat) ou 'lobby' (camp entre deux chapitres)
+    mode: 'chapter', lobbyOn: false, // mode : 'chapter' (combat) ou 'lobby' (camp entre deux chapitres)
+    debug: { god: false, move: false, passive: false } // interrupteurs de l'onglet Debug (Échap)
   };
   window.PlaytestState = G;
   const V = { s: 2, camX: 0, camY: 0, w: 0, h: 0, dpr: 1, shake: 0 };
@@ -59,27 +60,31 @@
       let first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
       if (!first) throw new Error('Aucun chapitre à jouer.');
       let saved = null;
-      try { saved = await tf.loadCampaign(params.get('dir')); }
+      let slots = [];
+      try { saved = await tf.loadCampaign(params.get('dir')); slots = (await tf.listSaves(params.get('dir'))).filter(s => s.exists && !s.error); }
       catch (e) { await UI.alert('Sauvegarde non chargée', e.message); }
       const atLobby = (s) => s && s.chapterId === Lobby.LOBBY_SAVE;
       const camp = lobbyCfg.name || 'le camp';
       // avec un lobby : la partie commence au camp ; « Tester » un chapitre depuis l'éditeur peut aussi le lancer directement
       const direct = G.lobbyOn && chId && chId !== Lobby.LOBBY_SAVE && R.byId(G.db.chapters, chId);
       const choice = await UI.choose('Lancer une partie', [
-        ...(saved ? [{ value: 'continue', label: 'Continuer la campagne', desc: atLobby(saved) ? camp + (G.lobbyOn ? '' : ' (lobby désactivé : premier chapitre)') : (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId }] : []),
+        ...(saved ? [{ value: 'continue', label: 'Continuer', desc: `Dernière sauvegarde (emplacement ${saved.slot}) : ` + (atLobby(saved) ? camp + (G.lobbyOn ? '' : ' (lobby désactivé : premier chapitre)') : (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId) }] : []),
+        ...(slots.length > 1 ? [{ value: 'load', label: 'Charger une sauvegarde…', desc: `${slots.length} emplacements utilisés` }] : []),
         { value: 'classic', label: 'Nouvelle partie — Classique', desc: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
         { value: 'casual', label: 'Nouvelle partie — Détente', desc: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
         ...(direct ? [{ value: 'direct', label: `Tester « ${direct.name} » directement`, desc: 'Nouvelle partie Classique qui commence par ce chapitre ; la victoire ramène au camp.' }] : [])
       ], G.lobbyOn ? `Le jeu commence à ${camp} : chapitres, boutique et conversations.` : 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.');
       if (!choice) { window.close(); return; }
       let toLobby = G.lobbyOn;
-      if (choice === 'continue') {
-        Object.assign(G, Campaign.restore(saved, G.sup));
-        toLobby = G.lobbyOn && atLobby(saved);
-        if (!toLobby && !atLobby(saved)) {
-          first = R.byId(G.db.chapters, saved.chapterId);
-          if (!first) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
-        }
+      if (choice === 'load') {
+        const pick = await UI.choose('Charger une sauvegarde', slots.map(s => ({ value: s.slot, label: `Emplacement ${s.slot} — ` + (atLobby(s) ? (s.info && s.info.place) || camp : 'Début de « ' + ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId) + ' »'),
+          desc: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', s.info && s.info.savedAt ? new Date(s.info.savedAt).toLocaleString('fr-FR') : ''].filter(Boolean).join(' · ') })));
+        if (!pick) { window.close(); return; }
+        saved = await tf.loadCampaign(params.get('dir'), pick);
+      }
+      if (choice === 'continue' || choice === 'load') {
+        requestAnimationFrame(loop);
+        return startFromSave(saved);
       } else {
         G.campaign = Campaign.create(choice === 'direct' ? 'classic' : choice, lobbyCfg.startGold);
         if (choice === 'direct') { toLobby = false; first = direct; }
@@ -124,22 +129,37 @@
   function applyCampaign(u) {
     return Campaign.apply(G.campaign, u, G.db);
   }
-  async function saveCheckpoint() {
-    const wasBusy = G.busy; G.busy = true;
-    try {
-      const old = await tf.loadCampaign(params.get('dir'));
-      if (old && !(await UI.confirm('Remplacer la sauvegarde de campagne par le début de ce chapitre ?'))) return;
-      await tf.saveCampaign(params.get('dir'), G.checkpoint);
-      UI.toast('Début du chapitre sauvegardé — ' + (G.campaign.mode === 'classic' ? 'Classique' : 'Détente'));
-    } catch (e) { await UI.alert('Sauvegarde impossible', e.message); }
-    finally { G.busy = wasBusy; }
-  }
+  function saveCheckpoint() { settings.open('save'); }
   async function restartChapter() {
     const wasBusy = G.busy; G.busy = true;
     if (!(await UI.confirm('Recommencer ce chapitre ? Les actions et pertes de cette tentative seront annulées.'))) { G.busy = wasBusy; return; }
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
     await loadChapter(G.chapter);
+  }
+
+  /** Reprend une sauvegarde : camp (si le lobby est actif) ou début du chapitre sauvegardé. */
+  async function startFromSave(save) {
+    G.sup = R.initSupports(G.db, G.supCfg);
+    Object.assign(G, Campaign.restore(save, G.sup));
+    if (save.chapterId === Lobby.LOBBY_SAVE) {
+      if (G.lobbyOn) return lobby.enter();
+      const start = R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
+      if (!start) throw new Error('Aucun chapitre à jouer.');
+      return loadChapter(start);
+    }
+    const ch = R.byId(G.db.chapters, save.chapterId);
+    if (!ch) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
+    return loadChapter(ch);
+  }
+  /** Point de reprise à écrire : le camp tel qu'il est, ou le début du chapitre en cours. */
+  function makeSave() {
+    if (G.mode === 'lobby') {
+      Campaign.commit(G.campaign, G.units);
+      G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
+      return Object.assign({}, G.checkpoint, { info: { place: Lobby.defaults(G.project.meta.lobby).name, kind: 'camp' } });
+    }
+    return Object.assign({}, G.checkpoint, { info: { place: G.chapter.name, kind: 'chapitre' } });
   }
 
   function buildBase() {
@@ -176,6 +196,15 @@
     }
     const lord = G.units.find(u => u.isLord) || G.units.find(u => u.team === 'player');
     if (lord) G.cursor = { x: lord.x, y: lord.y };
+    applyDebugMove();
+  }
+  /** Debug « déplacement illimité » : 99 cases pour les unités du joueur et les alliés. */
+  function applyDebugMove() {
+    for (const u of G.units.concat(G.pending)) {
+      if (u.team === 'enemy') continue;
+      if (G.debug.move) { if (u.debugMov === undefined) u.debugMov = u.mov; u.mov = 99; }
+      else if (u.debugMov !== undefined) { u.mov = u.debugMov; delete u.debugMov; }
+    }
   }
   function prep(u) { u.rx = u.x; u.ry = u.y; u.ox = 0; u.oy = 0; u.alpha = 1; u.flash = 0; u.dead = false; u.bob = Math.random() * 6; return u; }
 
@@ -193,7 +222,8 @@
   const terrainAt = (x, y) => G.terrains[G.tgrid[y * G.map.width + x]] || null;
   const terrainOf = (u) => terrainAt(u.x, u.y);
   const rctx = () => ({ width: G.map.width, height: G.map.height, terrainAt, unitAt });
-  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive() });
+  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive(),
+    protect: (u) => G.debug.god && u.team !== 'enemy' });
   // ---------- affinités ----------
   const bonusOf = (u) => R.supportBonus(u, players(), G.sup, G.supCfg);
   const specialOf = (u) => R.supportSpecial(u, players(), G.sup, G.supCfg);
@@ -680,6 +710,7 @@
   function hideMenu() { $('#menu').classList.add('hidden'); G.menu = null; }
   function menuMove(d) {
     if (!G.menu) return;
+    Music.se('cursor');
     const n = G.menu.items.length; let i = G.menu.index;
     for (let k = 0; k < n; k++) { i = (i + d + n) % n; if (!G.menu.items[i].disabled) break; }
     G.menu.index = i; renderMenu();
@@ -847,11 +878,10 @@
     const pending = alive().filter(controllable).length;
     showMenu([
       { label: G.phase === 'ally' ? 'Fin de la phase alliée' : 'Fin du tour', sub: pending ? `${pending} unité(s) libres` : '', action: () => { hideMenu(); G.ui = 'idle'; endCurrentPhase(); } },
-      { label: 'Musique', sub: Music.muted ? 'coupée' : 'activée', action: () => { Music.toggleMute(); hideMenu(); G.ui = 'idle'; } },
+      { label: 'Paramètres', sub: 'Échap', action: () => { hideMenu(); G.ui = 'idle'; settings.open(); } },
       { label: 'Zone de danger', sub: G.danger ? 'activée' : 'désactivée', action: () => { toggleDanger(); hideMenu(); G.ui = 'idle'; } },
       { label: G.fast ? 'Vitesse normale' : 'Vitesse rapide', action: () => { G.fast = !G.fast; hideMenu(); G.ui = 'idle'; } },
       { label: 'Animations de combat', sub: G.settings.battleAnims !== false ? 'oui' : 'non', action: () => { G.settings.battleAnims = G.settings.battleAnims === false; hideMenu(); G.ui = 'idle'; UI.toast('Animations de combat : ' + (G.settings.battleAnims ? 'oui' : 'non')); } },
-      { label: 'Sauvegarder', sub: 'début du chapitre', action: () => { hideMenu(); G.ui = 'idle'; saveCheckpoint(); } },
       { label: 'Recommencer', action: () => { hideMenu(); G.ui = 'idle'; restartChapter(); } },
       G.lobbyOn ? { label: 'Retour au camp', sub: 'abandonner le chapitre', action: () => { hideMenu(); G.ui = 'idle'; retreatToLobby(); } } : null,
       { label: 'Quitter le test', action: () => window.close() }
@@ -874,6 +904,7 @@
   // Sélection, déplacement, ciblage
   // =====================================================================
   function select(u) {
+    Music.se('confirm');
     G.sel = u; G.origin = { x: u.x, y: u.y };
     G.reach = R.reachable(u, rctx());
     const stops = [...G.reach.values()].filter(n => n.canStop);
@@ -1120,6 +1151,7 @@
         }
         if (s.skills.length) await sleep(350);
         await lunge(src, tgt);
+        Music.se(s.hit ? (s.crit ? 'crit' : 'hit') : 'miss');
         if (s.hit) {
           tgt.flash = performance.now() + 120;
           tgt.dispHp = s.hpAfter;
@@ -1198,6 +1230,7 @@
     if (instant) u.alpha = 0;
     else for (let i = 10; i >= 0; i--) { u.alpha = i / 10; await sleep(35); }
     u.dead = true;
+    Music.se('death');
     if (u.team === 'enemy' && u.gold > 0) {
       G.campaign.gold = (G.campaign.gold || 0) + u.gold;
       float(u.x, u.y, `+${u.gold} or`, '#f2d58a', true);
@@ -1285,6 +1318,7 @@
 
   /** Fait jouer une liste d'unités par l'IA. Renvoie true si la partie est terminée. */
   async function aiTurn(list, foesFn) {
+    if (G.debug.passive && list.some(u => u.team === 'enemy')) { for (const e of list) e.done = true; return false; } // debug
     for (const e of list) {
       if (G.over) return true;
       if (e.done || e.dead) continue;
@@ -1434,7 +1468,7 @@
           saveCampaign(); await loadChapter(next);
         } }, 'Chapitre suivant →') : null,
         h('button', { class: (win && (G.chapter.final || G.chapter.next)) || G.lobbyOn ? '' : 'primary', onclick: restartChapter }, 'Recommencer ce chapitre'),
-        h('button', { onclick: saveCheckpoint }, 'Sauvegarder le début du chapitre'),
+        h('button', { onclick: () => settings.open('save') }, 'Sauvegarder…'),
         h('button', { onclick: () => window.close() }, 'Fermer'))));
   }
 
@@ -1599,6 +1633,7 @@
   // =====================================================================
   function setCursor(x, y, silent) {
     x = Math.max(0, Math.min(G.map.width - 1, x)); y = Math.max(0, Math.min(G.map.height - 1, y));
+    if (!silent && (x !== G.cursor.x || y !== G.cursor.y)) Music.se('cursor');
     G.cursor = { x, y };
     if (!silent) focus(x, y);
     if (G.ui === 'target') showForecast();
@@ -1633,7 +1668,7 @@
       }
       case 'menu': case 'mapmenu': case 'items': case 'lobbymenu': {
         const it = G.menu && G.menu.items[G.menu.index];
-        if (it && !it.disabled) it.action();
+        if (it && !it.disabled) { Music.se('confirm'); it.action(); }
         return;
       }
       case 'target': { const t = currentTarget(); if (t) attack(G.sel, t); return; }
@@ -1645,6 +1680,7 @@
     if (G.waitClick) return G.waitClick();
     if (G.dialogue) return G.dialogue.next();
     if (G.busy || G.over) return;
+    if (G.ui !== 'idle' || G.menu) Music.se('cancel');
     switch (G.ui) {
       case 'moving': return deselect();
       case 'menu': {
@@ -1684,6 +1720,7 @@
   document.addEventListener('keydown', (e) => {
     if (document.querySelector('.modal-back')) return;
     const k = e.key;
+    if (settings.isOpen) return settings.key(e);
     if (BattleScene.isActive()) {
       e.preventDefault();
       if (['z', 'Z', 'Enter', ' '].includes(k)) BattleScene.setFast(true);
@@ -1691,6 +1728,8 @@
       return;
     }
     if (G.mode === 'lobby' && !G.dialogue && lobby.key(e)) return;
+    // Échap : annule ce qui est en cours (sélection, menu), sinon ouvre les paramètres
+    if (k === 'Escape' && !G.dialogue && !G.waitClick && !G.menu && (G.ui === 'idle' || G.over) && (!G.busy || G.over)) { e.preventDefault(); G.enemyView = null; return settings.open(); }
     if (['z', 'Z', 'Enter', ' '].includes(k)) { e.preventDefault(); return confirm(); }
     if (['x', 'X', 'Escape', 'Backspace'].includes(k)) { e.preventDefault(); return cancel(); }
     if ((k === 'd' || k === 'D') && !G.busy && !G.dialogue && G.mode !== 'lobby') return toggleDanger();
@@ -1730,10 +1769,44 @@
   const lobby = LobbyScene.create({
     G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
     hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
-    float, banner, loadChapter, sTaken, tileRect, TW, TH
+    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: () => settings.open()
   });
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés
+
+  // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
+  const playerSide = () => alive().filter(u => u.team !== 'enemy');
+  const later = (fn) => { settings.close(); setTimeout(fn, 0); };
+  const settings = SettingsWindow.create({
+    G, h, $, R, Music, dir: params.get('dir'), hideMenu,
+    lobbyName: () => Lobby.defaults(G.project.meta.lobby).name,
+    canSave: () => G.mode === 'lobby' ? { ok: true }
+      : G.checkpoint && G.chapter ? { ok: true } : { ok: false, reason: 'Rien à sauvegarder pour le moment.' },
+    makeSave, startFromSave,
+    unitAtCursor: () => (G.sel || unitAt(G.cursor.x, G.cursor.y)),
+    afterClose: () => { if (G.mode === 'lobby') lobby.refreshHud(); else if (G.chapter && !G.over) updateObjective(); },
+    debugChanged: (key) => { if (key === 'move' && G.mode === 'chapter') { applyDebugMove(); if (G.sel) select(G.sel); } },
+    debug: {
+      win: () => later(() => victory()),
+      lose: () => later(() => defeat('Défaite déclenchée depuis le menu Debug.')),
+      killEnemies: () => later(async () => { for (const u of enemies()) await killUnit(u, true); G.pending = []; await checkEnd(); }),
+      healAll: () => { for (const u of playerSide()) { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); } },
+      refresh: () => { for (const u of playerSide()) u.done = false; G.ui = 'idle'; },
+      endTurn: () => later(() => { G.ui = 'idle'; endCurrentPhase(); }),
+      levelUp: (u, n) => later(async () => { G.busy = true; for (let i = 0; i < (n || 1); i++) await grantExp(u, 100); G.busy = false; }),
+      heal: (u) => { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); },
+      kill: (u) => later(async () => { await killUnit(u, true); await checkEnd(); }),
+      gold: (n) => { G.campaign.gold = (G.campaign.gold || 0) + n; UI.toast(`+${n.toLocaleString('fr-FR')} or`); },
+      addItem: (id) => { const d = R.getEntry(G.db, id); if (!d) return; G.convoy.push({ id, uses: d.def.uses || 0 }); UI.toast(`${d.def.name} ajouté au convoi`); },
+      supports: () => { for (const s of Object.values(G.sup)) s.points += 20; UI.toast('Affinités : +20 points pour chaque paire'); },
+      clear: async (id) => { if (!G.campaign.cleared.includes(id)) G.campaign.cleared.push(id); if (G.mode === 'lobby') await lobby.enter(); },
+      clearAll: async () => { G.campaign.cleared = G.db.chapters.map(c => c.id); if (G.mode === 'lobby') await lobby.enter(); },
+      resetTalks: () => { G.campaign.talks = []; UI.toast('Toutes les conversations sont à nouveau disponibles'); },
+      toLobby: () => later(() => retreatToLobby())
+    }
+  });
+  window.PlaytestSettings = settings;
+  PlaytestDebug.saveSlot = (slot) => tf.saveCampaign(params.get('dir'), makeSave(), slot || 1); // scénarios de test
 
   init();
 })();

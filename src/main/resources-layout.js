@@ -325,8 +325,9 @@ function migrate(dir, projectFile, dbKeys, assetsDir) {
     if (!fs.existsSync(d)) continue;
     for (const n of fs.readdirSync(d)) if (n.endsWith('.json')) writeJson(path.join(d, n), rewrite(readJson(path.join(d, n), {}), map));
   }
-  const campaign = path.join(dir, 'saves', 'campaign.json'); // partie en cours du playtest
-  if (fs.existsSync(campaign)) writeJson(campaign, rewrite(readJson(campaign, {}), map));
+  // sauvegardes du playtest (ancienne sauvegarde unique et emplacements)
+  const saves = path.join(dir, 'saves');
+  if (fs.existsSync(saves)) for (const n of fs.readdirSync(saves)) if (/^(campaign|slot-\d+)\.json$/.test(n)) writeJson(path.join(saves, n), rewrite(readJson(path.join(saves, n), {}), map));
   writeJson(path.join(dir, projectFile), Object.assign(rewrite(meta, map), { layout: LAYOUT }));
   for (const d of ['img', 'audio']) removeEmpty(path.join(dir, d));
   return { moved: plan.length, backup: BACKUP };

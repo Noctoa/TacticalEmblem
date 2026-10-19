@@ -380,6 +380,12 @@
     ];
   }
 
+  /** Effets sonores par défaut (ressources/sons, générés par tools/build_default_sounds.py). */
+  function defaultSounds() {
+    const S = (n) => 'ressources/sons/' + n + '.wav';
+    return { cursor: S('curseur'), confirm: S('valider'), cancel: S('annuler'), hit: S('coup'), crit: S('critique'), miss: S('esquive'), death: S('defaite') };
+  }
+
   function emptyDatabase() {
     return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [] };
   }
@@ -399,7 +405,8 @@
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
-          effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true
+          effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true,
+          debugMenu: true // onglet Debug dans les paramètres du playtest (Échap)
         },
         // convoi (cargaison) : accessible au chef d'escouade, et aux unités adjacentes à lui
         convoy: { capacity: 100, items: [
@@ -411,7 +418,8 @@
         audio: {
           volume: 0.6,
           playerPhase: 'ressources/musiques/Winning_Road.mp3', allyPhase: 'ressources/musiques/Winning_Road.mp3', enemyPhase: 'ressources/musiques/Advance.mp3',
-          levelUp: 'ressources/jingles/Level_Up.mp3', gameOver: 'ressources/jingles/Game_Over.mp3', victory: ''
+          levelUp: 'ressources/jingles/Level_Up.mp3', gameOver: 'ressources/jingles/Game_Over.mp3', victory: '',
+          se: defaultSounds()
         }
       },
       db,
@@ -419,5 +427,5 @@
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, lobbyMap, eventChapter, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, eventChapter, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

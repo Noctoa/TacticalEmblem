@@ -43,6 +43,7 @@
     critMult: 3,
     maxLevel: 20,
     battleAnims: true,
+    debugMenu: true, // onglet Debug dans les paramètres du playtest
     colors: 'map' // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
   };
 
@@ -514,6 +515,7 @@
           const miracle = defensive.find(skill => skill.effect === 'miracle' && proc(skill, tgt));
           if (miracle) { hpAfter = 1; note(miracle, tgt); }
         }
+        if (opts.protect && opts.protect(tgt)) hpAfter = before; // debug : unité invincible
         tgt.hp = hpAfter; dmg = before - hpAfter;
         if (selected && selected.effect === 'sol') {
           heal = Math.min(src.stats.hp - src.hp, Math.floor(dmg * selected.amount / 100));

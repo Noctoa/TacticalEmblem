@@ -150,8 +150,10 @@ handle('project:open', async (e, dir) => {
 });
 
 handle('project:load', (e, dir) => payload(dir, io.loadProject(dir, ASSETS)));
-handle('campaign:load', (e, dir) => campaignIO.load(dir));
-handle('campaign:save', (e, dir, value) => { campaignIO.save(dir, value); return true; });
+handle('campaign:load', (e, dir, slot) => campaignIO.load(dir, slot));
+handle('campaign:save', (e, dir, value, slot) => campaignIO.save(dir, value, slot));
+handle('campaign:list', (e, dir) => campaignIO.list(dir));
+handle('campaign:remove', (e, dir, slot) => campaignIO.remove(dir, slot));
 handle('project:save', (e, dir, project) => { io.saveProject(dir, project); return true; });
 handle('project:openFolder', (e, dir) => shell.openPath(dir));
 

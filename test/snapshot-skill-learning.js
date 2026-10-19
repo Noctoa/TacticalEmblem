@@ -121,7 +121,7 @@ module.exports = (editor, openPlaytest) => {
       await click(wc, '#end button', 'Chapitre suivant'); await until(wc, `PlaytestState.chapter.id === 'ch_2' && !PlaytestState.busy`);
       assert.deepEqual(await js(wc, `${heroCode}.learnedSkills`), learned); assert.deepEqual(await js(wc, `${heroCode}.equippedSkills`), equipped);
       await js(wc, 'PlaytestState.cursor = { x: 0, y: 0 }'); await key('Z');
-      await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Sauvegarder').action()`); await until(wc, '!PlaytestState.busy'); win.close();
+      await js(wc, `(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`); await until(wc, '!PlaytestState.busy'); win.close();
       const resumed = openPlaytest(dir, 'ch_1'), rwc = resumed.webContents; watch(rwc);
       await new Promise(resolve => rwc.once('did-finish-load', resolve)); await until(rwc, `!!document.querySelector('.choice-list')`);
       await click(rwc, '.choice-list button', 'Continuer'); await until(rwc, '!!PlaytestState.map && !PlaytestState.busy');

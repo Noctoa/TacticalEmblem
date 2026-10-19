@@ -170,9 +170,9 @@ module.exports = (editor, openPlaytest) => {
       assert.deepEqual(await checkHero(gwc), expected);
       await gj('PlaytestState.cursor = { x: 0, y: 0 }'); await key('Z');
       await untilGame(gwc, `PlaytestState.ui === 'mapmenu'`);
-      await gj(`PlaytestState.menu.items.find(i => i.label === 'Sauvegarder').action()`);
+      await gj(`(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`);
       await untilGame(gwc, '!PlaytestState.busy');
-      assert.ok(fs.existsSync(path.join(dir, 'saves', 'campaign.json'))); game.close();
+      assert.ok(fs.existsSync(path.join(dir, 'saves', 'slot-1.json'))); game.close();
       const resumed = await startGame('Continuer');
       assert.equal(await resumed.webContents.executeJavaScript('PlaytestState.chapter.id', true), 'ch_2');
       assert.deepEqual(await checkHero(resumed.webContents), expected); resumed.close();

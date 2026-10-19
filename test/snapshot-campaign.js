@@ -75,7 +75,7 @@ module.exports = (editor, openPlaytest) => {
         // Menu de map, sauvegarde réelle via IPC.
         await js(wc, `PlaytestState.cursor = { x: 0, y: 0 }`); await key(wc, 'Z');
         await until(wc, `PlaytestState.ui === 'mapmenu'`);
-        await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Sauvegarder').action()`);
+        await js(wc, `(() => { if (PlaytestState.menu) { document.querySelector('#menu').classList.add('hidden'); PlaytestState.menu = null; PlaytestState.ui = 'idle'; } return PlaytestDebug.saveSlot(1); })()`);
         await until(wc, `!PlaytestState.busy`);
         assert.equal(saves.load(dir).chapterId, 'ch_2');
         // Recommencer restaure aussi le convoi et les classes, sans repartir du chapitre 1.

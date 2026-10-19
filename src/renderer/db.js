@@ -1424,7 +1424,24 @@
         { key: 'audio.levelUp', label: 'Montée de niveau', type: 'select', empty: '— aucun —', options: () => audioOpts('me') },
         { key: 'audio.victory', label: 'Victoire', type: 'select', empty: '— aucun —', options: () => audioOpts('me') },
         { key: 'audio.gameOver', label: 'Game over', type: 'select', empty: '— aucun —', options: () => audioOpts('me') }] },
-      { key: 'audio.volume', label: 'Volume (0 à 1)', type: 'number', min: 0, max: 1, step: 0.05 }
+      { key: 'audio.volume', label: 'Volume général du jeu (0 à 1) — le joueur règle ensuite musique, jingles et effets dans les paramètres (Échap)', type: 'number', min: 0, max: 1, step: 0.05 },
+      { type: 'heading', label: 'Effets sonores (ressources/sons)' },
+      { type: 'custom', render: (meta) => {
+        meta.audio = meta.audio || {};
+        const se = meta.audio.se = meta.audio.se || {};
+        const opts = audioOpts('se');
+        const box = h('div', { class: 'form' });
+        const defaults = Defaults.defaultSounds();
+        const missing = !Object.values(se).some(Boolean) && Object.values(defaults).every(p => opts.some(o => o.value === p));
+        if (missing) box.append(h('button', { class: 'small', onclick: () => { Object.assign(se, defaults); change(); renderBody(); } }, 'Utiliser les sons par défaut'));
+        else if (!opts.length) box.append(h('p', { class: 'form-info' }, "Aucun son dans ressources/sons. Ressources › « Ajouter les ressources par défaut » en ajoute (.wav, .mp3, .ogg)."));
+        const rows = [];
+        for (let i = 0; i < Music.SE_KEYS.length; i += 4) rows.push({ type: 'row', fields: Music.SE_KEYS.slice(i, i + 4).map(([k, label]) => ({ key: k, label, type: 'select', empty: '— aucun —', options: () => opts })) });
+        box.append(UI.form(rows, se, { onChange: () => change() }));
+        return box;
+      } },
+      { type: 'heading', label: 'Playtest' },
+      { key: 'settings.debugMenu', label: 'Onglet Debug dans les paramètres en jeu (Échap) : victoire immédiate, or, niveaux, invincibilité…', type: 'checkbox' }
     ], p.meta, { onChange: (k) => { change(); if (k === 'name') document.title = p.meta.name + ' — Tactics Forge'; } }));
     body.append(pane);
   }

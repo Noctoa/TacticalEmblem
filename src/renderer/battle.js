@@ -346,6 +346,7 @@
   }
 
   function outcome(sc, atk, def, s) {
+    Music.se(s.hit ? (s.crit ? 'crit' : 'hit') : 'miss');
     if (s.hit) {
       def.flash = performance.now() + 110;
       sc.shake = s.crit ? 18 : (s.dmg ? 7 : 2);

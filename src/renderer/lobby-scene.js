@@ -187,6 +187,7 @@
       api.hideMenu();
       S.panel = { title, build, tab: S.panel && S.panel.title === title ? S.panel.tab : null };
       G.ui = 'lobbypanel';
+      api.Music.se('confirm');
       renderPanel();
     }
     function renderPanel(focusIndex) {
@@ -206,6 +207,7 @@
       renderPanel(Math.max(0, items.indexOf(document.activeElement)));
     }
     function closePanel(silent) {
+      if (!silent) api.Music.se('cancel');
       S.panel = null;
       panelEl().classList.add('hidden'); panelEl().innerHTML = '';
       if (!silent) { G.ui = 'idle'; refreshHud(); }
@@ -325,24 +327,10 @@
       api.showMenu([
         { label: 'Chapitres', sub: countNew(all, 'story').trim() + countNew(all, 'event').trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
-        { label: 'Sauvegarder', sub: 'au camp', action: () => { api.hideMenu(); G.ui = 'idle'; save(); } },
-        { label: 'Musique', sub: api.Music.muted ? 'coupée' : 'activée', action: () => { api.Music.toggleMute(); api.hideMenu(); G.ui = 'idle'; } },
+        { label: 'Paramètres', sub: 'sauvegarde, son… (Échap)', action: () => { api.hideMenu(); G.ui = 'idle'; api.openSettings(); } },
         { label: 'Quitter le test', action: () => window.close() }
       ].filter(Boolean), S.hero, 'lobbymenu');
     }
-    async function save() {
-      G.busy = true;
-      try {
-        const old = await tf.loadCampaign(api.dir);
-        if (old && !(await UI.confirm('Remplacer la sauvegarde de campagne par celle du camp ?'))) return;
-        Campaign.commit(G.campaign, G.units);
-        G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
-        await tf.saveCampaign(api.dir, G.checkpoint);
-        UI.toast('Partie sauvegardée au camp — ' + goldLabel());
-      } catch (e) { await UI.alert('Sauvegarde impossible', e.message); }
-      finally { G.busy = false; }
-    }
-
     // ------------------------------------------------------------------
     // HUD, repères, entrées
     // ------------------------------------------------------------------
@@ -362,7 +350,7 @@
       if (G.mode !== 'lobby') return;
       const t = target();
       const what = !t ? '' : t.kind === 'npc' ? `Z : parler à ${t.unit.name}` : t.kind === 'board' ? `Z : ${S.cfg.board.label || 'chapitres'}` : `Z : ${S.cfg.shop.name || 'boutique'}`;
-      $('#help').textContent = (what ? what + ' · ' : '') + 'Flèches / clic : se déplacer · X : menu du camp · M : musique';
+      $('#help').textContent = (what ? what + ' · ' : '') + 'Flèches / clic : se déplacer · X : menu du camp · Échap : paramètres · M : son';
     }
 
     /** Repères dessinés par-dessus la map et les unités. */
@@ -403,8 +391,8 @@
         const items = [...panelEl().querySelectorAll('.lp-focus:not([disabled])')];
         const i = items.indexOf(document.activeElement);
         if (['x', 'X', 'Escape', 'Backspace'].includes(k)) closePanel();
-        else if (k === 'ArrowDown' || k === 'ArrowRight' || k === 'Tab') items[(i + 1) % items.length].focus();
-        else if (k === 'ArrowUp' || k === 'ArrowLeft') items[(i - 1 + items.length) % items.length].focus();
+        else if (k === 'ArrowDown' || k === 'ArrowRight' || k === 'Tab') { items[(i + 1) % items.length].focus(); api.Music.se('cursor'); }
+        else if (k === 'ArrowUp' || k === 'ArrowLeft') { items[(i - 1 + items.length) % items.length].focus(); api.Music.se('cursor'); }
         else if (['z', 'Z', 'Enter', ' '].includes(k) && document.activeElement && document.activeElement.tagName !== 'SELECT') document.activeElement.click();
         return true;
       }
@@ -418,7 +406,7 @@
         return true;
       }
       if (['z', 'Z', 'Enter', ' '].includes(k)) { e.preventDefault(); if (!G.busy && !S.moving) interact(); return true; }
-      if (['x', 'X', 'Escape', 'Backspace'].includes(k)) { e.preventDefault(); if (!G.busy) openMenu(); return true; }
+      if (['x', 'X', 'Backspace'].includes(k)) { e.preventDefault(); if (!G.busy) openMenu(); return true; } // Échap : paramètres (moteur)
       return false;
     }
     function keyup(e) { S.held = S.held.filter(k => k !== e.key); }
