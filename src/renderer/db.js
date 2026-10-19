@@ -23,7 +23,16 @@
   /** Champ portrait : choix parmi img/faces + import. */
   function faceField(u) {
     const prev = h('div', { class: 'img-prev' });
-    const show = () => { prev.innerHTML = ''; if (u.portrait) prev.append(h('img', { src: Render.imageUrl(Editor.baseUrl(), u.portrait) })); else prev.append(h('span', { class: 'muted' }, 'Aucun')); };
+    const show = () => {
+      prev.innerHTML = '';
+      if (!u.portrait) return prev.append(h('span', { class: 'muted' }, 'Aucun'));
+      const want = u.portrait;
+      Render.loadImage(Editor.baseUrl(), want).then(img => {
+        if (u.portrait !== want) return;
+        prev.innerHTML = '';
+        prev.append(Faces.element(img, Render.imageUrl(Editor.baseUrl(), want), 'bust') || h('span', { class: 'muted' }, '?'));
+      });
+    };
     const sel = h('select', {}, [h('option', { value: '' }, '— aucun —')].concat(res().faces.map(f => h('option', { value: f }, f.replace('img/faces/', '')))));
     if (u.portrait && !res().faces.includes(u.portrait)) sel.append(h('option', { value: u.portrait }, u.portrait));
     sel.value = u.portrait || '';
@@ -944,6 +953,26 @@
     if (resSel.kind === 'battlers') return previewBattler(pane, r.battlers[resSel.key], usage);
     pane.append(h('h2', {}, resSel.key.split('/').pop(), h('span', { class: 'id' }, resSel.key)),
       h('div', { class: 'res-stage' }, h('img', { src: Render.imageUrl(Editor.baseUrl(), resSel.key), class: 'res-img' + (resSel.kind === 'faces' ? ' big' : '') })), usage);
+    if (resSel.kind === 'faces') previewFaceset(pane, resSel.key);
+  }
+
+  /** Face set (128×112) : portrait animé (clignement + bouche) et mini-portrait. */
+  function previewFaceset(pane, key) {
+    const my = animToken;
+    Render.loadImage(Editor.baseUrl(), key).then(img => {
+      if (my !== animToken || !Faces.isFaceset(img)) {
+        if (img && my === animToken) pane.append(h('p', { class: 'form-info' }, `Portrait simple (${img.naturalWidth}×${img.naturalHeight}). Une planche de 128×112 au format face set des Fire Emblem GBA est animée : clignement des yeux et bouche qui bouge pendant les dialogues.`));
+        return;
+      }
+      const main = Faces.element(img, '', 'main'), mini = Faces.element(img, '', 'mini');
+      const S = Faces.sheetOf(img);
+      const talkBtn = h('button', { class: 'small', onclick: () => { main.face.talking = !main.face.talking; talkBtn.textContent = main.face.talking ? 'Arrêter' : 'Faire parler'; } }, 'Faire parler');
+      const smileBtn = h('button', { class: 'small', onclick: () => { main.face.smile = !main.face.smile; smileBtn.classList.toggle('on', main.face.smile); } }, 'Sourire');
+      pane.append(h('div', { class: 'form-heading' }, 'Face set'),
+        h('div', { class: 'faceset-demo' }, h('div', { class: 'fs-main' }, main), h('div', { class: 'fs-mini' }, mini)),
+        h('div', { style: { display: 'flex', gap: '8px' } }, talkBtn, smileBtn),
+        h('p', { class: 'form-info' }, `Bouche en ${S.mouth.join(',')} · yeux en ${S.eyes.join(',')} (trouvés automatiquement). Portrait 96×80 dans les dialogues, mini-portrait 32×32 dans les fenêtres d'unité.`));
+    });
   }
 
   async function installDefaults() {

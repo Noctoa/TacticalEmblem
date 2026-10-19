@@ -197,3 +197,8 @@
 .form-info a { color: var(--gold-2); }
 .token.ally { background: #22a35a; }
 .placement .turn.ally { color: #5fe39a; }
+
+.faceset-demo { display: flex; gap: 18px; align-items: flex-end; margin: 8px 0 10px; }
+.faceset-demo .fs-main canvas { width: 288px; height: 240px; background: linear-gradient(160deg, #3c5a9a, #1d2a4a); border-radius: 8px; }
+.faceset-demo .fs-mini canvas { width: 96px; height: 96px; background: #2a3550; border-radius: 6px; }
+.img-prev canvas.faceset { width: 100%; height: 100%; }

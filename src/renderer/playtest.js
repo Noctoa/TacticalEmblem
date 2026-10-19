@@ -517,12 +517,17 @@
   // =====================================================================
   // Fenêtres d'information
   // =====================================================================
-  function portraitEl(u) {
+  /** mode : 'mini' (fenêtres), 'bust' (cases carrées), 'main' (dialogues). */
+  function portraitEl(u, mode) {
     const c = R.byId(G.db.units, u.sourceId);
     const src = (c && c.portrait) || u.portrait;
     const col = (u.team !== 'enemy' && ((c && c.color) || u.color)) || teamColor(u);
     const el = h('div', { class: 'portrait', style: { background: `linear-gradient(160deg, ${shade(col, 1.2)}, ${shade(col, 0.6)})` } });
-    if (src) el.append(h('img', { src: Render.imageUrl(G.baseUrl, src) })); else el.textContent = u.name.slice(0, 1);
+    if (src) {
+      const face = Faces.element(Render.readyImage(G.baseUrl, src), Render.imageUrl(G.baseUrl, src), mode || 'mini');
+      if (face.face) el.classList.add('has-faceset', 'fs-' + (mode || 'mini'));
+      el.append(face);
+    } else el.textContent = u.name.slice(0, 1);
     return el;
   }
   function hpBar(u, hp) {
@@ -1397,7 +1402,8 @@
     document.body.classList.add('in-epilogue');
     const face = (u, small) => {
       const d = h('div', { class: 'ep-face' + (small ? ' small' : '') });
-      if (u.portrait) d.append(h('img', { src: Render.imageUrl(G.baseUrl, u.portrait) })); else d.textContent = u.name.slice(0, 1);
+      if (u.portrait) d.append(Faces.element(Render.readyImage(G.baseUrl, u.portrait), Render.imageUrl(G.baseUrl, u.portrait), small ? 'mini' : 'bust'));
+      else d.textContent = u.name.slice(0, 1);
       return d;
     };
     const candidatesOf = (u) => R.partnersOf({ sourceId: u.id }, G.sup)
@@ -1515,16 +1521,19 @@
         const ln = lines[i];
         const u = ln.who ? speakerUnit(ln.who) : null;
         const pEl = el.querySelector('.dlg-portrait'); pEl.innerHTML = '';
-        if (ln.who) pEl.append(u ? portraitEl(Object.assign({ team: 'player' }, u)) : h('div', { class: 'portrait', style: { background: '#444' } }, ln.who.slice(0, 1)));
+        if (ln.who) pEl.append(u ? portraitEl(Object.assign({ team: 'player' }, u), 'main') : h('div', { class: 'portrait', style: { background: '#444' } }, ln.who.slice(0, 1)));
+        const faceCv = pEl.querySelector('canvas.faceset');
+        const talk = (on) => { if (faceCv) faceCv.face.talking = on; };
         el.querySelector('.dlg-name').textContent = ln.who;
         full = ln.text; let n = 0;
         textEl.textContent = '';
         clearInterval(typing);
-        typing = setInterval(() => { n += G.fast ? 3 : 1; textEl.textContent = full.slice(0, n); if (n >= full.length) { clearInterval(typing); typing = null; } }, 18);
+        talk(true);
+        typing = setInterval(() => { n += G.fast ? 3 : 1; textEl.textContent = full.slice(0, n); if (n >= full.length) { clearInterval(typing); typing = null; talk(false); } }, 18);
       };
       G.dialogue = {
         next: () => {
-          if (typing) { clearInterval(typing); typing = null; textEl.textContent = full; return; }
+          if (typing) { clearInterval(typing); typing = null; textEl.textContent = full; const f = el.querySelector('.dlg-portrait canvas.faceset'); if (f) f.face.talking = false; return; }
           i++; show();
         },
         skip: finish

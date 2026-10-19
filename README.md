@@ -153,11 +153,26 @@ Chaque nouveau projet reçoit le contenu de `assets/default/` :
 |---|---|
 | `img/characters` | Eliwood (Seigneur, Chevalier-Seigneur), Lyn (Seigneur, Lame-Seigneur), Hector (Seigneur, Grand Seigneur), Brigand |
 | `img/battlers` | Eliwood, Lyn (épée + arc, flèche en projectile), Hector (hache + hachette lancée), Brigand |
-| `img/faces` | bustes tirés des animations de combat |
+| `img/faces` | Eliwood en face set (planche FE GBA animée), les autres en bustes tirés des animations de combat |
 | `img/tilesets` | Plaines (dont buisson et fourré) |
 | `img/characters` + `img/battlers` | Cloud (allié, sprites propres à l'unité) |
 | `audio/bgm` | Winning Road (Roy's Hope), Advance |
 | `audio/me` | Level Up, Game Over |
+
+### Portraits au format face set
+
+Un portrait de 128×112 px rangé comme dans les Fire Emblem GBA est reconnu tout seul et animé :
+
+```
+(0,0)   portrait 96×80                       (96,16)  mini-portrait 32×32
+(96,48) yeux mi-clos 32×16                   (96,64)  yeux fermés
+(0,80) (32,80) (64,80)  bouche ouverte / entrouverte / fermée   (96,80) sourire fermé
+(0,96) (32,96) (64,96)  sourire ouvert / entrouvert / fermé
+```
+
+La couleur du pixel en haut à gauche sert de fond transparent. La place des yeux et de la bouche sur le portrait est retrouvée automatiquement (elle s'affiche dans Ressources). En jeu : grand portrait qui cligne des yeux et parle pendant que le texte défile dans les dialogues, mini-portrait dans la fenêtre d'unité, buste dans l'épilogue. Les portraits d'une autre taille restent affichés tels quels.
+
+Un projet existant garde son ancien `img/faces/Eliwood.png` (l'ajout des ressources par défaut n'écrase rien) : remplace le fichier à la main pour avoir le face set.
 
 Pour un projet créé avant cette version (dossier `img/` vide) : Base de données › Ressources › **Ajouter les ressources par défaut** copie les fichiers sans rien écraser et relie les classes de seigneurs et le Brigand à leurs sprites.
 

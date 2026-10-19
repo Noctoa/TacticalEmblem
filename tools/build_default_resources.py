@@ -10,7 +10,7 @@ de tools/sprite-sources/ :
 Usage : python3 tools/build_default_resources.py [--preview dossier]
 Dépendances : Pillow, numpy
 """
-import json, os, sys, hashlib
+import json, shutil, os, sys, hashlib
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -436,7 +436,12 @@ def extract_battler(name, spec):
     if spec['facing'] == 'left':
         face = face.transpose(Image.FLIP_LEFT_RIGHT)  # regarde vers la droite dans la boîte de dialogue
     os.makedirs(os.path.join(OUT, 'img', 'faces'), exist_ok=True)
-    face.save(os.path.join(OUT, 'img', 'faces', name + '.png'))
+    # un vrai face set (planche 128x112 façon FE GBA) fourni dans sprite-sources remplace le buste découpé
+    fs = os.path.join(SRC, name.lower() + '_faceset.png')
+    if os.path.exists(fs):
+        shutil.copyfile(fs, os.path.join(OUT, 'img', 'faces', name + '.png'))
+    else:
+        face.save(os.path.join(OUT, 'img', 'faces', name + '.png'))
     print(f'  {name} : {len(frames)} frames -> {len(tiles)} uniques, cellule {cw}x{ch}, ' + ', '.join(f'{k} {len(v["frames"])}' for k, v in anims.items()))
     if PREVIEW:
         preview(name, meta, sheet)
