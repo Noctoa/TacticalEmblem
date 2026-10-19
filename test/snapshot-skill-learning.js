@@ -34,6 +34,7 @@ module.exports = (editor, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-learning-ui-')), 'Jeu');
       const p = io.createProject(dir, 'Apprentissage des compétences', 'sample', path.join(__dirname, '..', 'assets'));
+      p.meta.lobby.enabled = false; io.saveProject(dir, p); // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       const hero = p.db.units[0], cls = p.db.classes.find(c => c.id === hero.classId);
       hero.level = 1; hero.personalSkill = 'skill_esquive';
       hero.learnedSkills = ['skill_offensive', 'skill_garde', 'skill_presence', 'skill_regeneration']; hero.equippedSkills = hero.learnedSkills.slice();

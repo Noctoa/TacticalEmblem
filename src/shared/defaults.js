@@ -34,8 +34,17 @@
     ];
   }
 
+  // prix en boutique (0 ou absent : ne se vend pas) ; la revente rapporte la moitié, au prorata des utilisations
+  const PRICES = {
+    w_iron_sword: 460, w_slim_sword: 480, w_rapier: 0, w_steel_sword: 600, w_killing_edge: 1300, w_wind_sword: 0,
+    w_iron_lance: 360, w_javelin: 400, w_horseslayer: 1040, w_iron_axe: 270, w_hand_axe: 300, w_iron_bow: 540,
+    w_fire: 560, w_lightning: 630, w_flux: 900, w_heal: 600, w_mend: 1000,
+    i_vulnerary: 300, i_elixir: 3000, i_energy_ring: 8000, i_speedwing: 8000, i_master_seal: 2500
+  };
+  const priced = (list) => list.map(e => Object.assign(e, { price: PRICES[e.id] || 0 }));
+
   function weapons() {
-    return [
+    return priced([
       { id: 'w_iron_sword', name: 'Épée de fer', type: 'sword', might: 5, hit: 90, crit: 0, weight: 5, minRange: 1, maxRange: 1, uses: 46, effective: [], heal: 0 },
       { id: 'w_slim_sword', name: 'Épée fine', type: 'sword', might: 3, hit: 100, crit: 5, weight: 2, minRange: 1, maxRange: 1, uses: 30, effective: [], heal: 0 },
       { id: 'w_rapier', name: 'Rapière', type: 'sword', might: 7, hit: 95, crit: 10, weight: 5, minRange: 1, maxRange: 1, uses: 40, effective: ['horse', 'armor'], heal: 0 },
@@ -53,17 +62,17 @@
       { id: 'w_flux', name: 'Flux', type: 'dark', might: 7, hit: 80, crit: 0, weight: 8, minRange: 1, maxRange: 2, uses: 45, effective: [], heal: 0 },
       { id: 'w_heal', name: 'Soin', type: 'staff', might: 0, hit: 100, crit: 0, weight: 2, minRange: 1, maxRange: 1, uses: 30, effective: [], heal: 10 },
       { id: 'w_mend', name: 'Guérison', type: 'staff', might: 0, hit: 100, crit: 0, weight: 4, minRange: 1, maxRange: 1, uses: 20, effective: [], heal: 20 }
-    ];
+    ]);
   }
 
   function items() {
-    return [
+    return priced([
       { id: 'i_vulnerary', name: 'Potion', effect: 'heal', amount: 10, stat: 'hp', uses: 3 },
       { id: 'i_elixir', name: 'Élixir', effect: 'heal', amount: 99, stat: 'hp', uses: 1 },
       { id: 'i_energy_ring', name: 'Bague de force', effect: 'boost', amount: 2, stat: 'str', uses: 1 },
       { id: 'i_speedwing', name: 'Aile vive', effect: 'boost', amount: 2, stat: 'spd', uses: 1 },
       { id: 'i_master_seal', name: 'Sceau de promotion', effect: 'promotion', uses: 1 }
-    ];
+    ]);
   }
 
   // ressources rangées par personnage : ressources/personnages/<Perso>/map_<classe> | combat | portrait.png
@@ -215,6 +224,7 @@
       id: 'ch_1', name: 'Prologue — Les brigands du fort', mapId: 'map_1',
       objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
       next: '', final: true, // dernier chapitre : la victoire ouvre l'épilogue
+      kind: 'story', gold: 1000, // or gagné à la première victoire (lobby)
       players: [
         { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
         { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
@@ -229,10 +239,10 @@
         brig('e2', 8, 9, 2),
         brig('e3', 13, 5, 1, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }),
         brig('e4', 14, 6, 2, { ai: 'range' }),
-        brig('e5', 15, 8, 2, { ai: 'range', inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }] }),
+        brig('e5', 15, 8, 2, { ai: 'range', inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], gold: 100 }),
         brig('e6', 17, 3, 3, { ai: 'stationary' }),
         { id: 'e7', name: 'Batta', classId: 'brigand', level: 5, x: 18, y: 2, ai: 'stationary', appearTurn: 0, isBoss: true,
-          inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 6, str: 2, def: 2 } },
+          inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 6, str: 2, def: 2 }, gold: 300 },
         brig('e8', 19, 12, 1, { appearTurn: 3 }),
         brig('e9', 18, 11, 2, { appearTurn: 3, inventory: [{ id: 'w_hand_axe' }] })
       ],
@@ -255,6 +265,77 @@
           "Hector: Déjà fini ? J'espérais mieux de ce Batta.\n" +
           "Lyn: Ne te plains pas, Hector. Personne n'est blessé." }
       ]
+    };
+  }
+
+  // ------------------------------------------------------------------
+  // Lobby d'exemple : le camp entre deux chapitres
+  // ------------------------------------------------------------------
+  const LOBBY_ASCII = [
+    'TTTTT.TT..TTTT',
+    'T,.....=.....T',
+    'T.V....=..F..T',
+    '..,....=......',
+    '..b..=====.b..',
+    '.....=...=....',
+    'T.s..=.,.=..s.',
+    'TT...=====..TT',
+    'TTT....=...TTT',
+    'TTTT...=..TTTT'
+  ];
+  function lobbyMap() {
+    const m = sampleMap();
+    const h = LOBBY_ASCII.length, w = LOBBY_ASCII[0].length;
+    const data = [];
+    for (const row of LOBBY_ASCII) {
+      if (row.length !== w) throw new Error('Ligne de map invalide : ' + row);
+      for (const ch of row) data.push((LEGEND[ch] || 0) + 1);
+    }
+    return Object.assign(m, { id: 'map_camp', name: 'Camp de Varenne', width: w, height: h,
+      layers: [{ id: 'l1', name: 'Sol', visible: true, data }, { id: 'l2', name: 'Décor', visible: true, data: new Array(w * h).fill(0) }],
+      terrain: new Array(w * h).fill(''), objects: [] });
+  }
+  function lobby() {
+    return {
+      enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_eliwood', startGold: 500, music: '',
+      start: { x: 7, y: 8 },
+      board: { x: 10, y: 2, label: 'Table des chapitres' },
+      shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal'] },
+      spots: [
+        { unitId: 'c_lyn', x: 4, y: 5, after: '' },
+        { unitId: 'c_hector', x: 11, y: 5, after: '' },
+        { unitId: 'c_cloud', x: 12, y: 8, after: 'ch_1' } // rejoint le camp après le prologue
+      ]
+    };
+  }
+  // conversations du lobby : avec un personnage présent, débloquées par la progression
+  function talks() {
+    return [
+      { id: 't_lyn_1', name: 'Les guetteurs', unitId: 'c_lyn', after: '', alive: [], points: 10, once: true, script:
+        "Lyn: Eliwood. Le fort des brigands est juste au nord de la rivière.\nEliwood: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
+      { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
+        "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nEliwood: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
+      { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'ch_1', alive: [], points: 15, once: true, script:
+        "Lyn: Tu t'es bien battu, au fort.\nEliwood: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
+      { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'ch_1', alive: [], points: 0, once: true, script:
+        "Cloud: … Ton camp est calme.\nEliwood: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
+    ];
+  }
+  /** Chapitre évènementiel d'exemple : ouvert après le prologue, rejouable, rapporte de l'or à chaque victoire. */
+  function eventChapter() {
+    const brig = (id, x, y, level, extra) => Object.assign({ id, name: 'Pillard', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
+    return {
+      id: 'ch_ev_1', name: 'Évènement — Pillards au gué', mapId: 'map_1', kind: 'event',
+      unlock: { after: 'ch_1', alive: [], from: '', to: '' }, gold: 400, goldEachClear: true, replay: true,
+      objective: { type: 'rout', turns: 10, x: 0, y: 0 }, next: '', final: false,
+      players: [
+        { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
+        { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
+        { id: 'p3', unitId: 'c_hector', x: 6, y: 13 }
+      ],
+      allies: [],
+      enemies: [brig('ev_e1', 8, 9, 2, { gold: 100 }), brig('ev_e2', 10, 6, 2), brig('ev_e3', 13, 6, 3, { ai: 'range', gold: 100 })],
+      events: [{ id: 'ev1', trigger: { type: 'start' }, once: true, script: "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nEliwood: Alors chassons-les avant qu'ils reviennent en nombre." }]
     };
   }
 
@@ -300,18 +381,21 @@
   }
 
   function emptyDatabase() {
-    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [] };
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [] };
   }
 
   function sampleProject(name) {
     const db = emptyDatabase();
     db.units = characters();
     db.tilesets = [sampleTileset()];
-    db.chapters = [sampleChapter()];
+    db.chapters = [sampleChapter(), eventChapter()];
     db.supports = supports();
+    db.talks = talks();
     return {
       meta: {
         format: 'tactics-forge', version: 1, name: name || 'Mon Tactical RPG',
+        // lobby : le jeu commence au camp, on y choisit les chapitres, on achète, on parle aux alliés
+        lobby: lobby(),
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
@@ -331,9 +415,9 @@
         }
       },
       db,
-      maps: [sampleMap()]
+      maps: [sampleMap(), lobbyMap()]
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, lobbyMap, eventChapter, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

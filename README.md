@@ -83,6 +83,15 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Musique** — `ressources/musiques` (musiques en boucle) et `ressources/jingles`. Système › Musique : une piste par phase (joueur, alliée, ennemie) et des jingles pour la montée de niveau, la victoire et le game over. Touche M en jeu pour couper.
 
+**Lobby (le camp)** — Comme dans Fire Emblem Heroes, le jeu commence dans un lobby et y revient après chaque chapitre. C'est une petite map explorable (faite dans l'éditeur comme une map de chapitre) où l'on déplace le héros au clavier (flèches) ou à la souris (clic : il y va, et interagit s'il s'agit d'un personnage ou d'un bâtiment) :
+- **Table des chapitres** : onglet *Histoire* (le chapitre de départ, puis le « Chapitre suivant » de chaque chapitre terminé) et onglet *Évènements* (chapitres optionnels). Les chapitres terminés se rejouent, sauf si on décoche *Rejouable*.
+- **Boutique** : achat (rangé dans le convoi ou l'inventaire d'un personnage présent) et revente à moitié prix, au prorata des utilisations restantes. Prix réglés sur chaque arme et objet ; `0` = ne se vend pas.
+- **Personnages présents** : ceux que l'on place dans le lobby, éventuellement à partir d'un chapitre (Cloud rejoint le camp après le prologue). Un « ! » au-dessus d'eux signale une **conversation de lobby** disponible : Z (ou un clic) pour la jouer. Elle peut faire gagner de l'affinité avec le héros.
+- **Or** : récompense de chapitre (la première victoire, ou à chaque victoire), bourse des ennemis vaincus (réglée sur le placement de l'ennemi), revente.
+- X (ou clic droit) : menu du camp — chapitres, boutique, sauvegarde au camp, musique. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
+
+Réglages : Base de données › **Lobby** (map, héros, départ, table, boutique et articles, personnages présents — placement en cliquant sur l'aperçu de la map —, or de départ, musique, bouton *Tester le lobby*), › **Conversations** (personnage, chapitre à terminer avant, personnages vivants requis, affinité gagnée, une seule fois, dialogue « Nom: texte »), › **Chapitres** (type Histoire / Évènement, or à la victoire, rejouable, chapitre à terminer avant, personnages vivants requis, **dates réelles** de début et de fin — un évènement daté s'affiche « Bientôt » avant sa date). Sans lobby (case décochée), les chapitres s'enchaînent comme avant. Le bouton *Tester* d'un chapitre propose aussi de le lancer directement.
+
 ## Affinités (soutiens) et épilogue
 
 **Base de données › Affinités** — Une fiche par paire de personnages : points au départ, rang maximum (A ou S), attaque spéciale, attaque duo, une conversation par rang et le texte de fin du couple. Quatre paires sont fournies : Eliwood ♥ Lyn, Eliwood ♥ Hector, Hector ♥ Lyn, Lyn ♥ Cloud.
@@ -129,9 +138,9 @@ Les données d'un côté, les ressources de l'autre, rangées **par personnage**
 
 ```
 MonJeu/
-  game.tfproj              nom, réglages, chapitre de départ, ordre des maps
+  game.tfproj              nom, réglages, chapitre de départ, ordre des maps, lobby
   data/
-    units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json
+    units.json classes.json skills.json weapons.json items.json terrains.json tilesets.json chapters.json supports.json talks.json
     maps/map_1.json        une map par fichier (calques = gids façon Tiled)
   ressources/
     LISEZMOI.txt           rappel de l'organisation
@@ -261,6 +270,8 @@ preload.js                 pont sécurisé vers le renderer
 src/main/tiled.js          import Tiled
 src/main/project-io.js     lecture / écriture des projets
 src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
+src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
+src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
 src/shared/palettes.js     couleurs d'équipe (détection, recoloration, réglage origine / équipe) — testées dans test/palettes.test.js
 src/shared/rules.js        règles du jeu (combat, déplacement, IA, exp) — testées dans test/run.js
 src/shared/defaults.js     base de données par défaut + chapitre d'exemple
@@ -268,6 +279,7 @@ src/renderer/              éditeur (editor.js, db.js), playtest (playtest.js), 
 tools/                     conversion des planches de sprites
 test/snapshot.js           test de bout en bout : TF_SNAPSHOT=dossier npm start
 test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAPSHOT_SCRIPT=test/snapshot-supports.js
+test/snapshot-lobby.js     lobby de bout en bout (camp, conversation, boutique, chapitre, retour) ; test/snapshot-lobby-editor.js : son édition
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 

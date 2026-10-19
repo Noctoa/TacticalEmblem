@@ -22,6 +22,7 @@ module.exports = (win, openPlaytest) => {
       win.setSize(1440, 900);
       let dir = process.env.TF_OLD_PROJECT;
       if (!dir) { dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-res-')), 'Jeu'); io.createProject(dir, 'Test', 'sample', ROOT + '/assets'); }
+      { const q = io.loadProject(dir, ROOT + '/assets'); if (q.meta.lobby) { q.meta.lobby.enabled = false; io.saveProject(dir, q); } } // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       const ejs = c => win.webContents.executeJavaScript(c, true);
       const eshot = async n => { win.show(); win.focus(); win.webContents.invalidate(); await ejs('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))'); await wait(300); fs.writeFileSync(path.join(out, n + '.png'), (await win.webContents.capturePage()).toPNG()); };
       const click = (sel, text) => ejs(`(() => { const b = [...document.querySelectorAll(${JSON.stringify(sel)})].find(e => e.textContent.trim() === ${JSON.stringify(text)}); if (b) b.click(); return !!b; })()`);

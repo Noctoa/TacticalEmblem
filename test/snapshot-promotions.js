@@ -34,6 +34,7 @@ module.exports = (editor, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-promotions-ui-')), 'Jeu');
       const p = io.createProject(dir, 'Promotions à embranchements', 'sample', path.join(__dirname, '..', 'assets'));
+      p.meta.lobby.enabled = false; io.saveProject(dir, p); // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       p.db.supports = [];
       const hero = p.db.units[0], cls = p.db.classes.find(c => c.id === hero.classId), ch = p.db.chapters[0];
       hero.level = 10; hero.personalSkill = 'skill_precision'; hero.learnedSkills = ['skill_sol']; hero.equippedSkills = ['skill_sol'];

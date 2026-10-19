@@ -86,7 +86,7 @@ test('création / sauvegarde / rechargement', () => {
   const dir = path.join(tmp, 'Proj');
   const p = io.createProject(dir, 'Test', 'sample', path.join(__dirname, '..', 'assets'));
   assert.strictEqual(p.meta.name, 'Test');
-  assert.strictEqual(p.maps.length, 1);
+  assert.deepStrictEqual(p.maps.map(m => m.id), ['map_1', 'map_camp']); // chapitre + lobby
   // arborescence façon RPG Maker + ressources par défaut
   for (const d of ['data/maps', 'ressources/personnages', 'ressources/tilesets', 'ressources/interface', 'ressources/musiques', 'ressources/jingles', 'ressources/sons'])
     assert.ok(fs.existsSync(path.join(dir, d)), d);
@@ -127,7 +127,11 @@ test('création / sauvegarde / rechargement', () => {
   p.maps.push(Object.assign(JSON.parse(JSON.stringify(p.maps[0])), { id: 'map_2', name: 'Copie' }));
   io.saveProject(dir, p);
   const q = io.loadProject(dir);
-  assert.deepStrictEqual(q.maps.map(m => m.id), ['map_1', 'map_2']);
+  assert.deepStrictEqual(q.maps.map(m => m.id), ['map_1', 'map_camp', 'map_2']);
+  // lobby et conversations relus (game.tfproj, data/talks.json)
+  assert.strictEqual(q.meta.lobby.mapId, 'map_camp');
+  assert.ok(q.db.talks.length >= 4 && q.db.chapters.some(c => c.kind === 'event'));
+  assert.deepStrictEqual(require('../src/shared/lobby.js').validate(q.meta.lobby, q.db, q.maps), []);
   q.maps.shift(); io.saveProject(dir, q);
   assert.ok(!fs.existsSync(path.join(dir, 'data', 'maps', 'map_1.json')));
 });
@@ -138,7 +142,7 @@ test('migration d\'un projet à l\'ancienne arborescence (maps/ à la racine)', 
   fs.mkdirSync(path.join(dir, 'maps'));
   fs.renameSync(path.join(dir, 'data', 'maps', 'map_1.json'), path.join(dir, 'maps', 'map_1.json'));
   const q = io.loadProject(dir);
-  assert.strictEqual(q.maps.length, 1);
+  assert.strictEqual(q.maps.length, 2);
   io.saveProject(dir, q);
   assert.ok(fs.existsSync(path.join(dir, 'data', 'maps', 'map_1.json')));
   assert.ok(!fs.existsSync(path.join(dir, 'maps')));

@@ -40,6 +40,7 @@ module.exports = (editor, openPlaytest) => {
       for (const mode of ['Classique', 'Détente']) {
         const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-campaign-ui-')), 'Jeu');
         const p = io.createProject(dir, 'Campagne de test', 'sample', path.join(__dirname, '..', 'assets'));
+        p.meta.lobby.enabled = false; io.saveProject(dir, p); // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
         const ch = p.db.chapters[0]; ch.events = []; ch.requiredUnits = []; ch.objective = { type: 'survive', turns: 1 };
         ch.next = 'ch_2'; ch.final = false;
         const next = JSON.parse(JSON.stringify(ch)); next.id = 'ch_2'; next.name = 'Deuxième chapitre'; next.objective.turns = 99; next.next = '';

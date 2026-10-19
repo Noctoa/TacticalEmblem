@@ -61,6 +61,7 @@
     for (const ts of p.db.tilesets) ts.tileTerrain = ts.tileTerrain || {};
     for (const c of p.db.classes) { if (c.mapSprite === undefined) c.mapSprite = ''; if (c.battler === undefined) c.battler = ''; }
     for (const u of p.db.units) { if (u.mapSprite === undefined) u.mapSprite = ''; if (u.battler === undefined) u.battler = ''; }
+    if (!Array.isArray(p.db.talks)) p.db.talks = [];
     p.resources = p.resources || { characters: {}, battlers: {}, faces: [], tilesets: [], system: [] };
   }
 
@@ -1282,6 +1283,7 @@
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40, compact: true }] },
         { key: 'ai', label: 'Comportement', type: 'select', options: AIS },
         colorsField,
+        { key: 'gold', label: 'Bourse (or ramassé quand il est vaincu)', type: 'number', min: 0, max: 99999 },
         { type: 'row', fields: [
           { key: 'appearTurn', label: 'Arrive au tour', type: 'number', min: 0, max: 99, help: '0 = présent dès le début. Sinon : renfort qui apparaît au début de la phase ennemie de ce tour.' },
           { key: 'isBoss', label: 'Boss', type: 'checkbox' }] },
@@ -1324,6 +1326,13 @@
   }
 
   async function playtest(chapterId) {
+    if (chapterId === Lobby.LOBBY_SAVE) {
+      const errors = Lobby.validate(Object.assign({}, S.project.meta.lobby, { enabled: true }), DB(), S.project.maps);
+      if (errors.length) return UI.alert('Lobby à corriger', errors);
+      await cmdSave();
+      if (S.dirty) return;
+      return safe(() => tf.playtest(S.dir, Lobby.LOBBY_SAVE));
+    }
     const id = chapterId || (curChapter() && curChapter().id) || S.project.meta.startChapter || (DB().chapters[0] && DB().chapters[0].id);
     if (!id) return UI.alert('Rien à tester', "Crée d'abord un chapitre (mode Unités, F3).");
     const ch = byId(DB().chapters, id);

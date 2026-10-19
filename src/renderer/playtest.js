@@ -14,12 +14,14 @@
     cursor: { x: 0, y: 0 }, mouseIn: false, mouse: { x: 0, y: 0 },
     sel: null, reach: null, atk: null, staffRange: null, origin: null, targets: [], tIndex: 0, wList: [], wIndex: 0,
     danger: false, dangerSet: null, enemyView: null, menu: null, fired: new Set(), over: false, busy: false,
-    dialogue: null, fast: false, lost: []
+    dialogue: null, fast: false, lost: [],
+    mode: 'chapter', lobbyOn: false // mode : 'chapter' (combat) ou 'lobby' (camp entre deux chapitres)
   };
   window.PlaytestState = G;
   const V = { s: 2, camX: 0, camY: 0, w: 0, h: 0, dpr: 1, shake: 0 };
   const floats = [];
 
+  const defaultHelp = $('#help').textContent;
   const canvas = $('#game');
   const ctx = canvas.getContext('2d');
   const base = document.createElement('canvas');
@@ -39,7 +41,9 @@
       G.convoy = (cv.items || []).map(e => {
         const d = R.getEntry(G.db, e.id); return d ? { id: e.id, uses: e.uses || d.def.uses || 0 } : null;
       }).filter(Boolean);
-      Music.setup(G.baseUrl, G.project.meta.audio || {});
+      const lobbyCfg = Lobby.defaults(G.project.meta.lobby);
+      Music.setup(G.baseUrl, Object.assign({}, G.project.meta.audio || {}, { lobby: lobbyCfg.music || (G.project.meta.audio || {}).playerPhase || '' }));
+      G.lobbyOn = lobby.enabled(G.project);
       G.supCfg = Object.assign({}, R.DEFAULT_SUPPORT, G.project.meta.supports || {});
       G.sup = R.initSupports(G.db, G.supCfg);
       G.db.terrains.forEach(t => { G.terrains[t.id] = t; });
@@ -57,19 +61,31 @@
       let saved = null;
       try { saved = await tf.loadCampaign(params.get('dir')); }
       catch (e) { await UI.alert('Sauvegarde non chargée', e.message); }
+      const atLobby = (s) => s && s.chapterId === Lobby.LOBBY_SAVE;
+      const camp = lobbyCfg.name || 'le camp';
+      // avec un lobby : la partie commence au camp ; « Tester » un chapitre depuis l'éditeur peut aussi le lancer directement
+      const direct = G.lobbyOn && chId && chId !== Lobby.LOBBY_SAVE && R.byId(G.db.chapters, chId);
       const choice = await UI.choose('Lancer une partie', [
-        ...(saved ? [{ value: 'continue', label: 'Continuer la campagne', desc: (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId }] : []),
-        { value: 'classic', label: 'Nouvelle partie — Classique', desc: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' },
-        { value: 'casual', label: 'Nouvelle partie — Détente', desc: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' }
-      ], 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.');
+        ...(saved ? [{ value: 'continue', label: 'Continuer la campagne', desc: atLobby(saved) ? camp + (G.lobbyOn ? '' : ' (lobby désactivé : premier chapitre)') : (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId }] : []),
+        { value: 'classic', label: 'Nouvelle partie — Classique', desc: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
+        { value: 'casual', label: 'Nouvelle partie — Détente', desc: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
+        ...(direct ? [{ value: 'direct', label: `Tester « ${direct.name} » directement`, desc: 'Nouvelle partie Classique qui commence par ce chapitre ; la victoire ramène au camp.' }] : [])
+      ], G.lobbyOn ? `Le jeu commence à ${camp} : chapitres, boutique et conversations.` : 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.');
       if (!choice) { window.close(); return; }
+      let toLobby = G.lobbyOn;
       if (choice === 'continue') {
         Object.assign(G, Campaign.restore(saved, G.sup));
-        first = R.byId(G.db.chapters, saved.chapterId);
-        if (!first) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
-      } else G.campaign = Campaign.create(choice);
+        toLobby = G.lobbyOn && atLobby(saved);
+        if (!toLobby && !atLobby(saved)) {
+          first = R.byId(G.db.chapters, saved.chapterId);
+          if (!first) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
+        }
+      } else {
+        G.campaign = Campaign.create(choice === 'direct' ? 'classic' : choice, lobbyCfg.startGold);
+        if (choice === 'direct') { toLobby = false; first = direct; }
+      }
       requestAnimationFrame(loop);
-      await loadChapter(first);
+      if (toLobby) await lobby.enter(); else await loadChapter(first);
     } catch (e) {
       console.error(e);
       await UI.alert('Impossible de lancer le playtest', e.message || String(e));
@@ -79,6 +95,8 @@
 
   /** Charge un chapitre. Les niveaux, objets, affinités et le convoi sont conservés d'un chapitre à l'autre. */
   async function loadChapter(ch) {
+    if (G.mode === 'lobby') lobby.leave();
+    G.mode = 'chapter';
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
@@ -291,7 +309,7 @@
     requestAnimationFrame(loop);
   }
   function edgeScroll() {
-    if (!G.mouseIn || !G.map) return;
+    if (!G.mouseIn || !G.map || G.mode === 'lobby') return;
     const mw = G.map.width * TW(), mh = G.map.height * TH(), e = 36, sp = 9;
     let moved = false;
     if (mw > V.w) { if (G.mouse.x < e) { V.camX -= sp; moved = true; } else if (G.mouse.x > V.w - e) { V.camX += sp; moved = true; } }
@@ -337,11 +355,11 @@
       fillTiles(set, G.ui === 'staff' ? '#3ddc84' : '#ff3b30', pulse);
     }
     // case objectif
-    for (const ob of Mission.objectives(G.chapter).filter(o => o.type === 'seize')) {
+    for (const ob of G.chapter ? Mission.objectives(G.chapter).filter(o => o.type === 'seize') : []) {
       const [px, py, w, hh] = tileRect(ob.x, ob.y);
       ctx.strokeStyle = `rgba(242,213,138,${0.6 + Math.sin(t / 300) * 0.3})`; ctx.lineWidth = 2; ctx.strokeRect(px + 2, py + 2, w - 4, hh - 4);
     }
-    const z = G.chapter.defendZone;
+    const z = G.chapter && G.chapter.defendZone;
     if (z && z.enabled) {
       const [px, py, w, hh] = tileRect(z.x, z.y);
       ctx.strokeStyle = '#ff7777'; ctx.lineWidth = 3; ctx.strokeRect(px + 2, py + 2, w * z.w - 4, hh * z.h - 4);
@@ -349,6 +367,7 @@
 
     const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
+    if (G.mode === 'lobby') lobby.drawOverlay(ctx, t);
     if (!G.busy && ['player', 'ally'].includes(G.phase) && !G.over && !G.dialogue) drawCursor(t);
     drawFloats(t);
   }
@@ -541,6 +560,7 @@
   let lastInfoKey = '';
   function updateInfo() {
     if (!G.map) return;
+    if (G.mode === 'lobby') { $('#terrain-win').innerHTML = ''; $('#unit-win').className = 'win'; lastInfoKey = ''; return; }
     const c = G.cursor;
     const t = terrainAt(c.x, c.y);
     const tw = $('#terrain-win');
@@ -630,6 +650,7 @@
     if (G.chapter.turnLimit) $('#objective').append(h('div', { class: 'turn' }, 'Limite : ' + G.chapter.turnLimit + ' tours complets'));
     if (G.chapter.lossLimit) $('#objective').append(h('div', { class: 'turn' }, 'Défaite à ' + G.chapter.lossLimit + ' perte(s)'));
     if (G.chapter.defendZone && G.chapter.defendZone.enabled) $('#objective').append(h('div', { class: 'turn' }, 'Protéger la zone rouge'));
+    if (G.lobbyOn) $('#objective').append(h('div', { class: 'turn' }, `Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}`));
   }
 
   // =====================================================================
@@ -832,8 +853,9 @@
       { label: 'Animations de combat', sub: G.settings.battleAnims !== false ? 'oui' : 'non', action: () => { G.settings.battleAnims = G.settings.battleAnims === false; hideMenu(); G.ui = 'idle'; UI.toast('Animations de combat : ' + (G.settings.battleAnims ? 'oui' : 'non')); } },
       { label: 'Sauvegarder', sub: 'début du chapitre', action: () => { hideMenu(); G.ui = 'idle'; saveCheckpoint(); } },
       { label: 'Recommencer', action: () => { hideMenu(); G.ui = 'idle'; restartChapter(); } },
+      G.lobbyOn ? { label: 'Retour au camp', sub: 'abandonner le chapitre', action: () => { hideMenu(); G.ui = 'idle'; retreatToLobby(); } } : null,
       { label: 'Quitter le test', action: () => window.close() }
-    ], G.cursor, 'mapmenu');
+    ].filter(Boolean), G.cursor, 'mapmenu');
   }
 
   function toggleDanger() {
@@ -1176,6 +1198,11 @@
     if (instant) u.alpha = 0;
     else for (let i = 10; i >= 0; i--) { u.alpha = i / 10; await sleep(35); }
     u.dead = true;
+    if (u.team === 'enemy' && u.gold > 0) {
+      G.campaign.gold = (G.campaign.gold || 0) + u.gold;
+      float(u.x, u.y, `+${u.gold} or`, '#f2d58a', true);
+      updateObjective();
+    }
     if (u.team === 'player') G.lost.push(u.name);
     if (u.team === 'ally') float(u.x, u.y, 'Allié perdu', '#9be59b');
     await runEvents('death', { unit: u });
@@ -1372,22 +1399,41 @@
     Music.me('gameOver', { resume: false });
     showEnd(false, reason);
   }
+  /** Victoire avec un lobby : survivants mémorisés, chapitre terminé, or de la récompense, retour au camp. */
+  async function backToLobbyAfterVictory() {
+    saveCampaign();
+    const gold = Lobby.completeChapter(G.campaign, G.chapter);
+    await lobby.enter();
+    if (gold) UI.toast(`Récompense : +${gold} or`);
+  }
+  /** Défaite ou abandon : retour au camp dans l'état d'avant le chapitre. */
+  async function retreatToLobby() {
+    const wasBusy = G.busy; G.busy = true;
+    if (!G.over && !(await UI.confirm("Abandonner ce chapitre et retourner au camp ? Ce qui s'est passé pendant le chapitre est annulé.", { ok: 'Retour au camp' }))) { G.busy = wasBusy; return; }
+    G.sup = R.initSupports(G.db, G.supCfg);
+    Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
+    await lobby.enter();
+  }
   function showEnd(win, why) {
     const el = $('#end'); el.className = win ? 'win-screen' : 'lose';
     el.innerHTML = '';
+    const reward = win && G.lobbyOn ? Lobby.goldFor(G.chapter, (G.campaign.cleared || []).includes(G.chapter.id)) : 0;
     el.append(h('div', { class: 'end-card' },
       h('h1', {}, win ? 'Victoire' : 'Défaite'),
       h('p', {}, why || `${G.chapter.name} terminé en ${G.turn} tour(s).` + (G.lost.length ? ` Pertes : ${G.lost.join(', ')}.` : ' Aucune perte.')),
+      reward ? h('p', { class: 'end-reward' }, `Récompense : ${reward} or`) : null,
       h('div', { class: 'end-actions' },
-        win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); openEpilogue(); } }, 'Épilogue') : null,
-        win && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
+        win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); if (G.lobbyOn) Lobby.completeChapter(G.campaign, G.chapter); openEpilogue(); } }, 'Épilogue') : null,
+        win && G.lobbyOn ? h('button', { class: G.chapter.final ? '' : 'primary', onclick: backToLobbyAfterVictory }, 'Retour au camp →') : null,
+        !win && G.lobbyOn ? h('button', { class: 'primary', onclick: retreatToLobby }, 'Retour au camp') : null,
+        win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
           const errors = map ? Mission.validate(next, G.db, map) : ['Map du chapitre suivant introuvable.'];
           if (errors.length) return UI.alert('Chapitre suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
         } }, 'Chapitre suivant →') : null,
-        h('button', { class: win && (G.chapter.final || G.chapter.next) ? '' : 'primary', onclick: restartChapter }, 'Recommencer ce chapitre'),
+        h('button', { class: (win && (G.chapter.final || G.chapter.next)) || G.lobbyOn ? '' : 'primary', onclick: restartChapter }, 'Recommencer ce chapitre'),
         h('button', { onclick: saveCheckpoint }, 'Sauvegarder le début du chapitre'),
         h('button', { onclick: () => window.close() }, 'Fermer'))));
   }
@@ -1559,9 +1605,10 @@
     updateInfo();
   }
 
-  function confirm() {
+  function confirm(fromMouse) {
     if (G.waitClick) return G.waitClick();
     if (G.dialogue) return G.dialogue.next();
+    if (G.mode === 'lobby' && !G.menu) { if (fromMouse === true) lobby.click(G.cursor.x, G.cursor.y); return; }
     if (G.busy || G.over || !['player', 'ally'].includes(G.phase)) return;
     const c = G.cursor;
     switch (G.ui) {
@@ -1584,7 +1631,7 @@
         if (controllable(u) && u !== G.sel) return select(u);
         return deselect();
       }
-      case 'menu': case 'mapmenu': case 'items': {
+      case 'menu': case 'mapmenu': case 'items': case 'lobbymenu': {
         const it = G.menu && G.menu.items[G.menu.index];
         if (it && !it.disabled) it.action();
         return;
@@ -1609,7 +1656,7 @@
       }
       case 'items': hideMenu(); return openActionMenu();
       case 'convoy': return closeConvoy();
-      case 'mapmenu': hideMenu(); G.ui = 'idle'; return;
+      case 'mapmenu': case 'lobbymenu': hideMenu(); G.ui = 'idle'; return;
       case 'target': case 'staff': hideForecast(); setCursor(G.sel.x, G.sel.y); return openActionMenu();
       default: G.enemyView = null;
     }
@@ -1626,8 +1673,8 @@
   canvas.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('contextmenu', e => e.preventDefault());
   canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 0) confirm();
-    else if (e.button === 2) cancel();
+    if (e.button === 0) confirm(true);
+    else if (e.button === 2) { if (G.mode === 'lobby' && !G.menu && !G.dialogue) lobby.openMenu(); else cancel(); }
   });
   document.addEventListener('mousedown', (e) => {
     if (e.target === canvas) return;
@@ -1643,9 +1690,10 @@
       if (['x', 'X', 'Escape', 'Backspace'].includes(k)) BattleScene.skip();
       return;
     }
+    if (G.mode === 'lobby' && !G.dialogue && lobby.key(e)) return;
     if (['z', 'Z', 'Enter', ' '].includes(k)) { e.preventDefault(); return confirm(); }
     if (['x', 'X', 'Escape', 'Backspace'].includes(k)) { e.preventDefault(); return cancel(); }
-    if ((k === 'd' || k === 'D') && !G.busy && !G.dialogue) return toggleDanger();
+    if ((k === 'd' || k === 'D') && !G.busy && !G.dialogue && G.mode !== 'lobby') return toggleDanger();
     if (k === 'm' || k === 'M') return Music.toggleMute();
     if (k === 'Shift') G.fast = true;
     const dirs = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
@@ -1665,6 +1713,7 @@
   });
   document.addEventListener('keyup', (e) => {
     if (e.key === 'Shift') G.fast = false;
+    lobby.keyup(e);
     if (['z', 'Z', 'Enter', ' '].includes(e.key)) BattleScene.setFast(false);
   });
   document.addEventListener('mousedown', (e) => {
@@ -1676,6 +1725,15 @@
 
   // les fenêtres d'info suivent l'état en continu (léger)
   setInterval(() => { if (G.map) updateInfo(); }, 120);
+
+  // ---------- lobby (camp entre deux chapitres) ----------
+  const lobby = LobbyScene.create({
+    G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
+    hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
+    float, banner, loadChapter, sTaken, tileRect, TW, TH
+  });
+  window.PlaytestLobby = lobby;
+  window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés
 
   init();
 })();

@@ -199,3 +199,36 @@ body.in-battle #hud { display: none; }
 .ep-wrap.dead .ep-face { filter: grayscale(1) brightness(.7); }
 .ep-wrap .end-actions { display: flex; justify-content: center; gap: 10px; margin-top: 22px; }
 body.in-epilogue #hud > *:not(#epilogue) { display: none !important; }
+
+/* ---------- lobby (camp) ---------- */
+body.in-lobby #terrain-win, body.in-lobby #unit-win { display: none !important; }
+body.in-lobby #game { cursor: pointer; }
+#lobby-panel { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(640px, 94vw); max-height: 82vh; display: flex; flex-direction: column; padding: 14px 16px; z-index: 30; }
+#lobby-panel.hidden { display: none; }
+#lobby-panel .lp-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+#lobby-panel .lp-head h3 { color: #f2d58a; letter-spacing: .08em; flex: 1; }
+#lobby-panel .lp-gold { font-weight: 700; color: #f2d58a; font-variant-numeric: tabular-nums; }
+#lobby-panel button { all: unset; cursor: pointer; padding: 5px 12px; border-radius: 4px; background: rgba(255, 255, 255, .1); font-weight: 600; font-size: 13px; text-align: center; }
+#lobby-panel button:hover:not([disabled]), #lobby-panel button:focus-visible { background: rgba(201, 178, 122, .35); outline: 2px solid #f2d58a; outline-offset: 1px; }
+#lobby-panel button[disabled] { opacity: .4; cursor: default; }
+#lobby-panel .lp-close { font-size: 12px; font-weight: 500; }
+#lobby-panel .lp-body { overflow: auto; display: flex; flex-direction: column; gap: 4px; padding-right: 4px; }
+#lobby-panel .lp-tabs { display: flex; gap: 6px; margin-bottom: 6px; }
+#lobby-panel .lp-tab.on { background: rgba(201, 178, 122, .45); color: #fff; }
+#lobby-panel .lp-row { display: flex; align-items: center; gap: 12px; padding: 7px 8px; border-radius: 6px; background: rgba(0, 0, 0, .18); }
+#lobby-panel .lp-row.off .lp-main { opacity: .6; }
+#lobby-panel .lp-main { flex: 1; min-width: 0; }
+#lobby-panel .lp-name { font-weight: 700; }
+#lobby-panel .lp-sub { font-size: 12px; color: #c8cde0; }
+#lobby-panel .lp-why { font-size: 12px; color: #ffb38a; }
+#lobby-panel .lp-price { font-variant-numeric: tabular-nums; color: #f2d58a; font-weight: 700; min-width: 72px; text-align: right; }
+#lobby-panel .lp-go { min-width: 66px; }
+#lobby-panel .lp-badge { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 4px; vertical-align: 1px; }
+#lobby-panel .lp-badge.new { background: #c9862a; color: #fff; }
+#lobby-panel .lp-badge.done { background: rgba(120, 200, 140, .3); color: #b6f0c4; }
+#lobby-panel .lp-badge.soon { background: rgba(140, 170, 255, .3); color: #cfdcff; }
+#lobby-panel .lp-group { font-size: 12px; color: #c9b27a; text-transform: uppercase; letter-spacing: .08em; margin: 8px 0 2px; }
+#lobby-panel .lp-dest { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13px; white-space: nowrap; }
+#lobby-panel .lp-dest select { background: #101629; color: #f3efe2; border: 1px solid #c9b27a; border-radius: 4px; padding: 3px 6px; }
+#lobby-panel .lp-empty { color: #8f96aa; font-size: 13px; padding: 6px 8px; }
+#end .end-reward { color: #f2d58a; font-weight: 700; font-size: 18px; }

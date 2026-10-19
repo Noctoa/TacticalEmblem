@@ -27,6 +27,7 @@ module.exports = (editor, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-combat-ui-')), 'Jeu');
       const p = io.createProject(dir, 'Compétences actives', 'sample', path.join(__dirname, '..', 'assets'));
+      p.meta.lobby.enabled = false; io.saveProject(dir, p); // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       p.db.supports = []; // Le scénario isole les compétences, sans attaque d'affinité aléatoire.
       const hero = p.db.units[0], ally = p.db.units[1], ch = p.db.chapters[0];
       hero.stats = { hp: 40, str: 15, mag: 0, skl: 0, spd: 5, lck: 0, def: 10, res: 10 };

@@ -1,4 +1,8 @@
-/* État de campagne indépendant du rendu. Les sauvegardes sont des débuts de chapitre. */
+/*
+ * État de campagne indépendant du rendu. Les sauvegardes sont des débuts de chapitre, ou le lobby
+ * (chapterId « @lobby »). La campagne garde aussi l'or, les chapitres terminés et les conversations
+ * de lobby déjà vues.
+ */
 (function (root, factory) {
   const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
@@ -7,7 +11,14 @@
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
   const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
-  const create = mode => ({ mode: mode === 'casual' ? 'casual' : 'classic', dead: [], units: {} });
+  const create = (mode, gold) => ({ mode: mode === 'casual' ? 'casual' : 'classic', dead: [], units: {}, gold: Math.max(0, Math.floor(Number(gold) || 0)), cleared: [], talks: [] });
+  /** Champs ajoutés avec le lobby : absents des anciennes sauvegardes. */
+  function normalize(campaign) {
+    if (!Number.isFinite(campaign.gold) || campaign.gold < 0) campaign.gold = 0;
+    if (!Array.isArray(campaign.cleared)) campaign.cleared = [];
+    if (!Array.isArray(campaign.talks)) campaign.talks = [];
+    return campaign;
+  }
   const permanent = (campaign, unit) => campaign.mode === 'classic' && unit.deathPolicy !== 'retreat';
   function commit(campaign, units) {
     for (const u of units) {
@@ -59,7 +70,7 @@
       const old = save.supports[id];
       if (old) { s.points = old.points; s.rank = old.rank; }
     }
-    return { campaign: clone(save.campaign), convoy: clone(save.convoy) };
+    return { campaign: normalize(clone(save.campaign)), convoy: clone(save.convoy) };
   }
-  return { create, permanent, commit, apply, checkpoint, validate, restore };
+  return { create, normalize, permanent, commit, apply, checkpoint, validate, restore };
 });

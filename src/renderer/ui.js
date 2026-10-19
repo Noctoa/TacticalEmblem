@@ -108,7 +108,7 @@
   // ---------- formulaires ----------
   /**
    * fields : [{ key, label, type, ... }]
-   * types : text, textarea, number, checkbox, select, multicheck, stats, costs, inventory, color, image, info, heading, row
+   * types : text, textarea, number, checkbox, select, multicheck, stats, costs, inventory, color, image, date, info, heading, row
    * ctx : { onChange(key, value, field), baseUrl, importImage() -> Promise<rel> }
    */
   function form(fields, obj, ctx) {
@@ -209,6 +209,11 @@
         input = box;
         break;
       }
+      case 'date':
+        input = h('input', { type: 'date' });
+        input.value = val || '';
+        input.addEventListener('change', () => change(input.value));
+        break;
       case 'color':
         input = h('input', { type: 'color', value: val || '#888888' });
         input.addEventListener('input', () => change(input.value));

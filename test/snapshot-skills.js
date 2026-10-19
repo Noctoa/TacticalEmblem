@@ -42,6 +42,7 @@ module.exports = (editor, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-skills-ui-')), 'Jeu');
       const project = io.createProject(dir, 'Test des compétences', 'sample', path.join(__dirname, '..', 'assets'));
+      project.meta.lobby.enabled = false; io.saveProject(dir, project); // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       const heroId = project.db.units[0].id;
       const chapter = project.db.chapters[0];
       Object.assign(chapter, { events: [], requiredUnits: [], objective: { type: 'survive', turns: 1 }, next: 'ch_2', final: false });

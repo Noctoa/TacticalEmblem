@@ -205,7 +205,7 @@
       ...Skills.initialLoadout(Object.assign({}, pl, { level }), cls, db.skills),
       inventory: buildInventory(inv, db), mov: cls.mov, moveType: cls.moveType,
       isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
-      appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop,
+      appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop, gold: Math.max(0, Math.floor(Number(pl.gold) || 0)),
       mapSprite: pl.mapSprite || cls.mapSprite || '', battler: pl.battler || cls.battler || '',
       colors: pl.colors || cls.colors || '',
       x: pl.x, y: pl.y, done: false

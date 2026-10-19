@@ -47,6 +47,7 @@ module.exports = function (editorWin, openPlaytest) {
       await shot(editorWin.webContents, '00_accueil');
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-snap-')), 'MonJeu');
       io.createProject(dir, 'La Chronique de Varenne', 'sample', path.join(__dirname, '..', 'assets'));
+      { const q = io.loadProject(dir); q.meta.lobby.enabled = false; io.saveProject(dir, q); } // ce scénario ne teste pas le lobby : la partie démarre directement au chapitre
       const ew = editorWin.webContents;
       await js(ew, `Editor.open(${JSON.stringify(dir)})`);
       await wait(900);
