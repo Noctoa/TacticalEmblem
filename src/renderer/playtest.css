@@ -153,6 +153,9 @@ body.talking #unit-win, body.talking #terrain-win, body.talking #menu, body.talk
 #battle .b-hpbar { display: flex; flex-wrap: wrap; gap: 1px; max-width: 360px; }
 #battle .b-hpbar i { width: 5px; height: 11px; background: #3a1e18; border-radius: 1px; }
 #battle .b-hpbar i.on { background: linear-gradient(180deg, #f8f4b0, #e8c040); }
+#battle .b-hpbar i.over { background: linear-gradient(180deg, #ff9a6b, #d8341c); } /* overkill */
+#battle .b-hpbar.over-full i.over { box-shadow: 0 0 4px #ff5c3a; }
+#battle .b-hpnum.over { color: #ff8a5c; }
 #battle .b-hint { position: absolute; top: 10px; right: 14px; font-size: 11px; color: rgba(255, 255, 255, .45); }
 
 body.in-battle #hud { display: none; }

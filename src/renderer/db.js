@@ -1727,6 +1727,9 @@
     const p = Editor.project();
     const pane = h('div', { class: 'db-form' });
     pane.append(h('h2', {}, 'Système'));
+    // réglages ajoutés après la création du projet : valeurs par défaut affichées
+    const st = Editor.project().meta.settings || (Editor.project().meta.settings = {});
+    for (const k of ['overkill', 'overkillExp']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
     pane.append(UI.form([
       { type: 'row', fields: [{ key: 'name', label: 'Nom du jeu', type: 'text' }, { key: 'author', label: 'Auteur', type: 'text' }] },
       { type: 'row', fields: [
@@ -1746,6 +1749,11 @@
         { key: 'settings.triangleHit', label: 'Triangle : bonus précision', type: 'number', min: 0, max: 50 },
         { key: 'settings.maxLevel', label: 'Niveau max', type: 'number', min: 1, max: 99 }] },
       { type: 'info', text: 'Triangle : Épée › Hache › Lance › Épée, Anima › Lumière › Ténèbres › Anima. Dégâts = (For ou Mag) + Puissance − (Déf ou Rés) − bonus terrain.' },
+      { type: 'heading', label: 'Overkill' },
+      { type: 'row', fields: [
+        { key: 'settings.overkill', label: 'Overkill : après le coup fatal, l’attaquant finit ses coups et les dégâts en trop s’affichent', type: 'checkbox' },
+        { key: 'settings.overkillExp', label: 'Bonus d’EXP (overkill ×2)', type: 'number', min: 0, max: 100, compact: true,
+          help: 'Versé quand les dégâts en trop atteignent une 2e fois les PV max de l’ennemi. 0 = pas de bonus. L’EXP d’un combat reste plafonnée à 100.' }] },
       { type: 'heading', label: 'Convoi (cargaison de départ)' },
       { key: 'convoy.capacity', label: 'Capacité', type: 'number', min: 1, max: 999 },
       { type: 'custom', render: (meta) => {

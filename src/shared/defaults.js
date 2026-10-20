@@ -538,7 +538,7 @@
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
-          effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true,
+          effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true, overkill: true, overkillExp: 30,
           debugMenu: true // onglet Debug dans les paramètres du playtest (Échap)
         },
         // convoi (cargaison) : accessible au chef d'escouade, et aux unités adjacentes à lui

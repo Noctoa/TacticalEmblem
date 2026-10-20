@@ -1286,7 +1286,7 @@
       await BattleScene.play({
         baseUrl: G.baseUrl, battlerOf, att, def, hp0, strikes: res.strikes, forecast: res.forecast, distance,
         paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'battle', false),
-        partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf,
+        partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf, overkill: res.overkill,
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
         projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null
       });
@@ -1300,6 +1300,14 @@
       const byUid = (id) => (id === att.uid ? att : id === def.uid ? def : (res.duo && res.duo.partner.uid === id ? res.duo.partner : G.units.find(u => u.uid === id)));
       for (const s of res.strikes) {
         const src = byUid(s.by), tgt = byUid(s.target);
+        if (s.overkillStrike) { // la cible est déjà vaincue : dégâts d'overkill
+          await lunge(src, tgt);
+          Music.se(s.hit ? (s.crit ? 'crit' : 'hit') : 'miss');
+          if (s.hit) { tgt.flash = performance.now() + 120; float(tgt.x, tgt.y, `Overkill ${s.crit ? 'critique ' : ''}+${s.overkill}`, '#ff8a5c', true); if (s.crit) V.shake = 10; }
+          else float(tgt.x, tgt.y, 'Raté', '#9ad0ff');
+          await sleep(420);
+          continue;
+        }
         const mate = s.special && s.partner ? byUid(s.partner) : null;
         if (s.special) { float(src.x, src.y - 0.5, s.special, '#ff9ecb', true); if (mate) float(mate.x, mate.y - 0.5, '♥', '#ff9ecb', true); await sleep(350); }
         if (s.dual) { float(src.x, src.y - 0.5, s.dual, '#ff9ecb', true); await sleep(350); }
@@ -1317,10 +1325,16 @@
           if (s.crit) { V.shake = 14; float(tgt.x, tgt.y, `Critique ! ${s.dmg}`, '#ffd24a', true); }
           else float(tgt.x, tgt.y, s.dmg ? String(s.dmg) : 'Aucun dégât', s.dmg ? '#ffffff' : '#bbbbbb');
         } else float(tgt.x, tgt.y, 'Raté', '#9ad0ff');
+        if (s.overkill) float(tgt.x, tgt.y - 0.45, `Overkill +${s.overkill}`, '#ff8a5c', true);
         if (s.heal) { src.dispHp = s.srcHpAfter; float(src.x, src.y, '+' + s.heal, '#7dffa8'); }
         if (s.broke) float(src.x, src.y - 0.4, 'Arme brisée !', '#ffb36b');
         combatHud(att, def);
         await sleep(420);
+      }
+      if (res.overkill && res.overkill.doubled) {
+        const tgt = byUid(res.overkill.target);
+        float(tgt.x, tgt.y - 0.8, `OVERKILL ×2 ! (${res.overkill.total} / ${res.overkill.max})`, '#ff5c3a', true);
+        await sleep(600);
       }
       await sleep(250);
       $('#combat-hud').classList.add('hidden');
@@ -1344,19 +1358,20 @@
     if (pl && pl.hp > 0) {
       const foe = pl === att ? def : att;
       const side = pl === att ? 'a' : 'd';
-      const xp = R.combatExp(pl, foe, res.dealt[side], foe.hp <= 0, G.db);
-      await grantExp(pl, xp);
+      const bonus = res.overkill && res.overkill.by === pl.uid ? res.overkill.bonus : 0; // overkill qui dépasse une 2e fois les PV
+      const xp = R.combatExp(pl, foe, res.dealt[side], foe.hp <= 0, G.db, bonus);
+      await grantExp(pl, xp, bonus ? 'Overkill' : '');
     }
     if (res.duo && res.duo.partner.hp > 0 && res.duo.partner.team !== 'enemy') {
-      const last = res.strikes[res.strikes.length - 1];
+      const last = res.strikes.filter(s => !s.overkillStrike).pop();
       await grantExp(res.duo.partner, R.combatExp(res.duo.partner, def, res.duo.dmg > 0, def.hp <= 0 && last && last.dual, G.db));
     }
     return res;
   }
 
-  async function grantExp(u, xp) {
+  async function grantExp(u, xp, reason) {
     if (u.level >= G.settings.maxLevel) return;
-    float(u.x, u.y, `+${xp} EXP`, '#c5a7ff');
+    float(u.x, u.y, `+${xp} EXP` + (reason ? ` (${reason})` : ''), '#c5a7ff');
     const ups = R.gainExp(u, xp, G.db, Math.random, G.settings);
     await sleep(500);
     for (const up of ups) {

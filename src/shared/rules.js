@@ -44,6 +44,8 @@
     maxLevel: 20,
     battleAnims: true,
     debugMenu: true, // onglet Debug dans les paramètres du playtest
+    overkill: true,  // après le coup fatal, l'attaquant finit ses coups : les dégâts en trop sont affichés
+    overkillExp: 30, // EXP en plus quand l'overkill dépasse une 2e fois les PV max de la cible (0 = pas de bonus)
     colors: 'map' // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
   };
 
@@ -517,6 +519,7 @@
         }
         if (opts.protect && opts.protect(tgt)) hpAfter = before; // debug : unité invincible
         tgt.hp = hpAfter; dmg = before - hpAfter;
+        if (hpAfter === 0 && damage > before) extra.excess = damage - before; // overkill : dégâts au-delà des PV restants
         if (selected && selected.effect === 'sol') {
           heal = Math.min(src.stats.hp - src.hp, Math.floor(dmg * selected.amount / 100));
           src.hp += heal;
@@ -526,8 +529,26 @@
       const strike = { by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, srcHpAfter: src.hp, heal, broke,
         weapon: weapon.name, special, skills, dual: extra.dual || null,
         partner: special && extra.special.partnerUid ? extra.special.partnerUid : null }; // allié qui participe à l'attaque spéciale
+      if (extra.excess) strike.overkill = extra.excess;
       strikes.push(strike);
       return strike;
+    };
+    // Overkill : la cible est vaincue, mais celui qui l'a abattue termine ses coups prévus. Ils ne changent
+    // plus les PV (déjà à 0) : précision et critique sont tirées normalement, sans usure d'arme ni compétence,
+    // et les dégâts s'ajoutent au total d'overkill. Bonus d'EXP si ce total atteint les PV max de la cible.
+    let ok = null;
+    const startOverkill = (strike, src, tgt) => {
+      if (s.overkill === false || !strike.hit || tgt.hp > 0 || src.hp <= 0) return;
+      ok = { by: src.uid, target: tgt.uid, total: strike.overkill || 0, max: tgt.stats.hp, strikes: 0 };
+    };
+    const overkillStrike = (src, tgt, weapon, targetWeapon) => {
+      const st = strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { units, initiator: att });
+      const hit = roll(rng, clamp(st.hit, 0, 100), s.trueHit);
+      const crit = hit && rng() * 100 < clamp(st.crit, 0, 100);
+      const damage = hit ? Math.max(0, st.rawDmg * (crit ? s.critMult : 1) - st.guard) : 0;
+      ok.total += damage; ok.strikes++;
+      strikes.push({ by: src.uid, target: tgt.uid, hit, crit, dmg: 0, hpAfter: 0, srcHpAfter: src.hp, heal: 0, broke: false,
+        weapon: weapon.name, special: null, skills: [], dual: null, partner: null, overkillStrike: true, overkill: damage, overkillTotal: ok.total });
     };
     // attaque duo : juste après le premier coup de l'attaquant, le partenaire adjacent
     // frappe à son tour (l'ennemi ne riposte pas contre lui)
@@ -543,19 +564,26 @@
       duo = { partner: du.partner, hit: strike.hit, dmg: strike.dmg };
     };
     for (const who of order) {
-      if (att.hp <= 0 || def.hp <= 0) break;
       const st = who === 'a' ? fc.att : fc.def;
-      if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
       const src = who === 'a' ? att : def, tgt = who === 'a' ? def : att;
       const targetWeapon = who === 'a' ? (dBroken ? null : defenderWeapon) : (aBroken ? null : fc.att.weapon);
+      if (ok) { // la cible est déjà vaincue : seuls les coups restants de celui qui l'a abattue
+        if (src.uid === ok.by && !((who === 'a' && aBroken) || (who === 'd' && dBroken))) overkillStrike(src, tgt, st.weapon, targetWeapon);
+        continue;
+      }
+      if (att.hp <= 0 || def.hp <= 0) break;
+      if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
       const strike = perform(src, who === 'a' ? aIdx : dIdx, tgt, st.weapon, targetWeapon, att,
         { special: specials[who], vantage: strikes.length === 0 && who === 'd' ? fc.vantage : null });
       if (strike.dmg > 0) dealt[who] = true;
       if (strike.broke) { if (who === 'a') aBroken = true; else dBroken = true; }
+      if (tgt.hp <= 0) startOverkill(strike, src, tgt);
       if (who === 'a' && !duoDone) doDuo();
     }
     if (!duoDone) doDuo();
-    return { strikes, forecast: fc, dealt, duo, attackerDead: att.hp <= 0, defenderDead: def.hp <= 0 };
+    const overkill = ok ? { by: ok.by, target: ok.target, total: ok.total, max: ok.max, strikes: ok.strikes,
+      bonus: ok.total >= ok.max ? Math.max(0, Number(s.overkillExp) || 0) : 0, doubled: ok.total >= ok.max } : null;
+    return { strikes, forecast: fc, dealt, duo, overkill, attackerDead: att.hp <= 0, defenderDead: def.hp <= 0 };
   }
 
   /** Régénération une fois par appel, réservé au début de la phase de l'unité. */
@@ -675,12 +703,13 @@
   }
 
   // ---------- expérience ----------
-  function combatExp(unit, foe, dealtDamage, killed, db) {
+  /** bonus : EXP en plus (overkill), comptée dans le plafond de 100. */
+  function combatExp(unit, foe, dealtDamage, killed, db, bonus) {
     const diff = Promotions.effectiveLevel(foe, db) - Promotions.effectiveLevel(unit, db);
     if (!dealtDamage && !killed) return 1;
     let exp = Math.max(1, Math.floor((31 + diff) / 3));
     if (killed) exp += Math.max(0, diff * 3 + 20) + (foe.isBoss ? 40 : 0);
-    return clamp(exp, 1, 100);
+    return clamp(exp + (Number(bonus) || 0), 1, 100);
   }
   function staffExp(unit, db) {
     const level = db ? Promotions.effectiveLevel(unit, db) : (unit.effectiveLevel || unit.level);

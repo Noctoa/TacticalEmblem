@@ -88,9 +88,18 @@
     for (let i = 0; i <= 10; i++) { sc.fade = i / 10; await wait(22, sc); }
     sc.fade = 1;
     await wait(250, sc);
-    for (const s of opts.strikes) {
+    const strikes = opts.strikes;
+    for (let k = 0; k < strikes.length; k++) {
+      const s = strikes[k];
       const atk = sc.byUid[s.by], def = sc.byUid[s.target];
-      if (!atk || !def || atk.hp <= 0 || def.hp <= 0) break;
+      if (!atk || !def) break;
+      if (s.overkillStrike) { // overkill : la cible est vaincue, l'attaquant termine ses coups
+        if (atk.hp <= 0) break;
+        await strike(sc, atk, def, s);
+        await wait(180, sc);
+        continue;
+      }
+      if (atk.hp <= 0 || def.hp <= 0) break;
       // attaque spéciale : le partenaire apparaît derrière l'attaquant et frappe avec lui
       const mate = s.special && s.partner && sc.byUid[s.partner] && sc.byUid[s.partner].helper ? sc.byUid[s.partner] : null;
       if (atk.helper) {
@@ -110,8 +119,14 @@
       if (atk.helper) await fadeOut(sc, atk);
       if (mate) await fadeOut(sc, mate);
       await wait(180, sc);
-      if (def.hp <= 0) { await death(sc, def); break; }
+      const overkillNext = strikes[k + 1] && strikes[k + 1].overkillStrike;
+      if (def.hp <= 0) { if (overkillNext) { def.ko = true; continue; } await death(sc, def); break; }
       if (atk.hp <= 0) { await death(sc, atk); break; }
+    }
+    for (const a of [sc.L, sc.R]) if (a.ko) { a.ko = false; await death(sc, a); } // vaincus pendant l'overkill
+    if (opts.overkill && opts.overkill.doubled) {
+      showBanner(sc, `OVERKILL ×2 !  ${opts.overkill.total} / ${opts.overkill.max}` + (opts.overkill.bonus ? `  ·  +${opts.overkill.bonus} EXP` : ''), 'overkill');
+      await wait(900, sc);
     }
     await wait(450, sc);
     for (let i = 10; i >= 0; i--) { sc.fade = i / 10; await wait(20, sc); }
@@ -191,16 +206,19 @@
     updateHp(sc.L); updateHp(sc.R);
   }
 
-  function showBanner(sc, text) { sc.banner = { text, t0: performance.now() }; }
+  function showBanner(sc, text, kind) { sc.banner = { text, kind, t0: performance.now() }; }
 
   function updateHp(actor) {
     if (!actor.hpEls) return;
     const { hpBar, hpNum } = actor.hpEls;
     const max = actor.unit.stats.hp;
-    hpNum.textContent = String(Math.max(0, Math.round(actor.hpShown)));
+    const over = Math.round(actor.hpShown) <= 0 ? (actor.over || 0) : 0;
+    hpNum.textContent = over ? '−' + over : String(Math.max(0, Math.round(actor.hpShown)));
+    hpNum.classList.toggle('over', !!over);
     hpBar.innerHTML = '';
-    // barre segmentée, une case par PV (comme sur GBA)
-    for (let i = 0; i < max; i++) hpBar.append(h('i', { class: i < Math.round(actor.hpShown) ? 'on' : '' }));
+    // barre segmentée, une case par PV (comme sur GBA) ; à 0 PV, l'overkill la remplit en rouge
+    for (let i = 0; i < max; i++) hpBar.append(h('i', { class: i < Math.round(actor.hpShown) ? 'on' : i < over ? 'over' : '' }));
+    hpBar.classList.toggle('over-full', over >= max);
   }
 
   // ------------------------------------------------------------------
@@ -272,11 +290,12 @@
     for (let i = sc.floats.length - 1; i >= 0; i--) {
       const f = sc.floats[i]; const k = (now - f.t0) / 900;
       if (k > 1) { sc.floats.splice(i, 1); continue; }
+      if (k < 0) continue; // texte différé
       const a = f.actor; const x = actorX(sc, a, L);
       g.globalAlpha = sc.fade * (k < 0.75 ? 1 : (1 - k) * 4);
       g.font = `900 ${Math.round((f.big ? 15 : 11) * L.S)}px "Segoe UI", system-ui, sans-serif`;
       g.textAlign = 'center'; g.textBaseline = 'middle';
-      const y = L.ground - 52 * L.S - k * 18 * L.S;
+      const y = L.ground - (52 + (f.dy || 0)) * L.S - k * 18 * L.S;
       g.lineWidth = 2 * L.S; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(f.text, x, y);
       g.fillStyle = f.color; g.fillText(f.text, x, y);
     }
@@ -289,10 +308,11 @@
         g.globalAlpha = sc.fade * (k < 0.15 ? k / 0.15 : k > 0.8 ? (1 - k) / 0.2 : 1);
         const bw = Math.min(w * 0.7, 520), bh = 46, bx = (w - bw) / 2, by = hh * 0.12;
         const gr = g.createLinearGradient(bx, 0, bx + bw, 0);
-        gr.addColorStop(0, 'rgba(255,90,160,0)'); gr.addColorStop(0.2, 'rgba(190,40,110,.9)'); gr.addColorStop(0.8, 'rgba(190,40,110,.9)'); gr.addColorStop(1, 'rgba(255,90,160,0)');
+        const ok = sc.banner.kind === 'overkill', c0 = ok ? 'rgba(255,120,60,0)' : 'rgba(255,90,160,0)', c1 = ok ? 'rgba(200,52,24,.92)' : 'rgba(190,40,110,.9)';
+        gr.addColorStop(0, c0); gr.addColorStop(0.2, c1); gr.addColorStop(0.8, c1); gr.addColorStop(1, c0);
         g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
         g.font = '800 22px "Segoe UI", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillStyle = '#fff'; g.fillText('♥ ' + sc.banner.text, w / 2, by + bh / 2 + 1);
+        g.fillStyle = '#fff'; g.fillText((ok ? '✸ ' : '♥ ') + sc.banner.text, w / 2, by + bh / 2 + 1);
         g.globalAlpha = 1;
       }
     }
@@ -425,12 +445,25 @@
 
   function outcome(sc, atk, def, s) {
     Music.se(s.hit ? (s.crit ? 'crit' : 'hit') : 'miss');
+    if (s.overkillStrike) {
+      if (s.hit) {
+        def.flash = performance.now() + 110;
+        sc.shake = s.crit ? 14 : 6;
+        sc.floats.push({ actor: def, text: `OVERKILL ${s.crit ? 'CRITIQUE ' : ''}+${s.overkill}`, color: '#ff8a5c', big: s.crit, t0: performance.now() });
+        def.over = s.overkillTotal; updateHp(def);
+      } else sc.floats.push({ actor: def, text: 'RATÉ', color: '#9ad0ff', t0: performance.now() });
+      return;
+    }
     if (s.hit) {
       def.flash = performance.now() + 110;
       sc.shake = s.crit ? 18 : (s.dmg ? 7 : 2);
       sc.floats.push({ actor: def, text: s.crit ? `CRITIQUE ${s.dmg}` : (s.dmg ? String(s.dmg) : 'Aucun dégât'), color: s.crit ? '#ffd24a' : '#fff', big: s.crit, t0: performance.now() });
       def.hp = s.hpAfter;
       tweenHp(sc, def);
+      if (s.overkill) { // dégâts au-delà des PV restants
+        sc.floats.push({ actor: def, text: `OVERKILL +${s.overkill}`, color: '#ff8a5c', dy: 16, t0: performance.now() + 260 });
+        def.over = s.overkill; setTimeout(() => updateHp(def), 300);
+      }
       if (s.heal) {
         atk.hp = s.srcHpAfter;
         sc.floats.push({ actor: atk, text: '+' + s.heal, color: '#7dffa8', t0: performance.now() });
