@@ -142,32 +142,32 @@
   }
 
   function characters() {
-    const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', movBonus: 0, gender: '', protagonist: false, ending: '' }, o);
+    const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', movBonus: 0, gender: '', protagonist: false, ending: '', series: '' }, o);
     return [
       // protagoniste : héros du camp, chef d'escouade (convoi). Sprite de map : celui de la classe Seigneur, en attendant le sien.
-      u({ id: 'c_xarrin', name: 'Xarrin', classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
+      u({ id: 'c_xarrin', name: 'Xarrin', series: 'Original', classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
         ending: "Xarrin ne posa jamais vraiment son épée. Mais ceux qui l'avaient suivi savaient qu'il reviendrait toujours au camp, là où tout avait commencé.",
         stats: st(19, 6, 0, 6, 8, 6, 5, 1), growths: st(80, 50, 5, 50, 50, 45, 30, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_slim_sword' }, { id: 'i_vulnerary' }],
         battler: BT('Xarrin'), portrait: FACE('Xarrin'),
         bio: "Épéiste au manteau vert qui mène la compagnie. Rapide, direct, et toujours le premier à charger." }),
-      u({ id: 'c_eliwood', name: 'Eliwood', classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
+      u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
         stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
         inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
         portrait: FACE('Eliwood'), bio: "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air." }),
-      u({ id: 'c_lyn', name: 'Lyn', classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
+      u({ id: 'c_lyn', name: 'Lyn', series: 'Fire Emblem 7', classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
         ending: "Lyn retourna dans les plaines de Sacae. Les nomades parlent encore de la cavalière qui chevauchait plus vite que le vent.",
         stats: st(19, 6, 0, 9, 11, 5, 4, 3), growths: st(70, 40, 5, 60, 60, 55, 20, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_iron_bow' }, { id: 'i_vulnerary' }],
         portrait: FACE('Lyn'), bio: "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc." }),
-      u({ id: 'c_hector', name: 'Hector', classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
+      u({ id: 'c_hector', name: 'Hector', series: 'Fire Emblem 7', classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
         ending: "Hector devint marquis d'Ostia. Il garda la même hache, le même caractère, et une fâcheuse tendance à régler les conflits lui-même.",
         stats: st(19, 7, 0, 4, 5, 3, 8, 0), growths: st(90, 60, 5, 45, 35, 30, 50, 25),
         inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
         portrait: FACE('Hector'), bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
       // Allié (unité verte) : classe générique, sprites propres à l'unité
-      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
+      u({ id: 'c_cloud', name: 'Cloud', series: 'Final Fantasy VII', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],

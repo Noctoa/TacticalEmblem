@@ -41,7 +41,7 @@ npm test
 **Unités / chapitre** (F3) — Un chapitre = une bataille sur une map. On place les unités du joueur et les ennemis à la souris (clic : placer, glisser : déplacer, clic droit : retirer). Pour chaque ennemi : classe, niveau, comportement (agressif / attend à portée / immobile), boss, tour d'arrivée (renforts), inventaire, bonus de stats. Objectifs : déroute, vaincre le boss, prendre une case, survivre X tours.
 
 **Base de données** (F9)
-- Unités : stats, croissances, inventaire, portrait, seigneur (sa mort = défaite)
+- Unités : stats, croissances, inventaire, portrait, seigneur (sa mort = défaite), **série** (jeu ou univers d'origine, avec les séries déjà saisies en suggestion). Au-dessus de la liste : une recherche (nom, classe, arme ou série, sans tenir compte des accents) et **Trier par** ordre de la base, nom, classe, arme ou série. Par arme, un personnage qui manie plusieurs armes apparaît dans chacun de leurs groupes ; par série, les personnages sans série sont rangés à la fin. La palette de placement (mode Unités, F3) a la même recherche et le même tri. Le tri choisi est retenu sur ce poste.
 - Classes : déplacement, armes maniées, stats de base, croissances, plafonds, promotion, inventaire par défaut des ennemis, programme des compétences apprises par niveau (niveau → compétence).
 - Compétences : catalogue éditable, onze exemples (dix effets de combat, soin et aura, plus Crochetage), nom, symbole, description, effet, valeur, conditions de PV / arme / engagement et probabilité de déclenchement. Création, duplication et suppression ; résumé automatique et validation des réglages. Le catalogue est sauvegardé dans `data/skills.json`. Pour un ancien projet, « Ajouter les exemples manquants » remplit le catalogue. Dans **Unités › Compétences**, choisir une personnelle fixe, un répertoire appris et jusqu’à cinq compétences équipées. Retirer une compétence manuellement apprise la déséquipe ; une fiche utilisée par un personnage ou un programme de classe ne peut pas être supprimée du catalogue. En playtest, le bouton **Compétences** de la fiche d’un personnage permet de consulter sa personnelle, ses cinq emplacements et ses compétences non équipées. L’attribution est conservée dans le projet et la campagne. Les dix effets de combat sont actifs dans le jeu, les prévisions et l’estimation de l’IA ; Crochetage intervient sur les coffres et portes.
 - Armes : puissance, précision, critique, poids, portée, usure, efficacité (×3), bâtons de soin
@@ -310,6 +310,7 @@ src/main/tiled.js          import Tiled
 src/main/project-io.js     lecture / écriture des projets
 src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
+src/shared/roster.js       tri et recherche des personnages (nom, classe, arme, série) — testé dans test/roster.test.js
 src/shared/team.js         effectif recruté, équipement des compétences et transferts — testés dans test/team.test.js
 src/renderer/team-panel.js préparatifs de l'équipe au camp
 src/shared/battle-trade.js règles d'échange entre personnages adjacents en bataille — testées dans test/battle-trade.test.js

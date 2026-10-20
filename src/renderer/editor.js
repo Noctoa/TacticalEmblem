@@ -863,6 +863,10 @@
     box.append(list);
   }
 
+  // tri des personnages dans la palette de placement (gardé pour la session ; le tri choisi est retenu sur ce poste)
+  const paletteView = { by: '', query: '' };
+  try { paletteView.by = JSON.parse(localStorage.getItem('tf.paletteView') || '{}').by || ''; } catch (e) { /* stockage indisponible */ }
+
   function renderUnitPalette(box) {
     const ch = curChapter();
     box.append(h('div', { class: 'section-head' }, h('h3', {}, 'Placer'),
@@ -875,27 +879,44 @@
     for (const kind of ['chests', 'doors']) list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === kind ? ' on' : ''), 'data-place-lock': kind,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === kind ? null : { kind }; renderPalette(); } },
       h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, interactionLabel(kind)), h('span', { class: 'meta' }, 'cliquer pour placer')));
-    list.append(h('div', { class: 'pick-group' }, 'Unités du joueur'));
-    for (const u of DB().units) {
-      const placed = ch.players.find(p => p.unitId === u.id);
-      const on = S.placeTool && S.placeTool.kind === 'players' && S.placeTool.unitId === u.id;
-      const cls = byId(DB().classes, u.classId);
-      const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
-      list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'players', unitId: u.id }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('player', u.colors, cls && cls.colors), 24) : h('span', { class: 'token player', style: { background: u.color || '' } }, u.name.slice(0, 1)),
-        h('span', {}, u.name), h('span', { class: 'meta' }, placed ? `placé ${placed.x},${placed.y}` : (cls ? cls.name : ''))));
-    }
-    if (!DB().units.length) list.append(h('p', { class: 'note' }, 'Aucune unité. Crée tes personnages dans la base de données.'));
-    list.append(h('div', { class: 'pick-group' }, 'Alliés (unités vertes)'));
-    for (const u of DB().units) {
-      const placed = ch.allies.find(p => p.unitId === u.id);
-      const on = S.placeTool && S.placeTool.kind === 'allies' && S.placeTool.unitId === u.id;
-      const cls = byId(DB().classes, u.classId);
-      const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
-      list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'allies', unitId: u.id }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('ally', u.colors, cls && cls.colors), 24) : h('span', { class: 'token ally' }, u.name.slice(0, 1)),
-        h('span', {}, u.name), h('span', { class: 'meta' }, placed ? `allié ${placed.x},${placed.y}` : '')));
-    }
+    // Personnages : recherche et tri (nom, classe, arme, série) communs aux unités du joueur et aux alliés
+    const units = h('div', { class: 'pick-units' });
+    const tools = h('div', { class: 'roster-tools' });
+    const search = h('input', { type: 'search', class: 'roster-search', placeholder: 'Rechercher un personnage…', value: paletteView.query });
+    const sort = h('select', { class: 'roster-sort', title: 'Trier / regrouper par' }, Roster.SORTS.map(o => h('option', { value: o.id }, o.label)));
+    sort.value = paletteView.by;
+    tools.append(search, h('label', {}, 'Trier par', sort));
+    const section = (title, kind) => {
+      units.append(h('div', { class: 'pick-group' }, title));
+      const groups = Roster.arrange(DB().units, DB(), paletteView);
+      for (const g of groups) {
+        if (g.label) units.append(h('div', { class: 'pick-subgroup' }, g.label));
+        for (const u of g.units) {
+          const placed = ch[kind].find(p => p.unitId === u.id);
+          const on = S.placeTool && S.placeTool.kind === kind && S.placeTool.unitId === u.id;
+          const cls = byId(DB().classes, u.classId);
+          const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
+          const team = kind === 'players' ? 'player' : 'ally';
+          units.append(h('div', { class: 'pick' + (on ? ' on' : ''), 'data-pick-unit': kind + ':' + u.id, onclick: () => { S.placeTool = on ? null : { kind, unitId: u.id }; renderPalette(); } },
+            meta ? Sprites.icon(S.baseUrl, meta, iconPalette(team, u.colors, cls && cls.colors), 24) : h('span', { class: 'token ' + team, style: kind === 'players' ? { background: u.color || '' } : {} }, u.name.slice(0, 1)),
+            h('span', {}, u.name), h('span', { class: 'meta' }, placed ? (kind === 'players' ? 'placé ' : 'allié ') + placed.x + ',' + placed.y : (kind === 'players' && cls ? cls.name : ''))));
+        }
+      }
+      if (DB().units.length && !groups.some(g => g.units.length)) units.append(h('p', { class: 'note' }, 'Aucun personnage ne correspond.'));
+    };
+    const fill = () => {
+      units.replaceChildren();
+      section('Unités du joueur', 'players');
+      if (!DB().units.length) units.append(h('p', { class: 'note' }, 'Aucune unité. Crée tes personnages dans la base de données.'));
+      section('Alliés (unités vertes)', 'allies');
+    };
+    search.addEventListener('input', () => { paletteView.query = search.value; fill(); });
+    sort.addEventListener('change', () => {
+      paletteView.by = sort.value; fill();
+      try { localStorage.setItem('tf.paletteView', JSON.stringify({ by: paletteView.by })); } catch (e) { /* stockage indisponible */ }
+    });
+    fill();
+    list.append(tools, units);
     list.append(h('div', { class: 'pick-group' }, 'Ennemis (par classe)'));
     for (const c of DB().classes) {
       const on = S.placeTool && S.placeTool.kind === 'enemies' && S.placeTool.classId === c.id;

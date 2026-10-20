@@ -239,3 +239,15 @@
 .arc-act .muted { font-size: 12px; }
 .arc-tools { display: flex; gap: 4px; }
 .note.arc-note { color: var(--gold-2); }
+
+/* tri des personnages (base de données › Unités, palette de placement) */
+.roster-tools { display: flex; flex-direction: column; gap: 6px; padding: 8px 8px 6px; border-bottom: 1px solid var(--line); }
+.pick-list .roster-tools { padding: 4px 2px 8px; border-bottom: 0; }
+.roster-tools .roster-search { width: 100%; }
+.roster-tools label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.roster-tools .roster-sort { flex: 1; min-width: 0; }
+.db-group { display: flex; justify-content: space-between; padding: 10px 8px 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold-2); font-weight: 600; }
+.db-group span { color: var(--muted); font-weight: 400; }
+.db-empty { padding: 10px 8px; color: var(--muted); font-size: 12px; }
+.pick-units { display: flex; flex-direction: column; gap: 2px; }
+.pick-subgroup { padding: 6px 8px 2px; font-size: 11px; color: var(--gold-2); }

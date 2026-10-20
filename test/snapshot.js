@@ -4,6 +4,7 @@
  * lance un playtest, joue quelques actions et enregistre des captures.
  */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const path = require('path');
 const fs = require('fs');
 const os = require('os');

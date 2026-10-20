@@ -50,7 +50,7 @@ button.mini { padding: 3px; border-color: transparent; background: transparent; 
 button.mini:hover { background: var(--panel-2); color: var(--text); }
 button .ic { flex: none; }
 
-input[type=text], input[type=number], select, textarea {
+input[type=text], input[type=search], input[type=number], select, textarea {
   font: inherit; color: var(--text); background: #12151a; border: 1px solid var(--line-2); border-radius: 5px;
   padding: 5px 7px; width: 100%; outline: none;
 }

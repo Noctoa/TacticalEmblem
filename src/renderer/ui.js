@@ -238,9 +238,15 @@
         break;
       }
       default:
-        input = h('input', { type: 'text', placeholder: f.placeholder || '' });
-        input.value = val || '';
-        input.addEventListener(f.live ? 'input' : 'change', () => change(input.value));
+        const text = h('input', { type: 'text', placeholder: f.placeholder || '' });
+        text.value = val || '';
+        text.addEventListener(f.live ? 'input' : 'change', () => change(text.value));
+        input = text;
+        if (f.suggestions) { // valeurs proposées à la saisie (liste libre)
+          const id = 'dl-' + Math.random().toString(36).slice(2);
+          text.setAttribute('list', id);
+          input = h('div', { class: 'with-suggestions' }, text, h('datalist', { id }, opts({ options: f.suggestions }, obj).map(v => h('option', { value: v }))));
+        }
     }
     return h('div', { class: 'field' + (f.compact ? ' compact' : '') }, label, input);
   }

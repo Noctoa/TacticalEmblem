@@ -351,16 +351,18 @@
     },
     units: {
       label: 'Unités', list: () => db().units, prefix: 'c_',
-      sub: (u) => (byId(db().classes, u.classId) || {}).name || '',
+      sub: (u) => (unitView.by === 'class' ? Roster.seriesOf(u) : (byId(db().classes, u.classId) || {}).name) || '',
       create: () => {
         const cls = db().classes[0];
-        return { name: 'Nouvelle unité', classId: cls ? cls.id : '', level: 1, isLord: false, color: '#4f8cff',
+        return { name: 'Nouvelle unité', series: '', classId: cls ? cls.id : '', level: 1, isLord: false, color: '#4f8cff',
           stats: cls ? Rules.statsFromClass(cls, 1) : {}, growths: cls ? Object.assign({}, cls.growths) : {},
           inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '',
           personalSkill: '', learnedSkills: [], equippedSkills: [], skillLearning: [] };
       },
       fields: () => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
+        { key: 'series', label: 'Série', type: 'text', placeholder: 'ex. Fire Emblem 7, Final Fantasy VII, Original…', suggestions: () => Roster.seriesList(db()),
+          help: 'Jeu ou univers d’origine du personnage. Sert à trier la liste des unités (Trier par › Série).' },
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
@@ -616,24 +618,54 @@
 
   function listPanel(items, cur, opts) {
     const box = h('div', { class: 'db-list-items' });
-    items.forEach((it, i) => {
-      box.append(h('div', { class: 'db-item' + (it.id === cur ? ' on' : ''), onclick: () => { selected[tab] = it.id; renderBody(); } },
-        opts.icon ? h('span', { class: 'skill-symbol' }, opts.icon(it)) : opts.swatch ? h('span', { class: 'sw', style: { width: '12px', height: '12px', borderRadius: '3px', background: opts.swatch(it), flex: 'none' } }) : h('span', { class: 'n' }, String(i + 1).padStart(3, '0')),
-        h('span', {}, it.name), opts.sub ? h('span', { class: 'sub' }, opts.sub(it) || '') : null));
-    });
+    const row = (it, i) => h('div', { class: 'db-item' + (it.id === cur ? ' on' : ''), 'data-id': it.id, onclick: () => { selected[tab] = it.id; renderBody(); } },
+      opts.icon ? h('span', { class: 'skill-symbol' }, opts.icon(it)) : opts.swatch ? h('span', { class: 'sw', style: { width: '12px', height: '12px', borderRadius: '3px', background: opts.swatch(it), flex: 'none' } }) : h('span', { class: 'n' }, String(i + 1).padStart(3, '0')),
+      h('span', {}, it.name), opts.sub ? h('span', { class: 'sub' }, opts.sub(it) || '') : null);
+    // groups() : [{ label, units }] (tri des personnages) ; sans groupes, la liste dans l'ordre de la base
+    const fill = () => {
+      box.replaceChildren();
+      if (!opts.groups) { items.forEach((it, i) => box.append(row(it, i))); return; }
+      const groups = opts.groups();
+      for (const g of groups) {
+        if (g.label) box.append(h('div', { class: 'db-group' }, g.label, h('span', {}, String(g.units.length))));
+        for (const it of g.units) box.append(row(it, items.indexOf(it)));
+      }
+      if (!groups.some(g => g.units.length)) box.append(h('p', { class: 'db-empty' }, 'Aucun personnage ne correspond.'));
+    };
+    fill();
+    const toolbar = opts.toolbar ? opts.toolbar(fill) : null;
+    box.refill = fill; // la fiche redemande le tri quand le nom, la classe ou la série changent
     const actions = h('div', { class: 'db-list-actions' },
       opts.onAdd ? h('button', { class: 'small', onclick: opts.onAdd, html: Icons.icon('plus') }, 'Nouveau') : null,
       opts.onCopy ? h('button', { class: 'small', title: 'Dupliquer', onclick: opts.onCopy, html: Icons.icon('copy'), disabled: !cur }) : null,
       opts.onDelete ? h('button', { class: 'small danger', title: 'Supprimer', onclick: opts.onDelete, html: Icons.icon('trash'), disabled: !cur }) : null);
-    return h('div', { class: 'db-list' }, box, actions);
+    return h('div', { class: 'db-list' }, toolbar, box, actions);
+  }
+
+  // Tri des personnages (onglet Unités) : recherche + tri / regroupement, gardés pour la session
+  const unitView = { by: '', query: '' };
+  try { Object.assign(unitView, JSON.parse(localStorage.getItem('tf.unitView') || '{}'), { query: '' }); } catch (e) { /* stockage indisponible */ }
+  function rosterToolbar(view, refill, storeKey) {
+    const search = h('input', { type: 'search', class: 'roster-search', placeholder: 'Rechercher (nom, classe, arme, série)…', value: view.query });
+    search.addEventListener('input', () => { view.query = search.value; refill(); });
+    const sort = h('select', { class: 'roster-sort', 'aria-label': 'Trier par', title: 'Trier / regrouper par' }, Roster.SORTS.map(o => h('option', { value: o.id }, o.label)));
+    sort.value = view.by || '';
+    sort.addEventListener('change', () => {
+      view.by = sort.value; refill();
+      try { localStorage.setItem(storeKey, JSON.stringify({ by: view.by })); } catch (e) { /* stockage indisponible */ }
+    });
+    return h('div', { class: 'roster-tools' }, search, h('label', {}, 'Trier par', sort));
   }
 
   function renderListTab(body, def) {
     const list = def.list();
     if (!list.find(e => e.id === selected[tab])) selected[tab] = list[0] ? list[0].id : null;
     const cur = byId(list, selected[tab]);
+    const roster = tab === 'units';
     body.append(listPanel(list, cur && cur.id, {
       sub: def.sub, swatch: def.swatch, icon: def.icon,
+      groups: roster ? () => Roster.arrange(list, db(), unitView) : null,
+      toolbar: roster ? refill => rosterToolbar(unitView, refill, 'tf.unitView') : null,
       onAdd: () => { const e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create()); list.push(e); selected[tab] = e.id; change(); renderBody(); },
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
@@ -718,6 +750,7 @@
       onChange: (k) => {
         change();
         if (k === 'name') { pane.querySelector('h2').firstChild.textContent = cur.name; refreshListLabels(body, list); }
+        if (tab === 'units' && ['name', 'series', 'classId'].includes(k)) { const box = body.querySelector('.db-list-items'); if (box && box.refill) box.refill(); }
         if (def.onField) def.onField(k, cur);
         if (tab === 'skills') {
           pane.querySelector('.skill-summary').textContent = Skills.describe(cur);
@@ -741,7 +774,10 @@
     box.replaceChildren(...Skills.validate(skill).map(message => h('p', { class: 'note' }, '⚠ ' + message)));
   }
   function refreshListLabels(body, list) {
-    body.querySelectorAll('.db-item').forEach((el, i) => { const s = el.children[1]; if (s && list[i]) s.textContent = list[i].name; });
+    body.querySelectorAll('.db-item').forEach((el, i) => {
+      const it = el.dataset.id ? byId(list, el.dataset.id) : list[i], s = el.children[1];
+      if (s && it) s.textContent = it.name;
+    });
   }
 
   function unitPreview(u) {
