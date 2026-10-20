@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "start": "electron .",
-    "test": "node test/run.js && node --test test/campaign.test.js test/skills.test.js test/skill-assignments.test.js test/skill-learning.test.js test/skill-combat.test.js test/promotions.test.js test/palettes.test.js test/lobby.test.js test/team.test.js test/deployment.test.js test/villages.test.js",
+    "test": "node test/run.js && node --test test/campaign.test.js test/skills.test.js test/skill-assignments.test.js test/skill-learning.test.js test/skill-combat.test.js test/promotions.test.js test/palettes.test.js test/lobby.test.js test/team.test.js test/deployment.test.js test/villages.test.js test/locks.test.js",
     "dist": "npx electron-builder --win portable",
     "postdist": "node tools/publish-portable.cjs"
   },

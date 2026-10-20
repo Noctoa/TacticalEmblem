@@ -305,4 +305,14 @@ L'action Visiter apparaît pour un personnage du joueur sur la case et consomme 
 
 L'historique des visites appartient à la campagne, avec une seule récompense par défaut, même après rejeu. Une option autorise une récompense par nouvelle tentative rejouée après victoire. Le point de reprise de début d'acte garantit que recommencer ou abandonner annule ensemble les visites et leurs gains. Les anciennes sauvegardes sans historique restent prises en charge. Le prologue des nouveaux projets d'exemple comporte un village.
 
-Prochaine priorité : coffres et portes, avec clés et compétences de voleur. La suspension au milieu d'une bataille reste un chantier ultérieur.
+**20. Coffres, portes et Crochetage — livrés**
+
+Les interactions de la map et la fiche d'acte permettent de placer et de configurer les coffres et portes, avec déplacement, suppression et annulation. Les réglages comprennent le dialogue, les personnages autorisés, le verrouillage, la clé précise facultative et l'autorisation de Crochetage. Les coffres définissent l'or, l'arme ou l'objet offert et ses utilisations ; les portes définissent le terrain du passage une fois ouvertes. Les références et positions sont validées avant écriture, et les fiches utilisées sont protégées contre la suppression.
+
+Le personnage doit être sur le coffre ou adjacent à la porte. L'ouverture consomme son action et une utilisation d'une clé adaptée dans son inventaire. Crochetage personnelle ou équipée est prioritaire et évite cette consommation ; une compétence connue mais en réserve ne suffit pas. Les nouveaux projets proposent un Voleur qui l'apprend au niveau 1, ainsi que les clés de coffre et de porte dans les objets et la boutique du camp. Les anciens projets disposent de boutons pour ajouter les clés et compétences d'exemple manquantes sans écraser leurs réglages.
+
+Un inventaire plein envoie la récompense au convoi. Si les deux sont pleins, aucune ouverture ni consommation partielle n'a lieu ; une clé épuisée peut libérer une place pour la récompense. Les portes fermées bloquent tous les types de déplacement et l'IA. Une porte ouverte utilise le terrain choisi pour les chemins, bonus et soins ; la map du projet reste intacte.
+
+Les coffres sont pillés une seule fois par campagne, avec une option de remplissage lors d'un acte rejoué après victoire. Les portes se referment à chaque tentative. Recommencer et abandonner annulent ensemble les clés utilisées, les ouvertures et les récompenses. Les anciens actes et sauvegardes sans ces interactions restent pris en charge. Les tests couvrent les règles, l'édition, Crochetage, les inventaires pleins, les passages, la reprise et la persistance après victoire ; le parcours des villages reste vérifié séparément.
+
+Prochaine priorité : échanges d'objets entre unités pendant la bataille. La suspension au milieu d'une bataille reste un chantier ultérieur.

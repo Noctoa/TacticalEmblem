@@ -108,7 +108,7 @@
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db)];
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
@@ -116,7 +116,7 @@
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, fired: new Set(), lost: [], sel: null,
-      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set() });
+      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set() });
     hideMenu(); hideForecast();
     $('#convoy').classList.add('hidden');
     $('#epilogue').classList.add('hidden');
@@ -246,7 +246,7 @@
     ((G.phase === 'player' && u.team === 'player') || (G.phase === 'ally' && u.team === 'ally' && u.control !== 'ai'));
   const enemies = () => alive().filter(u => u.team === 'enemy');
   const unitAt = (x, y) => alive().find(u => u.x === x && u.y === y) || null;
-  const terrainAt = (x, y) => G.terrains[G.tgrid[y * G.map.width + x]] || null;
+  const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
   const terrainOf = (u) => terrainAt(u.x, u.y);
   const rctx = () => ({ width: G.map.width, height: G.map.height, terrainAt, unitAt });
   const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive(),
@@ -396,6 +396,7 @@
     ctx.translate(sx, sy);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(base, -V.camX, -V.camY, base.width * V.s, base.height * V.s);
+    if (G.mode === 'chapter') drawLocks();
 
     const pulse = 0.38 + Math.sin(t / 260) * 0.07;
     if (G.danger && G.dangerSet) fillTiles(G.dangerSet, '#ff6a2a', 0.22);
@@ -451,6 +452,30 @@
   }
 
   function villageState() { return { campaign: G.campaign, visited: G.visitedVillages || new Set(), convoy: G.convoy, capacity: G.convoyCap, units: G.units }; }
+  function lockState() { return { campaign: G.campaign, openedChests: G.openedChests || new Set(), openedDoors: G.openedDoors || new Set(), convoy: G.convoy, capacity: G.convoyCap }; }
+  function drawLocks() {
+    for (const kind of Locks.lists) for (const object of Locks.list(G.chapter, kind)) {
+      const [x, y, w, hh] = tileRect(object.x, object.y), open = Locks.opened(G.chapter, kind, object, lockState());
+      if (kind === 'doors') {
+        if (open) {
+          const tile = Locks.floorTile(G.map, G.db, object.openTerrainId), img = tile && Render.readyImage(G.baseUrl, tile.tileset.image);
+          if (img) Render.drawTile(ctx, img, tile.tileset, tile.local, x, y, w, hh, 0);
+          else { ctx.fillStyle = (R.byId(G.db.terrains, object.openTerrainId) || {}).color || '#a89b7a'; ctx.fillRect(x, y, w, hh); }
+          ctx.strokeStyle = '#c7b488'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, hh - 2);
+        } else {
+          ctx.fillStyle = '#362620'; ctx.fillRect(x, y, w, hh);
+          ctx.fillStyle = '#94633b'; ctx.fillRect(x + w * .2, y + hh * .1, w * .6, hh * .85);
+          ctx.strokeStyle = '#d2a86b'; ctx.lineWidth = 2; ctx.strokeRect(x + w * .2, y + hh * .1, w * .6, hh * .85);
+          ctx.fillStyle = '#ffdb73'; ctx.fillRect(x + w * .65, y + hh * .55, Math.max(2, w * .07), Math.max(2, hh * .07));
+        }
+      } else {
+        ctx.fillStyle = open ? '#624e36' : '#ae6e29'; ctx.fillRect(x + w * .16, y + hh * .43, w * .68, hh * .4);
+        ctx.strokeStyle = '#f2ce75'; ctx.lineWidth = 2; ctx.strokeRect(x + w * .16, y + hh * .43, w * .68, hh * .4);
+        if (open) { ctx.beginPath(); ctx.moveTo(x + w * .16, y + hh * .43); ctx.lineTo(x + w * .2, y + hh * .23); ctx.lineTo(x + w * .8, y + hh * .23); ctx.lineTo(x + w * .84, y + hh * .43); ctx.stroke(); }
+        else { ctx.fillStyle = '#f2ce75'; ctx.fillRect(x + w * .45, y + hh * .5, w * .1, hh * .18); }
+      }
+    }
+  }
   function drawVillages() {
     for (const village of Villages.list(G.chapter)) {
       const [px, py, w, hh] = tileRect(village.x, village.y), closed = Villages.closed(G.chapter, village, villageState());
@@ -639,6 +664,10 @@
     if (t) tw.append(...[h('div', { class: 't-name' }, t.name), h('div', { class: 't-row' }, h('span', {}, 'DÉF'), String(t.def)), h('div', { class: 't-row' }, h('span', {}, 'ESQ'), String(t.avoid)), t.heal ? h('div', { class: 't-row' }, h('span', {}, 'SOIN'), t.heal + '%') : null].filter(Boolean));
     const village = G.chapter && Villages.at(G.chapter, c.x, c.y);
     if (village) tw.append(h('div', { class: 't-name' }, village.name || 'Village'), h('div', { class: 't-row' }, Villages.closed(G.chapter, village, villageState()) ? 'Déjà visité' : 'Action : Visiter'));
+    for (const kind of Locks.lists) {
+      const object = G.chapter && Locks.at(G.chapter, kind, c.x, c.y);
+      if (object) tw.append(h('div', { class: 't-name' }, object.name), h('div', { class: 't-row' }, Locks.opened(G.chapter, kind, object, lockState()) ? 'Ouvert' : kind === 'doors' ? 'Ouvrir depuis une case adjacente' : 'Action : Ouvrir le coffre'));
+    }
 
     const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : unitAt(c.x, c.y);
     const uw = $('#unit-win');
@@ -761,6 +790,12 @@
   function openActionMenu() {
     const u = G.sel;
     const items = [];
+    if (u.team === 'player') for (const kind of Locks.lists) for (const object of Locks.list(G.chapter, kind)) {
+      if (R.dist(u, object) !== (kind === 'doors' ? 1 : 0) || Locks.opened(G.chapter, kind, object, lockState())) continue;
+      const offer = Locks.offer(G.chapter, kind, object, u, lockState(), G.db);
+      items.push({ label: kind === 'chests' ? 'Ouvrir le coffre' : 'Ouvrir la porte', sub: offer.ok ? `${object.name} · ${offer.method === 'lockpick' ? 'Crochetage' : offer.method === 'key' ? '1 utilisation de clé' : 'sans clé'}` : offer.error,
+        disabled: !offer.ok, action: () => openLock(u, kind, object) });
+    }
     const village = Villages.at(G.chapter, u.x, u.y);
     if (village && u.team === 'player' && !Villages.closed(G.chapter, village, villageState())) {
       const offer = Villages.offer(G.chapter, village, u, villageState(), G.db);
@@ -830,6 +865,7 @@
     const items = u.inventory.map((slot, i) => {
       const it = iOf(slot), w = wOf(slot);
       if (it) {
+        if (it.effect === 'key') return { label: it.name, sub: `${slot.uses} · à utiliser depuis Coffre / Porte`, disabled: true, action: () => {} };
         if (it.effect === 'promotion') {
           const choices = Promotions.options(u, G.db, i), available = choices.some(o => o.available);
           return { label: it.name, sub: available ? `${slot.uses} · choisir une promotion` : choices.length ? choices[0].reasons.join(' ') : 'Aucune branche ne demande cet objet.',
@@ -1104,7 +1140,7 @@
   }
 
   async function useItem(u, index) {
-    const slot = u.inventory[index]; const it = iOf(slot); if (!it) return;
+    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !['heal', 'boost'].includes(it.effect)) return;
     G.busy = true;
     if (it.effect === 'heal') {
       const before = u.hp; u.hp = Math.min(u.stats.hp, u.hp + (it.amount || 10));
@@ -1177,6 +1213,27 @@
       G.busy = false;
       if (completed) await finishAction(visitor); else { G.ui = 'menu'; openActionMenu(); }
     }
+  }
+
+  async function openLock(unit, kind, object) {
+    if (G.mode !== 'chapter' || G.phase !== 'player' || G.busy || G.over) return;
+    const offer = Locks.offer(G.chapter, kind, object, unit, lockState(), G.db);
+    if (!offer.ok) return UI.toast(offer.error);
+    hideMenu(); G.busy = true; G.ui = 'interaction'; let completed = false;
+    try {
+      await playDialogue(object.script || '');
+      const result = Locks.claim(G.chapter, kind, object, unit, lockState(), G.db);
+      if (!result.ok) { await UI.alert('Ouverture impossible', result.error); return; }
+      completed = true;
+      const messages = [kind === 'doors' ? 'Le passage est ouvert.' : 'Le coffre est ouvert.'];
+      if (result.method === 'key') messages.push('Une utilisation de clé consommée.');
+      if (result.method === 'lockpick') messages.push('Serrure ouverte avec Crochetage.');
+      if (result.gold) messages.push(`+${result.gold} or.`);
+      if (result.slot) messages.push(`Objet reçu : ${R.getEntry(G.db, result.slot.id).def.name} (${result.destination === 'convoy' ? 'convoi' : 'inventaire'}).`);
+      lastInfoKey = ''; refreshDanger(); updateObjective(); Music.se('confirm');
+      await UI.alert(object.name || (kind === 'doors' ? 'Porte ouverte' : 'Coffre ouvert'), messages.join('\n'));
+    } catch (error) { console.error(error); await UI.alert('Ouverture impossible', error.message); }
+    finally { G.busy = false; if (completed) await finishAction(unit); else { G.ui = 'menu'; openActionMenu(); } }
   }
 
   async function endCurrentPhase() {
@@ -1534,7 +1591,7 @@
   async function continueArc() {
     const next = Lobby.nextAct(G.db, G.chapter.id);
     const map = next && G.project.maps.find(m => m.id === next.mapId);
-    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
     if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
@@ -1567,7 +1624,7 @@
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
         } }, 'Acte suivant →') : null,

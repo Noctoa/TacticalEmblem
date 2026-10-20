@@ -21,6 +21,8 @@
   const byId = Rules.byId;
   function uid(prefix, list) { let i = list.length + 1; while (list.some(e => e.id === prefix + i)) i++; return prefix + i; }
   const clone = (o) => JSON.parse(JSON.stringify(o));
+  const INTERACTIONS = ['villages', 'chests', 'doors'];
+  const interactionLabel = kind => ({ villages: 'Village', chests: 'Coffre', doors: 'Porte' }[kind]);
   const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   async function safe(fn) {
@@ -385,11 +387,11 @@
   function iconPalette(team, ...modes) { return Palettes.paletteFor(team, Palettes.resolveMode(...modes, (S.project.meta.settings || {}).colors), 'map', false); }
 
   function drawPlacement(pl, kind, x, y, cs, opts) {
-    if (kind === 'villages') {
+    if (INTERACTIONS.includes(kind)) {
       ctx.fillStyle = 'rgba(242,196,106,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
       ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 2, y * cs.h + 2, cs.w - 4, cs.h - 4);
       ctx.fillStyle = '#fff0c0'; ctx.font = `bold ${Math.max(10, cs.h * .45)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('V', (x + .5) * cs.w, (y + .5) * cs.h); return;
+      ctx.fillText({ villages: 'V', chests: 'C', doors: 'P' }[kind], (x + .5) * cs.w, (y + .5) * cs.h); return;
     }
     const meta = charMeta(spritePathOf(pl, kind));
     const img = meta && Render.readyImage(S.baseUrl, meta.image);
@@ -462,7 +464,7 @@
       ctx.fillStyle = 'rgba(227,168,59,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
       ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1, y * cs.h + 1, cs.w - 2, cs.h - 2);
     }
-    for (const kind of ['villages', 'enemies', 'allies', 'players']) {
+    for (const kind of [...INTERACTIONS, 'enemies', 'allies', 'players']) {
       for (const pl of ch[kind] || []) {
         const sel = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
         if (S.drag && S.drag.type === 'placement' && S.drag.id === pl.id && S.hover) continue;
@@ -587,7 +589,7 @@
     return (ch[sel.kind] || []).find(p => p.id === sel.id) || null;
   }
   function placementAt(ch, x, y) {
-    for (const kind of ['players', 'allies', 'enemies', 'villages']) {
+    for (const kind of ['players', 'allies', 'enemies', ...INTERACTIONS]) {
       const list = (ch[kind] || []).filter(p => p.x === x && p.y === y);
       if (list.length) return { kind, pl: list[list.length - 1] };
     }
@@ -601,10 +603,13 @@
       ch.objective.x = c.x; ch.objective.y = c.y; S.picking = null;
       renderInspector(); draw(); return;
     }
-    const villageAt = (ch.villages || []).find(v => v.x === c.x && v.y === c.y);
-    // Les villages peuvent partager une case avec une unité : l'outil Village vise son propre calque.
-    let hit = S.placeTool && S.placeTool.kind === 'villages' ? (villageAt ? { kind: 'villages', pl: villageAt } : null) : placementAt(ch, c.x, c.y);
-    if (S.placeTool && S.placeTool.kind !== 'villages' && hit && hit.kind === 'villages') hit = null;
+    const interactionTool = S.placeTool && INTERACTIONS.includes(S.placeTool.kind);
+    const objectAt = interactionTool && (ch[S.placeTool.kind] || []).find(v => v.x === c.x && v.y === c.y);
+    let hit = interactionTool ? (objectAt ? { kind: S.placeTool.kind, pl: objectAt } : null) : placementAt(ch, c.x, c.y);
+    if (S.placeTool && !interactionTool && hit && INTERACTIONS.includes(hit.kind)) {
+      if (hit.kind === 'doors') return UI.toast('Une unité ne peut pas commencer sur une porte fermée.');
+      hit = null;
+    }
     if (e.button === 2) {
       if (hit) {
         snapshot('chapter', ch.id);
@@ -620,11 +625,17 @@
       renderInspector(); draw(); return;
     }
     if (S.placeTool) {
+      if (interactionTool && INTERACTIONS.some(kind => (ch[kind] || []).some(v => v.x === c.x && v.y === c.y))) return UI.toast('Une interaction occupe déjà cette case.');
+      if (S.placeTool.kind === 'doors' && placementAt(ch, c.x, c.y)) return UI.toast('Place la porte sur une case sans unité.');
       snapshot('chapter', ch.id);
-      if (S.placeTool.kind === 'villages') {
-        const villages = ch.villages || (ch.villages = []);
-        const village = { id: 'v_' + crypto.randomUUID(), name: 'Village', x: c.x, y: c.y, script: '', reward: { gold: 0, itemId: '', uses: 0 }, recruitUnitId: '', allowedUnits: [], repeatOnReplay: false };
-        villages.push(village); S.selected = { kind: 'villages', id: village.id };
+      if (interactionTool) {
+        const kind = S.placeTool.kind, objects = ch[kind] || (ch[kind] = []);
+        const object = { id: kind + '_' + crypto.randomUUID(), name: interactionLabel(kind), x: c.x, y: c.y, script: '', allowedUnits: [] };
+        if (kind !== 'doors') Object.assign(object, { reward: { gold: 0, itemId: '', uses: 0 }, repeatOnReplay: false });
+        if (kind === 'villages') object.recruitUnitId = '';
+        else Object.assign(object, { locked: true, allowLockpick: true, keyItemId: '' });
+        if (kind === 'doors') object.openTerrainId = (DB().terrains.find(t => t.id === 'floor') || DB().terrains.find(t => Rules.moveCost(t, 'foot') < Rules.IMPASSABLE) || {}).id || '';
+        objects.push(object); S.selected = { kind, id: object.id };
       } else if (S.placeTool.kind === 'players' || S.placeTool.kind === 'allies') {
         // une unité est soit dans l'équipe, soit alliée : on la retire de l'autre liste
         const kind = S.placeTool.kind, other = kind === 'players' ? 'allies' : 'players';
@@ -688,9 +699,9 @@
     else if (d.type === 'rect' && S.hover) { beginStroke(); fillRect(rectOf(d.start, S.hover), S.tool === 'eraser'); endStroke(); }
     else if (d.type === 'placement' && d.moved && S.hover) {
       const ch = curChapter(); const pl = findPlacement({ kind: d.kind, id: d.id });
-      const targetVillage = (ch.villages || []).find(v => v.x === S.hover.x && v.y === S.hover.y);
       const hit = placementAt(ch, S.hover.x, S.hover.y);
-      const occ = d.kind === 'villages' ? (targetVillage ? { kind: 'villages', pl: targetVillage } : null) : hit && hit.kind !== 'villages' ? hit : null;
+      const interaction = INTERACTIONS.map(kind => ({ kind, pl: (ch[kind] || []).find(v => v.x === S.hover.x && v.y === S.hover.y) })).find(entry => entry.pl);
+      const occ = INTERACTIONS.includes(d.kind) ? (interaction || (d.kind === 'doors' ? hit : null)) : hit && !['villages', 'chests'].includes(hit.kind) ? hit : null;
       if (pl && (!occ || occ.pl === pl)) {
         snapshot('chapter', ch.id);
         pl.x = S.hover.x; pl.y = S.hover.y;
@@ -861,6 +872,9 @@
     list.append(h('div', { class: 'pick-group' }, 'Interactions'), h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === 'villages' ? ' on' : ''), 'data-place-village': true,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === 'villages' ? null : { kind: 'villages' }; renderPalette(); } },
       h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, 'Village'), h('span', { class: 'meta' }, 'cliquer pour placer')));
+    for (const kind of ['chests', 'doors']) list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === kind ? ' on' : ''), 'data-place-lock': kind,
+      onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === kind ? null : { kind }; renderPalette(); } },
+      h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, interactionLabel(kind)), h('span', { class: 'meta' }, 'cliquer pour placer')));
     list.append(h('div', { class: 'pick-group' }, 'Unités du joueur'));
     for (const u of DB().units) {
       const placed = ch.players.find(p => p.unitId === u.id);
@@ -1275,6 +1289,12 @@
         h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, v.name || 'Village'), h('span', { class: 'pos' }, `${v.x},${v.y}`)))),
       h('button', { class: 'small', onclick: () => { S.placeTool = { kind: 'villages' }; renderPalette(); UI.toast('Clique une case de la map pour placer le village.'); } }, 'Placer un village')));
 
+    for (const kind of ['chests', 'doors']) box.append(section(kind === 'chests' ? 'Coffres' : 'Portes',
+      h('div', { class: 'placement-list' }, (ch[kind] || []).map(o => h('div', { class: 'placement' + (S.selected && S.selected.kind === kind && S.selected.id === o.id ? ' on' : ''),
+        'data-lock-select': o.id, onclick: () => { S.selected = { kind, id: o.id }; renderInspector(); draw(); } },
+        h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, o.name || interactionLabel(kind)), h('span', { class: 'pos' }, `${o.x},${o.y}`)))),
+      h('button', { class: 'small', onclick: () => { S.placeTool = { kind }; renderPalette(); UI.toast('Clique une case pour placer : ' + interactionLabel(kind)); } }, 'Placer : ' + interactionLabel(kind))));
+
     // placement sélectionné
     const pl = findPlacement(S.selected);
     if (!pl) return;
@@ -1288,6 +1308,10 @@
       box.append(section('Village sélectionné', VillageFields.form(pl, DB(), m, { beforeChange: () => snapshot('chapter', ch.id), onChange: key => { markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
         h('div', { class: 'insp-actions' }, del)));
       for (const error of Villages.validate(ch, DB(), m)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
+    } else if (['chests', 'doors'].includes(S.selected.kind)) {
+      box.append(section(interactionLabel(S.selected.kind), LockFields.form(pl, S.selected.kind, DB(), m, { beforeChange: () => snapshot('chapter', ch.id), onChange: key => { markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
+        h('div', { class: 'insp-actions' }, del)));
+      for (const error of Locks.validate(ch, DB(), m)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
     } else if (S.selected.kind === 'allies') {
       box.append(section('Allié (unité verte)', UI.form([
         { key: 'unitId', label: 'Personnage', type: 'select', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
@@ -1422,6 +1446,8 @@
     get state() { return S; },
     db: () => DB(), project: () => S.project, baseUrl: () => S.baseUrl, dir: () => S.dir,
     markDirty, uid, invOptions, objectives: OBJECTIVES,
+    placeInteraction: (chapterId, kind) => { if (!INTERACTIONS.includes(kind)) return; selectChapter(chapterId); setMode('units'); S.placeTool = { kind }; S.selected = null; renderAll(); UI.toast('Clique une case pour placer : ' + interactionLabel(kind)); },
+    selectInteraction: (chapterId, kind, id) => { selectChapter(chapterId); setMode('units'); S.selected = { kind, id }; S.placeTool = null; renderAll(); },
     placeVillage: chapterId => { selectChapter(chapterId); setMode('units'); S.placeTool = { kind: 'villages' }; S.selected = null; renderAll(); UI.toast('Clique une case pour placer un village.'); },
     selectVillage: (chapterId, villageId) => { selectChapter(chapterId); setMode('units'); S.selected = { kind: 'villages', id: villageId }; S.placeTool = null; renderAll(); },
     refresh: async () => { await Render.preloadTilesets(S.baseUrl, DB().tilesets); renderAll(); },

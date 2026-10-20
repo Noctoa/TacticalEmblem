@@ -42,10 +42,8 @@
     if (!unit || unit.team !== 'player' || unit.dead || unit.hp <= 0 || unit.done || unit.x !== v.x || unit.y !== v.y) return no('Une unité du joueur disponible doit se trouver sur le village.');
     if (closed(ch, v, state)) return no('Ce village a déjà été visité.');
     if ((v.allowedUnits || []).length && !v.allowedUnits.includes(unit.sourceId)) return no('Ce personnage ne peut pas visiter ce village.');
-    const reward = v.reward || {}, entry = reward.itemId && R.getEntry(db, reward.itemId);
-    if (reward.itemId && !entry) return no('Récompense introuvable.');
-    const destination = entry ? unit.inventory.length < 5 ? 'unit' : state.convoy.length < state.capacity ? 'convoy' : '' : null;
-    if (entry && !destination) return no('Inventaire et convoi pleins : libère une place avant de visiter.');
+    const reward = rewardOffer(v.reward || {}, unit.inventory, state, db);
+    if (!reward.ok) return reward;
     let recruit = null;
     if (v.recruitUnitId) {
       const def = db.units.find(u => u.id === v.recruitUnitId);
@@ -55,7 +53,14 @@
       const kind = unavailable ? 'unavailable' : present && present.team === 'player' ? 'already' : present && present.team === 'ally' ? 'ally' : (state.campaign.recruited || []).includes(def.id) ? 'already' : 'new';
       recruit = { id: def.id, name: def.name, kind, unit: present || null };
     }
-    return { ok: true, gold: reward.gold || 0, slot: entry ? { id: reward.itemId, uses: reward.uses || entry.def.uses || 0 } : null, destination, recruit };
+    return { ...reward, recruit };
+  }
+  function rewardOffer(reward, inventory, state, db) {
+    const no = error => ({ ok: false, error }), entry = reward.itemId && R.getEntry(db, reward.itemId);
+    if (reward.itemId && !entry) return no('Récompense introuvable.');
+    const destination = entry ? inventory.length < 5 ? 'unit' : state.convoy.length < state.capacity ? 'convoy' : '' : null;
+    if (entry && !destination) return no('Inventaire et convoi pleins : libère une place avant de visiter.');
+    return { ok: true, gold: reward.gold || 0, slot: entry ? { id: reward.itemId, uses: reward.uses || entry.def.uses || 0 } : null, destination };
   }
   function claim(ch, v, unit, state, db) {
     const result = offer(ch, v, unit, state, db);
@@ -70,5 +75,5 @@
   function references(db, kind, id) {
     return (db.chapters || []).flatMap(ch => list(ch).filter(v => kind === 'units' ? v.recruitUnitId === id || (v.allowedUnits || []).includes(id) : (v.reward || {}).itemId === id).map(v => `${ch.name} — ${v.name || v.id}`));
   }
-  return { list, at, visited, closed, validate, offer, claim, references };
+  return { list, at, visited, closed, validate, offer, claim, rewardOffer, references };
 });

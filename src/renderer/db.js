@@ -323,6 +323,7 @@
           { key: 'description', label: 'Description du créateur (facultative)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de la compétence.' },
           { type: 'heading', label: 'Effet' },
           { key: 'effect', label: 'Type d’effet', type: 'select', options: Skills.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
+          ...(effect.utility ? [{ type: 'info', text: 'Compétence de carte : elle doit être personnelle ou équipée et ne consomme pas de clé. Certains coffres ou portes peuvent interdire Crochetage et imposer une clé.' }] : []),
           ...(effect.amount ? [{ key: 'amount', label: effect.amount, type: 'number', min: 1, max: effect.max }] : []),
           ...(s.effect === 'auraAvoid' ? [
             { key: 'range', label: 'Rayon autour du porteur (cases)', type: 'number', min: 1, max: 10 },
@@ -334,17 +335,17 @@
               { value: 'skl', label: 'Technique de l’unité (%)' }, { value: 'lck', label: 'Chance de l’unité (%)' }] },
             ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : [])
           ] : []),
-          { type: 'heading', label: 'Conditions d’activation' },
+          ...(!effect.utility ? [{ type: 'heading', label: 'Conditions d’activation' }] : []),
           ...(effect.combat ? [
             { key: 'phase', label: 'Qui engage le combat ?', type: 'select', options: [
               { value: 'any', label: 'Dans tous les cas' }, { value: 'initiate', label: 'L’unité engage' }, { value: 'defend', label: 'L’ennemi engage' }] },
             { key: 'weaponType', label: 'Arme requise', type: 'select', empty: 'Toutes les armes', options: wtypes }
           ] : []),
-          { key: 'hpCondition', label: 'État des PV du porteur', type: 'select', options: [
+          ...(!effect.utility ? [{ key: 'hpCondition', label: 'État des PV du porteur', type: 'select', options: [
             { value: 'any', label: 'Aucune condition' }, { value: 'below', label: 'PV inférieurs ou égaux au seuil' },
             { value: 'above', label: 'PV supérieurs ou égaux au seuil' }, { value: 'full', label: 'PV au maximum' }] },
           ...(['below', 'above'].includes(s.hpCondition) ? [{ key: 'hpThreshold', label: 'Seuil (% des PV maximum)', type: 'number', min: 1, max: 100 }] : []),
-          { key: 'adjacentAlly', label: 'Nécessite au moins un allié adjacent au porteur', type: 'checkbox' }
+          { key: 'adjacentAlly', label: 'Nécessite au moins un allié adjacent au porteur', type: 'checkbox' }] : [])
         ];
       }
     },
@@ -465,15 +466,17 @@
     },
     items: {
       label: 'Objets', list: () => db().items, prefix: 'i_',
-      sub: (i) => i.effect === 'heal' ? 'soin' : i.effect === 'promotion' ? 'promotion' : 'stat',
+      sub: (i) => i.effect === 'heal' ? 'soin' : i.effect === 'promotion' ? 'promotion' : i.effect === 'key' ? 'clé' : 'stat',
       create: () => ({ name: 'Nouvel objet', effect: 'heal', amount: 10, stat: 'hp', uses: 3 }),
+      onField: (key, it) => { if (key === 'effect' && it.effect === 'key' && !it.keyType) it.keyType = 'both'; },
       fields: (it) => [
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'row', fields: [
-          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }] },
-          ...(it.effect !== 'promotion' ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
+          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }, { value: 'key', label: 'Ouvre une serrure' }] },
+          ...(['heal', 'boost'].includes(it.effect) ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
           { key: 'uses', label: 'Utilisations', type: 'number', min: 1, max: 99 }] },
         it.effect === 'boost' ? { key: 'stat', label: 'Stat', type: 'select', options: Rules.STATS.map(k => ({ value: k, label: Rules.STAT_LABELS[k] })).concat([{ value: 'mov', label: 'Déplacement' }]) } : null,
+        it.effect === 'key' ? { key: 'keyType', label: 'Serrures compatibles', type: 'select', options: [{ value: 'chest', label: 'Coffres' }, { value: 'door', label: 'Portes' }, { value: 'both', label: 'Coffres et portes' }] } : null,
         priceField
       ].filter(Boolean),
       rerenderOn: ['effect']
@@ -635,6 +638,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (['units', 'items', 'weapons', 'terrains'].includes(tab)) {
+          const locks = Locks.references(db(), tab, cur.id);
+          if (locks.length) return UI.alert('Élément utilisé par un coffre ou une porte', 'Modifie d’abord ces interactions : ' + locks.join(', ') + '.');
+        }
         if (['units', 'items', 'weapons'].includes(tab)) {
           const villages = Villages.references(db(), tab, cur.id);
           if (villages.length) return UI.alert('Élément utilisé par un village', 'Modifie d’abord ces villages : ' + villages.join(', ') + '.');
@@ -665,9 +672,15 @@
       }
     }));
     const pane = h('div', { class: 'db-form' });
+    if (tab === 'items') {
+      const missingKeys = Defaults.items().filter(it => it.effect === 'key' && !Rules.getEntry(db(), it.id));
+      if (missingKeys.length) pane.append(h('button', { class: 'small', 'data-add-key-examples': true, onclick: () => {
+        list.push(...missingKeys); selected.items = missingKeys[0].id; change(); renderBody(); UI.toast('Clés d’exemple ajoutées.');
+      } }, 'Ajouter les clés d’exemple manquantes'));
+    }
     if (tab === 'classes') {
       pane.append(h('button', { class: 'small', 'data-add-promotion-examples': true, onclick: () => {
-        const examples = Defaults.classes(), seal = Defaults.items().find(it => it.id === 'i_master_seal');
+        const examples = Defaults.classes().filter(cls => cls.id !== 'thief'), seal = Defaults.items().find(it => it.id === 'i_master_seal');
         if (byId(db().items, seal.id) && byId(db().items, seal.id).effect !== 'promotion') {
           return UI.alert('Identifiant d’objet déjà utilisé', 'Un objet du projet utilise déjà l’identifiant du sceau avec un autre effet. Modifie cet identifiant avant d’ajouter les exemples.');
         }
@@ -928,6 +941,7 @@
     renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
     renderVillages(pane, ch);
+    renderLocks(pane, ch);
     pane.append(h('div', { class: 'insp-actions', style: { margin: '10px 0 4px' } },
       h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(ch.id); } }, 'Ouvrir sur la map'),
       h('button', { class: 'small primary', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(ch.id); } }, 'Tester')));
@@ -994,6 +1008,23 @@
     }
     pane.append(h('button', { class: 'small', 'data-db-place-village': true, onclick: async () => { await close(); Editor.placeVillage(ch.id); } }, 'Placer un village sur la map'));
     for (const error of Villages.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
+  }
+  function renderLocks(pane, ch) {
+    const map = Editor.project().maps.find(m => m.id === ch.mapId); if (!map) return;
+    for (const kind of ['chests', 'doors']) {
+      pane.append(h('div', { class: 'form-heading' }, kind === 'chests' ? 'Coffres' : 'Portes'));
+      for (const object of ch[kind] || []) {
+        const card = h('details', { class: 'event-card', style: { padding: '10px', marginTop: '8px' } }, h('summary', {}, `${object.name} (${object.x}, ${object.y})`));
+        card.append(LockFields.form(object, kind, db(), map, { onChange: () => change() }), h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: async () => { await close(); Editor.selectInteraction(ch.id, kind, object.id); } }, 'Voir sur la map'),
+          h('button', { class: 'small danger', onclick: async () => {
+            if (!(await UI.confirm('Supprimer cette interaction ?', { danger: true, ok: 'Supprimer' }))) return;
+            ch[kind] = ch[kind].filter(o => o !== object); change(); renderBody();
+          } }, 'Supprimer'))); pane.append(card);
+      }
+      pane.append(h('button', { class: 'small', 'data-db-place-lock': kind, onclick: async () => { await close(); Editor.placeInteraction(ch.id, kind); } }, kind === 'chests' ? 'Placer un coffre sur la map' : 'Placer une porte sur la map'));
+    }
+    for (const error of Locks.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
   }
   function renderDeployment(pane, ch) {
     const model = { enabled: Deployment.enabled(ch), limit: (ch.deployment || {}).limit || 0, forcedUnits: ((ch.deployment || {}).forcedUnits || []).slice() };

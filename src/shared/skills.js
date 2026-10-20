@@ -15,7 +15,8 @@
     { id: 'luna', name: 'Luna — ignore une partie de la protection', amount: 'Défense / Résistance ignorée (%)', value: 50, max: 100, combat: true, proc: true },
     { id: 'sol', name: 'Sol — soin lié aux dégâts', amount: 'Dégâts réels convertis en soin (%)', value: 50, max: 100, combat: true, proc: true },
     { id: 'vantage', name: 'Vantage — riposte en premier', combat: true },
-    { id: 'miracle', name: 'Miracle — survit à un coup mortel', combat: true, proc: true }
+    { id: 'miracle', name: 'Miracle — survit à un coup mortel', combat: true, proc: true },
+    { id: 'lockpick', name: 'Crochetage — ouvre les coffres et les portes', utility: true }
   ];
   const effectOf = skill => EFFECTS.find(e => e.id === skill.effect);
   function parameters(effect) {
@@ -32,7 +33,8 @@
       ['offensive', 'Offensive', '⚔', 'damage', { phase: 'initiate' }], ['garde', 'Garde', '▣', 'guard', { phase: 'defend' }],
       ['presence', 'Présence rassurante', '✧', 'auraAvoid', {}], ['regeneration', 'Régénération', '✚', 'renewal', {}],
       ['luna', 'Luna', '☾', 'luna', {}], ['sol', 'Sol', '☀', 'sol', {}],
-      ['vantage', 'Vantage', '↶', 'vantage', {}], ['miracle', 'Miracle', '☆', 'miracle', {}]
+      ['vantage', 'Vantage', '↶', 'vantage', {}], ['miracle', 'Miracle', '☆', 'miracle', {}],
+      ['lockpick', 'Crochetage', '⚿', 'lockpick', {}]
     ].map(([id, name, icon, effect, values]) => Object.assign(create(effect), values, { id: 'skill_' + id, name, icon }));
   }
   function validate(s) {
@@ -43,6 +45,7 @@
     if (typeof s.icon !== 'string' || !s.icon.trim() || [...s.icon].length > 6) errors.push('Le symbole doit contenir un à six caractères.');
     if (typeof s.description !== 'string') errors.push('La description doit être du texte.');
     if (!spec) errors.push('Effet inconnu.');
+    if (spec && spec.utility && (s.phase !== 'any' || s.hpCondition !== 'any' || s.weaponType || s.adjacentAlly)) errors.push('Crochetage est disponible sans condition de combat, de PV ou d’adjacence.');
     if (spec && spec.amount && (!Number.isInteger(s.amount) || s.amount < 1 || s.amount > spec.max)) errors.push(`La valeur doit être un entier de 1 à ${spec.max}.`);
     if (!['any', 'initiate', 'defend'].includes(s.phase)) errors.push('Phase de combat inconnue.');
     if (!['any', 'below', 'above', 'full'].includes(s.hpCondition)) errors.push('Condition de PV inconnue.');
@@ -75,7 +78,8 @@
       luna: `Ignore ${s.amount} % de la Défense ou de la Résistance applicable à ce coup.`,
       sol: `Rend des PV à hauteur de ${s.amount} % des PV réellement retirés à la cible, sans dépasser les PV maximum.`,
       vantage: 'Riposte avant le premier coup adverse si une riposte est possible.',
-      miracle: 'Survit à un coup mortel avec 1 PV si l’unité possédait plus de 1 PV avant ce coup.'
+      miracle: 'Survit à un coup mortel avec 1 PV si l’unité possédait plus de 1 PV avant ce coup.',
+      lockpick: 'Ouvre les coffres et les portes sans clé, sauf serrure interdisant le crochetage. Doit être personnelle ou équipée. L’ouverture consomme l’action.'
     }[s.effect];
     const conditions = [];
     if (spec.combat && s.phase !== 'any') conditions.push(s.phase === 'initiate' ? 'l’unité engage le combat' : 'l’ennemi engage le combat');
@@ -203,7 +207,7 @@
       (other.team === 'enemy') === (unit.team === 'enemy');
     return assigned(unit, catalogue).map(entry => entry.skill).filter(skill => {
       const spec = effectOf(skill);
-      if (!spec) return false;
+      if (!spec || spec.utility) return false;
       if (spec.combat && skill.phase !== 'any' && (context.initiating === undefined ||
           (skill.phase === 'initiate') !== context.initiating)) return false;
       if (spec.combat && skill.weaponType && (!context.weapon || context.weapon.type !== skill.weaponType)) return false;
