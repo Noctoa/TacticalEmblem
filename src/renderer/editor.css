@@ -251,3 +251,15 @@
 .db-empty { padding: 10px 8px; color: var(--muted); font-size: 12px; }
 .pick-units { display: flex; flex-direction: column; gap: 2px; }
 .pick-subgroup { padding: 6px 8px 2px; font-size: 11px; color: var(--gold-2); }
+
+/* Base de données › Chapitres et actes : arbre (chapitres, actes en sous-cases) */
+.ch-tree .db-group { align-items: center; }
+.ch-tree .ch-add { padding: 1px 5px; margin-left: auto; }
+.ch-tree .ch-arc { color: var(--text); font-weight: 600; }
+.ch-tree .ch-arc .sub { font-weight: 400; }
+.ch-tree .ch-toggle { width: 18px; height: 18px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 11px; flex: none; display: grid; place-items: center; }
+.ch-tree .ch-toggle:hover { color: var(--gold-2); }
+.ch-tree .ch-act { margin-left: 18px; padding-left: 10px; border-left: 1px solid var(--line-2); border-radius: 0 5px 5px 0; }
+.ch-tree .ch-act .n { width: auto; min-width: 42px; }
+.ch-tree .ch-new { display: block; width: calc(100% - 18px); text-align: left; padding: 4px 10px; font-size: 12px; color: var(--muted); background: transparent; border-top: 0; border-right: 0; border-bottom: 0; cursor: pointer; }
+.ch-tree .ch-new:hover { color: var(--gold-2); }

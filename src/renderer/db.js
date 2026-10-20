@@ -583,7 +583,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres'], ['chapters', 'Actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres et actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['resources', 'Ressources'], ['system', 'Système']];
 
   function open(t, id) {
     if (t) tab = t;
@@ -600,7 +600,7 @@
 
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of ORDER) nav.append(h('button', { class: tab === k ? 'on' : '', onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    for (const [k, label] of ORDER) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
   }
 
   function renderBody() {
@@ -912,21 +912,7 @@
     const maps = Editor.project().maps;
     if (!list.find(e => e.id === selected.chapters)) selected.chapters = list[0] ? list[0].id : null;
     const ch = byId(list, selected.chapters);
-    body.append(listPanel(list, ch && ch.id, {
-      sub: (c) => { const i = Lobby.actInfo(db(), c.id); return i && !i.arc.implicit ? `ch. ${(db().arcs || []).findIndex(a => a.id === i.arc.id) + 1} · acte ${i.index + 1}` : (byId(maps, c.mapId) || { name: '—' }).name; },
-      onAdd: () => {
-        const c = newAct(); if (!c) return;
-        selected.chapters = c.id; change(); renderBody();
-      },
-      onDelete: async () => {
-        if (!ch) return;
-        if (!(await UI.confirm(`Supprimer « ${ch.name} » et tous ses placements / événements ?`, { danger: true, ok: 'Supprimer' }))) return;
-        list.splice(list.indexOf(ch), 1);
-        for (const a of db().arcs || []) a.acts = (a.acts || []).filter(id => id !== ch.id);
-        if (Editor.project().meta.startChapter === ch.id) Editor.project().meta.startChapter = list[0] ? list[0].id : '';
-        change(); renderBody();
-      }
-    }));
+    body.append(chapterTree());
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
     if (!ch) { pane.append(h('div', { class: 'db-empty' }, 'Aucun acte.')); return; }
@@ -937,12 +923,12 @@
     const info = Lobby.actInfo(db(), ch.id);
     const inArc = info && !info.arc.implicit;
     pane.append(inArc
-      ? h('p', { class: 'arc-line' }, h('b', {}, info.arc.name), ` · acte ${info.index + 1} sur ${info.arc.acts.length} `, h('a', { href: '#', onclick: (e) => { e.preventDefault(); selected.arcs = info.arc.id; open('arcs'); } }, 'Voir le chapitre'))
+      ? h('p', { class: 'arc-line' }, h('b', {}, info.arc.name), ` · acte ${info.index + 1} sur ${info.arc.acts.length} `, h('a', { href: '#', onclick: (e) => { e.preventDefault(); selectNode('arcs', info.arc.id); } }, 'Voir le chapitre'))
       : h('div', { class: 'arc-line muted' }, "Cet acte n'est rangé dans aucun chapitre : il apparaît seul au tableau des quêtes. ",
         (db().arcs || []).length ? (() => {
           const sel = h('select', {}, (db().arcs || []).map(a => h('option', { value: a.id }, a.name || a.id)));
           return h('span', { class: 'arc-add' }, sel, h('button', { class: 'small', onclick: () => { const a = byId(db().arcs, sel.value); a.acts = (a.acts || []).concat(ch.id); change(); renderBody(); } }, 'Ranger dans ce chapitre'));
-        })() : h('a', { href: '#', onclick: (e) => { e.preventDefault(); open('arcs'); } }, 'Créer un chapitre')));
+        })() : h('a', { href: '#', onclick: (e) => { e.preventDefault(); addArc('story'); } }, 'Créer un chapitre')));
     pane.append(UI.form([
       { type: 'row', fields: [
         { key: 'name', label: 'Nom', type: 'text' },
@@ -956,7 +942,7 @@
       { type: 'row', fields: [
         { key: 'next', label: 'Acte suivant (jeu sans lobby)', type: 'select', empty: '— aucun —', options: () => db().chapters.filter(c => c.id !== ch.id).map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'final', label: "Dernier acte : la victoire ouvre l'épilogue", type: 'checkbox' }] },
-      { type: 'info', text: "Sans lobby, « Acte suivant » enchaîne les actes. Avec le lobby, l'ordre vient des chapitres (onglet Chapitres). Les niveaux, objets, convoi, affinités et morts sont conservés d'un acte à l'autre." },
+      { type: 'info', text: "Sans lobby, « Acte suivant » enchaîne les actes. Avec le lobby, l'ordre vient des chapitres (la liste à gauche). Les niveaux, objets, convoi, affinités et morts sont conservés d'un acte à l'autre." },
       { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
         inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
@@ -1140,6 +1126,61 @@
   /** Dossier (relatif au projet) qui contient une ressource. */
   const folderOf = (key) => key.split('/').slice(0, -1).join('/');
 
+  // Tri des ressources graphiques : par personnage (dossier), type, série ou arme du personnage
+  const RES_SORTS = [{ id: '', label: 'Personnage (dossier)' }, { id: 'type', label: 'Type de ressource' }, { id: 'series', label: 'Série' }, { id: 'weapon', label: 'Arme' }];
+  const resView = { by: '', query: '' };
+  try { resView.by = JSON.parse(localStorage.getItem('tf.resView') || '{}').by || ''; } catch (e) { /* stockage indisponible */ }
+  const foldText = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  /** Personnages et classes liés à un dossier de ressources : même nom, ou une de ses ressources leur est attribuée. */
+  function ownerLinks(owner) {
+    const d = db(), uses = (o) => [o.portrait, o.battler, o.mapSprite].some(k => k && ownerOfKey(k) === owner);
+    const units = d.units.filter(u => foldText(u.name) === foldText(owner) || uses(u));
+    const classes = d.classes.filter(uses);
+    return { units, classes };
+  }
+  function ownerSeries(owner) {
+    const { units } = ownerLinks(owner);
+    return [...new Set(units.map(u => Roster.seriesOf(u)).filter(Boolean))];
+  }
+  function ownerWeapons(owner) {
+    const { units, classes } = ownerLinks(owner);
+    const types = new Set(units.flatMap(u => Roster.weaponTypesOf(u, db())));
+    if (!types.size) for (const c of classes) for (const w of c.weapons || []) types.add(w);
+    const order = Rules.WEAPON_TYPES.map(w => w.id);
+    return [...types].sort((a, b) => order.indexOf(a) - order.indexOf(b));
+  }
+  /** Groupes affichés : [{ section, folder, label, items }] (label vide = pas de sous-titre). */
+  function resourceGroups(owners, byOwner, tilesets, view) {
+    const q = foldText(view.query).trim();
+    const hit = (it) => !q || q.split(/\s+/).every(w => [it.label, it.key, it.owner, KIND_LABEL[it.kind], ...(it.owner ? ownerSeries(it.owner) : []), ...(it.owner ? ownerWeapons(it.owner).map(Roster.weaponLabel) : [])].some(t => foldText(t).includes(w)));
+    const chars = owners.flatMap(o => byOwner.get(o)).filter(hit);
+    const tiles = tilesets.filter(hit);
+    const tileGroup = { section: 'Tilesets', folder: 'ressources/tilesets', label: '', items: tiles };
+    const sectionP = 'Personnages', folderP = 'ressources/personnages';
+    const by = view.by || '';
+    if (by === 'type') {
+      return ['characters', 'battlers', 'faces'].map(kind => ({ section: sectionP, folder: folderP, label: { characters: 'Sprites de map', battlers: 'Animations de combat', faces: 'Portraits' }[kind], items: chars.filter(it => it.kind === kind) }))
+        .filter(g => g.items.length || !q).concat([tileGroup]);
+    }
+    const groups = new Map();
+    const push = (key, label, it) => { if (!groups.has(key)) groups.set(key, { section: sectionP, folder: folderP, label, items: [] }); if (it) groups.get(key).items.push(it); };
+    if (!by) {
+      for (const o of owners) if (!q) push(o, o);
+      for (const it of chars) push(it.owner || '(sans dossier)', it.owner || '(sans dossier)', it);
+      return [...groups.values()].concat([tileGroup]);
+    }
+    for (const it of chars) {
+      const keys = by === 'series' ? ownerSeries(it.owner) : ownerWeapons(it.owner).map(Roster.weaponLabel);
+      if (!keys.length) push('~', by === 'series' ? Roster.NO_SERIES : Roster.NO_WEAPON, it);
+      for (const k of keys) push(k, k, it);
+    }
+    const order = Rules.WEAPON_TYPES.map(w => w.name);
+    const out = [...groups.entries()].sort(([a], [b]) => (a === '~') - (b === '~') || (by === 'weapon' ? order.indexOf(a) - order.indexOf(b) : a.localeCompare(b, 'fr'))).map(([, g]) => g);
+    // à l'intérieur d'un groupe : par personnage puis par type
+    for (const g of out) g.items.sort((a, b) => (a.owner || '').localeCompare(b.owner || '', 'fr') || ({ characters: 0, battlers: 1, faces: 2 }[a.kind] - { characters: 0, battlers: 1, faces: 2 }[b.kind]));
+    return out.concat([tileGroup]);
+  }
+
   function renderResources(body) {
     const r = res();
     // un groupe par dossier de personnage, puis les tilesets
@@ -1147,7 +1188,7 @@
     const add = (kind, key, label) => {
       const own = ownerOfKey(key) || '(sans dossier)';
       if (!byOwner.has(own)) byOwner.set(own, []);
-      byOwner.get(own).push({ kind, key, label });
+      byOwner.get(own).push({ kind, key, label, owner: ownerOfKey(key) });
     };
     for (const own of r.owners || []) byOwner.set(own, []);
     for (const [k, m] of Object.entries(r.characters)) add('characters', k, m.name || k.split('/').pop());
@@ -1165,20 +1206,32 @@
       const ic = it.kind === 'characters' ? Sprites.icon(Editor.baseUrl(), r.characters[it.key], 'original', 24)
         : h('span', { class: 'res-kind', title: KIND_LABEL[it.kind] }, { battlers: '⚔', faces: '☺', tilesets: '▦' }[it.kind] || '•');
       return h('div', { class: 'db-item' + (resSel && resSel.key === it.key ? ' on' : ''), title: it.key, onclick: () => { resSel = { kind: it.kind, key: it.key }; renderBody(); } },
-        ic, h('span', {}, it.label), h('span', { class: 'meta' }, KIND_LABEL[it.kind]));
+        ic, h('span', {}, it.kind === 'faces' && resView.by && it.owner ? it.owner + ' — portrait' : it.label), h('span', { class: 'meta' }, resView.by === 'type' ? (it.owner || '') : KIND_LABEL[it.kind]));
     };
-    items.append(h('div', { class: 'pick-group' }, 'Personnages', h('span', { class: 'muted res-folder' }, 'ressources/personnages')));
-    if (!owners.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
-    for (const own of owners) {
-      const list = byOwner.get(own);
-      items.append(h('div', { class: 'res-owner' }, own, h('span', { class: 'muted' }, list.length ? ` · ${list.length}` : ' · vide')));
-      for (const it of list) items.append(item(it));
-    }
-    items.append(h('div', { class: 'pick-group' }, 'Tilesets', h('span', { class: 'muted res-folder' }, 'ressources/tilesets')));
-    if (!tilesets.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
-    for (const it of tilesets) items.append(item(it));
+    const fill = () => {
+      items.replaceChildren();
+      const groups = resourceGroups(owners, byOwner, tilesets, resView);
+      let currentSection = null;
+      for (const g of groups) {
+        if (g.section !== currentSection) { currentSection = g.section; items.append(h('div', { class: 'pick-group' }, g.section, g.folder ? h('span', { class: 'muted res-folder' }, g.folder) : null)); }
+        if (g.label) items.append(h('div', { class: 'res-owner' }, g.label, h('span', { class: 'muted' }, g.items.length ? ` · ${g.items.length}` : ' · vide')));
+        else if (!g.items.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'vide')));
+        for (const it of g.items) items.append(item(it));
+      }
+      if (resView.query && !groups.some(g => g.items.length)) items.append(h('p', { class: 'db-empty' }, 'Aucune ressource ne correspond.'));
+    };
+    fill();
+    const search = h('input', { type: 'search', class: 'roster-search', placeholder: 'Rechercher (personnage, fichier, série, arme)…', value: resView.query });
+    search.addEventListener('input', () => { resView.query = search.value; fill(); });
+    const sort = h('select', { class: 'roster-sort', title: 'Trier / regrouper par' }, RES_SORTS.map(o => h('option', { value: o.id }, o.label)));
+    sort.value = resView.by;
+    sort.addEventListener('change', () => {
+      resView.by = sort.value; fill();
+      try { localStorage.setItem('tf.resView', JSON.stringify({ by: resView.by })); } catch (e) { /* stockage indisponible */ }
+    });
+    const tools = h('div', { class: 'roster-tools' }, search, h('label', {}, 'Trier par', sort));
 
-    body.append(h('div', { class: 'db-list' }, items, h('div', { class: 'db-list-actions' },
+    body.append(h('div', { class: 'db-list' }, tools, items, h('div', { class: 'db-list-actions' },
       h('button', { class: 'small', title: 'Ouvre le dossier de la ressource sélectionnée', onclick: () => tf.openResourceFolder(Editor.dir(), resSel ? folderOf(resSel.key) : 'ressources') }, 'Ouvrir le dossier'),
       h('button', { class: 'small', onclick: async () => { await Editor.rescanResources(); renderBody(); UI.toast('Ressources rechargées'); } }, 'Rescanner')),
       h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut'))));
@@ -1344,6 +1397,105 @@
   // Chapitres : groupes d'actes (data/arcs.json), joués dans l'ordre, rangés en Histoire / Évènements
   // ------------------------------------------------------------------
   /** Nouvel acte vide sur la map courante (ou la première). */
+  // ------------------------------------------------------------------
+  // Chapitres et actes : un seul onglet, arbre des chapitres avec leurs actes en sous-cases
+  // ------------------------------------------------------------------
+  const collapsedArcs = new Set();
+  const treeView = { query: '' };
+  function arcOfAct(id) { return (db().arcs || []).find(a => (a.acts || []).includes(id)); }
+  function selectNode(kind, id) { tab = kind; selected[kind] = id; renderTabs(); renderBody(); }
+  async function deleteAct(ch) {
+    const list = db().chapters;
+    const recruits = db().units.filter(u => u.recruitAfter === ch.id);
+    if (recruits.length) return UI.alert('Acte utilisé pour un recrutement', 'Modifie d’abord le recrutement de : ' + recruits.map(u => u.name).join(', ') + '.');
+    if (!(await UI.confirm(`Supprimer l'acte « ${ch.name} » et tous ses placements / événements ?`, { danger: true, ok: 'Supprimer' }))) return;
+    const arc = arcOfAct(ch.id), pos = arc ? arc.acts.indexOf(ch.id) : -1;
+    list.splice(list.indexOf(ch), 1);
+    for (const a of db().arcs || []) a.acts = (a.acts || []).filter(id => id !== ch.id);
+    if (Editor.project().meta.startChapter === ch.id) Editor.project().meta.startChapter = list[0] ? list[0].id : '';
+    // sélection suivante : l'acte voisin du même chapitre, sinon le chapitre
+    change();
+    if (arc && arc.acts.length) selectNode('chapters', arc.acts[Math.min(pos, arc.acts.length - 1)]);
+    else if (arc) selectNode('arcs', arc.id);
+    else renderBody();
+  }
+  async function deleteArc(arc) {
+    const list = db().arcs;
+    const recruits = db().units.filter(u => u.recruitAfter === arc.id);
+    if (recruits.length) return UI.alert('Chapitre utilisé pour un recrutement', 'Modifie d’abord le recrutement de : ' + recruits.map(u => u.name).join(', ') + '.');
+    if (!(await UI.confirm(`Supprimer le chapitre « ${arc.name} » ? Ses actes sont gardés (ils apparaîtront seuls au tableau des quêtes, dans « Actes non rangés »).`, { danger: true, ok: 'Supprimer' }))) return;
+    list.splice(list.indexOf(arc), 1); change(); renderBody();
+  }
+  function addArc(kind) {
+    const list = db().arcs || (db().arcs = []);
+    const a = { id: Editor.uid('arc_', list), name: kind === 'event' ? 'Évènement ' + (list.filter(x => x.kind === 'event').length + 1) : 'Chapitre ' + (list.filter(x => x.kind !== 'event').length + 1),
+      kind, description: '', unlock: { after: '', alive: [], from: '', to: '' }, acts: [] };
+    list.push(a); collapsedArcs.delete(a.id); change(); selectNode('arcs', a.id);
+  }
+  function addActTo(arc) {
+    const c = newAct(); if (!c) return;
+    if (arc) { c.name = `Acte ${arc.acts.length + 1}`; arc.acts.push(c.id); collapsedArcs.delete(arc.id); }
+    change(); selectNode('chapters', c.id);
+  }
+  function chapterTree() {
+    const arcs = db().arcs || [], acts = db().chapters;
+    const curArc = tab === 'arcs' ? byId(arcs, selected.arcs) : null;
+    const curAct = tab === 'chapters' ? byId(acts, selected.chapters) : null;
+    const parentArc = curAct ? arcOfAct(curAct.id) : curArc;
+    if (curAct && parentArc) collapsedArcs.delete(parentArc.id); // l'acte ouvert reste visible
+    const maps = Editor.project().maps;
+    const box = h('div', { class: 'db-list-items ch-tree' });
+    const fold = v => String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    const actRow = (c, label) => {
+      const map = byId(maps, c.mapId);
+      return h('div', { class: 'db-item ch-act' + (curAct && curAct.id === c.id ? ' on' : ''), 'data-act': c.id, title: map ? 'Map : ' + map.name : '', onclick: () => selectNode('chapters', c.id) },
+        h('span', { class: 'n' }, label), h('span', {}, c.name), c.id === Editor.project().meta.startChapter ? h('span', { class: 'sub' }, 'départ') : null);
+    };
+    const fill = () => {
+      box.replaceChildren();
+      const q = fold(treeView.query.trim());
+      const hit = (...texts) => !q || texts.some(t => fold(t).includes(q));
+      let shown = 0;
+      for (const [kind, title] of [['story', 'Histoire'], ['event', 'Évènements']]) {
+        const group = arcs.filter(a => (a.kind === 'event' ? 'event' : 'story') === kind);
+        box.append(h('div', { class: 'db-group' }, title, h('button', { class: 'mini ch-add', title: kind === 'event' ? 'Nouvel évènement' : 'Nouveau chapitre', html: Icons.icon('plus'), onclick: () => addArc(kind) })));
+        let any = false;
+        group.forEach(a => {
+          const list = (a.acts || []).map(id => byId(acts, id)).filter(Boolean);
+          const arcHit = hit(a.name), matching = list.filter(c => arcHit || hit(c.name));
+          if (q && !arcHit && !matching.length) return;
+          any = true; shown++;
+          const open = q || !collapsedArcs.has(a.id);
+          const num = kind === 'event' ? '' : String(group.indexOf(a) + 1);
+          box.append(h('div', { class: 'db-item ch-arc' + (curArc && curArc.id === a.id ? ' on' : ''), 'data-arc': a.id, onclick: () => selectNode('arcs', a.id) },
+            h('button', { class: 'ch-toggle', title: open ? 'Replier' : 'Déplier', onclick: (e) => { e.stopPropagation(); if (collapsedArcs.has(a.id)) collapsedArcs.delete(a.id); else collapsedArcs.add(a.id); fill(); } }, open ? '▾' : '▸'),
+            h('span', {}, a.name || a.id), h('span', { class: 'sub' }, num ? `ch. ${num} · ${list.length} acte(s)` : `${list.length} acte(s)`)));
+          if (open) {
+            (q ? matching : list).forEach(c => box.append(actRow(c, 'Acte ' + (list.indexOf(c) + 1))));
+            if (!q) box.append(h('button', { class: 'ch-act ch-new', onclick: () => addActTo(a) }, '+ Nouvel acte'));
+          }
+        });
+        if (!any) box.append(h('p', { class: 'db-empty' }, q ? 'Aucun résultat.' : (kind === 'event' ? 'Aucun évènement.' : 'Aucun chapitre.')));
+      }
+      const used = new Set(arcs.flatMap(a => a.acts || []));
+      const free = acts.filter(c => !used.has(c.id) && hit(c.name));
+      if (free.length) {
+        box.append(h('div', { class: 'db-group' }, 'Actes non rangés', h('span', {}, String(free.length))));
+        free.forEach(c => box.append(actRow(c, '—')));
+      }
+    };
+    fill();
+    const search = h('input', { type: 'search', class: 'roster-search', placeholder: 'Rechercher un chapitre ou un acte…', value: treeView.query });
+    search.addEventListener('input', () => { treeView.query = search.value; fill(); });
+    const target = curAct || curArc;
+    const actions = h('div', { class: 'db-list-actions' },
+      h('button', { class: 'small', title: 'Nouveau chapitre d’histoire', html: Icons.icon('plus'), onclick: () => addArc('story') }, 'Chapitre'),
+      h('button', { class: 'small', title: parentArc ? `Nouvel acte dans « ${parentArc.name} »` : 'Nouvel acte (non rangé)', html: Icons.icon('plus'), onclick: () => addActTo(parentArc) }, 'Acte'),
+      h('button', { class: 'small danger', title: curAct ? 'Supprimer cet acte' : 'Supprimer ce chapitre (ses actes sont gardés)', html: Icons.icon('trash'), disabled: !target,
+        onclick: () => curAct ? deleteAct(curAct) : curArc && deleteArc(curArc) }));
+    return h('div', { class: 'db-list' }, h('div', { class: 'roster-tools' }, search), box, actions);
+  }
+
   function newAct() {
     const maps = Editor.project().maps, list = db().chapters;
     const m = maps.find(m => m.id === Editor.state.mapId) || maps[0];
@@ -1356,26 +1508,12 @@
     const list = db().arcs || (db().arcs = []);
     if (!list.find(e => e.id === selected.arcs)) selected.arcs = list[0] ? list[0].id : null;
     const arc = byId(list, selected.arcs);
-    body.append(listPanel(list, arc && arc.id, {
-      sub: (a) => `${a.kind === 'event' ? 'évènement' : 'histoire'} · ${(a.acts || []).length} acte(s)`,
-      onAdd: () => {
-        const a = { id: Editor.uid('arc_', list), name: 'Chapitre ' + (list.filter(x => x.kind !== 'event').length + 1), kind: 'story', description: '', unlock: { after: '', alive: [], from: '', to: '' }, acts: [] };
-        list.push(a); selected.arcs = a.id; change(); renderBody();
-      },
-      onCopy: null,
-      onDelete: async () => {
-        if (!arc) return;
-        const recruits = db().units.filter(u => u.recruitAfter === arc.id);
-        if (recruits.length) return UI.alert('Chapitre utilisé pour un recrutement', 'Modifie d’abord le recrutement de : ' + recruits.map(u => u.name).join(', ') + '.');
-        if (!(await UI.confirm(`Supprimer le chapitre « ${arc.name} » ? Ses actes sont gardés (ils apparaîtront seuls au tableau des quêtes).`, { danger: true, ok: 'Supprimer' }))) return;
-        list.splice(list.indexOf(arc), 1); change(); renderBody();
-      }
-    }));
+    body.append(chapterTree());
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
     pane.append(h('p', { class: 'form-info', style: { maxWidth: '760px' } }, "Un chapitre regroupe des actes (les niveaux jouables), joués dans l'ordre : l'acte 2 s'ouvre quand l'acte 1 est terminé. Au tableau des quêtes du lobby, les chapitres d'histoire s'ouvrent l'un après l'autre (dans l'ordre de cette liste) ; les évènements selon leurs conditions et leurs dates."));
     for (const e of Lobby.validateArcs(db())) pane.append(h('p', { class: 'note' }, '⚠ ' + e));
-    if (!arc) { pane.append(h('div', { class: 'db-empty' }, 'Aucun chapitre : chaque acte apparaît seul au tableau des quêtes. « Nouveau » pour en créer un.')); return; }
+    if (!arc) { pane.append(h('div', { class: 'db-empty' }, 'Aucun chapitre : chaque acte apparaît seul au tableau des quêtes. « + Chapitre » pour en créer un.')); return; }
     arc.unlock = Object.assign({ after: '', alive: [], from: '', to: '' }, arc.unlock || {});
     arc.acts = arc.acts || [];
     pane.append(h('h2', {}, arc.name, h('span', { class: 'id' }, arc.id)));
@@ -1391,7 +1529,7 @@
         { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
         { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
       { type: 'info', text: (a) => a.kind === 'event' ? "Évènement : visible quand ses conditions sont remplies ; daté, il s'affiche « Bientôt » avant sa date et disparaît après." : "Histoire : s'ouvre quand le chapitre d'histoire précédent est terminé (le premier contient l'acte de départ, Système). Les conditions s'ajoutent à cet ordre." }
-    ], arc, { onChange: (k) => { change(); if (k === 'name' || k === 'kind') renderBody(); } }));
+    ], arc, { onChange: (k) => { change(); if (k === 'kind') renderBody(); else if (k === 'name') { pane.querySelector('h2').firstChild.textContent = arc.name; const row = document.querySelector(`#db-body [data-arc="${arc.id}"] span:nth-child(2)`); if (row) row.textContent = arc.name; } } }));
 
     // actes du chapitre, dans l'ordre
     pane.append(h('div', { class: 'form-heading', style: { maxWidth: '760px' } }, `Actes (${arc.acts.length})`));
@@ -1407,7 +1545,7 @@
         h('span', { class: 'arc-tools' },
           h('button', { class: 'mini', title: 'Monter', disabled: i === 0, onclick: () => move(-1) }, '▲'),
           h('button', { class: 'mini', title: 'Descendre', disabled: i === arc.acts.length - 1, onclick: () => move(1) }, '▼'),
-          c ? h('button', { class: 'small', onclick: () => { selected.chapters = id; open('chapters'); } }, 'Modifier') : null,
+          c ? h('button', { class: 'small', onclick: () => selectNode('chapters', id) }, 'Modifier') : null,
           c ? h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(id); } }, 'Placements') : null,
           h('button', { class: 'small danger', title: 'Retirer du chapitre (l\'acte est gardé)', html: Icons.icon('trash'), onclick: () => { arc.acts.splice(i, 1); change(); renderBody(); } }))));
     });
@@ -1417,7 +1555,7 @@
     const free = db().chapters.filter(c => !used.has(c.id));
     const sel = h('select', {}, free.map(c => h('option', { value: c.id }, c.name)));
     pane.append(h('div', { class: 'insp-actions', style: { margin: '8px 0', maxWidth: '760px' } },
-      h('button', { class: 'small primary', html: Icons.icon('plus'), onclick: () => { const c = newAct(); if (!c) return; c.name = `Acte ${arc.acts.length + 1}`; arc.acts.push(c.id); change(); renderBody(); } }, 'Nouvel acte'),
+      h('button', { class: 'small primary', html: Icons.icon('plus'), onclick: () => addActTo(arc) }, 'Nouvel acte'),
       free.length ? sel : null,
       free.length ? h('button', { class: 'small', onclick: () => { arc.acts.push(sel.value); change(); renderBody(); } }, 'Ajouter cet acte') : h('span', { class: 'muted' }, 'Tous les actes sont rangés dans un chapitre.')));
     const first = byId(db().chapters, arc.acts[0]);
