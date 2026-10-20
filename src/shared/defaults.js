@@ -140,7 +140,14 @@
   function characters() {
     const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', movBonus: 0, gender: '', protagonist: false, ending: '' }, o);
     return [
-      u({ id: 'c_eliwood', name: 'Eliwood', classId: 'lord', level: 1, color: '#c0392b', convoy: true, gender: 'homme', protagonist: true,
+      // protagoniste : héros du camp, chef d'escouade (convoi). Sprite de map : celui de la classe Seigneur, en attendant le sien.
+      u({ id: 'c_xarrin', name: 'Xarrin', classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
+        ending: "Xarrin ne posa jamais vraiment son épée. Mais ceux qui l'avaient suivi savaient qu'il reviendrait toujours au camp, là où tout avait commencé.",
+        stats: st(19, 6, 0, 6, 8, 6, 5, 1), growths: st(80, 50, 5, 50, 50, 45, 30, 30),
+        inventory: [{ id: 'w_iron_sword' }, { id: 'w_slim_sword' }, { id: 'i_vulnerary' }],
+        battler: BT('Xarrin'), portrait: FACE('Xarrin'),
+        bio: "Épéiste au manteau vert qui mène la compagnie. Rapide, direct, et toujours le premier à charger." }),
+      u({ id: 'c_eliwood', name: 'Eliwood', classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
         stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
         inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
@@ -156,7 +163,7 @@
         inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
         portrait: FACE('Hector'), bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
       // Allié (unité verte) : classe générique, sprites propres à l'unité
-      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
+      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],
@@ -210,6 +217,33 @@
     };
   }
 
+  // ------------------------------------------------------------------
+  // Tileset « Village » (16 px, agrandi ×2 sur les maps en 32 px, comme les sprites de map)
+  // ------------------------------------------------------------------
+  const VILLAGE_TERRAIN = (() => {
+    const t = {};
+    const set = (terrain, ...ids) => ids.forEach(i => { t[i] = terrain; });
+    set('plain', 0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 21, 32, 33, 34, 35, 36, 37);
+    set('plain', 112, 113, 114, 115, 128, 129, 130, 131, 133, 134, 144, 145, 146, 147, 150); // plateau de terre
+    set('wall', 48, 49, 50, 51, 52, 53, 64, 65, 66, 67, 68, 69, 116, 117, 118, 132, 148, 149, 160, 161, 162, 163, 164, 165); // falaises
+    set('water', 70, 80, 81, 82, 83, 84, 85, 86, 96, 97, 98, 99, 100, 101, 102);
+    set('road', 12, 13, 14, 15, 28, 29, 30, 31, 44, 45, 46, 47, 61, 62, 63);
+    set('forest', 22, 24, 38, 39, 40);
+    set('bush', 7, 23);
+    set('village', 10, 26, 27, 42, 43, 58);
+    set('mountain', 9, 54, 55, 56, 71, 72);
+    set('wall', 25, 74, 75, 88, 103, 105, 106); // puits, panneau, étal, charrette, caisses, tas de pierres
+    set('bridge', 76, 90, 91, 92, 108);
+    return t;
+  })();
+  function villageTileset() {
+    return {
+      id: 'ts_village', name: 'Village', image: 'ressources/tilesets/village.png', tileWidth: 16, tileHeight: 16,
+      columns: 16, tileCount: 256, margin: 0, spacing: 0, imageWidth: 256, imageHeight: 256,
+      tileTerrain: Object.assign({}, VILLAGE_TERRAIN)
+    };
+  }
+
   function sampleTileset() {
     return {
       id: 'ts_plaines', name: 'Plaines', image: 'ressources/tilesets/plaines.png', tileWidth: 32, tileHeight: 32,
@@ -226,6 +260,7 @@
       next: 'ch_1_2', final: false, // sans lobby : les actes s'enchaînent par « Acte suivant »
       kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
       players: [
+        { id: 'p0', unitId: 'c_xarrin', x: 5, y: 13 },
         { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
         { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
         { id: 'p3', unitId: 'c_hector', x: 6, y: 13 }
@@ -250,18 +285,19 @@
         { id: 'ev1', trigger: { type: 'start' }, once: true, script:
           "Lyn: Les brigands tiennent le vieux fort depuis l'aube. Ils pillent tout ce qui traverse la rivière.\n" +
           "Hector: Parfait. Ça fait trois jours que ma hache s'ennuie.\n" +
-          "Eliwood: Doucement, Hector. Leur chef, Batta, ne quittera pas le fort : on avance ensemble.\n" +
+          "Xarrin: Doucement, Hector. Leur chef, Batta, ne quittera pas le fort : on avance ensemble.\n" +
+          "Eliwood: Je reste à côté de toi, Xarrin. Si l'un de nous est encerclé, l'autre le dégage.\n" +
           "Lyn: Je couvre le flanc gauche. Mon arc portera plus loin que leurs hachettes.\n" +
           "Cloud: … Ces brigands bloquent ma route. Je m'en occupe, mais je ne travaille pas pour vous.\n" +
-          "Eliwood: Un mercenaire ? Tant qu'il vise les brigands, il est le bienvenu.\n" +
-          "Eliwood: Si quelqu'un a besoin d'une arme ou d'une potion, venez me voir : j'ai le convoi." },
+          "Xarrin: Un mercenaire ? Tant qu'il vise les brigands, il est le bienvenu.\n" +
+          "Xarrin: Si quelqu'un a besoin d'une arme ou d'une potion, venez me voir : j'ai le convoi." },
         { id: 'ev2', trigger: { type: 'turn', turn: 3 }, once: true, script:
-          "Lyn: Eliwood ! D'autres brigands descendent des collines, au sud-est.\n" +
+          "Lyn: Xarrin ! D'autres brigands descendent des collines, au sud-est.\n" +
           "Hector: Tant mieux. Plus on est de fous…" },
         { id: 'ev3', trigger: { type: 'death', target: 'e7' }, once: true, script:
           "Batta: Grr… battu par trois gamins…" },
         { id: 'ev4', trigger: { type: 'victory' }, once: true, script:
-          "Eliwood: Le fort est libre. Les villageois vont pouvoir rentrer chez eux.\n" +
+          "Xarrin: Le fort est libre. Les villageois vont pouvoir rentrer chez eux.\n" +
           "Hector: Déjà fini ? J'espérais mieux de ce Batta.\n" +
           "Lyn: Ne te plains pas, Hector. Personne n'est blessé." }
       ]
@@ -271,54 +307,89 @@
   // ------------------------------------------------------------------
   // Lobby d'exemple : le camp entre deux chapitres
   // ------------------------------------------------------------------
-  const LOBBY_ASCII = [
-    'TTTTT.TT..TTTT',
-    'T,.....=.....T',
-    'T.V....=..F..T',
-    '..,....=......',
-    '..b..=====.b..',
-    '.....=...=....',
-    'T.s..=.,.=..s.',
-    'TT...=====..TT',
-    'TTT....=...TTT',
-    'TTTT...=..TTTT'
-  ];
+  // Camp : 3 calques (sol, chemins, décor) avec le tileset Village. Une lettre = une tuile (index dans le tileset).
+  const CAMP = {
+    sol: [ // . herbe, étang en bas à gauche (falaise / eau)
+      '..............',
+      '..............',
+      '..............',
+      '..............',
+      '..............',
+      '..............',
+      '.abc..........',
+      '.def..........',
+      '.ghi..........',
+      '..............'],
+    chemins: [ // | vertical  - horizontal  + croisement  v bout haut  ^ bout bas  L coin haut-droite  J coin haut-gauche
+      '..............',
+      '.......v......',
+      '..v....|..v...',
+      '..|....|..|...',
+      '..L----+--J...',
+      '.......|......',
+      '.......|......',
+      '.......|......',
+      '.......|......',
+      '.......^......'],
+    decor: [ // P/p sapins, C/c bosquets, B buisson, H/h maisons, Q panneau des quêtes, W puits, F fleurs, g herbes, X/x caisses, A charrette, N fanions, o caillou
+      'PpCPpC..cPpCpP',
+      'P.....N.N....p',
+      'cxH.F.....QA.C',
+      'P...........gp',
+      'B............B',
+      'g...F.....F...',
+      '..........o..c',
+      '.....F...W...P',
+      '............Xp',
+      'PpC.F...cPpCpP']
+  };
+  const CAMP_TILES = {
+    sol: { '.': 17, a: 67, b: 68, c: 69, d: 80, e: 81, f: 82, g: 96, h: 97, i: 101 },
+    chemins: { '|': 44, '-': 45, '+': 61, v: 30, '^': 15, L: 28, J: 29 },
+    decor: { P: 22, p: 39, C: 24, c: 40, B: 23, H: 26, h: 42, Q: 74, W: 25, F: 8, g: 7, X: 103, x: 107, A: 88, N: 11, o: 57 }
+  };
   function lobbyMap() {
-    const m = sampleMap();
-    const h = LOBBY_ASCII.length, w = LOBBY_ASCII[0].length;
-    const data = [];
-    for (const row of LOBBY_ASCII) {
-      if (row.length !== w) throw new Error('Ligne de map invalide : ' + row);
-      for (const ch of row) data.push((LEGEND[ch] || 0) + 1);
-    }
-    return Object.assign(m, { id: 'map_camp', name: 'Camp de Varenne', width: w, height: h,
-      layers: [{ id: 'l1', name: 'Sol', visible: true, data }, { id: 'l2', name: 'Décor', visible: true, data: new Array(w * h).fill(0) }],
-      terrain: new Array(w * h).fill(''), objects: [] });
+    const h = CAMP.sol.length, w = CAMP.sol[0].length;
+    const layer = (id, name, key) => {
+      const rows = CAMP[key], map = CAMP_TILES[key], data = [];
+      for (const row of rows) {
+        if (row.length !== w) throw new Error('Ligne de camp invalide : ' + row);
+        for (const ch of row) data.push(map[ch] !== undefined ? map[ch] + 1 : 0);
+      }
+      return { id, name, visible: true, data };
+    };
+    return { id: 'map_camp', name: 'Camp de Varenne', width: w, height: h, tileWidth: 32, tileHeight: 32,
+      tilesets: [{ tilesetId: 'ts_village', firstgid: 1 }],
+      layers: [layer('l1', 'Sol', 'sol'), layer('l2', 'Chemins', 'chemins'), layer('l3', 'Décor', 'decor')],
+      terrain: new Array(w * h).fill(''), objects: [] };
   }
   function lobby() {
     return {
-      enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_eliwood', startGold: 500, music: '',
+      enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_xarrin', startGold: 500, music: '',
       start: { x: 7, y: 8 },
       board: { x: 10, y: 2, label: 'Tableau des quêtes' },
       shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal'] },
       spots: [
-        { unitId: 'c_lyn', x: 4, y: 5, after: '' },
-        { unitId: 'c_hector', x: 11, y: 5, after: '' },
-        { unitId: 'c_cloud', x: 12, y: 8, after: 'ch_1' } // rejoint le camp après le prologue
+        { unitId: 'c_eliwood', x: 5, y: 7, after: '' },
+        { unitId: 'c_lyn', x: 5, y: 5, after: '' },
+        { unitId: 'c_hector', x: 9, y: 5, after: '' },
+        { unitId: 'c_cloud', x: 11, y: 8, after: 'arc_1' } // rejoint le camp après le chapitre 1
       ]
     };
   }
   // conversations du lobby : avec un personnage présent, débloquées par la progression
   function talks() {
     return [
+      { id: 't_eli_1', name: 'Un second', unitId: 'c_eliwood', after: '', alive: [], points: 10, once: true, script:
+        "Eliwood: Xarrin. Les autres t'attendent pour décider de la route.\nXarrin: Et toi, tu en penses quoi ?\nEliwood: Que tu ne demandes l'avis de personne… mais que tu as souvent raison.\nXarrin: Souvent ?\nEliwood: Je reste poli." },
       { id: 't_lyn_1', name: 'Les guetteurs', unitId: 'c_lyn', after: '', alive: [], points: 10, once: true, script:
-        "Lyn: Eliwood. Le fort des brigands est juste au nord de la rivière.\nEliwood: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
+        "Lyn: Xarrin. Le fort des brigands est juste au nord de la rivière.\nXarrin: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
       { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
-        "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nEliwood: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
+        "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nXarrin: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
       { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'arc_1', alive: [], points: 15, once: true, script:
-        "Lyn: Tu t'es bien battu, au fort.\nEliwood: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
-      { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'ch_1', alive: [], points: 0, once: true, script:
-        "Cloud: … Ton camp est calme.\nEliwood: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
+        "Lyn: Tu t'es bien battu, au fort.\nXarrin: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
+      { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'arc_1', alive: [], points: 0, once: true, script:
+        "Cloud: … Ton camp est calme.\nXarrin: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
     ];
   }
   // ------------------------------------------------------------------
@@ -328,42 +399,42 @@
   const act = (o) => Object.assign({ mapId: 'map_1', kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true,
     next: '', final: false, allies: [], events: [] }, o);
   const say = (id, script, trigger) => ({ id, trigger: trigger || { type: 'start' }, once: true, script });
-  const trio = (e, l, h) => [{ id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
+  const trio = (e, l, h, x) => [{ id: 'p0', unitId: 'c_xarrin', x: x[0], y: x[1] }, { id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
 
   function extraActs() {
     return [
       act({ id: 'ch_1_2', name: 'Les renforts des collines', next: 'ch_2_1', gold: 600,
         objective: { type: 'rout', turns: 10, x: 0, y: 0 },
-        players: trio([17, 2], [16, 2], [18, 3]),
+        players: trio([17, 2], [16, 2], [18, 3], [17, 3]),
         enemies: [foe('r1', 8, 10, 2), foe('r2', 13, 10, 2, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('r3', 14, 9, 3, { gold: 100 }),
           foe('r4', 0, 7, 2, { appearTurn: 2 }), foe('r5', 1, 8, 3, { appearTurn: 2, gold: 100 })],
-        events: [say('ev1', "Lyn: Le fort est à nous… mais regardez les collines.\nHector: Des renforts ! Ils arrivent trop tard pour sauver Batta.\nEliwood: Pas trop tard pour nous causer des ennuis. On les repousse !")] }),
+        events: [say('ev1', "Lyn: Le fort est à nous… mais regardez les collines.\nHector: Des renforts ! Ils arrivent trop tard pour sauver Batta.\nXarrin: Pas trop tard pour nous causer des ennuis. On les repousse !")] }),
       act({ id: 'ch_2_1', name: "L'embuscade", next: 'ch_2_2', gold: 800,
         objective: { type: 'survive', turns: 5, x: 0, y: 0 },
-        players: trio([16, 6], [17, 7], [16, 7]),
+        players: trio([16, 6], [17, 7], [16, 7], [17, 6]),
         enemies: [foe('m1', 12, 3, 3, { name: 'Mercenaire', classId: 'mercenary', inventory: [{ id: 'w_iron_sword' }] }), foe('m2', 19, 9, 3), foe('m3', 13, 12, 3, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }),
           foe('m4', 18, 12, 2, { gold: 150 }), foe('m5', 19, 4, 3, { appearTurn: 2 }), foe('m6', 19, 10, 3, { appearTurn: 3 }), foe('m7', 15, 13, 2, { appearTurn: 3 })],
-        events: [say('ev1', "Eliwood: La route de Pherae passe par ce pont.\nLyn: Attention… on nous attendait. Ils sont partout !\nHector: Tenez bon jusqu'à ce qu'ils se lassent. Cinq tours, pas plus !")] }),
+        events: [say('ev1', "Eliwood: La route de Pherae passe par ce pont.\nLyn: Attention… on nous attendait. Ils sont partout !\nXarrin: On serre les rangs. Tenez bon jusqu'à ce qu'ils se lassent : cinq tours, pas plus !")] }),
       act({ id: 'ch_2_2', name: 'Le fort de Zagan', final: true, gold: 1200, // dernier acte de l'histoire : la victoire ouvre l'épilogue
         objective: { type: 'seize', turns: 10, x: 5, y: 12, text: 'Prendre le fort du sud-ouest' },
-        players: trio([17, 2], [16, 2], [18, 3]),
+        players: trio([17, 2], [16, 2], [18, 3], [17, 3]),
         enemies: [{ id: 'z1', name: 'Zagan', classId: 'brigand', level: 6, x: 5, y: 12, ai: 'stationary', appearTurn: 0, isBoss: true,
           inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 8, str: 2, def: 3 }, gold: 500 },
           foe('z2', 4, 11, 3), foe('z3', 6, 11, 3, { ai: 'range' }), foe('z4', 3, 10, 2, { inventory: [{ id: 'w_hand_axe' }] }), foe('z5', 7, 9, 3), foe('z6', 9, 4, 2)],
-        events: [say('ev1', "Eliwood: Le fort du sud-ouest garde l'entrée de Pherae.\nHector: Et son chef, Zagan, n'a pas l'air de vouloir nous laisser passer.\nLyn: Alors on le prend. Ensemble."),
+        events: [say('ev1', "Eliwood: Le fort du sud-ouest garde l'entrée de Pherae.\nHector: Et son chef, Zagan, n'a pas l'air de vouloir nous laisser passer.\nXarrin: Alors on le prend. Ensemble."),
           say('ev2', "Zagan: Pherae ne vous… attendra pas…", { type: 'death', target: 'z1' })] }),
       // évènement : deux actes
       act({ id: 'ch_ev_1', name: 'Les pillards', kind: 'event', next: 'ch_ev_2', gold: 300, goldEachClear: true,
         objective: { type: 'rout', turns: 10, x: 0, y: 0 },
-        players: trio([5, 12], [4, 13], [6, 13]),
+        players: trio([5, 12], [4, 13], [6, 13], [5, 13]),
         enemies: [foe('ev_e1', 8, 9, 2, { name: 'Pillard', gold: 100 }), foe('ev_e2', 10, 6, 2, { name: 'Pillard' }), foe('ev_e3', 13, 6, 3, { name: 'Pillard', ai: 'range', gold: 100 })],
-        events: [say('ev1', "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nEliwood: Alors chassons-les avant qu'ils reviennent en nombre.")] }),
+        events: [say('ev1', "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nXarrin: Alors chassons-les avant qu'ils reviennent en nombre.")] }),
       act({ id: 'ch_ev_2', name: 'Le chef des pillards', kind: 'event', gold: 500, goldEachClear: true,
         objective: { type: 'boss', turns: 10, x: 13, y: 5, text: 'Vaincre Kord' },
-        players: trio([5, 12], [4, 13], [6, 13]),
+        players: trio([5, 12], [4, 13], [6, 13], [5, 13]),
         enemies: [{ id: 'k1', name: 'Kord', classId: 'brigand', level: 5, x: 13, y: 5, ai: 'stationary', appearTurn: 0, isBoss: true, inventory: [{ id: 'w_iron_axe' }], statBonus: { hp: 5, str: 1 }, gold: 300 },
           foe('k2', 10, 5, 3, { name: 'Pillard' }), foe('k3', 12, 3, 2, { name: 'Pillard', ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('k4', 8, 10, 2, { name: 'Pillard' })],
-        events: [say('ev1', "Hector: Leur chef s'est retranché sur le banc de sable.\nEliwood: Sans lui, les pillards se disperseront. Allons-y.")] })
+        events: [say('ev1', "Hector: Leur chef s'est retranché sur le banc de sable.\nXarrin: Sans lui, les pillards se disperseront. Allons-y.")] })
     ];
   }
   /** Chapitres : groupes d'actes, joués dans l'ordre (data/arcs.json). */
@@ -382,6 +453,23 @@
   function supports() {
     const conv = (C, B, A, S) => ({ C, B, A, S: S || '' });
     return [
+      { id: 'sp_xar_eli', a: 'c_xarrin', b: 'c_eliwood', startPoints: 60, maxRank: 'A',
+        special: { rank: 'B', name: 'Lames jumelles', chance: 25, dmg: 3, hit: 10, crit: 5 },
+        combo: { rank: 'A', name: 'Charge des deux épées', chance: 40, might: 3, hit: 10 },
+        conversations: conv(
+          "Eliwood: Tu fonces toujours le premier.\nXarrin: Quelqu'un doit bien ouvrir la voie.\nEliwood: Alors je fermerai la marche derrière toi.",
+          "Xarrin: Tu as paré ce coup qui m'était destiné.\nEliwood: Tu aurais fait pareil.\nXarrin: … Oui. Mais je ne l'aurais pas fait aussi proprement.",
+          "Eliwood: Quand tout sera fini, Pherae aura besoin d'épées comme la tienne.\nXarrin: Pherae, ou toi ?\nEliwood: Les deux, mon ami."),
+        ending: "Xarrin et Eliwood restèrent liés comme des frères d'armes. On dit que la garde de Pherae porte encore un manteau vert en son honneur." },
+      { id: 'sp_xar_lyn', a: 'c_xarrin', b: 'c_lyn', startPoints: 20, maxRank: 'S',
+        special: { rank: 'B', name: 'Vent et acier', chance: 20, dmg: 3, hit: 15, crit: 0 },
+        combo: { rank: 'A', name: 'Tempête des plaines', chance: 35, might: 4, hit: 5 },
+        conversations: conv(
+          "Lyn: Tu marches comme quelqu'un qui a grandi sur les routes.\nXarrin: Et toi, comme quelqu'un qui n'a jamais vu de murs.",
+          "Xarrin: Ton arc m'a sauvé, au gué.\nLyn: Tu comptes ?\nXarrin: Je note. C'est différent.",
+          "Lyn: Le vent tourne, Xarrin. Il tourne toujours vers toi.\nXarrin: C'est bon signe ?\nLyn: Chez moi, oui.",
+          "Xarrin: Les plaines de Sacae… tu m'y emmènerais ?\nLyn: Seulement si tu restes.\nXarrin: Alors je reste."),
+        ending: "Xarrin suivit Lyn jusqu'aux plaines de Sacae. Les nomades l'appelèrent « l'épée verte », et il ne repartit jamais." },
       { id: 'sp_eli_lyn', a: 'c_eliwood', b: 'c_lyn', startPoints: 70, maxRank: 'S',
         special: { rank: 'B', name: 'Lame inspirée', chance: 25, dmg: 3, hit: 10, crit: 0 },
         combo: { rank: 'A', name: 'Danse des deux lames', chance: 40, might: 3, hit: 10 },
@@ -432,7 +520,7 @@
   function sampleProject(name) {
     const db = emptyDatabase();
     db.units = characters();
-    db.tilesets = [sampleTileset()];
+    db.tilesets = [sampleTileset(), villageTileset()];
     db.chapters = [sampleChapter(), ...extraActs()];
     db.arcs = arcs();
     db.supports = supports();
@@ -467,5 +555,5 @@
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

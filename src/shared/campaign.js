@@ -62,8 +62,6 @@
       const errors = Skills.validateAssignment(u);
       if (errors.length) throw new Error('Compétences invalides dans la campagne : ' + errors.join(' '));
     }
-    if (save.campaign.recruited !== undefined && (!Array.isArray(save.campaign.recruited) || save.campaign.recruited.some(id => typeof id !== 'string' || !id) || new Set(save.campaign.recruited).size !== save.campaign.recruited.length)) throw new Error('Effectif recruté invalide dans la campagne.');
-    if (save.deployment !== undefined && (!Array.isArray(save.deployment) || save.deployment.some(p => !p || typeof p.unitId !== 'string' || !p.unitId || !Number.isInteger(p.x) || !Number.isInteger(p.y) || p.x < 0 || p.y < 0) || new Set(save.deployment.map(p => p.unitId)).size !== save.deployment.length || new Set(save.deployment.map(p => p.x + ',' + p.y)).size !== save.deployment.length)) throw new Error('Déploiement invalide dans la sauvegarde.');
     return save;
   }
   function restore(save, supports) {

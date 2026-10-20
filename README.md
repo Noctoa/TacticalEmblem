@@ -62,13 +62,7 @@ Au lancement, choisir **Classique** (pertes définitives) ou **Détente** (les u
 
 **Base de données › Chapitres › Conditions de victoire et de défaite** permet de choisir les personnages à protéger et ceux autorisés à prendre les points, de combiner plusieurs objectifs avec ET / OU et d'ajouter des défaites par limite de tours, pertes ou intrusion ennemie dans une zone. Les anciens chapitres héritent des Seigneurs pour la protection et la prise de point. Les conditions invalides sont signalées avant de lancer le test.
 
-**Préparatifs avant bataille** — Chaque acte commence par le choix des participants dans l'effectif recruté et vivant. Cocher un personnage le déploie ; cliquer sa fiche affiche ses statistiques, objets et compétences. Sélectionner ensuite une case sur la carte ou son bouton numéroté déplace ce personnage ; une case occupée échange les deux positions. Les terrains infranchissables pour leur classe actuelle sont refusés. Les alliés verts gardent leur placement et ne prennent pas de place dans la sélection. Les dialogues de début et le premier tour attendent **Commencer la bataille**.
-
-Dans **Base de données › Actes › Préparatifs et déploiement**, régler le nombre maximum de participants (`0` = toutes les cases) et les personnages imposés. Les placements joueur en mode Unités définissent les cases de départ et les recrues de l'acte ; ils servent aussi de sélection par défaut. Les personnages à protéger sont automatiquement imposés. Une prise de point obligatoire exige au moins un participant autorisé, ou un allié fixe autorisé. Décocher **Choisir l'équipe avant cet acte** conserve ses placements scénarisés. Les anciens actes bénéficient des préparatifs sans conversion manuelle.
-
-Le bouton **Sauvegarder…** et Échap donnent accès aux emplacements habituels : la sélection et les positions sont conservées. Recharger ou recommencer une bataille redonne accès à ses préparatifs. Si le projet ou l'effectif a changé, un déploiement devenu invalide est ajusté et signalé. **Retour au camp** permet de reprendre les équipements et promotions avant de repartir. Les modifications d'équipement restent dans le menu Équipe du camp.
-
-Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents, dans l'un des cinq emplacements de `saves/`. **Continuer la campagne** reprend la dernière sauvegarde au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
+Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents. Le fichier `saves/campaign.json` est séparé des données de l'éditeur ; la sauvegarde précédente est conservée en `.bak`. **Continuer la campagne** reprend ce début de chapitre au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
 
@@ -83,7 +77,7 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Alliés (unités vertes)** — En mode Unités, la section *Alliés* de la palette place un personnage de la base en vert. Il ne fait pas partie de l'équipe : sa mort ne fait pas perdre, il ne compte pas pour la défaite. La **phase alliée** se joue juste après la phase du joueur. Pour chaque allié, *Contrôle* : **Jouable** (tu le diriges pendant la phase alliée) ou **IA** (il joue seul, avec le comportement choisi). Sur la map il est posé sur un carré vert. Cloud est fourni comme exemple d'allié jouable.
 
-**Convoi** — Coche *Chef d'escouade* dans la fiche d'une unité (Eliwood par défaut). Il a l'action *Convoi* dans son menu ; les autres unités du joueur l'ont aussi quand elles s'arrêtent sur une case adjacente à lui. On y dépose et retire armes et objets (5 places par unité). Le contenu de départ et la capacité se règlent dans Système.
+**Convoi** — Coche *Chef d'escouade* dans la fiche d'une unité (Xarrin par défaut). Il a l'action *Convoi* dans son menu ; les autres unités du joueur l'ont aussi quand elles s'arrêtent sur une case adjacente à lui. On y dépose et retire armes et objets (5 places par unité). Le contenu de départ et la capacité se règlent dans Système.
 
 **Terrains** — Chaque terrain donne un bonus d'esquive et de défense au défenseur, plus un coût de déplacement par type d'unité : forêt (+20 esq, +1 déf), buisson (+10 esq), fourré (+40 esq, +1 déf, interdit aux cavaliers et blindés), fort (+20 esq, +2 déf, soin 20 %)… Le bonus de la case occupée s'affiche sous l'unité en jeu, et il est déjà compté dans les prévisions de combat.
 
@@ -97,13 +91,10 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Lobby (le camp)** — Comme dans Fire Emblem Heroes, le jeu commence dans un lobby et y revient après chaque chapitre. C'est une petite map explorable (faite dans l'éditeur comme une map de chapitre) où l'on déplace le héros au clavier (flèches) ou à la souris (clic : il y va, et interagit s'il s'agit d'un personnage ou d'un bâtiment) :
 - **Tableau des quêtes** : deux sections, *Histoire* et *Évènements*. Chaque **chapitre** y apparaît comme une carte qui contient ses **actes** (les niveaux jouables), à jouer dans l'ordre : l'acte 2 s'ouvre quand l'acte 1 est gagné, et la victoire propose « Acte 2 → » pour enchaîner sans repasser par le camp. Les chapitres d'histoire s'ouvrent l'un après l'autre ; les évènements selon leurs conditions et leurs dates (« Bientôt » avant la date). Les actes terminés se rejouent, sauf si on décoche *Rejouable*.
-- **Équipe** (menu du camp) : tous les personnages recrutés et vivants, même absents de la map du camp. Choisir les cinq compétences équipées parmi les compétences apprises, en plus de la personnelle fixe ; transférer les objets entre personnages et convoi, échanger avec une destination pleine et réordonner un inventaire pour choisir sa première arme utilisable ; consulter l'arbre et promouvoir un personnage avec son sceau. Ces préparatifs sont conservés à la sauvegarde et au prochain déploiement. Les promotions au camp ne consomment pas de tour.
-- **Boutique** : achat (rangé dans le convoi ou l'inventaire de n'importe quel personnage recruté et vivant) et revente à moitié prix, au prorata des utilisations restantes. Prix réglés sur chaque arme et objet ; `0` = ne se vend pas.
+- **Boutique** : achat (rangé dans le convoi ou l'inventaire d'un personnage présent) et revente à moitié prix, au prorata des utilisations restantes. Prix réglés sur chaque arme et objet ; `0` = ne se vend pas.
 - **Personnages présents** : ceux que l'on place dans le lobby, éventuellement à partir d'un chapitre (Cloud rejoint le camp après le prologue). Un « ! » au-dessus d'eux signale une **conversation de lobby** disponible : Z (ou un clic) pour la jouer. Elle peut faire gagner de l'affinité avec le héros.
 - **Or** : récompense de chapitre (la première victoire, ou à chaque victoire), bourse des ennemis vaincus (réglée sur le placement de l'ennemi), revente.
-- X (ou clic droit) : menu du camp — équipe, chapitres, boutique, paramètres. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
-
-**Recrutement** — Dans **Lobby › Équipe de départ**, choisir l'effectif initial (le héros du camp est toujours inclus). Sans réglage explicite, les placements joueur de l'acte de départ servent d'effectif initial. Dans **Unités › Rejoint l'effectif après**, choisir un acte ou un chapitre entier : le personnage est recruté une fois cet objectif terminé. Les placements joueur rejoignent également l'effectif au lancement de leur acte. Placer un PNJ dans le camp ne le recrute pas. Les anciennes sauvegardes retrouvent l'effectif initial et les personnages des actes déjà terminés ; les personnages morts en Classique restent indisponibles. Les préparatifs permettent de choisir les participants parmi cet effectif, sur les cases de départ de chaque acte.
+- X (ou clic droit) : menu du camp — chapitres, boutique, sauvegarde au camp, musique. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
 
 **Chapitres et actes** — Un *acte* est un niveau jouable (map, placements, objectif, dialogues : onglet **Actes**, placements en mode Unités). Un *chapitre* regroupe des actes dans l'ordre (onglet **Chapitres** : nom, section Histoire ou Évènements, description, conditions et dates de déblocage, liste ordonnée des actes avec ▲ ▼, « Nouvel acte »). Les actes rangés dans aucun chapitre (anciens projets) s'affichent chacun comme un chapitre d'un seul acte. Les conditions « disponible après » acceptent un chapitre entier ou un acte précis. Fichier : `data/arcs.json`.
 
@@ -111,7 +102,7 @@ Réglages : Base de données › **Lobby** (map, héros, départ, table, boutiqu
 
 ## Affinités (soutiens) et épilogue
 
-**Base de données › Affinités** — Une fiche par paire de personnages : points au départ, rang maximum (A ou S), attaque spéciale, attaque duo, une conversation par rang et le texte de fin du couple. Quatre paires sont fournies : Eliwood ♥ Lyn, Eliwood ♥ Hector, Hector ♥ Lyn, Lyn ♥ Cloud.
+**Base de données › Affinités** — Une fiche par paire de personnages : points au départ, rang maximum (A ou S), attaque spéciale, attaque duo, une conversation par rang et le texte de fin du couple. Six paires sont fournies : Xarrin ♥ Eliwood, Xarrin ♥ Lyn, Eliwood ♥ Lyn, Eliwood ♥ Hector, Hector ♥ Lyn, Lyn ♥ Cloud.
 
 **Comment ça monte** — +3 points quand les deux finissent la phase joueur côte à côte, +2 quand l'un combat à côté de l'autre (réglable dans Système › Affinités, ainsi que les seuils C/B/A/S). Quand un nouveau rang est atteint, l'action **Soutien** apparaît dans le menu si les deux sont adjacents : la conversation se joue et le rang monte. Comme dans les jeux, un personnage ne peut avoir qu'un seul rang S.
 
@@ -168,7 +159,7 @@ MonJeu/
         combat.png         + combat.json          animation de combat
         combat_arrow.png                          projectile de l'animation
         portrait.png                              portrait / face set
-      Brigand/ Cloud/ Eliwood/ Hector/
+      Brigand/ Cloud/ Eliwood/ Hector/ Xarrin/
     tilesets/              images des tilesets
     interface/             curseur, fenêtres…
     musiques/              musiques de phase
@@ -210,12 +201,13 @@ Chaque nouveau projet reçoit le contenu de `assets/default/ressources/` :
 
 | Dossier | Contenu |
 |---|---|
+| `personnages/Xarrin` | protagoniste : animation de combat (tirée de `xarrin.gif`), portrait. Pas encore de sprite de map : il prend celui de la classe Seigneur |
 | `personnages/Eliwood` | sprites de map Seigneur et Chevalier-Seigneur, animation de combat, portrait en face set (planche FE GBA animée) |
 | `personnages/Lyn` | Seigneur et Lame-Seigneur, animation (épée + arc, flèche en projectile), portrait |
 | `personnages/Hector` | Seigneur et Grand Seigneur, animation (hache + hachette lancée), portrait |
-| `personnages/Brigand` | sprite de map, animation, portrait |
+| `personnages/Brigand` | sprite de map, animation (planche retouchée), portrait |
 | `personnages/Cloud` | allié, sprites propres à l'unité |
-| `tilesets` | Plaines (dont buisson et fourré) |
+| `tilesets` | Plaines (dont buisson et fourré), Village (tiles de 16 px, utilisé par le camp) |
 | `musiques` | Winning Road (Roy's Hope), Advance |
 | `jingles` | Level Up, Game Over |
 
@@ -238,7 +230,9 @@ Pour un projet sans ressources : Base de données › Ressources › **Ajouter l
 
 Les sprites sont liés aux **classes** (Base de données › Classes : *Sprite de map* et *Animation de combat*). Une unité peut surcharger ceux de sa classe. Une classe sans sprite s'affiche en jeton coloré ; si un des deux combattants n'a pas d'animation, le combat se joue directement sur la map. L'onglet **Ressources** de la base de données liste tout ce qu'il y a dans `ressources/`, regroupé par personnage, avec un aperçu animé (couleur d'origine / bleu / rouge / vert / gris, chaque animation, frame d'impact), les couleurs d'équipe et un bouton qui ouvre le dossier de la ressource.
 
-Le chapitre d'exemple met Eliwood, Lyn et Hector face aux brigands de Batta.
+Le chapitre d'exemple met Xarrin, Eliwood, Lyn et Hector face aux brigands de Batta. Xarrin est le héros du camp et le chef d'escouade (convoi).
+
+Un tileset dont les tiles sont plus petits que les cases de la map (16 px sur une map en 32 px, par ex.) est agrandi d'un facteur entier à l'affichage, comme les sprites de map.
 
 ### Format d'un sprite de map (`personnages/Nom/map_….json`)
 
@@ -260,6 +254,7 @@ Toutes les frames ont la même taille (`cell`) et le même point d'ancrage au so
 
 - `hit` : frame de l'impact (dégâts, flash, recul)
 - `approach` / `retreat` : frames pendant lesquelles l'attaquant avance vers l'adversaire / revient
+- `reach` : part du trajet parcourue pendant `approach` (1 par défaut ; moins quand le mouvement est déjà dessiné dans les frames, comme pour Xarrin)
 - `projectile`, `release`, `catch` : projectile (`arrow`, `axe`), frame du tir et frame où l'arme revient
 - `projectiles` : images des projectiles, rangées à côté de la planche (`{ "arrow": "combat_arrow.png" }`)
 - `teamColors` : comme pour les sprites de map
@@ -275,6 +270,8 @@ Les planches d'origine sont dans `tools/sprite-sources/` (dont `cloud.gif`). Le 
 python3 tools/build_default_resources.py --preview apercu/
 ```
 
+Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_combat.png` (même taille que la planche générée, y compris pour les animations tirées d'un GIF) : elle remplace la planche générée, le `.json` reste celui du script. Un face set se pose dans `<nom>_faceset.png`, un portrait simple dans `<nom>_portrait.png`. Les animations tirées d'un GIF (Cloud, Xarrin) se règlent dans `GIF_BATTLERS` : couleur de fond, ombre, frames de chaque animation, impact, avance / recul.
+
 (Pillow + numpy.) Les découpages, frames d'impact et cadrages des portraits sont réglés en haut du script.
 
 **Crédits** : sprites rippés de *Fire Emblem: The Blazing Blade* (Intelligent Systems / Nintendo) par Lexou, Grim & Bonzai. Cloud : édition FE par Lord Zymeth (personnage Square Enix, base Nintendo). Musiques : *Fire Emblem: The Binding Blade*, Yuka Tsujiyoko (Enhanced Soundtrack). À garder pour un usage perso / fan-game : à retirer de `assets/default/ressources/` et `tools/sprite-sources/` avant toute diffusion publique de l'outil.
@@ -288,10 +285,6 @@ src/main/tiled.js          import Tiled
 src/main/project-io.js     lecture / écriture des projets
 src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
-src/shared/team.js         effectif recruté, équipement des compétences et transferts — testés dans test/team.test.js
-src/renderer/team-panel.js préparatifs de l'équipe au camp
-src/shared/deployment.js   règles de sélection et de placement — testées dans test/deployment.test.js
-src/renderer/preparation.js écran de préparation avant bataille
 src/renderer/settings-window.js  fenêtre Paramètres du playtest (sauvegarde, chargement, son, debug)
 src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
@@ -304,8 +297,6 @@ test/snapshot.js           test de bout en bout : TF_SNAPSHOT=dossier npm start
 test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAPSHOT_SCRIPT=test/snapshot-supports.js
 test/snapshot-settings.js  fenêtre Paramètres de bout en bout
 test/snapshot-lobby.js     lobby de bout en bout (camp, conversation, boutique, chapitre, retour) ; test/snapshot-lobby-editor.js : son édition
-test/snapshot-team.js      équipe de bout en bout (réservistes, compétences, échanges, promotion, sauvegarde et déploiement)
-test/snapshot-deployment.js préparatifs de bout en bout (sélection, carte, terrain, sauvegarde, déploiement, acte suivant et désactivation)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
@@ -313,4 +304,4 @@ test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, c
 
 ## Pistes pour la suite
 
-Priorité suivante : interactions de map (villages / coffres / portes), puis échanges entre unités pendant la bataille, animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.
+Priorité suivante : promotions en jeu avec arbre à embranchements. Puis écran de préparation et changement d’équipement des compétences hors bataille, animations des classes génériques, échanges d'objets entre unités, villages / coffres / portes, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

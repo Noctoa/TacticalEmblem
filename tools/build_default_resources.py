@@ -339,6 +339,19 @@ BATTLERS = {
 }
 
 
+def save_combat_sheet(name, sheet):
+    """Écrit la planche générée, ou la planche retouchée à la main (sprite-sources/<nom>_combat.png, même grille)."""
+    retouched = os.path.join(SRC, name.lower() + '_combat.png')
+    if os.path.exists(retouched):
+        r = Image.open(retouched).convert('RGBA')
+        if r.size != sheet.size:
+            raise SystemExit(f'{retouched} : {r.size} au lieu de {sheet.size} (même grille que la planche générée attendue)')
+        r.save(out_path(name, 'combat', '.png'), optimize=True)
+        print(f'  {name} : planche retouchée reprise ({os.path.basename(retouched)})')
+    else:
+        sheet.save(out_path(name, 'combat', '.png'), optimize=True)
+
+
 def extract_battler(name, spec):
     a = load(spec['file']); bg = spec['bg']
     for c in spec.get('ignore', []):  # texte des planches
@@ -405,7 +418,7 @@ def extract_battler(name, spec):
     sheet = Image.new('RGBA', (cols * cw, rows * ch), (0, 0, 0, 0))
     for i, t in enumerate(tiles):
         sheet.paste(t, ((i % cols) * cw, (i // cols) * ch))
-    sheet.save(out_path(name, 'combat', '.png'), optimize=True)
+    save_combat_sheet(name, sheet)
 
     anims = {}
     for anim, an in spec['anims'].items():
@@ -496,6 +509,97 @@ def preview(name, meta, sheet):
     o.save(os.path.join(PREVIEW, f'battler_{name}.png'))
 
 
+# ======================================================================
+# Animations de combat fournies en GIF (une image = une frame, durées du GIF)
+# ======================================================================
+GIF_BATTLERS = {
+    'Xarrin': {
+        'file': 'xarrin.gif', 'bg': (168, 208, 160), 'label': 'Xarrin (Seigneur)', 'facing': 'left',
+        'erase': [(232, 0, 247, 1)],      # palette collée dans le coin (rip)
+        'shadow': (40, 40, 40),           # couleur de l'ombre au sol : point d'ancrage de la garde
+        'drop': [33],                     # dernière image = première (boucle du GIF)
+        'credit': 'Xarrin : animation fournie par le projet (GIF)',
+        # positions gardées telles que dessinées (recul, ruée) ; le moteur fait le reste du trajet (reach)
+        'anims': {
+            'stance': {'frames': [0], 'durations': [500], 'loop': True},
+            'attack': {'frames': list(range(33)), 'first': 60, 'hit': 16, 'approach': [14, 16], 'retreat': [24, 29], 'reach': 0.56},
+            'critical': {'frames': list(range(33)), 'first': 60, 'hit': 16, 'approach': [14, 16], 'retreat': [24, 29], 'reach': 0.56,
+                         'slow': [6, 11], 'hold': {11: 450}},
+        },
+        'team': None,                     # détection automatique (manteau vert)
+    },
+}
+
+
+def build_gif_battler(name, spec):
+    from PIL import ImageSequence
+    gif = Image.open(os.path.join(SRC, spec['file']))
+    bg = np.array(spec['bg'])
+    frames, durs = [], []
+    for fr in ImageSequence.Iterator(gif):
+        durs.append(int(fr.info.get('duration', 50)))
+        a = np.array(fr.convert('RGB')).astype(np.int16)
+        for x0, y0, x1, y1 in spec.get('erase', []):
+            a[y0:y1 + 1, x0:x1 + 1] = bg
+        rgba = np.zeros((a.shape[0], a.shape[1], 4), np.uint8)
+        rgba[..., :3] = a.astype(np.uint8)
+        rgba[..., 3] = np.where((np.abs(a - bg).sum(2) == 0), 0, 255)
+        frames.append(rgba)
+    keep = [i for i in range(len(frames)) if i not in spec.get('drop', [])]
+    # ancrage commun : centre de l'ombre de la première image (garde), sol juste sous l'ombre
+    sh = (frames[0][..., :3] == np.array(spec['shadow'])).all(2) & (frames[0][..., 3] > 0)
+    ys, xs = np.where(sh)
+    low = ys >= ys.max() - 3
+    gx = (xs[low].min() + xs[low].max() + 1) / 2.0
+    gy = int(ys.max()) + 1
+    # cellule commune : union des silhouettes de toutes les images gardées
+    occ = np.zeros(frames[0].shape[:2], bool)
+    for i in keep:
+        occ |= frames[i][..., 3] > 0
+    ys, xs = np.where(occ)
+    x0, y0, x1, y1 = int(xs.min()) - 1, int(ys.min()) - 1, int(xs.max()) + 2, int(ys.max()) + 2
+    cw, ch = x1 - x0, y1 - y0
+    ax, ay = int(round(gx - x0)), gy - y0
+    tiles, keymap, remap = [], {}, {}
+    for i in keep:
+        t = Image.fromarray(frames[i][y0:y1, x0:x1], 'RGBA')
+        k = hashlib.sha1(t.tobytes()).hexdigest()
+        if k not in keymap:
+            keymap[k] = len(tiles); tiles.append(t)
+        remap[i] = keymap[k]
+    cols = 12
+    rows = (len(tiles) + cols - 1) // cols
+    sheet = Image.new('RGBA', (cols * cw, rows * ch), (0, 0, 0, 0))
+    for i, t in enumerate(tiles):
+        sheet.paste(t, ((i % cols) * cw, (i // cols) * ch))
+    save_combat_sheet(name, sheet)
+    anims = {}
+    for anim, an in spec['anims'].items():
+        seq = [remap[i] for i in an['frames']]
+        d = list(an.get('durations') or [max(20, durs[i]) for i in an['frames']])
+        if 'first' in an:
+            d[0] = an['first']
+        for k in range(*(an['slow'][0], an['slow'][1] + 1)) if 'slow' in an else []:
+            d[k] = int(d[k] * 1.6)
+        for k, v in an.get('hold', {}).items():
+            d[k] = v
+        e = {'frames': seq, 'durations': d}
+        for key in ('hit', 'approach', 'retreat', 'reach', 'loop'):
+            if key in an:
+                e[key] = an[key]
+        anims[anim] = e
+    meta = {'type': 'battler', 'name': spec['label'], 'facing': spec['facing'], 'cell': [cw, ch], 'anchor': [ax, ay],
+            'columns': cols, 'count': len(tiles), 'anims': anims, 'source': spec['credit']}
+    if spec.get('team'):
+        meta['teamColors'] = spec['team']
+    json.dump(meta, open(out_path(name, 'combat', '.json'), 'w'), indent=1, ensure_ascii=False)
+    print(f'  {name} : {len(keep)} images -> {len(tiles)} uniques, cellule {cw}x{ch}, ancrage {ax},{ay}, ' + ', '.join(f'{k} {len(v["frames"])}' for k, v in anims.items()))
+    # portrait : sprite-sources/<nom>_portrait.png (agrandi ×N accepté : ramené à la taille d'origine)
+    pp = os.path.join(SRC, name.lower() + '_portrait.png')
+    if os.path.exists(pp):
+        shutil.copyfile(pp, out_path(name, 'portrait', '.png'))
+
+
 def main():
     print('Sprites de map')
     sheet = load('map_sheet.png')
@@ -512,6 +616,8 @@ def main():
     print('Animations de combat')
     for name, spec in BATTLERS.items():
         extract_battler(name, spec)
+    for name, spec in GIF_BATTLERS.items():
+        build_gif_battler(name, spec)
 
 
 if __name__ == '__main__':

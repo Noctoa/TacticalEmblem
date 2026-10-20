@@ -22,6 +22,7 @@
   }
 
   function chooseAnim(meta, crit, dist, weaponType) {
+    if (!meta) return null;
     const A = meta.anims;
     const pick = (...names) => names.find(n => A[n]);
     if (weaponType === 'bow') return pick(crit && 'bowCritical', 'bow', crit && 'rangedCritical', 'ranged', crit && 'critical', 'attack');
@@ -39,8 +40,14 @@
     // pose de garde : celle de l'arc si l'unité a un arc en main (Lyn), sinon la garde normale
     const w = opts.weaponOf(unit);
     const stance = !meta ? 0 : (w && w.type === 'bow' && meta.anims.bow ? meta.anims.bow.frames[0] : meta.anims.stance.frames[0]);
+    // sans animation de combat (un partenaire, par exemple) : son sprite de map, agrandi
+    let mapSp = null;
+    if (!meta && opts.mapSpriteOf) {
+      const sp = opts.mapSpriteOf(unit);
+      if (sp) mapSp = { meta: sp.meta, img: sp.img, palette: opts.paletteOf ? opts.paletteOf(unit) : 'original' };
+    }
     return {
-      unit, side, meta, img, flip: meta ? meta.facing !== want : false, stance,
+      unit, side, meta, img, mapSp, flip: meta ? meta.facing !== want : false, stance,
       frame: stance, anim: null,
       travel: 0, travelTarget: 0, dodge: 0, dodgeTarget: 0, flash: 0, alpha: 1, hp: unit.hp, hpShown: unit.hp
     };
@@ -49,7 +56,8 @@
   /**
    * opts : { baseUrl, battlerOf(u), att, def, hp0: {[uid]: hp}, strikes, forecast, distance,
    *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), projectileImg(meta, name),
-   *          paletteOf(u) -> 'original' | 'blue' | 'red' | 'green' }
+   *          paletteOf(u) -> 'original' | 'blue' | 'red' | 'green',
+   *          partner (attaque duo), helpers: [unité] (partenaires des attaques spéciales), mapSpriteOf(u) -> { meta, img } }
    */
   async function play(opts) {
     const left = opts.att.team === 'enemy' ? opts.att : opts.def;
@@ -61,14 +69,17 @@
     sc.L.hp = sc.L.hpShown = opts.hp0[left.uid];
     sc.R.hp = sc.R.hpShown = opts.hp0[right.uid];
     sc.byUid = { [left.uid]: sc.L, [right.uid]: sc.R };
-    // partenaire d'une attaque duo : entre par derrière l'attaquant le temps de son coup
-    if (opts.partner) {
+    // partenaires (attaque duo, attaque spéciale) : entrent derrière l'attaquant le temps de l'attaque
+    sc.helpers = [];
+    for (const u of [opts.partner, ...(opts.helpers || [])]) {
+      if (!u || sc.byUid[u.uid]) continue;
       const side = sc.byUid[opts.att.uid].side;
-      sc.P = makeActor(opts, opts.partner, side);
-      sc.P.hp = sc.P.hpShown = opts.hp0[opts.partner.uid] !== undefined ? opts.hp0[opts.partner.uid] : opts.partner.hp;
-      sc.P.alpha = 0; sc.P.shift = 1; sc.P.helper = true;
-      sc.byUid[opts.partner.uid] = sc.P;
+      const a = makeActor(opts, u, side);
+      a.hp = a.hpShown = opts.hp0[u.uid] !== undefined ? opts.hp0[u.uid] : u.hp;
+      a.alpha = 0; a.shift = 1; a.helper = true;
+      sc.byUid[u.uid] = a; sc.helpers.push(a);
     }
+    sc.P = sc.helpers[0] || null;
     active = sc;
     buildDom(sc);
     const raf = () => { if (!sc.closed) { draw(sc); requestAnimationFrame(raf); } };
@@ -80,16 +91,24 @@
     for (const s of opts.strikes) {
       const atk = sc.byUid[s.by], def = sc.byUid[s.target];
       if (!atk || !def || atk.hp <= 0 || def.hp <= 0) break;
+      // attaque spéciale : le partenaire apparaît derrière l'attaquant et frappe avec lui
+      const mate = s.special && s.partner && sc.byUid[s.partner] && sc.byUid[s.partner].helper ? sc.byUid[s.partner] : null;
       if (atk.helper) {
         showBanner(sc, s.dual || 'Attaque duo');
-        for (let i = 1; i <= 8; i++) { atk.alpha = i / 8; await wait(30, sc); }
-      } else if (s.special) showBanner(sc, s.special);
+        setSide(atk, sc.byUid[s.target] === sc.L ? 'R' : 'L');
+        await fadeIn(sc, atk);
+      } else if (s.special) {
+        showBanner(sc, s.special);
+        if (mate) { setSide(mate, atk.side); await fadeIn(sc, mate); }
+      }
       if (s.skills && s.skills.length) {
         showBanner(sc, s.skills.map(skill => `${skill.icon} ${skill.name}`).join(' · '));
         await wait(350, sc);
       }
-      await strike(sc, atk, def, s);
-      if (atk.helper) for (let i = 7; i >= 0; i--) { atk.alpha = i / 8; await wait(30, sc); }
+      if (mate) await Promise.all([strike(sc, atk, def, s), assist(sc, mate, def, s)]);
+      else await strike(sc, atk, def, s);
+      if (atk.helper) await fadeOut(sc, atk);
+      if (mate) await fadeOut(sc, mate);
       await wait(180, sc);
       if (def.hp <= 0) { await death(sc, def); break; }
       if (atk.hp <= 0) { await death(sc, atk); break; }
@@ -99,6 +118,42 @@
     sc.closed = true;
     sc.dom.remove();
     active = null;
+  }
+
+  // ------------------------------------------------------------------
+  // Partenaires
+  // ------------------------------------------------------------------
+  function setSide(a, side) {
+    if (a.side === side) return;
+    a.side = side;
+    if (a.meta) a.flip = a.meta.facing !== (side === 'R' ? 'left' : 'right');
+  }
+  async function fadeIn(sc, a) { a.travel = a.travelTarget = 0; for (let i = 1; i <= 8; i++) { a.alpha = i / 8; await wait(30, sc); } a.alpha = 1; }
+  async function fadeOut(sc, a) { for (let i = 7; i >= 0; i--) { a.alpha = i / 8; await wait(30, sc); } a.alpha = 0; a.frame = a.stance; a.travel = a.travelTarget = 0; }
+  /**
+   * Le partenaire d'une attaque spéciale joue son attaque en même temps que l'attaquant, un peu en retrait
+   * (il ne touche pas lui-même : les dégâts sont ceux du coup de l'attaquant).
+   */
+  async function assist(sc, a, def, s) {
+    const weapon = sc.opts.weaponOf(a.unit);
+    const name = chooseAnim(a.meta, false, sc.opts.distance, weapon && weapon.type);
+    const A = a.meta && a.meta.anims[name];
+    if (!A) { // sprite de map : un bond vers l'adversaire
+      a.travelTarget = 0.6; await wait(260, sc); a.travelTarget = 0; await wait(200, sc); return;
+    }
+    await wait(80, sc); // léger décalage : les deux coups ne se superposent pas exactement
+    const useTravel = !sc.ranged && A.approach;
+    for (let i = 0; i < A.frames.length; i++) {
+      a.frame = A.frames[i];
+      if (useTravel) {
+        const [a0, a1] = A.approach;
+        const reach = 0.75 * (A.reach !== undefined ? A.reach : 1);
+        if (i >= a0 && i <= a1) a.travelTarget = reach * (i - a0 + 1) / (a1 - a0 + 1);
+        if (A.retreat) { const [r0, r1] = A.retreat; if (i >= r0 && i <= r1) a.travelTarget = reach * (1 - (i - r0 + 1) / (r1 - r0 + 1)); if (i > r1) a.travelTarget = 0; }
+      }
+      await wait((A.durations && A.durations[i]) || 55, sc);
+    }
+    a.travelTarget = 0; a.frame = a.stance;
   }
 
   function skip() { if (active) { active.skip = true; } }
@@ -158,7 +213,7 @@
   }
 
   function actorX(sc, a, L) {
-    const home = (a.side === 'L' ? L.homeL : L.homeR) + (a.shift || 0) * (a.side === 'L' ? -1 : 1) * 40 * L.S;
+    const home = (a.side === 'L' ? L.homeL : L.homeR) + (a.shift || 0) * (a.side === 'L' ? -1 : 1) * 26 * L.S; // partenaire : un peu en retrait
     const other = a.side === 'L' ? L.homeR : L.homeL;
     const dir = a.side === 'L' ? 1 : -1;
     const target = other - dir * L.meet;
@@ -202,13 +257,14 @@
     plat(L.homeL, sc.opts.terrainOf(sc.L.unit));
     plat(L.homeR, sc.opts.terrainOf(sc.R.unit));
     // déplacement lissé
-    for (const a of [sc.L, sc.R]) {
+    for (const a of [sc.L, sc.R, ...sc.helpers]) {
       a.travel += (a.travelTarget - a.travel) * 0.32;
       a.dodge += (a.dodgeTarget - a.dodge) * 0.35;
     }
     // l'attaquant est dessiné devant
-    const order = sc.front === sc.L ? [sc.R, sc.L] : [sc.L, sc.R];
-    if (sc.P) order.unshift(sc.P);
+    // l'attaquant (y compris un partenaire qui frappe) est dessiné devant, les autres partenaires derrière
+    const main = sc.front === sc.L ? [sc.R, sc.L] : [sc.L, sc.R];
+    const order = sc.front && sc.front.helper ? [...sc.helpers.filter(a => a !== sc.front), ...main, sc.front] : [...sc.helpers, ...main];
     for (const a of order) drawActor(sc, g, a, L);
     if (sc.projectile) drawProjectile(sc, g, L);
     // textes flottants
@@ -246,7 +302,8 @@
   }
 
   function drawActor(sc, g, a, L) {
-    if (!a.meta || !a.img || a.alpha <= 0) return;
+    if (a.alpha <= 0) return;
+    if (!a.meta || !a.img) return drawMapActor(sc, g, a, L);
     const x = actorX(sc, a, L);
     g.globalAlpha = sc.fade * a.alpha;
     // ombre portée
@@ -268,6 +325,22 @@
     } else {
       Sprites.drawBattlerFrame(g, a.meta, a.img, a.frame, x, L.ground, L.S, a.flip);
     }
+    g.globalAlpha = 1;
+  }
+
+  /** Combattant sans animation de combat : son sprite de map, agrandi, tourné vers l'adversaire. */
+  function drawMapActor(sc, g, a, L) {
+    if (!a.mapSp) return;
+    const x = actorX(sc, a, L);
+    const k = L.S * 2.6;
+    g.globalAlpha = sc.fade * a.alpha;
+    g.fillStyle = 'rgba(0,0,0,.35)';
+    g.beginPath(); g.ellipse(x, L.ground + 1, 12 * L.S, 3 * L.S, 0, 0, Math.PI * 2); g.fill();
+    const moving = Math.abs(a.travelTarget - a.travel) > 0.02;
+    const anim = moving ? (a.side === 'R' ? 'left' : 'right') : 'focus';
+    if (a.flash > performance.now()) g.filter = 'brightness(5) saturate(0)';
+    Sprites.drawMapSprite(g, a.mapSp.meta, a.mapSp.img, x, L.ground, k, { anim: a.mapSp.meta.anims[anim] ? anim : 'idle', t: performance.now(), palette: a.mapSp.palette });
+    g.filter = 'none';
     g.globalAlpha = 1;
   }
 
@@ -300,8 +373,11 @@
     sc.front = atk;
     const weapon = sc.opts.weaponOf(atk.unit);
     const name = chooseAnim(atk.meta, s.crit, sc.opts.distance, weapon && weapon.type);
-    const A = atk.meta.anims[name];
-    if (!A) { await wait(300, sc); outcome(sc, atk, def, s); await wait(300, sc); return; }
+    const A = atk.meta && atk.meta.anims[name];
+    if (!A) { // pas d'animation de combat (partenaire affiché avec son sprite de map) : un bond vers l'adversaire
+      atk.travelTarget = 0.85; await wait(240, sc); outcome(sc, atk, def, s); await wait(160, sc);
+      atk.travelTarget = 0; await wait(240, sc); return;
+    }
     const n = A.frames.length;
     const useTravel = !sc.ranged && A.approach;
     const projKind = A.projectile && (sc.ranged || weapon && weapon.type === 'bow') ? A.projectile : null;
@@ -313,10 +389,12 @@
       atk.frame = A.frames[i];
       if (useTravel) {
         const [a0, a1] = A.approach;
-        if (i >= a0 && i <= a1) atk.travelTarget = (i - a0 + 1) / (a1 - a0 + 1);
+        // reach : part du trajet faite par le moteur (le reste est dessiné dans les frames, ex. une ruée)
+        const reach = A.reach !== undefined ? A.reach : 1;
+        if (i >= a0 && i <= a1) atk.travelTarget = reach * (i - a0 + 1) / (a1 - a0 + 1);
         if (A.retreat) {
           const [r0, r1] = A.retreat;
-          if (i >= r0 && i <= r1) atk.travelTarget = 1 - (i - r0 + 1) / (r1 - r0 + 1);
+          if (i >= r0 && i <= r1) atk.travelTarget = reach * (1 - (i - r0 + 1) / (r1 - r0 + 1));
           if (i > r1) atk.travelTarget = 0;
         }
       }
@@ -375,7 +453,7 @@
   }
 
   async function dodge(sc, a) {
-    const D = a.meta.anims.dodge;
+    const D = a.meta && a.meta.anims.dodge;
     if (D && D.frames.length > 1) {
       for (let i = 0; i < D.frames.length; i++) { a.frame = D.frames[i]; await wait((D.durations && D.durations[i]) || 70, sc); }
       a.frame = a.stance;
@@ -390,5 +468,7 @@
     for (let i = 10; i >= 0; i--) { a.alpha = i / 10; await wait(40, sc); }
   }
 
-  root.BattleScene = { play, skip, setFast, isActive, chooseAnim };
+  /** État de la scène en cours (tests automatisés). */
+  function debugState() { return active ? { helpers: active.helpers.map(a => ({ name: a.unit.name, alpha: a.alpha, travel: a.travel, side: a.side, mapSprite: !!a.mapSp })) } : null; }
+  root.BattleScene = { play, skip, setFast, isActive, chooseAnim, debugState };
 })(self);

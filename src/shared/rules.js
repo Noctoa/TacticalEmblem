@@ -524,7 +524,8 @@
       }
       const broke = useWeapon(src, index);
       const strike = { by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, srcHpAfter: src.hp, heal, broke,
-        weapon: weapon.name, special, skills, dual: extra.dual || null };
+        weapon: weapon.name, special, skills, dual: extra.dual || null,
+        partner: special && extra.special.partnerUid ? extra.special.partnerUid : null }; // allié qui participe à l'attaque spéciale
       strikes.push(strike);
       return strike;
     };
@@ -636,7 +637,7 @@
       const f = friends.find(u => u.sourceId === p.id && u.hp > 0 && u !== unit);
       if (!f || dist(f, unit) > c.range) continue;
       const chance = Number(sp.chance) || 0;
-      if (!best || chance > best.chance) best = { name: sp.name, chance, dmg: Number(sp.dmg) || 0, hit: Number(sp.hit) || 0, crit: Number(sp.crit) || 0, partner: f.name };
+      if (!best || chance > best.chance) best = { name: sp.name, chance, dmg: Number(sp.dmg) || 0, hit: Number(sp.hit) || 0, crit: Number(sp.crit) || 0, partner: f.name, partnerUid: f.uid };
     }
     return best;
   }

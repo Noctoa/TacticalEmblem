@@ -53,6 +53,11 @@
       .filter(r => r.ts).sort((a, b) => b.firstgid - a.firstgid);
   }
 
+  /** Facteur d'agrandissement d'un tileset sur une map : entier si ses tuiles sont plus petites que la grille. */
+  function upscale(ts, tw) {
+    return ts.tileWidth < tw && tw % ts.tileWidth === 0 ? tw / ts.tileWidth : 1;
+  }
+
   /**
    * opts : { scale, baseUrl, tilesets, onlyLayer, dimOthers (index du calque actif), area {x0,y0,x1,y1} }
    */
@@ -75,13 +80,16 @@
           const local = raw - ref.firstgid;
           const img = readyImage(opts.baseUrl, ref.ts.image);
           if (!img) continue;
-          const dw = ref.ts.tileWidth * scale, dh = ref.ts.tileHeight * scale;
-          drawTile(ctx, img, ref.ts, local, x * tw * scale, (y * th + th - ref.ts.tileHeight) * scale, dw, dh, gid);
+          // tuiles plus petites que la grille (ex. 16 px sur une map en 32 px) : agrandies d'un facteur entier,
+          // comme les sprites de map (base 16 px) ; plus grandes : dépassent vers le haut, comme dans Tiled
+          const f = upscale(ref.ts, tw);
+          const dw = ref.ts.tileWidth * f * scale, dh = ref.ts.tileHeight * f * scale;
+          drawTile(ctx, img, ref.ts, local, x * tw * scale, (y * th + th - ref.ts.tileHeight * f) * scale, dw, dh, gid);
         }
       }
     });
     ctx.globalAlpha = 1;
   }
 
-  root.Render = { FLIP_H, FLIP_V, FLIP_D, loadImage, readyImage, forget, preloadTilesets, drawTile, drawMap, tileSource, imageUrl };
+  root.Render = { FLIP_H, FLIP_V, FLIP_D, upscale, loadImage, readyImage, forget, preloadTilesets, drawTile, drawMap, tileSource, imageUrl };
 })(self);
