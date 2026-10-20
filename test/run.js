@@ -103,7 +103,7 @@ test('création / sauvegarde / rechargement', () => {
   assert.ok(!p.resources.faces.some(f => /combat_arrow/.test(f)), 'un projectile n\'est pas un portrait');
   // une seule palette (couleurs d'origine) : plus de planche à 4 blocs
   for (const m of Object.values(p.resources.characters)) assert.ok(!m.palettes && Array.isArray(m.teamColors), m.image);
-  assert.deepStrictEqual(p.db.units.map(u => u.name), ['Xarrin', 'Eliwood', 'Lyn', 'Hector', 'Cloud']);
+  assert.deepStrictEqual(p.db.units.map(u => u.name), ['Xarrin', 'Eliwood', 'Lyn', 'Hector', 'Cloud', 'Rebecca', 'Oswin', 'Matthew', 'Serra', 'Dorcas']);
   // sprites propres à une unité (Cloud), convoi, musique, allié du chapitre d'exemple
   for (const u of p.db.units) {
     if (u.mapSprite) assert.ok(p.resources.characters[u.mapSprite], u.mapSprite);
@@ -206,7 +206,7 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
     if (c.mapSprite) assert.ok(q.resources.characters[c.mapSprite], c.mapSprite);
     if (c.battler) assert.ok(q.resources.battlers[c.battler], c.battler);
   }
-  for (const u of q.db.units) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait);
+  for (const u of q.db.units) if (u.portrait) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait); // les personnages à invoquer n'ont pas de portrait
   // ressources par défaut sur un projet converti : rien en double, seuls les effets sonores (absents de l'ancienne version) arrivent
   const sons = fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'sons')).filter(f => !f.startsWith('.')).length;
   assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, sons);

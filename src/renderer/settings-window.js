@@ -199,6 +199,7 @@
       group('Partie',
         btn('+1 000 or', () => api.debug.gold(1000)),
         btn('+10 000 or', () => api.debug.gold(10000)),
+        btn('+50 orbes', () => api.debug.orbs(50)),
         h('span', { class: 'st-inline' }, item, btn('Ajouter au convoi', () => api.debug.addItem(item.value))),
         btn('Affinités +20 (toutes les paires)', api.debug.supports));
       if (G.lobbyOn) {

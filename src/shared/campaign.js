@@ -10,7 +10,9 @@
 })(typeof self !== 'undefined' ? self : this, function (Skills) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
-  const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
+  const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel', 'merges'];
+  // invocations : fusions (+1 à +10) ajoutées aux stats ; module chargé à la demande (navigateur : global Summon)
+  const summonApi = () => (typeof Summon !== 'undefined' ? Summon : (typeof require === 'function' ? require('./summon.js') : null));
   const create = (mode, gold) => ({ mode: mode === 'casual' ? 'casual' : 'classic', dead: [], units: {}, gold: Math.max(0, Math.floor(Number(gold) || 0)), cleared: [], talks: [] });
   /** Champs ajoutés avec le lobby : absents des anciennes sauvegardes. */
   function normalize(campaign) {
@@ -44,6 +46,8 @@
     unit.deathPolicy = character.deathPolicy || 'mode';
     Object.assign(unit, Skills.loadout(unit, db.skills));
     Skills.learnThroughLevel(unit, cls, db.skills || [], character);
+    const merges = campaign.merges && campaign.merges[unit.sourceId];
+    if (merges && summonApi()) summonApi().applyMerges(unit, character, merges);
     unit.hp = unit.stats.hp;
     return unit;
   }

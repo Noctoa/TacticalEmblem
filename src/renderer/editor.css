@@ -120,8 +120,8 @@
 .db-window { width: min(1180px, 96vw); height: min(780px, 92vh); background: var(--panel); border: 1px solid var(--line-2); border-radius: 12px; display: grid; grid-template-rows: auto 1fr; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, .55); }
 .db-head { display: flex; align-items: center; gap: 16px; padding: 0 12px 0 18px; border-bottom: 1px solid var(--line); background: var(--bg-2); }
 .db-head h2 { font-size: 14px; white-space: nowrap; }
-#db-tabs { display: flex; gap: 0; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-#db-tabs button { border: 0; border-radius: 0; background: transparent; padding: 12px 10px 10px; color: var(--text-2); border-bottom: 2px solid transparent; white-space: nowrap; }
+#db-tabs { display: flex; flex-wrap: wrap; gap: 0; flex: 1; min-width: 0; } /* les onglets passent à la ligne plutôt que de se cacher */
+#db-tabs button { border: 0; border-radius: 0; background: transparent; padding: 11px 9px 9px; color: var(--text-2); border-bottom: 2px solid transparent; white-space: nowrap; }
 #db-tabs button:hover { color: var(--text); background: transparent; }
 #db-tabs button.on { color: var(--gold-2); border-bottom-color: var(--gold); }
 .icon-close { font-size: 20px; line-height: 1; padding: 2px 9px; background: transparent; border-color: transparent; color: var(--text-2); }

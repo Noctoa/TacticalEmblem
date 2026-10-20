@@ -4,7 +4,8 @@ const assert = require('node:assert/strict');
 const Roster = require('../src/shared/roster');
 const D = require('../src/shared/defaults');
 
-const db = () => D.sampleProject('Tri').db;
+// les cinq personnages de l'histoire (sans ceux à invoquer)
+const db = () => { const d = D.sampleProject('Tri').db; d.units = d.units.filter(u => ['c_xarrin', 'c_eliwood', 'c_lyn', 'c_hector', 'c_cloud'].includes(u.id)); return d; };
 const names = groups => groups.map(g => [g.label, g.units.map(u => u.name)]);
 
 test('ordre de la base et tri par nom', () => {

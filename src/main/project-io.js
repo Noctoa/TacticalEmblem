@@ -25,7 +25,7 @@ const Locks = require('../shared/locks.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
-const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs'];
+const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs', 'banners'];
 const RESOURCE_DIRS = Layout.ALL_DIRS;
 
 function readJson(file, fallback) {

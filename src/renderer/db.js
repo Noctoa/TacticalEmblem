@@ -363,6 +363,8 @@
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
         { key: 'series', label: 'Série', type: 'text', placeholder: 'ex. Fire Emblem 7, Final Fantasy VII, Original…', suggestions: () => Roster.seriesList(db()),
           help: 'Jeu ou univers d’origine du personnage. Sert à trier la liste des unités (Trier par › Série).' },
+        { key: 'rarity', label: 'Rareté (invocations)', type: 'select', numeric: true, empty: '★★★ (3★, par défaut)', options: [{ value: 5, label: '★★★★★ (5★)' }, { value: 4, label: '★★★★ (4★)' }],
+          help: 'Décide seulement de la probabilité de l’obtenir à l’autel d’invocation (taux réglés dans l’onglet Invocations). Les stats ne changent pas.' },
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
@@ -536,6 +538,46 @@
         ];
       }
     },
+    banners: {
+      label: 'Invocations', list: () => db().banners || (db().banners = []), prefix: 'bn_',
+      sub: (b) => `${[...new Set([...(b.pool || []), ...(b.focus || [])])].length} perso.` + ((b.unlock && (b.unlock.after || b.unlock.from)) ? ' · conditions' : ''),
+      create: () => {
+        const hero = Lobby.heroOf(Lobby.defaults(Editor.project().meta.lobby), db());
+        return { name: 'Nouvelle bannière', description: '', pool: db().units.filter(u => !hero || u.id !== hero.id).map(u => u.id), focus: [],
+          rates: Object.assign({}, Summon.DEFAULT_RATES), focusShare: 50, unlock: { after: '', alive: [], from: '', to: '' } };
+      },
+      rerenderOn: ['pool', 'focus', 'rates.5', 'rates.4', 'rates.3', 'focusShare'],
+      fields: (b) => {
+        const nb = Summon.normalizeBanner(b); Object.assign(b, { rates: nb.rates, unlock: nb.unlock, pool: nb.pool, focus: nb.focus });
+        const cfg = Lobby.defaults(Editor.project().meta.lobby), set = Summon.settings(Editor.project().meta);
+        const units = () => db().units.map(u => ({ value: u.id, label: `${u.name} ${'★'.repeat(Summon.rarityOf(u))}` }));
+        const eff = Summon.rates(b, db(), { dead: [] }, Editor.project().meta);
+        const pct = v => (Math.round(v * 100) / 100).toLocaleString('fr-FR') + ' %';
+        const errors = Summon.validate({ units: db().units, banners: [b] });
+        return [
+          !cfg.enabled || !cfg.summon.enabled || set.enabled === false ? { type: 'info', text: '⚠ L’autel d’invocation n’est pas actif : coche « Autel d’invocation » dans l’onglet Lobby (et Système › Invocations).' } : null,
+          ...errors.map(e => ({ type: 'info', text: '⚠ ' + e })),
+          { key: 'name', label: 'Nom de la bannière', type: 'text' },
+          { key: 'description', label: 'Description (affichée à l’autel)', type: 'text' },
+          { type: 'heading', label: 'Personnages' },
+          { key: 'pool', label: 'Personnages possibles', type: 'multicheck', options: units },
+          { key: 'focus', label: 'Mis en avant (ils se partagent une partie du taux 5★)', type: 'multicheck', options: units },
+          { type: 'info', text: 'La rareté de chaque personnage se règle sur sa fiche (onglet Unités › Rareté). Un personnage déjà recruté qui sort à nouveau gagne une fusion (+1 à deux stats, jusqu’à +10). La couleur de sa pierre vient de son arme : rouge épée / anima, bleu lance / lumière, vert hache / ténèbres, incolore arc / bâton.' },
+          { type: 'heading', label: 'Taux d’apparition (%)' },
+          { type: 'row', fields: [
+            { key: 'rates.5', label: '5★', type: 'number', min: 0, max: 100 },
+            { key: 'rates.4', label: '4★', type: 'number', min: 0, max: 100 },
+            { key: 'rates.3', label: '3★', type: 'number', min: 0, max: 100 },
+            { key: 'focusShare', label: 'Part des 5★ pour les mis en avant (%)', type: 'number', min: 0, max: 100 }] },
+          { type: 'info', text: `Taux réels avec ces personnages : ${[eff.focus ? '5★ mis en avant ' + pct(eff.focus) : '', eff[5] ? '5★ ' + pct(eff[5]) : '', eff[4] ? '4★ ' + pct(eff[4]) : '', eff[3] ? '3★ ' + pct(eff[3]) : ''].filter(Boolean).join(' · ') || '—'}. Une rareté sans personnage rend son taux aux autres. Pitié : +${String(set.pityStep).replace('.', ',')} % de 5★ toutes les ${set.pityEvery} invocations sans 5★ (Système › Invocations).` },
+          { type: 'heading', label: 'Disponibilité' },
+          { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: '— dès le début —', options: () => doneOpts() },
+          { type: 'row', fields: [
+            { key: 'unlock.from', label: 'Du (date réelle)', type: 'date' },
+            { key: 'unlock.to', label: 'au (inclus) — ensuite la bannière disparaît', type: 'date' }] }
+        ].filter(Boolean);
+      }
+    },
     talks: {
       label: 'Conversations', list: () => db().talks || (db().talks = []), prefix: 't_',
       sub: (t) => uName(t.unitId),
@@ -556,6 +598,7 @@
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
           { type: 'row', fields: [
             { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (onglet Affinités), si elle existe.' },
+            { key: 'orbs', label: 'Orbes gagnées', type: 'number', min: 0, max: 99, help: 'Monnaie des invocations (autel du camp).' },
             { key: 'once', label: 'Une seule fois', type: 'checkbox' }] },
           t.points > 0 && !linked ? { type: 'info', text: `Aucune affinité entre ${hero ? hero.name : 'le héros'} et ${uName(t.unitId)} : les points ne seront pas comptés.` } : null,
           { key: 'script', label: 'Dialogue', type: 'textarea', rows: 8, placeholder: 'Lyn: Bonsoir, Eliwood.\nEliwood: Tu ne dors pas ?' },
@@ -583,7 +626,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres et actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres et actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['system', 'Système']];
 
   function open(t, id) {
     if (t) tab = t;
@@ -946,7 +989,8 @@
       { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
         inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
-        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 }].filter(Boolean) },
+        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 },
+        { key: 'orbs', label: 'Orbes (1re victoire)', type: 'number', min: 0, max: 999, help: 'Monnaie des invocations, donnée à la première victoire seulement.' }].filter(Boolean) },
       { type: 'row', fields: [
         { key: 'goldEachClear', label: "Or à chaque victoire (sinon : la première fois)", type: 'checkbox' },
         { key: 'replay', label: 'Rejouable une fois terminé', type: 'checkbox' }] },
@@ -1619,8 +1663,13 @@
         { key: 'shop.name', label: 'Nom du marchand', type: 'text' },
         { key: 'board.label', label: 'Nom du tableau des quêtes', type: 'text' }] },
       { key: 'shop.stock', label: 'Articles en vente', type: 'multicheck', options: goods, when: c => c.shop.enabled },
-      { type: 'info', text: "Seuls les objets qui ont un prix sont proposés (onglets Armes et Objets › Prix en boutique). La revente rapporte la moitié du prix, selon les utilisations restantes. L'or vient des récompenses de chapitre (onglet Chapitres) et des ennemis qui portent une bourse (inspecteur d'un ennemi, mode Unités)." }
-    ], cfg, { onChange: (k) => { change(); if (['enabled', 'mapId', 'shop.enabled', 'heroId', 'name', 'shop.name', 'board.label'].includes(k)) renderBody(); else redraw(); } }));
+      { type: 'info', text: "Seuls les objets qui ont un prix sont proposés (onglets Armes et Objets › Prix en boutique). La revente rapporte la moitié du prix, selon les utilisations restantes. L'or vient des récompenses de chapitre (onglet Chapitres) et des ennemis qui portent une bourse (inspecteur d'un ennemi, mode Unités)." },
+      { type: 'heading', label: 'Autel d’invocation' },
+      { type: 'row', fields: [
+        { key: 'summon.enabled', label: 'Autel d’invocation (orbes)', type: 'checkbox' },
+        { key: 'summon.name', label: 'Nom de l’autel', type: 'text' }] },
+      { type: 'info', text: 'Les bannières se règlent dans l’onglet Invocations. Place l’autel sur la map ci-dessous.' }
+    ], cfg, { onChange: (k) => { change(); if (['enabled', 'mapId', 'shop.enabled', 'heroId', 'name', 'shop.name', 'board.label', 'summon.enabled', 'summon.name'].includes(k)) renderBody(); else redraw(); } }));
 
     // ---- placement sur la map
     pane.append(h('div', { class: 'form-heading' }, 'Placement sur la map'));
@@ -1629,11 +1678,12 @@
     const hero = Lobby.heroOf(cfg, db());
     const targets = [['start', `Départ de ${hero ? hero.name : 'héros'}`], ['board', cfg.board.label || 'Tableau des quêtes']]
       .concat(cfg.shop.enabled ? [['shop', cfg.shop.name || 'Boutique']] : [])
+      .concat(cfg.summon.enabled ? [['summon', cfg.summon.name || 'Autel']] : [])
       .concat(cfg.spots.map((sp, i) => ['spot' + i, uName(sp.unitId)]));
     if (!targets.some(t => t[0] === lobbyPick)) lobbyPick = 'start';
     pane.append(h('div', { class: 'lobby-pick' }, h('span', { class: 'muted' }, 'Clique sur la map pour placer :'),
       chips(targets.map(([value, label]) => ({ value, label })), lobbyPick, (v) => { lobbyPick = v; renderBody(); })));
-    const point = (key) => key === 'start' ? cfg.start : key === 'board' ? cfg.board : key === 'shop' ? cfg.shop : cfg.spots[Number(key.slice(4))];
+    const point = (key) => key === 'start' ? cfg.start : key === 'board' ? cfg.board : key === 'shop' ? cfg.shop : key === 'summon' ? cfg.summon : cfg.spots[Number(key.slice(4))];
     const scale = Math.max(0.5, Math.min(2, 640 / (map.width * map.tileWidth)));
     const cv = h('canvas', { class: 'lobby-map', width: Math.round(map.width * map.tileWidth * scale), height: Math.round(map.height * map.tileHeight * scale) });
     pane.append(h('div', { class: 'res-stage lobby-stage' }, cv));
@@ -1670,6 +1720,7 @@
       };
       mark(cfg.board, '#f2d58a', cfg.board.label || 'Table', lobbyPick === 'board');
       if (cfg.shop.enabled) mark(cfg.shop, '#9fe0ff', cfg.shop.name || 'Boutique', lobbyPick === 'shop');
+      if (cfg.summon.enabled) mark(cfg.summon, '#d6a8ff', cfg.summon.name || 'Autel', lobbyPick === 'summon');
       cfg.spots.forEach((sp, i) => { sprite(sp.unitId, sp); mark(sp, sp.after ? '#c9a7ff' : '#9be59b', uName(sp.unitId) + (sp.after ? ' *' : ''), lobbyPick === 'spot' + i); });
       if (hero) sprite(hero.id, cfg.start);
       mark(cfg.start, '#ffffff', hero ? hero.name + ' (départ)' : 'Départ', lobbyPick === 'start');
@@ -1730,6 +1781,7 @@
     // réglages ajoutés après la création du projet : valeurs par défaut affichées
     const st = Editor.project().meta.settings || (Editor.project().meta.settings = {});
     for (const k of ['overkill', 'overkillExp']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
+    Editor.project().meta.summon = Summon.settings(Editor.project().meta);
     pane.append(UI.form([
       { type: 'row', fields: [{ key: 'name', label: 'Nom du jeu', type: 'text' }, { key: 'author', label: 'Auteur', type: 'text' }] },
       { type: 'row', fields: [
@@ -1754,6 +1806,15 @@
         { key: 'settings.overkill', label: 'Overkill : après le coup fatal, l’attaquant finit ses coups et les dégâts en trop s’affichent', type: 'checkbox' },
         { key: 'settings.overkillExp', label: 'Bonus d’EXP (overkill ×2)', type: 'number', min: 0, max: 100, compact: true,
           help: 'Versé quand les dégâts en trop atteignent une 2e fois les PV max de l’ennemi. 0 = pas de bonus. L’EXP d’un combat reste plafonnée à 100.' }] },
+      { type: 'heading', label: 'Invocations' },
+      { type: 'row', fields: [
+        { key: 'summon.enabled', label: 'Invocations (autel du camp)', type: 'checkbox' },
+        { key: 'summon.startOrbs', label: 'Orbes au début de la partie', type: 'number', min: 0, max: 9999 }] },
+      { type: 'row', fields: [0, 1, 2, 3, 4].map(i => ({ key: 'summon.costs.' + i, label: `Pierre ${i + 1} (orbes)`, type: 'number', min: 0, max: 99 })) },
+      { type: 'row', fields: [
+        { key: 'summon.pityEvery', label: 'Pitié : toutes les N invocations sans 5★', type: 'number', min: 0, max: 100 },
+        { key: 'summon.pityStep', label: '… taux 5★ augmenté de (%)', type: 'number', min: 0, max: 10, step: 0.5 }] },
+      { type: 'info', text: 'Une séance d’invocation ouvre un cercle de 5 pierres : la 1re coûte le plus cher, il faut en ouvrir au moins une. Les bannières se règlent dans l’onglet Invocations, l’autel dans l’onglet Lobby, les orbes gagnées sur les actes et les conversations.' },
       { type: 'heading', label: 'Convoi (cargaison de départ)' },
       { key: 'convoy.capacity', label: 'Capacité', type: 'number', min: 1, max: 999 },
       { type: 'custom', render: (meta) => {

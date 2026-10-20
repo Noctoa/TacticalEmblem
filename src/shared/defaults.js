@@ -142,37 +142,53 @@
   }
 
   function characters() {
-    const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', movBonus: 0, gender: '', protagonist: false, ending: '', series: '' }, o);
+    const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', portrait: '', movBonus: 0, gender: '', protagonist: false, ending: '', series: '' }, o);
     return [
       // protagoniste : héros du camp, chef d'escouade (convoi). Sprite de map : celui de la classe Seigneur, en attendant le sien.
-      u({ id: 'c_xarrin', name: 'Xarrin', series: 'Original', classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
+      u({ id: 'c_xarrin', name: 'Xarrin', series: 'Original', rarity: 5, classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
         ending: "Xarrin ne posa jamais vraiment son épée. Mais ceux qui l'avaient suivi savaient qu'il reviendrait toujours au camp, là où tout avait commencé.",
         stats: st(19, 6, 0, 6, 8, 6, 5, 1), growths: st(80, 50, 5, 50, 50, 45, 30, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_slim_sword' }, { id: 'i_vulnerary' }],
         battler: BT('Xarrin'), portrait: FACE('Xarrin'),
         bio: "Épéiste au manteau vert qui mène la compagnie. Rapide, direct, et toujours le premier à charger." }),
-      u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
+      u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', rarity: 5, classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
         stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
         inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
         portrait: FACE('Eliwood'), bio: "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air." }),
-      u({ id: 'c_lyn', name: 'Lyn', series: 'Fire Emblem 7', classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
+      u({ id: 'c_lyn', name: 'Lyn', series: 'Fire Emblem 7', rarity: 5, classId: 'blade_lord', level: 1, color: '#16a34a', gender: 'femme', protagonist: true,
         ending: "Lyn retourna dans les plaines de Sacae. Les nomades parlent encore de la cavalière qui chevauchait plus vite que le vent.",
         stats: st(19, 6, 0, 9, 11, 5, 4, 3), growths: st(70, 40, 5, 60, 60, 55, 20, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_iron_bow' }, { id: 'i_vulnerary' }],
         portrait: FACE('Lyn'), bio: "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc." }),
-      u({ id: 'c_hector', name: 'Hector', series: 'Fire Emblem 7', classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
+      u({ id: 'c_hector', name: 'Hector', series: 'Fire Emblem 7', rarity: 5, classId: 'axe_lord', level: 1, color: '#2563eb', gender: 'homme', protagonist: true,
         ending: "Hector devint marquis d'Ostia. Il garda la même hache, le même caractère, et une fâcheuse tendance à régler les conflits lui-même.",
         stats: st(19, 7, 0, 4, 5, 3, 8, 0), growths: st(90, 60, 5, 45, 35, 30, 50, 25),
         inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
         portrait: FACE('Hector'), bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
       // Allié (unité verte) : classe générique, sprites propres à l'unité
-      u({ id: 'c_cloud', name: 'Cloud', series: 'Final Fantasy VII', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
+      u({ id: 'c_cloud', name: 'Cloud', series: 'Final Fantasy VII', rarity: 5, classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],
         mapSprite: CH('Cloud'), battler: BT('Cloud'),
-        portrait: FACE('Cloud'), bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." })
+        portrait: FACE('Cloud'), bio: "Mercenaire de passage. Il ne combat que pour lui-même… en théorie." }),
+      // personnages à invoquer (autel du camp) : pas de sprites propres, ils prennent ceux de leur classe
+      u({ id: 'c_rebecca', name: 'Rebecca', series: 'Fire Emblem 7', rarity: 5, classId: 'archer', level: 1, isLord: false, color: '#65a30d', gender: 'femme',
+        stats: st(17, 4, 0, 4, 6, 4, 3, 1), growths: st(60, 40, 5, 50, 60, 50, 15, 30), inventory: [{ id: 'w_iron_bow' }, { id: 'i_vulnerary' }],
+        bio: "Chasseresse du village de Pherae. Elle ne rate jamais un lapin… ni un brigand." }),
+      u({ id: 'c_oswin', name: 'Oswin', series: 'Fire Emblem 7', rarity: 4, classId: 'knight', level: 9, isLord: false, color: '#64748b', gender: 'homme',
+        stats: st(28, 13, 0, 9, 5, 3, 13, 3), growths: st(90, 40, 0, 30, 30, 35, 55, 30), inventory: [{ id: 'w_iron_lance' }, { id: 'w_javelin' }],
+        bio: "Chevalier d'Ostia, fidèle à Hector. Lent, mais rien ne passe." }),
+      u({ id: 'c_matthew', name: 'Matthew', series: 'Fire Emblem 7', rarity: 4, classId: 'thief', level: 2, isLord: false, color: '#a16207', gender: 'homme',
+        stats: st(18, 4, 0, 4, 11, 2, 2, 0), growths: st(75, 30, 0, 40, 70, 50, 25, 20), inventory: [{ id: 'w_iron_sword' }, { id: 'i_chest_key' }],
+        bio: "Espion d'Ostia, toujours une plaisanterie aux lèvres." }),
+      u({ id: 'c_serra', name: 'Serra', series: 'Fire Emblem 7', classId: 'cleric', level: 1, isLord: false, color: '#f472b6', gender: 'femme',
+        stats: st(17, 2, 5, 8, 6, 6, 2, 5), growths: st(50, 5, 50, 30, 50, 60, 15, 55), inventory: [{ id: 'w_heal' }],
+        bio: "Prêtresse d'Ostia. Elle soigne vite, et parle encore plus vite." }),
+      u({ id: 'c_dorcas', name: 'Dorcas', series: 'Fire Emblem 7', classId: 'fighter', level: 3, isLord: false, color: '#78350f', gender: 'homme',
+        stats: st(30, 7, 0, 7, 6, 3, 3, 0), growths: st(80, 60, 0, 40, 20, 45, 25, 15), inventory: [{ id: 'w_iron_axe' }],
+        bio: "Guerrier de Bern parti gagner de quoi soigner sa femme." })
     ];
   }
 
@@ -262,7 +278,7 @@
       id: 'ch_1', name: 'Le fort de Batta', mapId: 'map_1', // chapitre 1, acte 1
       objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
       next: 'ch_1_2', final: false, // sans lobby : les actes s'enchaînent par « Acte suivant »
-      kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
+      kind: 'story', gold: 600, orbs: 3, // or et orbes (invocations) gagnés à la première victoire (lobby)
       villages: [{ id: 'v_south', name: 'Village du sud', x: 2, y: 8, script: 'Villageois: Ces brigands nous empêchent de quitter nos maisons. Prenez cette potion et ces pièces pour vous aider !', reward: { gold: 250, itemId: 'i_vulnerary', uses: 0 } }],
       players: [
         { id: 'p0', unitId: 'c_xarrin', x: 5, y: 13 },
@@ -373,6 +389,7 @@
       enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_xarrin', startGold: 500, music: '',
       start: { x: 7, y: 8 },
       board: { x: 10, y: 2, label: 'Tableau des quêtes' },
+      summon: { enabled: true, x: 9, y: 7, name: 'Autel d\'invocation' }, // le puits du camp
       shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal', 'i_chest_key', 'i_door_key'] },
       spots: [
         { unitId: 'c_eliwood', x: 5, y: 7, after: '' },
@@ -382,18 +399,29 @@
       ]
     };
   }
+  // bannières d'invocation (autel du camp) : personnages possibles, mis en avant, taux par rareté
+  function banners() {
+    return [
+      { id: 'bn_lycia', name: 'Héros de Lycia', description: 'Les seigneurs de Lycia et leurs compagnons. Rebecca est mise en avant.',
+        pool: ['c_eliwood', 'c_lyn', 'c_hector', 'c_rebecca', 'c_oswin', 'c_matthew', 'c_serra', 'c_dorcas'], focus: ['c_rebecca'],
+        rates: { 5: 6, 4: 58, 3: 36 }, focusShare: 50, unlock: { after: '', alive: [], from: '', to: '' } },
+      { id: 'bn_mercs', name: 'Mercenaires de passage', description: 'Après le chapitre 1, des épées à louer passent au camp. Cloud est mis en avant.',
+        pool: ['c_cloud', 'c_oswin', 'c_matthew', 'c_serra', 'c_dorcas'], focus: ['c_cloud'],
+        rates: { 5: 6, 4: 58, 3: 36 }, focusShare: 50, unlock: { after: 'arc_1', alive: [], from: '', to: '' } }
+    ];
+  }
   // conversations du lobby : avec un personnage présent, débloquées par la progression
   function talks() {
     return [
-      { id: 't_eli_1', name: 'Un second', unitId: 'c_eliwood', after: '', alive: [], points: 10, once: true, script:
+      { id: 't_eli_1', name: 'Un second', unitId: 'c_eliwood', after: '', alive: [], points: 10, orbs: 1, once: true, script:
         "Eliwood: Xarrin. Les autres t'attendent pour décider de la route.\nXarrin: Et toi, tu en penses quoi ?\nEliwood: Que tu ne demandes l'avis de personne… mais que tu as souvent raison.\nXarrin: Souvent ?\nEliwood: Je reste poli." },
-      { id: 't_lyn_1', name: 'Les guetteurs', unitId: 'c_lyn', after: '', alive: [], points: 10, once: true, script:
+      { id: 't_lyn_1', name: 'Les guetteurs', unitId: 'c_lyn', after: '', alive: [], points: 10, orbs: 1, once: true, script:
         "Lyn: Xarrin. Le fort des brigands est juste au nord de la rivière.\nXarrin: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
-      { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
+      { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, orbs: 1, once: true, script:
         "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nXarrin: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
-      { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'arc_1', alive: [], points: 15, once: true, script:
+      { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'arc_1', alive: [], points: 15, orbs: 1, once: true, script:
         "Lyn: Tu t'es bien battu, au fort.\nXarrin: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
-      { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'arc_1', alive: [], points: 0, once: true, script:
+      { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'arc_1', alive: [], points: 0, orbs: 1, once: true, script:
         "Cloud: … Ton camp est calme.\nXarrin: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
     ];
   }
@@ -401,7 +429,7 @@
   // Actes d'exemple : chapitre 1 (2 actes), chapitre 2 (2 actes), évènement (2 actes)
   // ------------------------------------------------------------------
   const foe = (id, x, y, level, extra) => Object.assign({ id, name: 'Brigand', classId: 'brigand', level, x, y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] }, extra || {});
-  const act = (o) => Object.assign({ mapId: 'map_1', kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true,
+  const act = (o) => Object.assign({ mapId: 'map_1', kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true, orbs: o.kind === 'event' ? 2 : 3,
     next: '', final: false, allies: [], events: [] }, o);
   const say = (id, script, trigger) => ({ id, trigger: trigger || { type: 'start' }, once: true, script });
   const trio = (e, l, h, x) => [{ id: 'p0', unitId: 'c_xarrin', x: x[0], y: x[1] }, { id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
@@ -519,7 +547,7 @@
   }
 
   function emptyDatabase() {
-    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [] };
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [], banners: [] };
   }
 
   function sampleProject(name) {
@@ -530,11 +558,14 @@
     db.arcs = arcs();
     db.supports = supports();
     db.talks = talks();
+    db.banners = banners();
     return {
       meta: {
         format: 'tactics-forge', version: 1, name: name || 'Mon Tactical RPG',
         // lobby : le jeu commence au camp, on y choisit les chapitres, on achète, on parle aux alliés
         lobby: lobby(),
+        // invocations : orbes au début de la partie, coût des 5 pierres d'une séance, pitié (+0,5 % de 5★ toutes les 5 invocations sans 5★)
+        summon: { enabled: true, startOrbs: 20, costs: [5, 4, 4, 4, 3], pityEvery: 5, pityStep: 0.5 },
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
@@ -560,5 +591,5 @@
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, banners, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

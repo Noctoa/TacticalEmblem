@@ -45,6 +45,7 @@
     c.board = Object.assign({ x: 0, y: 0, label: 'Tableau des quêtes' }, c.board || {});
     c.shop = Object.assign({ enabled: true, x: 0, y: 0, name: 'Marchand' }, c.shop || {});
     c.shop.stock = Array.isArray(c.shop.stock) ? c.shop.stock : [];
+    c.summon = Object.assign({ enabled: false, x: 0, y: 0, name: 'Autel d\'invocation' }, c.summon || {}); // invocations (orbes)
     c.spots = Array.isArray(c.spots) ? c.spots : [];
     return c;
   }
@@ -205,13 +206,18 @@
     return alreadyCleared && !(ch && ch.goldEachClear) ? 0 : g;
   }
 
-  /** Victoire : chapitre noté terminé, or ajouté. Renvoie l'or gagné. */
+  /** Orbes (invocations) gagnées à la première victoire d'un acte. */
+  function orbsFor(ch, alreadyCleared) { return alreadyCleared ? 0 : Math.max(0, Math.floor(Number(ch && ch.orbs) || 0)); }
+
+  /** Victoire : chapitre noté terminé, or et orbes ajoutés. Renvoie l'or gagné (campaign.lastOrbs : les orbes). */
   function completeChapter(campaign, ch) {
     campaign.cleared = campaign.cleared || [];
     const already = campaign.cleared.includes(ch.id);
-    const gold = goldFor(ch, already);
+    const gold = goldFor(ch, already), orbs = orbsFor(ch, already);
     if (!already) campaign.cleared.push(ch.id);
     campaign.gold = (campaign.gold || 0) + gold;
+    campaign.orbs = (Number(campaign.orbs) || 0) + orbs;
+    campaign.lastOrbs = orbs;
     return gold;
   }
 
@@ -312,6 +318,7 @@
     if (!inside(c.start)) errors.push('Lobby : la case de départ est hors de la map.');
     if (!inside(c.board)) errors.push('Lobby : la table des chapitres est hors de la map.');
     if (c.shop.enabled && !inside(c.shop)) errors.push('Lobby : la boutique est hors de la map.');
+    if (c.summon.enabled && !inside(c.summon)) errors.push('Lobby : l\'autel d\'invocation est hors de la map.');
     const taken = new Set([c.start.x + ',' + c.start.y]);
     for (const s of c.spots) {
       const u = byId(db.units, s.unitId);
@@ -324,5 +331,5 @@
     return errors;
   }
 
-  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
+  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, orbsFor, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
 });

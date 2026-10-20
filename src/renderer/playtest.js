@@ -87,6 +87,7 @@
         return startFromSave(saved);
       } else {
         G.campaign = Campaign.create(choice === 'direct' ? 'classic' : choice, lobbyCfg.startGold);
+        Summon.ensure(G.campaign, G.project.meta); // orbes de départ
         if (choice === 'direct') { toLobby = false; first = direct; }
       }
       requestAnimationFrame(loop);
@@ -1612,7 +1613,8 @@
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
     await lobby.enter();
-    if (gold) UI.toast(`Récompense : +${gold} or`);
+    const reward = rewardText(gold, G.campaign.lastOrbs);
+    if (reward) UI.toast(`Récompense : ${reward}`);
   }
   /** Victoire avec un lobby : on enchaîne directement l'acte suivant du chapitre. */
   async function continueArc() {
@@ -1623,7 +1625,8 @@
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
     await loadChapter(next);
-    if (gold) UI.toast(`Récompense : +${gold} or`);
+    const reward = rewardText(gold, G.campaign.lastOrbs);
+    if (reward) UI.toast(`Récompense : ${reward}`);
   }
   /** Défaite ou abandon : retour au camp dans l'état d'avant l'acte. */
   async function retreatToLobby() {
@@ -1633,16 +1636,19 @@
     Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
     await lobby.enter();
   }
+  const rewardText = (gold, orbs) => [gold ? `+${gold} or` : '', orbs ? `+${orbs} orbe${orbs > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
   function showEnd(win, why) {
     const el = $('#end'); el.className = win ? 'win-screen' : 'lose';
     el.innerHTML = '';
-    const reward = win && G.lobbyOn ? Lobby.goldFor(G.chapter, (G.campaign.cleared || []).includes(G.chapter.id)) : 0;
+    const already = (G.campaign.cleared || []).includes(G.chapter.id);
+    const reward = win && G.lobbyOn ? Lobby.goldFor(G.chapter, already) : 0;
+    const orbReward = win && G.lobbyOn ? Lobby.orbsFor(G.chapter, already) : 0;
     // lobby : l'acte suivant du même chapitre peut s'enchaîner sans repasser par le camp
     const nextInArc = win && G.lobbyOn && !G.chapter.final ? Lobby.nextAct(G.db, G.chapter.id) : null;
     el.append(h('div', { class: 'end-card' },
       h('h1', {}, win ? 'Victoire' : 'Défaite'),
       h('p', {}, why || `${Lobby.actLabel(G.db, G.chapter.id)} terminé en ${G.turn} tour(s).` + (G.lost.length ? ` Pertes : ${G.lost.join(', ')}.` : ' Aucune perte.')),
-      reward ? h('p', { class: 'end-reward' }, `Récompense : ${reward} or`) : null,
+      reward || orbReward ? h('p', { class: 'end-reward' }, `Récompense : ${rewardText(reward, orbReward).replace(/\+/g, '')}`) : null,
       h('div', { class: 'end-actions' },
         win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); if (G.lobbyOn) Lobby.completeChapter(G.campaign, G.chapter); openEpilogue(); } }, 'Épilogue') : null,
         win && G.lobbyOn && nextInArc ? h('button', { class: G.chapter.final ? '' : 'primary', onclick: continueArc }, `Acte ${Lobby.actInfo(G.db, nextInArc.id).index + 1} →`) : null,
@@ -1961,7 +1967,7 @@
   const lobby = LobbyScene.create({
     G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
     hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
-    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution
+    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl
   });
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés
@@ -1994,6 +2000,7 @@
       heal: (u) => { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); },
       kill: (u) => later(async () => { await killUnit(u, true); await checkEnd(); }),
       gold: (n) => { G.campaign.gold = (G.campaign.gold || 0) + n; UI.toast(`+${n.toLocaleString('fr-FR')} or`); },
+      orbs: (n) => { Summon.ensure(G.campaign, G.project.meta); Summon.addOrbs(G.campaign, n); UI.toast(`+${n} orbes`); if (G.mode === 'lobby') lobby.refreshHud(); },
       addItem: (id) => { const d = R.getEntry(G.db, id); if (!d) return; G.convoy.push({ id, uses: d.def.uses || 0 }); UI.toast(`${d.def.name} ajouté au convoi`); },
       supports: () => { for (const s of Object.values(G.sup)) s.points += 20; UI.toast('Affinités : +20 points pour chaque paire'); },
       clear: async (id) => { if (!G.campaign.cleared.includes(id)) G.campaign.cleared.push(id); if (G.mode === 'lobby') await lobby.enter(); },
