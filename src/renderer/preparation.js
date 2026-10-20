@@ -56,6 +56,7 @@
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(p.x * tw + 1, p.y * th + 1, tw - 2, th - 2);
         ctx.font = `bold ${Math.max(8, Math.min(15, th * .65))}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(text, (p.x + .5) * tw, (p.y + .5) * th);
       };
+      for (const v of Villages.list(ch)) marker(v, '#987328', Villages.visited(G.campaign, ch, v) && !v.repeatOnReplay ? '✓' : 'V');
       for (const e of ch.enemies || []) if (!(e.appearTurn > 0)) marker(e, '#a13232', e.isBoss ? '★' : '');
       for (const a of ch.allies || []) if (!ch.players.some(p => p.unitId === a.unitId) && !G.campaign.dead.includes(a.unitId)) marker(a, '#258344', 'A');
       Deployment.slots(ch).forEach((p, i) => marker(p, S.plan.some(q => q.unitId === S.focus && q.x === p.x && q.y === p.y) ? '#a37c19' : '#2859a8', String(i + 1)));
@@ -64,7 +65,7 @@
         const point = Deployment.slots(ch).find(p => p.x === x && p.y === y);
         if (point) change(Deployment.move(ch, members, S.plan, S.focus, point, terrainAt));
       });
-      mapBox.append(canvas, h('p', { class: 'prep-muted' }, 'Bleu : départ · Or : personnage sélectionné · Rouge : ennemi · Vert : allié'));
+      mapBox.append(canvas, h('p', { class: 'prep-muted' }, 'Bleu : départ · Or : sélection · Rouge : ennemi · Vert : allié · V : village'));
       const positions = h('div', { class: 'prep-positions' }, Deployment.slots(ch).map((p, i) => {
         const assigned = S.plan.find(q => q.x === p.x && q.y === p.y), u = assigned && members.find(u => u.sourceId === assigned.unitId);
         return h('button', { 'data-deploy-slot': String(i), disabled: !S.plan.some(q => q.unitId === S.focus),

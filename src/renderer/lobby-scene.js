@@ -257,7 +257,7 @@
     const countNew = (all, kind) => { const n = all.filter(e => e.kind === kind && e.state === 'new').length; return n ? ` (${n})` : ''; };
     async function depart(ch) {
       const map = G.project.maps.find(m => m.id === ch.mapId);
-      const errors = map ? [...Mission.validate(ch, G.db, map), ...Deployment.validate(ch, G.db, map)] : ["Map de l'acte introuvable."];
+      const errors = map ? [...Mission.validate(ch, G.db, map), ...Deployment.validate(ch, G.db, map), ...Villages.validate(ch, G.db, map)] : ["Map de l'acte introuvable."];
       if (errors.length) return UI.alert('Acte invalide', errors.join('\n'));
       if (!(await UI.confirm(`Partir pour « ${Lobby.actLabel(G.db, ch.id)} » ?`, { ok: 'Partir' }))) return;
       commit();

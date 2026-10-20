@@ -297,4 +297,12 @@ Les cinq emplacements de sauvegarde conservent la sélection et les positions. U
 
 Les tests couvrent les contraintes de sélection, les cases et types de mouvement, les sauvegardes et leur compatibilité. Un scénario en jeu vérifie le parcours jusqu'à la bataille, le chargement depuis les paramètres, l'acte suivant, une petite fenêtre et la désactivation des préparatifs.
 
-Prochaine priorité : les interactions de map (villages, coffres et portes). La suspension au milieu d'une bataille reste un chantier ultérieur.
+**19. Villages à visiter — livrés**
+
+L'éditeur permet de placer, déplacer et supprimer les villages sur la map en mode Unités, avec annulation. La fiche de village et la fiche d'acte partagent les réglages : dialogue, or, arme ou objet et utilisations, recrutement, visiteurs autorisés et répétition lors d'un acte rejoué. Les références utilisées empêchent la suppression accidentelle de leurs personnages et récompenses ; les données invalides sont refusées avant écriture.
+
+L'action Visiter apparaît pour un personnage du joueur sur la case et consomme son action. Les objets utilisent l'inventaire puis le convoi ; une saturation complète bloque la visite sans rien perdre. Une nouvelle recrue rejoint le terrain à proximité sur une case accessible, ou un allié vert présent passe au joueur en gardant ses PV et son équipement. Les recrues peuvent agir immédiatement. Les doublons et résurrections sont exclus ; sans place pour une nouvelle recrue, le village reste disponible.
+
+L'historique des visites appartient à la campagne, avec une seule récompense par défaut, même après rejeu. Une option autorise une récompense par nouvelle tentative rejouée après victoire. Le point de reprise de début d'acte garantit que recommencer ou abandonner annule ensemble les visites et leurs gains. Les anciennes sauvegardes sans historique restent prises en charge. Le prologue des nouveaux projets d'exemple comporte un village.
+
+Prochaine priorité : coffres et portes, avec clés et compétences de voleur. La suspension au milieu d'une bataille reste un chantier ultérieur.

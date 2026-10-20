@@ -108,7 +108,7 @@
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map)];
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
@@ -116,7 +116,7 @@
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, fired: new Set(), lost: [], sel: null,
-      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [] });
+      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set() });
     hideMenu(); hideForecast();
     $('#convoy').classList.add('hidden');
     $('#epilogue').classList.add('hidden');
@@ -424,6 +424,7 @@
 
     const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
+    if (G.mode === 'chapter') drawVillages();
     if (G.mode === 'lobby') lobby.drawOverlay(ctx, t);
     if (!G.busy && ['player', 'ally'].includes(G.phase) && !G.over && !G.dialogue) drawCursor(t);
     drawFloats(t);
@@ -447,6 +448,16 @@
     ctx.lineTo(cx + Math.cos(ang + 2.4) * s, cy + Math.sin(ang + 2.4) * s);
     ctx.lineTo(cx + Math.cos(ang - 2.4) * s, cy + Math.sin(ang - 2.4) * s);
     ctx.closePath(); ctx.fill();
+  }
+
+  function villageState() { return { campaign: G.campaign, visited: G.visitedVillages || new Set(), convoy: G.convoy, capacity: G.convoyCap, units: G.units }; }
+  function drawVillages() {
+    for (const village of Villages.list(G.chapter)) {
+      const [px, py, w, hh] = tileRect(village.x, village.y), closed = Villages.closed(G.chapter, village, villageState());
+      ctx.strokeStyle = closed ? '#88948d' : '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(px + 2, py + 2, w - 4, hh - 4);
+      ctx.fillStyle = closed ? '#45554b' : '#7e5c19'; ctx.fillRect(px + w - 17, py + 1, 16, 16);
+      ctx.fillStyle = '#fff0c0'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(closed ? '✓' : 'V', px + w - 9, py + 9);
+    }
   }
 
   function roundRect(x, y, w, hh, r) {
@@ -626,6 +637,8 @@
     tw.classList.toggle('right', leftHalf && topHalf);
     tw.innerHTML = '';
     if (t) tw.append(...[h('div', { class: 't-name' }, t.name), h('div', { class: 't-row' }, h('span', {}, 'DÉF'), String(t.def)), h('div', { class: 't-row' }, h('span', {}, 'ESQ'), String(t.avoid)), t.heal ? h('div', { class: 't-row' }, h('span', {}, 'SOIN'), t.heal + '%') : null].filter(Boolean));
+    const village = G.chapter && Villages.at(G.chapter, c.x, c.y);
+    if (village) tw.append(h('div', { class: 't-name' }, village.name || 'Village'), h('div', { class: 't-row' }, Villages.closed(G.chapter, village, villageState()) ? 'Déjà visité' : 'Action : Visiter'));
 
     const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : unitAt(c.x, c.y);
     const uw = $('#unit-win');
@@ -748,6 +761,11 @@
   function openActionMenu() {
     const u = G.sel;
     const items = [];
+    const village = Villages.at(G.chapter, u.x, u.y);
+    if (village && u.team === 'player' && !Villages.closed(G.chapter, village, villageState())) {
+      const offer = Villages.offer(G.chapter, village, u, villageState(), G.db);
+      items.push({ label: 'Visiter', sub: offer.ok ? village.name || 'Village' : offer.error, disabled: !offer.ok, action: () => visitVillage(u, village) });
+    }
     if (Mission.canSeize(G.chapter, G.db, u) && !G.seized.includes(key(u.x, u.y))) items.push({ label: 'Prendre', action: () => { hideMenu(); seize(u); } });
     const targets = attackTargetsFrom(u);
     if (targets.length) items.push({ label: 'Attaquer', action: () => openTargets(u, targets, 'target') });
@@ -1120,6 +1138,47 @@
     if (!alive().some(controllable)) await endCurrentPhase();
   }
 
+  async function visitVillage(visitor, village) {
+    if (G.mode !== 'chapter' || G.phase !== 'player' || G.busy || G.over) return;
+    const offer = Villages.offer(G.chapter, village, visitor, villageState(), G.db);
+    if (!offer.ok) return UI.toast(offer.error);
+    let recruit = null;
+    if (offer.recruit && offer.recruit.kind === 'new') {
+      const def = R.byId(G.db.units, offer.recruit.id);
+      recruit = applyCampaign(R.makeUnitFromCharacter(def, G.db, village));
+      const point = freeSpotNear(village.x, village.y, recruit);
+      if (!point) { await UI.alert('Pas de place pour la recrue', 'Libère une case accessible à proximité du village avant de le visiter.'); return; }
+      Object.assign(recruit, point);
+    }
+    hideMenu(); G.busy = true; G.ui = 'village';
+    let completed = false;
+    try {
+      await playDialogue(village.script || '');
+      const result = Villages.claim(G.chapter, village, visitor, villageState(), G.db);
+      if (!result.ok) { await UI.alert('Visite impossible', result.error); return; }
+      completed = true;
+      const messages = [];
+      if (result.gold) messages.push(`+${result.gold} or.`);
+      if (result.slot) messages.push(`Objet reçu : ${R.getEntry(G.db, result.slot.id).def.name}${result.destination === 'convoy' ? ' (convoi)' : ' (inventaire)'}.`);
+      if (result.recruit) {
+        const info = result.recruit;
+        if (info.kind === 'new') { G.units.push(prep(recruit)); messages.push(`${info.name} rejoint votre équipe et peut agir dès maintenant.`); }
+        else if (info.kind === 'ally') {
+          const unit = info.unit, def = R.byId(G.db.units, info.id);
+          Object.assign(unit, { team: 'player', control: 'player', ai: 'player', done: false, isLord: !!def.isLord, convoy: !!def.convoy });
+          messages.push(`${info.name} rejoint votre équipe et peut agir dès maintenant.`);
+        } else messages.push(info.kind === 'already' ? `${info.name} fait déjà partie de votre équipe.` : `${info.name} ne peut plus rejoindre votre équipe.`);
+      }
+      applyDebugMove(); lastInfoKey = ''; refreshDanger();
+      Music.se('confirm');
+      await UI.alert(village.name || 'Village visité', messages.length ? messages.join('\n') : 'La visite est terminée.');
+    } catch (error) { console.error(error); await UI.alert('Visite impossible', error.message); }
+    finally {
+      G.busy = false;
+      if (completed) await finishAction(visitor); else { G.ui = 'menu'; openActionMenu(); }
+    }
+  }
+
   async function endCurrentPhase() {
     if (G.over) return;
     if (G.phase === 'player') { adjacencyGains(); return startAllyPhase(); }
@@ -1475,7 +1534,7 @@
   async function continueArc() {
     const next = Lobby.nextAct(G.db, G.chapter.id);
     const map = next && G.project.maps.find(m => m.id === next.mapId);
-    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
     if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
@@ -1508,7 +1567,7 @@
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
         } }, 'Acte suivant →') : null,

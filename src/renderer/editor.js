@@ -385,6 +385,12 @@
   function iconPalette(team, ...modes) { return Palettes.paletteFor(team, Palettes.resolveMode(...modes, (S.project.meta.settings || {}).colors), 'map', false); }
 
   function drawPlacement(pl, kind, x, y, cs, opts) {
+    if (kind === 'villages') {
+      ctx.fillStyle = 'rgba(242,196,106,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
+      ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 2, y * cs.h + 2, cs.w - 4, cs.h - 4);
+      ctx.fillStyle = '#fff0c0'; ctx.font = `bold ${Math.max(10, cs.h * .45)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('V', (x + .5) * cs.w, (y + .5) * cs.h); return;
+    }
     const meta = charMeta(spritePathOf(pl, kind));
     const img = meta && Render.readyImage(S.baseUrl, meta.image);
     if (!img) {
@@ -456,8 +462,8 @@
       ctx.fillStyle = 'rgba(227,168,59,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
       ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1, y * cs.h + 1, cs.w - 2, cs.h - 2);
     }
-    for (const kind of ['enemies', 'allies', 'players']) {
-      for (const pl of ch[kind]) {
+    for (const kind of ['villages', 'enemies', 'allies', 'players']) {
+      for (const pl of ch[kind] || []) {
         const sel = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
         if (S.drag && S.drag.type === 'placement' && S.drag.id === pl.id && S.hover) continue;
         drawPlacement(pl, kind, pl.x, pl.y, cs, { boss: pl.isBoss, ghost: kind === 'enemies' && pl.appearTurn > 0, badge: kind === 'enemies' && pl.appearTurn > 0 ? String(pl.appearTurn) : null });
@@ -581,8 +587,8 @@
     return (ch[sel.kind] || []).find(p => p.id === sel.id) || null;
   }
   function placementAt(ch, x, y) {
-    for (const kind of ['players', 'allies', 'enemies']) {
-      const list = ch[kind].filter(p => p.x === x && p.y === y);
+    for (const kind of ['players', 'allies', 'enemies', 'villages']) {
+      const list = (ch[kind] || []).filter(p => p.x === x && p.y === y);
       if (list.length) return { kind, pl: list[list.length - 1] };
     }
     return null;
@@ -595,7 +601,10 @@
       ch.objective.x = c.x; ch.objective.y = c.y; S.picking = null;
       renderInspector(); draw(); return;
     }
-    const hit = placementAt(ch, c.x, c.y);
+    const villageAt = (ch.villages || []).find(v => v.x === c.x && v.y === c.y);
+    // Les villages peuvent partager une case avec une unité : l'outil Village vise son propre calque.
+    let hit = S.placeTool && S.placeTool.kind === 'villages' ? (villageAt ? { kind: 'villages', pl: villageAt } : null) : placementAt(ch, c.x, c.y);
+    if (S.placeTool && S.placeTool.kind !== 'villages' && hit && hit.kind === 'villages') hit = null;
     if (e.button === 2) {
       if (hit) {
         snapshot('chapter', ch.id);
@@ -612,7 +621,11 @@
     }
     if (S.placeTool) {
       snapshot('chapter', ch.id);
-      if (S.placeTool.kind === 'players' || S.placeTool.kind === 'allies') {
+      if (S.placeTool.kind === 'villages') {
+        const villages = ch.villages || (ch.villages = []);
+        const village = { id: 'v_' + crypto.randomUUID(), name: 'Village', x: c.x, y: c.y, script: '', reward: { gold: 0, itemId: '', uses: 0 }, recruitUnitId: '', allowedUnits: [], repeatOnReplay: false };
+        villages.push(village); S.selected = { kind: 'villages', id: village.id };
+      } else if (S.placeTool.kind === 'players' || S.placeTool.kind === 'allies') {
         // une unité est soit dans l'équipe, soit alliée : on la retire de l'autre liste
         const kind = S.placeTool.kind, other = kind === 'players' ? 'allies' : 'players';
         ch[other] = ch[other].filter(p => p.unitId !== S.placeTool.unitId);
@@ -675,7 +688,9 @@
     else if (d.type === 'rect' && S.hover) { beginStroke(); fillRect(rectOf(d.start, S.hover), S.tool === 'eraser'); endStroke(); }
     else if (d.type === 'placement' && d.moved && S.hover) {
       const ch = curChapter(); const pl = findPlacement({ kind: d.kind, id: d.id });
-      const occ = placementAt(ch, S.hover.x, S.hover.y);
+      const targetVillage = (ch.villages || []).find(v => v.x === S.hover.x && v.y === S.hover.y);
+      const hit = placementAt(ch, S.hover.x, S.hover.y);
+      const occ = d.kind === 'villages' ? (targetVillage ? { kind: 'villages', pl: targetVillage } : null) : hit && hit.kind !== 'villages' ? hit : null;
       if (pl && (!occ || occ.pl === pl)) {
         snapshot('chapter', ch.id);
         pl.x = S.hover.x; pl.y = S.hover.y;
@@ -843,6 +858,9 @@
       h('div', { class: 'head-actions' }, h('button', { class: 'mini', title: 'Base de données', html: Icons.icon('db'), onclick: () => DBEditor.open('units') }))));
     const list = h('div', { class: 'pick-list' });
     if (!ch) { list.append(h('p', { class: 'note' }, "Cette map n'a pas encore d'acte. Crée-en un dans le panneau de droite.")); box.append(list); return; }
+    list.append(h('div', { class: 'pick-group' }, 'Interactions'), h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === 'villages' ? ' on' : ''), 'data-place-village': true,
+      onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === 'villages' ? null : { kind: 'villages' }; renderPalette(); } },
+      h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, 'Village'), h('span', { class: 'meta' }, 'cliquer pour placer')));
     list.append(h('div', { class: 'pick-group' }, 'Unités du joueur'));
     for (const u of DB().units) {
       const placed = ch.players.find(p => p.unitId === u.id);
@@ -1251,6 +1269,12 @@
       (ch.players.length + ch.allies.length + ch.enemies.length) ? list : h('p', { class: 'muted' }, 'Choisis une unité à gauche puis clique sur la map.'),
       m.objects.some(o => objectKind(o)) ? h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => { snapshot('chapter', ch.id); const n = placementsFromObjects(m, ch); UI.toast(n + ' placement(s) importé(s)'); renderAll(); } }, `Importer les objets Tiled (${m.objects.filter(o => objectKind(o)).length})`)) : null));
 
+    box.append(section('Villages',
+      h('div', { class: 'placement-list' }, (ch.villages || []).map(v => h('div', { class: 'placement' + (S.selected && S.selected.kind === 'villages' && S.selected.id === v.id ? ' on' : ''),
+        'data-village-select': v.id, onclick: () => { S.selected = { kind: 'villages', id: v.id }; renderInspector(); draw(); } },
+        h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, v.name || 'Village'), h('span', { class: 'pos' }, `${v.x},${v.y}`)))),
+      h('button', { class: 'small', onclick: () => { S.placeTool = { kind: 'villages' }; renderPalette(); UI.toast('Clique une case de la map pour placer le village.'); } }, 'Placer un village')));
+
     // placement sélectionné
     const pl = findPlacement(S.selected);
     if (!pl) return;
@@ -1260,7 +1284,11 @@
     const snapOnce = (() => { let done = false; return () => { if (!done) { snapshot('chapter', ch.id); done = true; } }; })();
     const ctxF = { onChange: (k) => { snapOnce(); onPl(k); } };
     const del = h('button', { class: 'small danger', html: Icons.icon('trash'), onclick: () => { snapshot('chapter', ch.id); ch[S.selected.kind] = ch[S.selected.kind].filter(p => p !== pl); S.selected = null; renderAll(); } }, 'Retirer');
-    if (S.selected.kind === 'allies') {
+    if (S.selected.kind === 'villages') {
+      box.append(section('Village sélectionné', VillageFields.form(pl, DB(), m, { beforeChange: () => snapshot('chapter', ch.id), onChange: key => { markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
+        h('div', { class: 'insp-actions' }, del)));
+      for (const error of Villages.validate(ch, DB(), m)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
+    } else if (S.selected.kind === 'allies') {
       box.append(section('Allié (unité verte)', UI.form([
         { key: 'unitId', label: 'Personnage', type: 'select', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
         { key: 'control', label: 'Contrôle', type: 'select', options: [
@@ -1394,6 +1422,8 @@
     get state() { return S; },
     db: () => DB(), project: () => S.project, baseUrl: () => S.baseUrl, dir: () => S.dir,
     markDirty, uid, invOptions, objectives: OBJECTIVES,
+    placeVillage: chapterId => { selectChapter(chapterId); setMode('units'); S.placeTool = { kind: 'villages' }; S.selected = null; renderAll(); UI.toast('Clique une case pour placer un village.'); },
+    selectVillage: (chapterId, villageId) => { selectChapter(chapterId); setMode('units'); S.selected = { kind: 'villages', id: villageId }; S.placeTool = null; renderAll(); },
     refresh: async () => { await Render.preloadTilesets(S.baseUrl, DB().tilesets); renderAll(); },
     selectChapter, playtest, open: cmdOpen, rescanResources, resources: () => S.project.resources
   };

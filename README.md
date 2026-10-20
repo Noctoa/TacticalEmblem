@@ -68,6 +68,12 @@ Dans **Base de données › Actes › Préparatifs et déploiement**, régler le
 
 Le bouton **Sauvegarder…** et Échap donnent accès aux emplacements habituels : la sélection et les positions sont conservées. Recharger ou recommencer une bataille redonne accès à ses préparatifs. Si le projet ou l'effectif a changé, un déploiement devenu invalide est ajusté et signalé. **Retour au camp** permet de reprendre les équipements et promotions avant de repartir. Les modifications d'équipement restent dans le menu Équipe du camp.
 
+**Villages** — En mode **Unités (F3) › Interactions › Village**, cliquer une case pour placer une visite. Le village peut partager la case d'une unité. Le sélectionner dans la liste de droite permet de régler son nom, son dialogue (`Nom: texte`), l'or, l'arme ou l'objet offert et ses utilisations, le personnage recruté et les visiteurs autorisés. Glisser déplace le village ; clic droit ou Suppr le retire, et Ctrl+Z annule. Les mêmes réglages sont accessibles dans **Base de données › Actes › Villages à visiter**. Le marqueur V ajoute l'interaction ; le dessin de la maison reste celui de la map. Un village est fourni dans le prologue des nouveaux projets d'exemple.
+
+En bataille, un personnage du joueur doit se trouver sur cette case pour avoir l'action **Visiter**, qui consomme son action. Le dialogue précède la récompense. Un objet va dans son inventaire, ou au convoi s'il est plein ; si les deux sont pleins, la visite attend qu'une place se libère. Une nouvelle recrue apparaît sur une case accessible à proximité et peut agir immédiatement ; un allié vert déjà présent rejoint le joueur en gardant ses PV et ses objets. Un personnage déjà recruté n'est pas dupliqué et un mort ne ressuscite pas. Sans case libre pour une nouvelle recrue, la visite attend également.
+
+Le marqueur passe de V à ✓ après la visite. Par défaut, elle ne peut être récompensée qu'une fois dans la campagne, même en rejouant l'acte ; **Réutilisable quand cet acte est rejoué après victoire** autorise une nouvelle récompense à chaque nouvelle tentative, une seule fois dans chacune. Recommencer ou abandonner une tentative annule ses visites, ses récompenses et ses recrutements. Les sauvegardes en bataille restent des débuts d'acte ; une sauvegarde du camp après victoire conserve les visites acquises.
+
 Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents, dans l'un des cinq emplacements de `saves/`. **Continuer la campagne** reprend la dernière sauvegarde au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
@@ -292,6 +298,8 @@ src/shared/team.js         effectif recruté, équipement des compétences et tr
 src/renderer/team-panel.js préparatifs de l'équipe au camp
 src/shared/deployment.js   règles de sélection et de placement — testées dans test/deployment.test.js
 src/renderer/preparation.js écran de préparation avant bataille
+src/shared/villages.js     accès aux villages, récompenses et historique — testés dans test/villages.test.js
+src/renderer/village-fields.js réglages des villages partagés par l'éditeur de map et la fiche d'acte
 src/renderer/settings-window.js  fenêtre Paramètres du playtest (sauvegarde, chargement, son, debug)
 src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
@@ -306,6 +314,7 @@ test/snapshot-settings.js  fenêtre Paramètres de bout en bout
 test/snapshot-lobby.js     lobby de bout en bout (camp, conversation, boutique, chapitre, retour) ; test/snapshot-lobby-editor.js : son édition
 test/snapshot-team.js      équipe de bout en bout (réservistes, compétences, échanges, promotion, sauvegarde et déploiement)
 test/snapshot-deployment.js préparatifs de bout en bout (sélection, carte, terrain, sauvegarde, déploiement, acte suivant et désactivation)
+test/snapshot-villages.js   villages de bout en bout (placement, déplacement/annulation, récompenses, recrues, sauvegarde et rejeu)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
@@ -313,4 +322,4 @@ test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, c
 
 ## Pistes pour la suite
 
-Priorité suivante : interactions de map (villages / coffres / portes), puis échanges entre unités pendant la bataille, animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.
+Priorité suivante : coffres et portes (clés et compétences de voleur), puis échanges entre unités pendant la bataille, animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les villages, promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

@@ -635,6 +635,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (['units', 'items', 'weapons'].includes(tab)) {
+          const villages = Villages.references(db(), tab, cur.id);
+          if (villages.length) return UI.alert('Élément utilisé par un village', 'Modifie d’abord ces villages : ' + villages.join(', ') + '.');
+        }
         if (tab === 'units' && (Editor.project().meta.lobby || {}).initialRoster?.includes(cur.id)) {
           return UI.alert('Personnage dans l’effectif de départ', 'Retire d’abord ce personnage de Lobby › Équipe de départ.');
         }
@@ -923,6 +927,7 @@
     ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
     renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
+    renderVillages(pane, ch);
     pane.append(h('div', { class: 'insp-actions', style: { margin: '10px 0 4px' } },
       h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(ch.id); } }, 'Ouvrir sur la map'),
       h('button', { class: 'small primary', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(ch.id); } }, 'Tester')));
@@ -973,6 +978,23 @@
   // ------------------------------------------------------------------
   // Règles de mission : les anciens projets restent inchangés tant qu'un champ n'est pas modifié.
   // ------------------------------------------------------------------
+  function renderVillages(pane, ch) {
+    const map = Editor.project().maps.find(m => m.id === ch.mapId);
+    pane.append(h('div', { class: 'form-heading' }, 'Villages à visiter'), h('p', { class: 'form-info' }, 'Les villages se placent en mode Unités (F3), outil Village. Le visiteur doit être sur la case ; visiter consomme son action.'));
+    if (!map) return;
+    for (const village of ch.villages || []) {
+      const card = h('details', { class: 'event-card', style: { padding: '10px', marginTop: '8px' } }, h('summary', {}, `${village.name || 'Village'} (${village.x}, ${village.y})`));
+      card.append(VillageFields.form(village, db(), map, { onChange: () => change() }), h('div', { class: 'insp-actions' },
+        h('button', { class: 'small', onclick: async () => { await close(); Editor.selectVillage(ch.id, village.id); } }, 'Voir sur la map'),
+        h('button', { class: 'small danger', onclick: async () => {
+          if (!(await UI.confirm('Supprimer ce village ?', { danger: true, ok: 'Supprimer' }))) return;
+          ch.villages = ch.villages.filter(v => v !== village); change(); renderBody();
+        } }, 'Supprimer')));
+      pane.append(card);
+    }
+    pane.append(h('button', { class: 'small', 'data-db-place-village': true, onclick: async () => { await close(); Editor.placeVillage(ch.id); } }, 'Placer un village sur la map'));
+    for (const error of Villages.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
+  }
   function renderDeployment(pane, ch) {
     const model = { enabled: Deployment.enabled(ch), limit: (ch.deployment || {}).limit || 0, forcedUnits: ((ch.deployment || {}).forcedUnits || []).slice() };
     pane.append(UI.form([

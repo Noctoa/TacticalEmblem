@@ -20,6 +20,7 @@ const Skills = require('../shared/skills.js');
 const Promotions = require('../shared/promotions.js');
 const Team = require('../shared/team.js');
 const Deployment = require('../shared/deployment.js');
+const Villages = require('../shared/villages.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -87,6 +88,11 @@ function loadProject(dir, assetsDir) {
 
 function saveProject(dir, project) {
   const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta)];
+  for (const ch of project.db.chapters || []) if (ch.villages !== undefined) {
+    const map = project.maps.find(m => m.id === ch.mapId);
+    // Comme les actes sans villages, un acte orphelin reste éditable après suppression de sa map.
+    errors.push(...Villages.validate(ch, project.db, map || { width: Infinity, height: Infinity }));
+  }
   for (const ch of project.db.chapters || []) if (ch.deployment !== undefined) {
     const map = project.maps.find(m => m.id === ch.mapId);
     if (map) errors.push(...Deployment.validate(ch, project.db, map));

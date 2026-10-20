@@ -225,6 +225,7 @@
       objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
       next: 'ch_1_2', final: false, // sans lobby : les actes s'enchaînent par « Acte suivant »
       kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
+      villages: [{ id: 'v_south', name: 'Village du sud', x: 2, y: 8, script: 'Villageois: Ces brigands nous empêchent de quitter nos maisons. Prenez cette potion et ces pièces pour vous aider !', reward: { gold: 250, itemId: 'i_vulnerary', uses: 0 } }],
       players: [
         { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
         { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
