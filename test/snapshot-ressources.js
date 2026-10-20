@@ -6,6 +6,7 @@
  * TF_SNAPSHOT=dossier TF_SNAPSHOT_SCRIPT=$PWD/test/snapshot-ressources.js npm start
  */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const path = require('path'), fs = require('fs'), os = require('os');
 const { app } = require('electron');
 const ROOT = path.join(__dirname, '..');

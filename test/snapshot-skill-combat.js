@@ -1,5 +1,6 @@
 /* Vérification en jeu : prévisions, animations, effets sur la map et débuts de phase. */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('assert/strict');
 const { app } = require('electron');

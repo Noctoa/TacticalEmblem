@@ -18,6 +18,10 @@ const path = require('path');
 const Defaults = require('../shared/defaults.js');
 const Skills = require('../shared/skills.js');
 const Promotions = require('../shared/promotions.js');
+const Team = require('../shared/team.js');
+const Deployment = require('../shared/deployment.js');
+const Villages = require('../shared/villages.js');
+const Locks = require('../shared/locks.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -84,7 +88,17 @@ function loadProject(dir, assetsDir) {
 }
 
 function saveProject(dir, project) {
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db)];
+  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta), ...Locks.validateKeys(project.db)];
+  for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
+  for (const ch of project.db.chapters || []) if (ch.villages !== undefined) {
+    const map = project.maps.find(m => m.id === ch.mapId);
+    // Comme les actes sans villages, un acte orphelin reste éditable après suppression de sa map.
+    errors.push(...Villages.validate(ch, project.db, map || { width: Infinity, height: Infinity }));
+  }
+  for (const ch of project.db.chapters || []) if (ch.deployment !== undefined) {
+    const map = project.maps.find(m => m.id === ch.mapId);
+    if (map) errors.push(...Deployment.validate(ch, project.db, map));
+  }
   if (errors.length) throw new Error(errors.join('\n'));
   Layout.ensureDirs(dir);
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });
@@ -147,6 +161,7 @@ function createProject(dir, name, template, assetsDir) {
     map.name = 'Map 1';
     map.layers[0].data = map.layers[0].data.map(() => 1);
     project.db.chapters = [];
+    for (const unit of project.db.units) delete unit.recruitAfter;
     project.meta.startChapter = '';
   }
   saveProject(dir, project);

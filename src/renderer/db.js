@@ -367,6 +367,8 @@
         { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par acte)', type: 'checkbox' },
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
+        { key: 'recruitAfter', label: 'Rejoint l’effectif après', type: 'select', empty: '— pas de recrutement automatique —', options: () => doneOpts() },
+        { type: 'info', text: 'L’effectif de départ se règle dans Lobby. Un personnage placé dans le camp ne rejoint pas automatiquement l’équipe. Les placements joueur d’un acte rejoignent l’effectif quand cet acte commence.' },
         { type: 'custom', render: unitSkillsField },
         { type: 'heading', label: 'Apparence' },
         { type: 'custom', render: appearanceField },
@@ -636,6 +638,22 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (['units', 'items', 'weapons', 'terrains'].includes(tab)) {
+          const locks = Locks.references(db(), tab, cur.id);
+          if (locks.length) return UI.alert('Élément utilisé par un coffre ou une porte', 'Modifie d’abord ces interactions : ' + locks.join(', ') + '.');
+        }
+        if (['units', 'items', 'weapons'].includes(tab)) {
+          const villages = Villages.references(db(), tab, cur.id);
+          if (villages.length) return UI.alert('Élément utilisé par un village', 'Modifie d’abord ces villages : ' + villages.join(', ') + '.');
+        }
+        if (tab === 'units' && (Editor.project().meta.lobby || {}).initialRoster?.includes(cur.id)) {
+          return UI.alert('Personnage dans l’effectif de départ', 'Retire d’abord ce personnage de Lobby › Équipe de départ.');
+        }
+        if (tab === 'units' && db().chapters.some(ch => (ch.deployment && ch.deployment.forcedUnits || []).includes(cur.id))) return UI.alert('Personnage imposé dans un acte', 'Retire d’abord ce personnage des unités imposées dans les préparatifs de ses actes.');
+        if (tab === 'chapters') {
+          const recruits = db().units.filter(u => u.recruitAfter === cur.id);
+          if (recruits.length) return UI.alert('Acte utilisé pour un recrutement', 'Modifie d’abord le recrutement de : ' + recruits.map(u => u.name).join(', ') + '.');
+        }
         if (tab === 'classes' || tab === 'items') {
           const users = Promotions.usersOf(db(), tab, cur.id);
           if (users.length) return UI.alert('Élément utilisé par une promotion', 'Classes : ' + users.map(c => c.name).join(', ') + '. Retire d’abord leurs branches ou change leur objet requis.');
@@ -920,6 +938,7 @@
         (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
+    renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
     renderVillages(pane, ch);
     renderLocks(pane, ch);
@@ -973,6 +992,52 @@
   // ------------------------------------------------------------------
   // Règles de mission : les anciens projets restent inchangés tant qu'un champ n'est pas modifié.
   // ------------------------------------------------------------------
+  function renderVillages(pane, ch) {
+    const map = Editor.project().maps.find(m => m.id === ch.mapId);
+    pane.append(h('div', { class: 'form-heading' }, 'Villages à visiter'), h('p', { class: 'form-info' }, 'Les villages se placent en mode Unités (F3), outil Village. Le visiteur doit être sur la case ; visiter consomme son action.'));
+    if (!map) return;
+    for (const village of ch.villages || []) {
+      const card = h('details', { class: 'event-card', style: { padding: '10px', marginTop: '8px' } }, h('summary', {}, `${village.name || 'Village'} (${village.x}, ${village.y})`));
+      card.append(VillageFields.form(village, db(), map, { onChange: () => change() }), h('div', { class: 'insp-actions' },
+        h('button', { class: 'small', onclick: async () => { await close(); Editor.selectVillage(ch.id, village.id); } }, 'Voir sur la map'),
+        h('button', { class: 'small danger', onclick: async () => {
+          if (!(await UI.confirm('Supprimer ce village ?', { danger: true, ok: 'Supprimer' }))) return;
+          ch.villages = ch.villages.filter(v => v !== village); change(); renderBody();
+        } }, 'Supprimer')));
+      pane.append(card);
+    }
+    pane.append(h('button', { class: 'small', 'data-db-place-village': true, onclick: async () => { await close(); Editor.placeVillage(ch.id); } }, 'Placer un village sur la map'));
+    for (const error of Villages.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
+  }
+  function renderLocks(pane, ch) {
+    const map = Editor.project().maps.find(m => m.id === ch.mapId); if (!map) return;
+    for (const kind of ['chests', 'doors']) {
+      pane.append(h('div', { class: 'form-heading' }, kind === 'chests' ? 'Coffres' : 'Portes'));
+      for (const object of ch[kind] || []) {
+        const card = h('details', { class: 'event-card', style: { padding: '10px', marginTop: '8px' } }, h('summary', {}, `${object.name} (${object.x}, ${object.y})`));
+        card.append(LockFields.form(object, kind, db(), map, { onChange: () => change() }), h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: async () => { await close(); Editor.selectInteraction(ch.id, kind, object.id); } }, 'Voir sur la map'),
+          h('button', { class: 'small danger', onclick: async () => {
+            if (!(await UI.confirm('Supprimer cette interaction ?', { danger: true, ok: 'Supprimer' }))) return;
+            ch[kind] = ch[kind].filter(o => o !== object); change(); renderBody();
+          } }, 'Supprimer'))); pane.append(card);
+      }
+      pane.append(h('button', { class: 'small', 'data-db-place-lock': kind, onclick: async () => { await close(); Editor.placeInteraction(ch.id, kind); } }, kind === 'chests' ? 'Placer un coffre sur la map' : 'Placer une porte sur la map'));
+    }
+    for (const error of Locks.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
+  }
+  function renderDeployment(pane, ch) {
+    const model = { enabled: Deployment.enabled(ch), limit: (ch.deployment || {}).limit || 0, forcedUnits: ((ch.deployment || {}).forcedUnits || []).slice() };
+    pane.append(UI.form([
+      { type: 'heading', label: 'Préparatifs et déploiement' },
+      { key: 'enabled', label: 'Choisir l’équipe avant cet acte', type: 'checkbox' },
+      { key: 'limit', label: 'Nombre maximum de participants (0 = toutes les cases de départ)', type: 'number', min: 0, max: ch.players.length },
+      { key: 'forcedUnits', label: 'Personnages imposés en plus de ceux à protéger', type: 'multicheck', options: [...new Set([...ch.players.map(p => p.unitId), ...model.forcedUnits])].map(id => ({ value: id, label: uName(id) + (ch.players.some(p => p.unitId === id) ? '' : ' (placement manquant)') })) },
+      { type: 'info', text: 'Les placements joueur (F3) définissent les cases de départ et les personnages recrutés au lancement de l’acte. Les recrues en réserve peuvent prendre leur place. Les personnages à protéger sont toujours imposés ; les alliés verts restent fixes. Désactiver ce choix conserve les placements scénarisés.' }
+    ], model, { onChange: () => { ch.deployment = model; change(); } }));
+    const map = Editor.project().maps.find(m => m.id === ch.mapId);
+    if (map) for (const error of Deployment.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
+  }
   function renderMissionRules(pane, ch) {
     const names = db().units.map(u => ({ value: u.id, label: u.name }));
     const model = {
@@ -1264,6 +1329,8 @@
       onCopy: null,
       onDelete: async () => {
         if (!arc) return;
+        const recruits = db().units.filter(u => u.recruitAfter === arc.id);
+        if (recruits.length) return UI.alert('Chapitre utilisé pour un recrutement', 'Modifie d’abord le recrutement de : ' + recruits.map(u => u.name).join(', ') + '.');
         if (!(await UI.confirm(`Supprimer le chapitre « ${arc.name} » ? Ses actes sont gardés (ils apparaîtront seuls au tableau des quêtes).`, { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(arc), 1); change(); renderBody();
       }
@@ -1362,6 +1429,16 @@
         { key: 'heroId', label: 'Héros (personnage que l\'on déplace)', type: 'select', empty: '— premier personnage principal —', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
         { key: 'startGold', label: 'Or au début de la partie', type: 'number', min: 0, max: 999999 },
         { key: 'music', label: 'Musique', type: 'select', empty: '— celle de la phase joueur —', options: () => audioOpts('bgm') }] },
+      { type: 'heading', label: 'Équipe de départ' },
+      { type: 'custom', render: () => {
+        const roster = { initialRoster: Team.initialIds(db(), project.meta) };
+        const form = UI.form([{ key: 'initialRoster', label: 'Effectif recruté au début de la partie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
+          { type: 'info', text: 'Indépendant des PNJ placés au camp. Le héros du lobby est toujours inclus. Les autres recrutements se règlent dans les fiches Unités.' }], roster,
+          { onChange: () => { cfg.initialRoster = roster.initialRoster; change(); } });
+        const hero = Lobby.heroOf(cfg, db());
+        form.querySelectorAll('.chip').forEach((button, index) => { if (hero && db().units[index].id === hero.id) { button.disabled = true; button.title = 'Le héros du lobby fait toujours partie de l’effectif.'; } });
+        return form;
+      } },
       { type: 'heading', label: 'Boutique' },
       { type: 'row', fields: [
         { key: 'shop.enabled', label: 'Boutique ouverte', type: 'checkbox' },

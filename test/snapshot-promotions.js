@@ -1,5 +1,6 @@
 /* Parcours réel : éditer deux branches, consulter l'arbre, annuler puis promouvoir et recharger. */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('assert/strict');
 const { app } = require('electron');

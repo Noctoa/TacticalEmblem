@@ -1,5 +1,6 @@
 /* Test Electron du catalogue : anciens projets, création, édition, duplication et sauvegarde. */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const fs = require('fs'), path = require('path'), os = require('os');
 const assert = require('assert/strict');
 const { app } = require('electron');
@@ -72,24 +73,24 @@ module.exports = (editor, openPlaytest) => {
       assert.match(await js(`document.querySelector('.skill-validation').textContent`), /1 à 100/);
       await edit('Dégâts réels convertis en soin (%)', 35);
       await js(`document.querySelector('.db-list-actions button[title="Dupliquer"]').click()`);
-      assert.equal(await js('Editor.db().skills.length'), 12);
+      assert.equal(await js('Editor.db().skills.length'), 13);
       await edit('Nom', 'Copie indépendante');
       await edit('Dégâts réels convertis en soin (%)', 60);
-      assert.equal(await js('Editor.db().skills[10].amount'), 35);
+      assert.equal(await js('Editor.db().skills[11].amount'), 35);
       await js(`document.querySelector('.db-list-actions button[title="Supprimer"]').click()`);
       await until(`!!document.querySelector('.modal-back')`);
       await click('.modal-actions button', 'Annuler');
-      assert.equal(await js('Editor.db().skills.length'), 12);
+      assert.equal(await js('Editor.db().skills.length'), 13);
       await js(`document.querySelector('.db-list-actions button[title="Supprimer"]').click()`);
       await click('.modal-actions button', 'Supprimer');
-      assert.equal(await js('Editor.db().skills.length'), 11);
+      assert.equal(await js('Editor.db().skills.length'), 12);
       await js(`DBEditor.close()`);
       wc.send('menu', 'save'); await until('!Editor.state.dirty');
-      assert.equal(io.loadProject(dir).db.skills[10].amount, 35);
+      assert.equal(io.loadProject(dir).db.skills[11].amount, 35);
       await js(`Editor.open(${JSON.stringify(dir)})`);
-      await js(`DBEditor.open('skills', 'skill_11')`);
-      assert.equal(await js('Editor.db().skills[10].name'), 'Soleil du test');
-      assert.equal(await js(`document.querySelectorAll('.db-item').length`), 11);
+      await js(`DBEditor.open('skills', 'skill_12')`);
+      assert.equal(await js('Editor.db().skills[11].name'), 'Soleil du test');
+      assert.equal(await js(`document.querySelectorAll('.db-item').length`), 12);
       assert.match(await js(`document.querySelector('.db-form h2').textContent`), /Soleil du test/);
       // Les fenêtres masquées ont un rafraîchissement réduit : laisser le compositeur peindre.
       await wait(1300);
@@ -120,7 +121,7 @@ module.exports = (editor, openPlaytest) => {
       await until(`!!document.querySelector('.modal-back')`);
       assert.match(await js(`document.querySelector('.modal-back').textContent`), /Compétence utilisée/);
       await click('.modal-actions button', 'OK');
-      assert.equal(await js('Editor.db().skills.length'), 11);
+      assert.equal(await js('Editor.db().skills.length'), 12);
       await js(`DBEditor.open('units', ${JSON.stringify(heroId)})`);
       await js(`document.querySelector('.unit-skills').scrollIntoView({ block: 'start' })`);
       await wait(1300);

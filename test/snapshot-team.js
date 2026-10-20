@@ -28,7 +28,7 @@ module.exports = (editor, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-team-ui-')), 'Jeu');
       const p = io.createProject(dir, 'Préparer l’équipe', 'sample', path.join(__dirname, '..', 'assets'));
-      const hero = p.db.units.find(u => u.id === 'c_eliwood'), hector = p.db.units.find(u => u.id === 'c_hector');
+      const hero = p.db.units.find(u => u.id === 'c_xarrin'), hector = p.db.units.find(u => u.id === 'c_hector');
       p.meta.lobby.initialRoster = [hero.id, hector.id];
       p.meta.lobby.spots = [{ unitId: 'c_lyn', x: 8, y: 8 }]; // PNJ présent, non recruté.
       hero.personalSkill = 'skill_precision';
@@ -51,7 +51,7 @@ module.exports = (editor, openPlaytest) => {
       assert.equal(await js(ewc, `(() => {
         const form = [...document.querySelectorAll('#db-body .form')].find(el => el.textContent.includes('Effectif recruté au début'));
         const chips = [...form.querySelectorAll('.chip')];
-        const hero = chips.find(el => el.textContent === 'Eliwood'), lyn = chips.find(el => el.textContent === 'Lyn');
+        const hero = chips.find(el => el.textContent === 'Xarrin'), lyn = chips.find(el => el.textContent === 'Lyn');
         if (!hero.disabled || !hero.classList.contains('on') || lyn.classList.contains('on')) return false;
         lyn.click(); const added = Editor.project().meta.lobby.initialRoster.includes('c_lyn');
         lyn.click(); return added && !Editor.project().meta.lobby.initialRoster.includes('c_lyn');
@@ -71,7 +71,7 @@ module.exports = (editor, openPlaytest) => {
         return { win, wc };
       };
       const first = await start('Classique'), wc = first.wc;
-      assert.deepEqual(await js(wc, 'PlaytestState.units.map(u => u.sourceId)'), ['c_eliwood', 'c_lyn']);
+      assert.deepEqual(await js(wc, 'PlaytestState.units.map(u => u.sourceId)'), ['c_xarrin', 'c_lyn']);
       await js(wc, 'PlaytestLobby.openMenu()');
       await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Équipe').action()`);
       await until(wc, `!!document.querySelector('[data-team-unit="c_hector"]')`);
@@ -85,11 +85,11 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `document.querySelector('[data-team-tab="items"]').click()`);
       // Potion vers le convoi plein : annuler ne déplace rien, puis échanger contre l'épée usée.
       const before = await js(wc, 'JSON.stringify([PlaytestLobby.state.members.map(u => u.inventory), PlaytestState.convoy])');
-      await js(wc, `document.querySelector('[data-team-transfer="c_eliwood:1"]').click()`);
+      await js(wc, `document.querySelector('[data-team-transfer="c_xarrin:1"]').click()`);
       await click(wc, '.choice-list button', 'Convoi'); await until(wc, `document.querySelector('.modal-back').textContent.includes('Échanger avec')`);
       await click(wc, '.modal-actions button', 'Annuler'); await until(wc, '!PlaytestState.busy');
       assert.equal(await js(wc, 'JSON.stringify([PlaytestLobby.state.members.map(u => u.inventory), PlaytestState.convoy])'), before);
-      await js(wc, `document.querySelector('[data-team-transfer="c_eliwood:1"]').click()`);
+      await js(wc, `document.querySelector('[data-team-transfer="c_xarrin:1"]').click()`);
       await click(wc, '.choice-list button', 'Convoi'); await until(wc, `document.querySelector('.modal-back').textContent.includes('Échanger avec')`);
       await click(wc, '.choice-list button', 'Épée de fer'); await until(wc, '!PlaytestState.busy');
       assert.equal(await js(wc, 'PlaytestLobby.state.members[0].inventory[1].uses'), 3);
@@ -116,7 +116,7 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `document.querySelector('#settings .st-slot button').click()`);
       await until(wc, `!!document.querySelector('#settings .st-slot:not(.empty)')`);
       const saved = JSON.parse(fs.readFileSync(path.join(dir, 'saves/slot-1.json'), 'utf8'));
-      assert.deepEqual(saved.campaign.recruited, ['c_eliwood', 'c_hector']);
+      assert.deepEqual(saved.campaign.recruited, ['c_xarrin', 'c_hector']);
       assert.equal(saved.campaign.units.c_hector.classId, 'great_lord'); assert.ok(!saved.campaign.units.c_lyn);
       const expected = saved.campaign.units; first.win.close();
       const resumed = await start('Continuer'), rwc = resumed.wc;

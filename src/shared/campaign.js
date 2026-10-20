@@ -62,6 +62,12 @@
       const errors = Skills.validateAssignment(u);
       if (errors.length) throw new Error('Compétences invalides dans la campagne : ' + errors.join(' '));
     }
+    if (save.campaign.recruited !== undefined && (!Array.isArray(save.campaign.recruited) || save.campaign.recruited.some(id => typeof id !== 'string' || !id) || new Set(save.campaign.recruited).size !== save.campaign.recruited.length)) throw new Error('Effectif recruté invalide dans la campagne.');
+    if (save.deployment !== undefined && (!Array.isArray(save.deployment) || save.deployment.some(p => !p || typeof p.unitId !== 'string' || !p.unitId || !Number.isInteger(p.x) || !Number.isInteger(p.y) || p.x < 0 || p.y < 0) || new Set(save.deployment.map(p => p.unitId)).size !== save.deployment.length || new Set(save.deployment.map(p => p.x + ',' + p.y)).size !== save.deployment.length)) throw new Error('Déploiement invalide dans la sauvegarde.');
+    const visits = save.campaign.villageVisits;
+    const chests = save.campaign.chestVisits;
+    if (chests !== undefined && (!Array.isArray(chests) || chests.some(v => !v || typeof v.chapterId !== 'string' || !v.chapterId || typeof v.chestId !== 'string' || !v.chestId) || new Set(chests.map(v => JSON.stringify([v.chapterId, v.chestId]))).size !== chests.length)) throw new Error('Ouvertures de coffres invalides dans la campagne.');
+    if (visits !== undefined && (!Array.isArray(visits) || visits.some(v => !v || typeof v.chapterId !== 'string' || !v.chapterId || typeof v.villageId !== 'string' || !v.villageId) || new Set(visits.map(v => JSON.stringify([v.chapterId, v.villageId]))).size !== visits.length)) throw new Error('Visites de villages invalides dans la campagne.');
     return save;
   }
   function restore(save, supports) {

@@ -1,5 +1,6 @@
 const path = require('path'), fs = require('fs'), os = require('os');
 const { app } = require('electron');
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const ROOT = path.join(__dirname, '..');
 const io = require(ROOT + '/src/main/project-io.js');
 module.exports = (win, openPlaytest) => {

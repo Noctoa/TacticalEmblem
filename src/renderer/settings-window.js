@@ -16,7 +16,7 @@
     const S = { open: false, tab: 'save', saves: null, busy: false };
     const el = () => $('#settings');
     const TABS = () => [['save', 'Sauvegarder'], ['load', 'Charger'], ['sound', 'Son']]
-      .concat(G.settings && G.settings.debugMenu !== false ? [['debug', 'Debug']] : []);
+      .concat(G.mode !== 'preparation' && G.settings && G.settings.debugMenu !== false ? [['debug', 'Debug']] : []);
 
     // ------------------------------------------------------------------
     function open(tab) {
@@ -64,6 +64,7 @@
     function rerender() { const items = focusables(); refresh(Math.max(0, items.indexOf(document.activeElement))); }
     function where() {
       if (G.mode === 'lobby') return `${api.lobbyName()} · ${(G.campaign.gold || 0).toLocaleString('fr-FR')} or`;
+      if (G.mode === 'preparation') return `${G.chapter.name} · Préparatifs`;
       if (G.chapter) return `${G.chapter.name} · tour ${G.turn}`;
       return '';
     }
@@ -77,7 +78,7 @@
       if (s.error) return { title: 'Sauvegarde illisible', sub: s.error };
       const info = s.info || {};
       const place = info.place || (s.chapterId === Lobby.LOBBY_SAVE ? 'Camp' : ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId));
-      const kind = s.chapterId === Lobby.LOBBY_SAVE ? place : `Début de « ${place} »`;
+      const kind = s.chapterId === Lobby.LOBBY_SAVE ? place : (info.kind === 'preparation' ? `Préparatifs de « ${place} »` : `Début de « ${place} »`);
       return { title: kind, sub: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn || s.gold ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', fmtDate(info.savedAt)].filter(Boolean).join(' · ') };
     }
     function slotRow(s, button) {
@@ -91,6 +92,7 @@
       const can = api.canSave();
       body.append(h('p', { class: 'st-info' }, !can.ok ? can.reason : G.mode === 'lobby'
         ? 'Sauvegarde du camp : or, objets, chapitres terminés, conversations vues.'
+        : G.mode === 'preparation' ? 'Sauvegarde des préparatifs : personnages sélectionnés et positions de départ. La bataille n’a pas encore commencé.'
         : `En chapitre, la sauvegarde enregistre le début de « ${G.chapter.name} » (comme les Fire Emblem) : la partie reprendra au début de ce chapitre.`));
       for (const s of S.saves || []) {
         body.append(slotRow(s, h('button', { class: 'st-go st-focus', disabled: !can.ok, onclick: () => save(s) }, s.exists ? 'Écraser' : 'Sauvegarder')));

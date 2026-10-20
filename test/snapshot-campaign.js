@@ -1,5 +1,6 @@
 /* Parcours Electron : édition, choix du mode, victoire, chapitre suivant, sauvegarde et reprise. */
 'use strict';
+require('./auto-deploy.js'); // écran des préparatifs validé avec la sélection par défaut
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
