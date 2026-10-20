@@ -1,4 +1,23 @@
 body { background: #07080b; }
+/* Échanges entre deux personnages adjacents. */
+#trade { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(760px, 94vw); max-height: 94vh; overflow: auto; padding: 18px; z-index: 35; background: #141c34; box-sizing: border-box; }
+.trade-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.trade-head h3 { color: #f2d58a; }
+.trade-head button { padding: 6px 12px; cursor: pointer; }
+.trade-help { color: #c8cde0; font-size: 12px; margin: 12px 0; }
+.trade-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.trade-column h4 { display: flex; align-items: center; gap: 8px; color: #f2d58a; margin: 0 0 10px; }
+.trade-column .portrait { flex: none; }
+.trade-column h4 > img, .trade-column h4 > canvas { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
+.trade-column h4 small { display: block; font-size: 11px; color: #c8cde0; margin-top: 3px; font-weight: normal; }
+.trade-slot { display: block; width: 100%; min-height: 58px; margin: 3px 0; padding: 8px; text-align: left; color: #f3efe2; background: #202b48; border: 2px solid transparent; border-radius: 5px; cursor: pointer; }
+.trade-slot span, .trade-slot small { display: block; overflow-wrap: anywhere; }
+.trade-slot small { color: #c8cde0; margin-top: 4px; font-size: 11px; }
+.trade-slot:hover, .trade-slot.current { border-color: #d8c79d; }
+.trade-slot.selected { background: #564728; border-color: #ffd475; }
+.trade-slot small.trade-warning { color: #ffc48f; }
+.trade-notice { min-height: 18px; color: #a8e3b1; font-size: 12px; margin-top: 10px; }
+@media (max-width: 540px) { #trade { padding: 10px; } .trade-columns { gap: 6px; } .trade-slot { font-size: 12px; padding: 6px; } }
 #game { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; image-rendering: pixelated; cursor: none; }
 #hud { position: fixed; inset: 0; pointer-events: none; font-size: 14px; }
 #hud > * { pointer-events: auto; }

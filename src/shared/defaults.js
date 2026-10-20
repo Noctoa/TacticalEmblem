@@ -39,7 +39,7 @@
     w_iron_sword: 460, w_slim_sword: 480, w_rapier: 0, w_steel_sword: 600, w_killing_edge: 1300, w_wind_sword: 0,
     w_iron_lance: 360, w_javelin: 400, w_horseslayer: 1040, w_iron_axe: 270, w_hand_axe: 300, w_iron_bow: 540,
     w_fire: 560, w_lightning: 630, w_flux: 900, w_heal: 600, w_mend: 1000,
-    i_vulnerary: 300, i_elixir: 3000, i_energy_ring: 8000, i_speedwing: 8000, i_master_seal: 2500
+    i_vulnerary: 300, i_elixir: 3000, i_energy_ring: 8000, i_speedwing: 8000, i_master_seal: 2500, i_chest_key: 300, i_door_key: 100
   };
   const priced = (list) => list.map(e => Object.assign(e, { price: PRICES[e.id] || 0 }));
 
@@ -71,7 +71,9 @@
       { id: 'i_elixir', name: 'Élixir', effect: 'heal', amount: 99, stat: 'hp', uses: 1 },
       { id: 'i_energy_ring', name: 'Bague de force', effect: 'boost', amount: 2, stat: 'str', uses: 1 },
       { id: 'i_speedwing', name: 'Aile vive', effect: 'boost', amount: 2, stat: 'spd', uses: 1 },
-      { id: 'i_master_seal', name: 'Sceau de promotion', effect: 'promotion', uses: 1 }
+      { id: 'i_master_seal', name: 'Sceau de promotion', effect: 'promotion', uses: 1 },
+      { id: 'i_chest_key', name: 'Clé de coffre', effect: 'key', keyType: 'chest', uses: 5, price: 300 },
+      { id: 'i_door_key', name: 'Clé de porte', effect: 'key', keyType: 'door', uses: 1, price: 100 }
     ]);
   }
 
@@ -101,6 +103,8 @@
       c('great_lord', 'Grand Seigneur', 'armor', 5, ['axe', 'sword'], st(22, 11, 0, 7, 7, 3, 12, 2), st(90, 60, 5, 45, 35, 30, 50, 25),
         { tier: 2, caps: st(60, 30, 20, 24, 24, 30, 30, 25), defaultInventory: ['w_iron_axe'], mapSprite: CH('Hector_GreatLord'), battler: BT('Hector') }),
       // Classes génériques (pas encore de sprites : affichées en jetons)
+      c('thief', 'Voleur', 'foot', 6, ['sword'], st(16, 3, 0, 4, 9, 3, 1, 0), st(65, 30, 0, 50, 65, 45, 15, 20),
+        { defaultInventory: ['w_iron_sword'], skillLearning: [{ level: 1, skillId: 'skill_lockpick' }] }),
       c('cavalier', 'Cavalier', 'horse', 7, ['sword', 'lance'], st(20, 5, 0, 2, 5, 0, 6, 0), st(75, 35, 0, 40, 40, 30, 25, 15), { defaultInventory: ['w_iron_lance'] }),
       c('knight', 'Chevalier', 'armor', 4, ['lance'], st(17, 5, 0, 2, 0, 0, 9, 0), st(80, 40, 0, 30, 15, 25, 55, 10), { defaultInventory: ['w_iron_lance'] }),
       c('fighter', 'Guerrier', 'foot', 5, ['axe'], st(20, 5, 0, 2, 4, 0, 2, 0), st(85, 55, 0, 30, 30, 15, 15, 5), { defaultInventory: ['w_iron_axe'] }),
@@ -259,6 +263,7 @@
       objective: { type: 'boss', turns: 10, x: 18, y: 2, text: 'Vaincre Batta' },
       next: 'ch_1_2', final: false, // sans lobby : les actes s'enchaînent par « Acte suivant »
       kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
+      villages: [{ id: 'v_south', name: 'Village du sud', x: 2, y: 8, script: 'Villageois: Ces brigands nous empêchent de quitter nos maisons. Prenez cette potion et ces pièces pour vous aider !', reward: { gold: 250, itemId: 'i_vulnerary', uses: 0 } }],
       players: [
         { id: 'p0', unitId: 'c_xarrin', x: 5, y: 13 },
         { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
@@ -368,7 +373,7 @@
       enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_xarrin', startGold: 500, music: '',
       start: { x: 7, y: 8 },
       board: { x: 10, y: 2, label: 'Tableau des quêtes' },
-      shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal'] },
+      shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal', 'i_chest_key', 'i_door_key'] },
       spots: [
         { unitId: 'c_eliwood', x: 5, y: 7, after: '' },
         { unitId: 'c_lyn', x: 5, y: 5, after: '' },

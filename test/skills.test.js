@@ -14,9 +14,9 @@ function temporaryProject(t) {
   io.saveProject(dir, Defaults.sampleProject('Compétences'));
   return dir;
 }
-test('les dix exemples sont valides et indépendants entre projets', () => {
+test('les onze exemples sont valides et indépendants entre projets', () => {
   const a = Defaults.sampleProject('A'), b = Defaults.sampleProject('B');
-  assert.equal(a.db.skills.length, 10);
+  assert.equal(a.db.skills.length, 11);
   assert.deepEqual(Skills.validateAll(a.db.skills), []);
   a.db.skills[0].amount = 77;
   assert.equal(b.db.skills[0].amount, 10);
@@ -37,6 +37,8 @@ test('ancien projet sans catalogue : ouverture et réenregistrement sans ajout i
   fs.unlinkSync(file);
   const loaded = io.loadProject(dir);
   assert.deepEqual(loaded.db.skills, []);
+  // Le projet simulé précède aussi les apprentissages de classe et le Voleur fourni ensuite.
+  for (const cls of loaded.db.classes) delete cls.skillLearning;
   io.saveProject(dir, loaded);
   assert.deepEqual(JSON.parse(fs.readFileSync(file, 'utf8')), []);
 });

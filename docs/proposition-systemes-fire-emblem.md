@@ -297,4 +297,30 @@ Les cinq emplacements de sauvegarde conservent la sélection et les positions. U
 
 Les tests couvrent les contraintes de sélection, les cases et types de mouvement, les sauvegardes et leur compatibilité. Un scénario en jeu vérifie le parcours jusqu'à la bataille, le chargement depuis les paramètres, l'acte suivant, une petite fenêtre et la désactivation des préparatifs.
 
-Prochaine priorité : les interactions de map (villages, coffres et portes). La suspension au milieu d'une bataille reste un chantier ultérieur.
+**19. Villages à visiter — livrés**
+
+L'éditeur permet de placer, déplacer et supprimer les villages sur la map en mode Unités, avec annulation. La fiche de village et la fiche d'acte partagent les réglages : dialogue, or, arme ou objet et utilisations, recrutement, visiteurs autorisés et répétition lors d'un acte rejoué. Les références utilisées empêchent la suppression accidentelle de leurs personnages et récompenses ; les données invalides sont refusées avant écriture.
+
+L'action Visiter apparaît pour un personnage du joueur sur la case et consomme son action. Les objets utilisent l'inventaire puis le convoi ; une saturation complète bloque la visite sans rien perdre. Une nouvelle recrue rejoint le terrain à proximité sur une case accessible, ou un allié vert présent passe au joueur en gardant ses PV et son équipement. Les recrues peuvent agir immédiatement. Les doublons et résurrections sont exclus ; sans place pour une nouvelle recrue, le village reste disponible.
+
+L'historique des visites appartient à la campagne, avec une seule récompense par défaut, même après rejeu. Une option autorise une récompense par nouvelle tentative rejouée après victoire. Le point de reprise de début d'acte garantit que recommencer ou abandonner annule ensemble les visites et leurs gains. Les anciennes sauvegardes sans historique restent prises en charge. Le prologue des nouveaux projets d'exemple comporte un village.
+
+**20. Coffres, portes et Crochetage — livrés**
+
+Les interactions de la map et la fiche d'acte permettent de placer et de configurer les coffres et portes, avec déplacement, suppression et annulation. Les réglages comprennent le dialogue, les personnages autorisés, le verrouillage, la clé précise facultative et l'autorisation de Crochetage. Les coffres définissent l'or, l'arme ou l'objet offert et ses utilisations ; les portes définissent le terrain du passage une fois ouvertes. Les références et positions sont validées avant écriture, et les fiches utilisées sont protégées contre la suppression.
+
+Le personnage doit être sur le coffre ou adjacent à la porte. L'ouverture consomme son action et une utilisation d'une clé adaptée dans son inventaire. Crochetage personnelle ou équipée est prioritaire et évite cette consommation ; une compétence connue mais en réserve ne suffit pas. Les nouveaux projets proposent un Voleur qui l'apprend au niveau 1, ainsi que les clés de coffre et de porte dans les objets et la boutique du camp. Les anciens projets disposent de boutons pour ajouter les clés et compétences d'exemple manquantes sans écraser leurs réglages.
+
+Un inventaire plein envoie la récompense au convoi. Si les deux sont pleins, aucune ouverture ni consommation partielle n'a lieu ; une clé épuisée peut libérer une place pour la récompense. Les portes fermées bloquent tous les types de déplacement et l'IA. Une porte ouverte utilise le terrain choisi pour les chemins, bonus et soins ; la map du projet reste intacte.
+
+Les coffres sont pillés une seule fois par campagne, avec une option de remplissage lors d'un acte rejoué après victoire. Les portes se referment à chaque tentative. Recommencer et abandonner annulent ensemble les clés utilisées, les ouvertures et les récompenses. Les anciens actes et sauvegardes sans ces interactions restent pris en charge. Les tests couvrent les règles, l'édition, Crochetage, les inventaires pleins, les passages, la reprise et la persistance après victoire ; le parcours des villages reste vérifié séparément.
+
+**21. Échanges d'objets en bataille — livrés**
+
+L'action Échanger propose les personnages du joueur vivants et adjacents après le déplacement. Un partenaire ayant déjà joué reste accessible ; les alliés verts, ennemis et réservistes sont exclus. L'écran présente les deux inventaires, leurs cinq places, les utilisations et l'arme équipée. Un objet peut être donné dans une place libre ou échangé contre un objet de l'autre inventaire, même plein. Les armes inutilisables par la classe restent transférables et sont signalées. La souris, les flèches, Z / Entrée et X / Échap permettent l'ensemble du parcours.
+
+Un transfert valide le déplacement de l'initiateur, qui peut encore attaquer, soigner, utiliser un objet ou attendre. Le partenaire garde son état de tour ; un personnage ayant joué n'est pas réactivé. Fermer sans transfert permet d'annuler le déplacement. Après transfert, fermer l'écran conserve les objets échangés et empêche de revenir à la case d'origine. La première arme utilisable et les possibilités d'attaque sont recalculées après chaque changement d'inventaire. Le verrou de déplacement est temporaire et disparaît au tour suivant.
+
+Les échanges conservent les utilisations et le nombre total d'objets. Les actions invalides ne modifient rien. Recommencer restaure les inventaires du début d'acte, tandis qu'une victoire et la sauvegarde de campagne conservent les transferts sans conserver le verrou de tour. Les tests vérifient les conditions, les inventaires pleins, l'équipement, l'annulation, l'attaque immédiate avec une arme reçue, le tour suivant et la sauvegarde/reprise. Le scénario en jeu vérifie également plusieurs partenaires, un inventaire vide et une petite fenêtre.
+
+Chantiers suivants : animations des classes génériques, brouillard de guerre et suspension au milieu d'une bataille.
