@@ -80,6 +80,10 @@ En bataille, **Ouvrir le coffre** exige d'être sur sa case et **Ouvrir la porte
 
 Les récompenses vont dans l'inventaire puis le convoi. Si les deux sont pleins, le coffre reste fermé et aucune clé n'est consommée ; la dernière utilisation d'une clé peut libérer la place nécessaire. Une porte fermée bloque tous les déplacements, y compris ceux des ennemis et des volants ; son ouverture actualise les chemins et la zone de danger. Les coffres pillés restent vides dans la campagne, sauf option de remplissage lors d'un acte rejoué après victoire. Les portes se referment à chaque tentative. Recommencer ou abandonner restaure ensemble les clés, récompenses et ouvertures ; les sauvegardes de bataille restent des débuts d'acte.
 
+**Échanges en bataille** — Après le déplacement, **Échanger** propose les personnages du joueur vivants sur une case adjacente, même s'ils ont déjà joué. Choisir un objet dans l'un des deux inventaires, puis un objet en face pour les échanger ou une place libre pour le donner. Les inventaires pleins permettent un échange ; les utilisations sont conservées. La première arme utilisable est équipée automatiquement et les possibilités d'attaque sont actualisées. Les ennemis, alliés verts et réservistes ne sont pas des partenaires d'échange en bataille.
+
+Flèches pour parcourir les deux colonnes, Z / Entrée pour choisir, X / Échap / clic droit pour annuler une sélection puis revenir. **Retour** ferme directement l'écran. Fermer sans transfert permet toujours d'annuler le déplacement ; après un transfert, le déplacement est validé et les objets restent échangés. Le personnage actif peut encore attaquer, soigner, utiliser un objet, échanger à nouveau ou attendre. Le partenaire garde son état de tour et n'est pas réactivé. Le verrou de déplacement disparaît au tour suivant. Recommencer restaure les inventaires de début d'acte ; une victoire et la sauvegarde de campagne conservent les échanges.
+
 Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents, dans l'un des cinq emplacements de `saves/`. **Continuer la campagne** reprend la dernière sauvegarde au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
@@ -302,6 +306,8 @@ src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des a
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
 src/shared/team.js         effectif recruté, équipement des compétences et transferts — testés dans test/team.test.js
 src/renderer/team-panel.js préparatifs de l'équipe au camp
+src/shared/battle-trade.js règles d'échange entre personnages adjacents en bataille — testées dans test/battle-trade.test.js
+src/renderer/trade-panel.js écran d'échange en bataille, souris et clavier
 src/shared/deployment.js   règles de sélection et de placement — testées dans test/deployment.test.js
 src/renderer/preparation.js écran de préparation avant bataille
 src/shared/villages.js     accès aux villages, récompenses et historique — testés dans test/villages.test.js
@@ -324,6 +330,7 @@ test/snapshot-team.js      équipe de bout en bout (réservistes, compétences, 
 test/snapshot-deployment.js préparatifs de bout en bout (sélection, carte, terrain, sauvegarde, déploiement, acte suivant et désactivation)
 test/snapshot-villages.js   villages de bout en bout (placement, déplacement/annulation, récompenses, recrues, sauvegarde et rejeu)
 test/snapshot-locks.js      coffres et portes de bout en bout (édition, clés, Crochetage, passage, reprise et rejeu)
+test/snapshot-battle-trade.js échanges en bataille de bout en bout (annulation, inventaires pleins, déplacement, attaque, reprise et sauvegarde)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
@@ -331,4 +338,4 @@ test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, c
 
 ## Pistes pour la suite
 
-Priorité suivante : échanges entre unités pendant la bataille, puis animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les villages, coffres, portes, promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.
+Priorités suivantes : animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les villages, coffres, portes, échanges en bataille, promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

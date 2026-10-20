@@ -315,4 +315,12 @@ Un inventaire plein envoie la récompense au convoi. Si les deux sont pleins, au
 
 Les coffres sont pillés une seule fois par campagne, avec une option de remplissage lors d'un acte rejoué après victoire. Les portes se referment à chaque tentative. Recommencer et abandonner annulent ensemble les clés utilisées, les ouvertures et les récompenses. Les anciens actes et sauvegardes sans ces interactions restent pris en charge. Les tests couvrent les règles, l'édition, Crochetage, les inventaires pleins, les passages, la reprise et la persistance après victoire ; le parcours des villages reste vérifié séparément.
 
-Prochaine priorité : échanges d'objets entre unités pendant la bataille. La suspension au milieu d'une bataille reste un chantier ultérieur.
+**21. Échanges d'objets en bataille — livrés**
+
+L'action Échanger propose les personnages du joueur vivants et adjacents après le déplacement. Un partenaire ayant déjà joué reste accessible ; les alliés verts, ennemis et réservistes sont exclus. L'écran présente les deux inventaires, leurs cinq places, les utilisations et l'arme équipée. Un objet peut être donné dans une place libre ou échangé contre un objet de l'autre inventaire, même plein. Les armes inutilisables par la classe restent transférables et sont signalées. La souris, les flèches, Z / Entrée et X / Échap permettent l'ensemble du parcours.
+
+Un transfert valide le déplacement de l'initiateur, qui peut encore attaquer, soigner, utiliser un objet ou attendre. Le partenaire garde son état de tour ; un personnage ayant joué n'est pas réactivé. Fermer sans transfert permet d'annuler le déplacement. Après transfert, fermer l'écran conserve les objets échangés et empêche de revenir à la case d'origine. La première arme utilisable et les possibilités d'attaque sont recalculées après chaque changement d'inventaire. Le verrou de déplacement est temporaire et disparaît au tour suivant.
+
+Les échanges conservent les utilisations et le nombre total d'objets. Les actions invalides ne modifient rien. Recommencer restaure les inventaires du début d'acte, tandis qu'une victoire et la sauvegarde de campagne conservent les transferts sans conserver le verrou de tour. Les tests vérifient les conditions, les inventaires pleins, l'équipement, l'annulation, l'attaque immédiate avec une arme reçue, le tour suivant et la sauvegarde/reprise. Le scénario en jeu vérifie également plusieurs partenaires, un inventaire vide et une petite fenêtre.
+
+Chantiers suivants : animations des classes génériques, brouillard de guerre et suspension au milieu d'une bataille.

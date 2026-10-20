@@ -119,6 +119,7 @@
       reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set() });
     hideMenu(); hideForecast();
     $('#convoy').classList.add('hidden');
+    trade.hide();
     $('#epilogue').classList.add('hidden');
     $('#end').className = 'hidden'; $('#end').innerHTML = '';
     buildBase();
@@ -816,6 +817,11 @@
       hideMenu();
       showMenu(sups.map(x => ({ label: x.other.name, sub: 'rang ' + R.SUPPORT_RANKS[x.next], action: () => doSupport(u, x) })), u, 'items');
     } });
+    const partners = BattleTrade.partners(G, u);
+    if (partners.length) items.push({ label: 'Échanger', sub: partners.map(p => p.name).join(', '), action: () => {
+      if (partners.length === 1) return trade.open(u, partners[0]);
+      showMenu(partners.map(p => ({ label: p.name, sub: `${p.inventory.length}/5 objets${p.done ? ' · a déjà joué' : ''}`, action: () => trade.open(u, p) })), u, 'items');
+    } });
     if (canUseConvoy(u)) items.push({ label: 'Convoi', sub: u.convoy ? '' : 'via ' + convoyLeader().name, action: () => openConvoy(u) });
     items.push({ label: 'Attendre', action: () => { hideMenu(); finishAction(u); } });
     showMenu(items, u, 'menu');
@@ -991,6 +997,7 @@
   function select(u) {
     Music.se('confirm');
     G.sel = u; G.origin = { x: u.x, y: u.y };
+    if (u.tradeLocked) return openActionMenu();
     G.reach = R.reachable(u, rctx());
     const stops = [...G.reach.values()].filter(n => n.canStop);
     const blue = new Set([...G.reach.values()].map(n => key(n.x, n.y)));
@@ -1432,7 +1439,7 @@
     updateObjective();
     Music.bgm('playerPhase');
     await banner('Phase joueur', '');
-    for (const u of players()) u.done = false;
+    for (const u of players()) { u.done = false; u.tradeLocked = false; }
     await skillRecovery(team('player'));
     await terrainHeal(team('player'));
     await runEvents('turn', { turn: G.turn });
@@ -1845,6 +1852,7 @@
     switch (G.ui) {
       case 'moving': return deselect();
       case 'menu': {
+        if (G.sel.tradeLocked) return UI.toast('Déplacement validé par l’échange. Choisis une action ou Attendre.');
         hideMenu();
         const u = G.sel;
         u.x = u.rx = G.origin.x; u.y = u.ry = G.origin.y;
@@ -1853,6 +1861,7 @@
       }
       case 'items': hideMenu(); return openActionMenu();
       case 'convoy': return closeConvoy();
+      case 'trade': return trade.cancel();
       case 'mapmenu': case 'lobbymenu': hideMenu(); G.ui = 'idle'; return;
       case 'target': case 'staff': hideForecast(); setCursor(G.sel.x, G.sel.y); return openActionMenu();
       default: G.enemyView = null;
@@ -1882,6 +1891,7 @@
     if (document.querySelector('.modal-back')) return;
     const k = e.key;
     if (settings.isOpen) return settings.key(e);
+    if (G.ui === 'trade') return trade.key(e);
     if (G.mode === 'preparation') return preparation.key(e);
     if (BattleScene.isActive()) {
       e.preventDefault();
@@ -1938,6 +1948,8 @@
 
   const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
   window.PlaytestPreparation = preparation;
+  const trade = TradePanel.create({ G, h, R, portrait: u => portraitEl(u, 'mini'), hideMenu, returnToMenu: openActionMenu,
+    changed: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateInfo(); } });
 
   // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
   const playerSide = () => alive().filter(u => u.team !== 'enemy');
@@ -1956,7 +1968,7 @@
       lose: () => later(() => defeat('Défaite déclenchée depuis le menu Debug.')),
       killEnemies: () => later(async () => { for (const u of enemies()) await killUnit(u, true); G.pending = []; await checkEnd(); }),
       healAll: () => { for (const u of playerSide()) { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); } },
-      refresh: () => { for (const u of playerSide()) u.done = false; G.ui = 'idle'; },
+      refresh: () => { for (const u of playerSide()) { u.done = false; u.tradeLocked = false; } G.ui = 'idle'; },
       endTurn: () => later(() => { G.ui = 'idle'; endCurrentPhase(); }),
       levelUp: (u, n) => later(async () => { G.busy = true; for (let i = 0; i < (n || 1); i++) await grantExp(u, 100); G.busy = false; }),
       heal: (u) => { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); },
