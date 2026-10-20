@@ -298,7 +298,8 @@
   }
 
   // ---------- combat ----------
-  function isMagic(w) { return w && MAGIC_TYPES.includes(w.type); }
+  /** Dégâts magiques (Mag / Rés) : tomes, et armes physiques marquées « magic » (Lame du tonnerre, Lame runique…). */
+  function isMagic(w) { return !!w && (!!w.magic || MAGIC_TYPES.includes(w.type)); }
 
   function attackSpeed(u, w) { return u.stats.spd - Math.max(0, ((w && w.weight) || 0) - u.stats.str); }
 
@@ -376,9 +377,13 @@
       b.index = dEq.index;
     }
     const vantage = b && b.skills.find(skill => skill.effect === 'vantage');
-    const order = vantage ? ['d', 'a'] : b ? ['a', 'd'] : ['a'];
+    let order = vantage ? ['d', 'a'] : b ? ['a', 'd'] : ['a'];
     if (a.count > 1) order.push('a');
     if (b && b.count > 1) order.push('d');
+    // arme brave : chaque attaque frappe deux fois de suite
+    order = order.flatMap(x => (x === 'a' && aw.brave) || (x === 'd' && dw && dw.brave) ? [x, x] : [x]);
+    a.count = order.filter(x => x === 'a').length;
+    if (b) b.count = order.filter(x => x === 'd').length;
     const fc = { att: a, def: b, distance: d, order, vantage: vantage || null };
     // Variantes pour la prévision et l'IA, sans consommer le hasard du combat.
     for (const [unit, other, st, weapon, otherWeapon, ab, dbn] of [[att, def, a, aw, dw, bA, bD], [def, att, b, dw, aw, bD, bA]]) {
@@ -523,6 +528,10 @@
         if (selected && selected.effect === 'sol') {
           heal = Math.min(src.stats.hp - src.hp, Math.floor(dmg * selected.amount / 100));
           src.hp += heal;
+        }
+        if (weapon.drain && dmg > 0 && src.hp > 0) { // arme de drain (Nosferatu, Lame runique) : soigne des dégâts infligés
+          const more = Math.min(src.stats.hp - src.hp, dmg);
+          src.hp += more; heal += more;
         }
       }
       const broke = useWeapon(src, index);

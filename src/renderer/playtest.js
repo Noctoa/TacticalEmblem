@@ -823,9 +823,27 @@
       if (partners.length === 1) return trade.open(u, partners[0]);
       showMenu(partners.map(p => ({ label: p.name, sub: `${p.inventory.length}/5 objets${p.done ? ' · a déjà joué' : ''}`, action: () => trade.open(u, p) })), u, 'items');
     } });
+    // danse : redonne son tour à un allié adjacent qui a déjà joué (classes « Danseuse »)
+    if ((cls(u) || {}).dance) {
+      const tired = team('player').filter(o => o !== u && !o.dead && o.hp > 0 && o.done && R.dist(o, u) === 1 && !(cls(o) || {}).dance);
+      if (tired.length) items.push({ label: 'Danser', sub: tired.map(o => o.name).join(', '), action: () => {
+        if (tired.length === 1) return dance(u, tired[0]);
+        hideMenu();
+        showMenu(tired.map(o => ({ label: o.name, sub: 'rejoue ce tour', action: () => dance(u, o) })), u, 'items');
+      } });
+    }
     if (canUseConvoy(u)) items.push({ label: 'Convoi', sub: u.convoy ? '' : 'via ' + convoyLeader().name, action: () => openConvoy(u) });
     items.push({ label: 'Attendre', action: () => { hideMenu(); finishAction(u); } });
     showMenu(items, u, 'menu');
+  }
+
+  async function dance(u, o) {
+    hideMenu();
+    o.done = false; o.tradeLocked = false;
+    Music.se('confirm');
+    float(o.x, o.y, '♪ Nouveau tour', '#9fe0ff', true);
+    G.busy = true; await grantExp(u, 10); G.busy = false;
+    await finishAction(u);
   }
 
   // ---------- convoi ----------
@@ -1073,7 +1091,7 @@
       h('div', { class: 'fc-weap' }, weapon ? weapon.name : '—', s ? tri(s.tri) : null, s && s.effective ? h('span', { class: 'x2' }, ' ✦') : null),
       h('div', { class: 'fc-val' },
         h('div', {}, String(unit.hp)),
-        h('div', {}, s ? String(s.dmg) : '--', s && s.count > 1 ? h('span', { class: 'x2' }, '×2') : null),
+        h('div', {}, s ? String(s.dmg) : '--', s && s.count > 1 ? h('span', { class: 'x2' }, '×' + s.count) : null),
         h('div', {}, s ? String(s.hit) : '--'),
         h('div', {}, s ? String(s.crit) : '--')));
     const duo = R.supportDual(u, players(), G.sup, G.db);

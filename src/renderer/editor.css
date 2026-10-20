@@ -263,3 +263,12 @@
 .ch-tree .ch-act .n { width: auto; min-width: 42px; }
 .ch-tree .ch-new { display: block; width: calc(100% - 18px); text-align: left; padding: 4px 10px; font-size: 12px; color: var(--muted); background: transparent; border-top: 0; border-right: 0; border-bottom: 0; cursor: pointer; }
 .ch-tree .ch-new:hover { color: var(--gold-2); }
+
+/* pack « Personnages de la série » */
+.fe-pack-list { display: flex; flex-direction: column; gap: 4px; max-height: 52vh; overflow: auto; margin: 8px 0; }
+.fe-pack-row { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.fe-pack-row span { display: flex; flex-direction: column; }
+.fe-pack-row small { color: var(--muted); }
+.fe-pack-row.done { opacity: .6; }
+.modal-actions .muted { margin-right: auto; align-self: center; }
+.fe-pack-kind { padding: 8px 2px 2px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gold-2); font-weight: 600; }

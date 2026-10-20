@@ -415,6 +415,7 @@
           { key: 'mov', label: 'Déplacement', type: 'number', min: 1, max: 15 },
           { key: 'tier', label: 'Palier (0 : recrue, 1 : base, 2 : promue…)', type: 'number', min: 0, max: 9 }] },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
+        { key: 'dance', label: 'Danse : action « Danser », un allié adjacent qui a déjà joué rejoue ce tour', type: 'checkbox' },
         { type: 'custom', render: cls => {
           const tmp = { effectiveTypes: cls.effectiveTypes || [cls.moveType] };
           return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: mtypes }], tmp,
@@ -461,9 +462,13 @@
           { key: 'maxRange', label: 'Portée max', type: 'number', min: 1, max: 15 },
           { key: 'uses', label: 'Utilisations', type: 'number', min: 0, max: 99, help: '0 = incassable' }] },
         w.type === 'staff' ? null : { key: 'effective', label: 'Efficace contre (×3)', type: 'multicheck', options: mtypes },
+        w.type === 'staff' ? null : { type: 'row', fields: [
+          { key: 'brave', label: 'Brave : chaque attaque frappe deux fois', type: 'checkbox' },
+          { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
+          { key: 'drain', label: 'Drain : soigne des dégâts infligés', type: 'checkbox' }] },
         priceField,
         { type: 'info', text: (w) => w.type === 'staff' ? 'Soigne un allié : PV rendus = Soin + Magie.' :
-          Rules.MAGIC_TYPES.includes(w.type) ? 'Arme magique : utilise la Magie et cible la Résistance.' :
+          Rules.MAGIC_TYPES.includes(w.type) || w.magic ? 'Arme magique : utilise la Magie et cible la Résistance.' :
           'Arme physique : utilise la Force et cible la Défense. Le poids au-delà de la Force réduit la vitesse d\'attaque.' }
       ].filter(Boolean),
       rerenderOn: ['type']
@@ -697,7 +702,76 @@
       view.by = sort.value; refill();
       try { localStorage.setItem(storeKey, JSON.stringify({ by: view.by })); } catch (e) { /* stockage indisponible */ }
     });
-    return h('div', { class: 'roster-tools' }, search, h('label', {}, 'Trier par', sort));
+    return h('div', { class: 'roster-tools' }, search, h('label', {}, 'Trier par', sort),
+      h('button', { class: 'small', 'data-fe-pack': true, title: 'Ajouter des personnages officiels (fiches sans images)', onclick: openFEPack }, '＋ Personnages de la série…'));
+  }
+
+  /** Pack « Armes, objets et compétences de la série » : choix des groupes (tous les onglets), ajout des fiches absentes. */
+  async function openArsenal(kind) {
+    const rows = FEArsenal.summary(db());
+    const picked = new Set(rows.filter(g => g.kind === kind && g.already < g.total).map(g => g.id));
+    const KIND = { weapons: 'Armes', items: 'Objets', skills: 'Compétences' };
+    const ok = await UI.modal((box, close) => {
+      const list = h('div', { class: 'fe-pack-list' });
+      const count = h('span', { class: 'muted' });
+      const refresh = () => { count.textContent = `${rows.filter(g => picked.has(g.id)).reduce((n, g) => n + g.total - g.already, 0)} fiche(s) à ajouter`; };
+      for (const k of ['weapons', 'items', 'skills']) {
+        list.append(h('div', { class: 'fe-pack-kind' }, KIND[k]));
+        for (const g of rows.filter(x => x.kind === k)) {
+          const cb = h('input', { type: 'checkbox', 'data-group': g.id });
+          cb.checked = picked.has(g.id);
+          cb.addEventListener('change', () => { if (cb.checked) picked.add(g.id); else picked.delete(g.id); refresh(); });
+          list.append(h('label', { class: 'fe-pack-row' + (g.already >= g.total ? ' done' : '') }, cb,
+            h('span', {}, h('b', {}, `${g.name} (${g.total})`), h('small', {}, g.sample + '…' + (g.already ? ` · ${g.already} déjà dans la base` : '')))));
+        }
+      }
+      refresh();
+      box.append(h('h3', {}, 'Armes, objets et compétences de la série'),
+        h('p', { class: 'form-info' }, 'Fiches officielles (noms, stats, prix) sans images. Les armes braves frappent deux fois, les armes magiques utilisent la Magie, Nosferatu et la Lame runique soignent leur porteur. Les compétences sont adaptées aux effets du moteur ; quand c’est simplifié, leur description le dit. Une fiche déjà présente (même nom) n’est pas dupliquée.'),
+        h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
+          h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
+        list,
+        h('div', { class: 'modal-actions' }, count,
+          h('button', { onclick: () => close(false) }, 'Annuler'),
+          h('button', { class: 'primary', 'data-fe-arsenal-ok': true, onclick: () => close(true) }, 'Ajouter')));
+    }, { wide: true });
+    if (!ok || !picked.size) return;
+    const res = FEArsenal.install(db(), [...picked]);
+    change(); renderBody();
+    UI.toast(`${res.weapons} arme(s), ${res.items} objet(s) et ${res.skills} compétence(s) ajoutés`);
+  }
+
+  /** Pack « Personnages de la série Fire Emblem » : choix des jeux, puis ajout des fiches, classes et bannières. */
+  async function openFEPack() {
+    const rows = FEPack.summary(db());
+    const picked = new Set(rows.filter(g => g.already < g.total).map(g => g.id));
+    const ok = await UI.modal((box, close) => {
+      const list = h('div', { class: 'fe-pack-list' });
+      const count = h('span', { class: 'muted' });
+      const refresh = () => { count.textContent = `${rows.filter(g => picked.has(g.id)).reduce((n, g) => n + g.total - g.already, 0)} personnage(s) à ajouter`; };
+      for (const g of rows) {
+        const box2 = h('input', { type: 'checkbox', 'data-game': g.id });
+        box2.checked = picked.has(g.id);
+        box2.addEventListener('change', () => { if (box2.checked) picked.add(g.id); else picked.delete(g.id); refresh(); });
+        list.append(h('label', { class: 'fe-pack-row' + (g.already >= g.total ? ' done' : '') }, box2,
+          h('span', {}, h('b', {}, g.title), h('small', {}, `Série « ${g.series} » · ${g.total} personnages` + (g.already ? ` · ${g.already} déjà dans la base` : '')))));
+      }
+      refresh();
+      box.append(h('h3', {}, 'Personnages de la série Fire Emblem'),
+        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Aucune image n’est ajoutée : ils prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
+        h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
+          h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
+        list,
+        h('div', { class: 'modal-actions' }, count,
+          h('button', { onclick: () => close(false) }, 'Annuler'),
+          h('button', { class: 'primary', 'data-fe-pack-ok': true, onclick: () => close(true) }, 'Ajouter')));
+    }, { wide: true });
+    if (!ok || !picked.size) return;
+    const res = FEPack.install(db(), [...picked]);
+    change(); renderBody();
+    UI.toast(`${res.units} personnage(s), ${res.classes} classe(s) et ${res.banners} bannière(s) ajoutés`);
   }
 
   function renderListTab(body, def) {
@@ -708,7 +782,9 @@
     body.append(listPanel(list, cur && cur.id, {
       sub: def.sub, swatch: def.swatch, icon: def.icon,
       groups: roster ? () => Roster.arrange(list, db(), unitView) : null,
-      toolbar: roster ? refill => rosterToolbar(unitView, refill, 'tf.unitView') : null,
+      toolbar: roster ? refill => rosterToolbar(unitView, refill, 'tf.unitView')
+        : ['weapons', 'items', 'skills'].includes(tab) ? () => h('div', { class: 'roster-tools' },
+          h('button', { class: 'small', 'data-fe-arsenal': tab, title: 'Ajouter des fiches officielles de la série (sans images)', onclick: () => openArsenal(tab) }, '＋ De la série Fire Emblem…')) : null,
       onAdd: () => { const e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create()); list.push(e); selected[tab] = e.id; change(); renderBody(); },
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {

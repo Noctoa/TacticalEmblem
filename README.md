@@ -121,6 +121,31 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 - **Or** : récompense de chapitre (la première victoire, ou à chaque victoire), bourse des ennemis vaincus (réglée sur le placement de l'ennemi), revente.
 - X (ou clic droit) : menu du camp — équipe, chapitres, boutique, paramètres. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
 
+**Personnages de la série Fire Emblem** — Base de données › Unités › **＋ Personnages de la série…** : on coche les jeux (Shadow Dragon / Mystery, Echoes, Genealogy, Thracia 776, Binding Blade, Blazing Blade, Sacred Stones, Path of Radiance, Radiant Dawn, Awakening, Fates, Three Houses, Engage) et leurs personnages principaux sont ajoutés, soit 171 fiches. Chaque fiche contient :
+- la classe, le niveau, l'inventaire, la rareté d'invocation, la série (« Fire Emblem 7 »…) et une bio ;
+- des croissances inspirées du jeu ;
+- des stats approximatives, calculées depuis la classe et le niveau, puis ajustées selon ses croissances.
+
+Aucune image n'est ajoutée : ils prennent les sprites de leur classe, ou un jeton, jusqu'à ce que tu leur donnes les tiens. L'import ajoute aussi :
+- les classes qui manquent : Seigneur (épée / lance / hache / arc), Tacticien, Prêtresse guerrière, Myrmidon › Bretteur, Chevalier wyverne › Seigneur wyverne, Chevalier faucon, Danseuse, Troubadour › Valkyrie, Moine › Évêque, Shaman › Druide, Sage, Nomade › Sniper, Berserker, Chevalier noir ;
+- une bannière d'invocation par jeu, avec le ou les seigneurs mis en avant.
+
+Un personnage déjà présent (même nom, même série) n'est pas dupliqué. Les manaketes et les laguz ne sont pas inclus (pas de pierre de dragon ni de transformation dans le moteur).
+
+**Armes, objets et compétences de la série** — Dans les onglets Armes, Objets et Compétences, le bouton **＋ De la série Fire Emblem…** ajoute des fiches officielles, sans images. On coche les groupes voulus :
+- **armes** : épées, lances, haches, arcs, magie anima, magie de lumière, magie noire, bâtons, et 35 armes légendaires incassables (Falchion, Durandal, Ragnell, Gáe Bolg, Armads, Mulagir, Forseti, Naga…) ;
+- **objets** : soins, objets de stats (Robe séraphique, Bottes…), sceaux, clés ;
+- **compétences** : déclenchements, bonus, coups et postures (Coup mortel…), compétences selon les PV, maîtrises d'armes, soutien d'équipe.
+
+Une fiche déjà présente (même nom) n'est pas dupliquée. Les compétences sont adaptées aux effets du moteur, et leur description indique quand une version est simplifiée. Les sceaux spéciaux (Emblème du héros…) servent si une promotion de classe les demande.
+
+Trois propriétés d'arme ont été ajoutées pour l'occasion (fiche d'arme) :
+- **Brave** : chaque attaque frappe deux fois ;
+- **Dégâts magiques** : Mag / Rés pour une épée, une lance ou une hache (Lame du tonnerre…) ;
+- **Drain** : le porteur récupère les PV des dégâts infligés (Nosferatu, Lame runique).
+
+**Danser** — Une unité de classe Danseuse (case *Danse* de la classe) a l'action **Danser** : un allié adjacent qui a déjà joué peut rejouer ce tour (+10 EXP pour la danseuse).
+
 **Invocations** — Comme dans Fire Emblem Heroes, un autel au camp (le puits du camp d'exemple) permet d'invoquer des personnages avec des **orbes**. On en reçoit au début de la partie (20 par défaut), à la première victoire de chaque acte (champ *Orbes* de l'acte) et en parlant aux compagnons au camp (champ *Orbes gagnées* d'une conversation).
 - **Bannières** (Base de données › Invocations) : nom, description, personnages possibles, personnages mis en avant, taux 5★ / 4★ / 3★ et part des 5★ réservée aux mis en avant, condition de déblocage et dates (une bannière dont la date de fin est passée disparaît). Les taux réels sont affichés : une rareté sans personnage rend son taux aux autres.
 - **Rareté** (fiche d'unité) : 3★, 4★ ou 5★. Elle ne décide que de la probabilité ; les stats ne changent pas.
@@ -321,6 +346,8 @@ src/main/project-io.js     lecture / écriture des projets
 src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des anciens projets, couleurs d'équipe des .json
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
 src/shared/rules.js        (resolveCombat) overkill : coups restants après le coup fatal, bonus d'EXP — testé dans test/overkill.test.js
+src/shared/fe-arsenal.js   pack d'armes, objets et compétences de la série — testé dans test/fe-arsenal.test.js
+src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, bannières) — testé dans test/fe-pack.test.js
 src/shared/summon.js       invocations : bannières, taux, pitié, cercle de pierres, fusions — testé dans test/summon.test.js
 src/renderer/summon-panel.js  autel d'invocation du camp
 src/shared/roster.js       tri et recherche des personnages (nom, classe, arme, série) — testé dans test/roster.test.js

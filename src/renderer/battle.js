@@ -193,7 +193,7 @@
         h('div', { class: 'b-top' }, h('span', { class: 'b-name' }, actor.unit.name), h('span', { class: 'b-weap' }, sideWeapon(sc, actor))),
         h('div', { class: 'b-stats' },
           h('div', {}, h('span', {}, 'PRÉC'), h('b', {}, s ? String(s.hit) : '--')),
-          h('div', {}, h('span', {}, 'DGT'), h('b', {}, s ? String(s.dmg) + (s.count > 1 ? ' ×2' : '') : '--')),
+          h('div', {}, h('span', {}, 'DGT'), h('b', {}, s ? String(s.dmg) + (s.count > 1 ? ' ×' + s.count : '') : '--')),
           h('div', {}, h('span', {}, 'CRIT'), h('b', {}, s ? String(s.crit) : '--'))),
         h('div', { class: 'b-hp' }, hpNum, hpBar));
     };
