@@ -47,9 +47,9 @@ module.exports = (editor, openPlaytest) => {
       const ewc = editor.webContents; watch(ewc);
       await js(ewc, `Editor.open(${JSON.stringify(dir)})`);
       await until(ewc, `!!Editor.project()`);
-      await js(ewc, `DBEditor.open('lobby')`);
+      await js(ewc, `Editor.selectCamp('map_camp')`); // l'équipe de départ se règle sur la map de camp
       assert.equal(await js(ewc, `(() => {
-        const form = [...document.querySelectorAll('#db-body .form')].find(el => el.textContent.includes('Effectif recruté au début'));
+        const form = [...document.querySelectorAll('#inspector .form')].find(el => el.textContent.includes('Effectif recruté au début'));
         const chips = [...form.querySelectorAll('.chip')];
         const hero = chips.find(el => el.textContent === 'Xarrin'), lyn = chips.find(el => el.textContent === 'Lyn');
         if (!hero.disabled || !hero.classList.contains('on') || lyn.classList.contains('on')) return false;

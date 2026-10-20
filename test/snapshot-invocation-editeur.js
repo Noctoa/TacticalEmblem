@@ -38,9 +38,9 @@ module.exports = (win) => {
       await ejs(`(() => { const s = ${field('Rareté')}.querySelector('select'); s.value = '4'; s.dispatchEvent(new Event('change')); })()`); await wait(300);
       result.rareteSerra = await ejs(`Editor.db().units.find(u => u.id === 'c_serra').rarity`);
       await shot('b_rarete');
-      await ejs(`DBEditor.open('lobby')`); await wait(600);
-      await ejs(`[...document.querySelectorAll('#db-body .form-heading')].find(e => e.textContent.startsWith('Autel')).scrollIntoView()`); await wait(200);
-      result.cibles = await ejs(`[...document.querySelectorAll('#db-body .lobby-pick .chip')].map(c => c.textContent)`);
+      await ejs(`DBEditor.close()`); await wait(300);
+      await ejs(`Editor.selectCamp('map_camp')`); await wait(600);
+      result.cibles = await ejs(`[...document.querySelectorAll('[data-lobby-pick]')].map(c => c.textContent)`);
       await shot('c_lobby_autel');
       await ejs(`DBEditor.open('system')`); await wait(500);
       await ejs(`[...document.querySelectorAll('#db-body .form-heading')].find(e => e.textContent === 'Invocations').scrollIntoView()`); await wait(200);

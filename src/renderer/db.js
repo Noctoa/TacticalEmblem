@@ -372,7 +372,7 @@
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
         { key: 'recruitAfter', label: 'Rejoint l’effectif après', type: 'select', empty: '— pas de recrutement automatique —', options: () => doneOpts() },
-        { type: 'info', text: 'L’effectif de départ se règle dans Lobby. Un personnage placé dans le camp ne rejoint pas automatiquement l’équipe. Les placements joueur d’un acte rejoignent l’effectif quand cet acte commence.' },
+        { type: 'info', text: 'L’effectif de départ se règle sur la map de camp (mode Unités). Un personnage placé dans le camp ne rejoint pas automatiquement l’équipe. Les placements joueur d’un acte rejoignent l’effectif quand cet acte commence.' },
         { type: 'custom', render: unitSkillsField },
         { type: 'heading', label: 'Apparence' },
         { type: 'custom', render: appearanceField },
@@ -560,7 +560,7 @@
         const pct = v => (Math.round(v * 100) / 100).toLocaleString('fr-FR') + ' %';
         const errors = Summon.validate({ units: db().units, banners: [b] });
         return [
-          !cfg.enabled || !cfg.summon.enabled || set.enabled === false ? { type: 'info', text: '⚠ L’autel d’invocation n’est pas actif : coche « Autel d’invocation » dans l’onglet Lobby (et Système › Invocations).' } : null,
+          !cfg.enabled || !cfg.summon.enabled || set.enabled === false ? { type: 'info', text: '⚠ L’autel d’invocation n’est pas actif : coche « Autel d’invocation » sur la map de camp (mode Unités) et dans Système › Invocations.' } : null,
           ...errors.map(e => ({ type: 'info', text: '⚠ ' + e })),
           { key: 'name', label: 'Nom de la bannière', type: 'text' },
           { key: 'description', label: 'Description (affichée à l’autel)', type: 'text' },
@@ -598,8 +598,8 @@
           { type: 'row', fields: [
             { key: 'unitId', label: 'Personnage à qui parler dans le lobby', type: 'select', options: db().units.map(u => ({ value: u.id, label: u.name })) },
             { key: 'after', label: 'Disponible après', type: 'select', empty: '— dès le début —', options: () => doneOpts() }] },
-          !cfg.enabled ? { type: 'info', text: '⚠ Le lobby est désactivé (onglet Lobby) : les conversations ne se jouent pas.' }
-            : !here ? { type: 'info', text: `⚠ ${uName(t.unitId)} n'est pas placé dans le lobby (onglet Lobby › Personnages présents) : impossible de lui parler.` } : null,
+          !cfg.enabled ? { type: 'info', text: '⚠ Le camp est désactivé (map de camp, mode Unités) : les conversations ne se jouent pas.' }
+            : !here ? { type: 'info', text: `⚠ ${uName(t.unitId)} n'est pas placé au camp (map de camp, mode Unités) : impossible de lui parler.` } : null,
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
           { type: 'row', fields: [
             { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (onglet Affinités), si elle existe.' },
@@ -631,9 +631,10 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['terrains', 'Terrains'], ['tilesets', 'Tilesets'], ['arcs', 'Chapitres et actes'], ['lobby', 'Lobby'], ['talks', 'Conversations'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['system', 'Système']];
 
   function open(t, id) {
+    if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
     if (t) tab = t;
     if (id) selected[tab] = id;
     changed = false;
@@ -648,20 +649,40 @@
 
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of ORDER) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    for (const [k, label] of ORDER) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
   }
 
   function renderBody() {
     const body = $('#db-body'); body.innerHTML = '';
     animToken++;
-    body.classList.toggle('single', tab === 'system' || tab === 'lobby');
+    body.classList.toggle('single', tab === 'system');
+    if (tab === 'terrains') { renderListTab(body, TABS.terrains); return mergeTerrainList(body); }
+    if (tab === 'tilesets') { renderTilesets(body); return mergeTerrainList(body); }
     if (TABS[tab]) return renderListTab(body, TABS[tab]);
-    if (tab === 'tilesets') return renderTilesets(body);
     if (tab === 'chapters') return renderChapters(body);
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
-    if (tab === 'lobby') return renderLobby(body);
     if (tab === 'arcs') return renderArcs(body);
+  }
+
+  /**
+   * Onglet « Terrains et tilesets » : une seule liste à gauche, tilesets puis terrains. Cliquer un élément
+   * ouvre sa fiche ; les boutons du bas agissent sur le type affiché (tileset ou terrain).
+   */
+  function mergeTerrainList(body) {
+    const box = body.querySelector('.db-list-items'); if (!box) return;
+    box.replaceChildren();
+    const group = (kind, title, list, mark) => {
+      box.append(h('div', { class: 'db-group' }, title, h('span', {}, String(list.length))));
+      list.forEach(it => box.append(h('div', { class: 'db-item' + (tab === kind && selected[kind] === it.id ? ' on' : ''), 'data-id': it.id, 'data-kind': kind,
+        onclick: () => { tab = kind; selected[kind] = it.id; renderTabs(); renderBody(); } }, mark(it), h('span', {}, it.name),
+        h('span', { class: 'sub' }, kind === 'tilesets' ? `${it.tileWidth}px` : `${it.def}/${it.avoid}`))));
+    };
+    group('tilesets', 'Tilesets', db().tilesets, () => h('span', { class: 'n' }, '▦'));
+    group('terrains', 'Terrains', db().terrains, (t) => h('span', { class: 'sw', style: { width: '12px', height: '12px', borderRadius: '3px', background: t.color, flex: 'none' } }));
+    const actions = body.querySelector('.db-list-actions');
+    if (actions) actions.prepend(h('span', { class: 'db-actions-kind' }, tab === 'tilesets' ? 'Tileset' : 'Terrain'));
+    const cur = box.querySelector('.db-item.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
   }
 
   function listPanel(items, cur, opts) {
@@ -798,7 +819,7 @@
           if (villages.length) return UI.alert('Élément utilisé par un village', 'Modifie d’abord ces villages : ' + villages.join(', ') + '.');
         }
         if (tab === 'units' && (Editor.project().meta.lobby || {}).initialRoster?.includes(cur.id)) {
-          return UI.alert('Personnage dans l’effectif de départ', 'Retire d’abord ce personnage de Lobby › Équipe de départ.');
+          return UI.alert('Personnage dans l’effectif de départ', 'Retire d’abord ce personnage de l’équipe de départ (map de camp, mode Unités).');
         }
         if (tab === 'units' && db().chapters.some(ch => (ch.deployment && ch.deployment.forcedUnits || []).includes(cur.id))) return UI.alert('Personnage imposé dans un acte', 'Retire d’abord ce personnage des unités imposées dans les préparatifs de ses actes.');
         if (tab === 'chapters') {
@@ -1051,7 +1072,7 @@
     pane.append(UI.form([
       { type: 'row', fields: [
         { key: 'name', label: 'Nom', type: 'text' },
-        { key: 'mapId', label: 'Map', type: 'select', options: maps.map(m => ({ value: m.id, label: m.name })) }] },
+        { key: 'mapId', label: 'Map', type: 'select', options: maps.filter(m => m.kind !== 'lobby' || m.id === ch.mapId).map(m => ({ value: m.id, label: m.name })) }] },
       { type: 'row', fields: [
         { key: 'objective.type', label: 'Objectif', type: 'select', options: Editor.objectives },
         { key: 'objective.turns', label: 'Tours (survie)', type: 'number', min: 1, max: 99, when: c => c.objective.type === 'survive' },
@@ -1076,7 +1097,7 @@
       inArc ? null : { type: 'row', fields: [
         { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
         { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
-      { type: 'info', text: (c) => (Lobby.defaults(Editor.project().meta.lobby).enabled ? '' : '⚠ Le lobby est désactivé (onglet Lobby) : ces réglages ne servent pas encore. ') +
+      { type: 'info', text: (c) => (Lobby.defaults(Editor.project().meta.lobby).enabled ? '' : '⚠ Le camp est désactivé (map de camp, mode Unités) : ces réglages ne servent pas encore. ') +
         (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
@@ -1618,7 +1639,8 @@
 
   function newAct() {
     const maps = Editor.project().maps, list = db().chapters;
-    const m = maps.find(m => m.id === Editor.state.mapId) || maps[0];
+    const chapterMaps = maps.filter(m => m.kind !== 'lobby'); // une map de camp n'a pas d'acte
+    const m = chapterMaps.find(m => m.id === Editor.state.mapId) || chapterMaps[0];
     if (!m) { UI.alert('Pas de map', "Crée d'abord une map."); return null; }
     const c = { id: Editor.uid('ch_', list), name: 'Acte ' + (list.length + 1), mapId: m.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [], replay: true };
     list.push(c);
@@ -1684,162 +1706,19 @@
   }
 
   // ------------------------------------------------------------------
-  // Lobby : le camp entre deux chapitres (map explorable, table des chapitres, boutique, personnages)
+  // Le camp (lobby) et ses conversations se règlent maintenant sur la map de camp, dans l'éditeur
+  // (mode Unités) : voir lobby-editor.js. Ces aides servent à ses formulaires.
   // ------------------------------------------------------------------
-  let lobbyPick = 'start';
-  function renderLobby(body) {
-    const project = Editor.project();
-    const cfg = project.meta.lobby = Lobby.defaults(project.meta.lobby);
-    const maps = project.maps;
-    const pane = h('div', { class: 'db-form' });
-    body.append(pane);
-    pane.append(h('h2', {}, 'Lobby', h('span', { class: 'id' }, 'le camp entre deux chapitres')),
-      h('p', { class: 'form-info' }, "Une map explorable où le jeu commence et revient après chaque chapitre. Le héros s'y déplace (flèches ou clic), parle aux personnages présents, consulte la table des chapitres (histoire et évènements) et achète ou revend à la boutique."));
-    // démarrage rapide pour un projet créé avant le lobby
-    const sampleMap = Defaults.lobbyMap();
-    const noPrices = db().weapons.concat(db().items).filter(e => e.price === undefined && Defaults.PRICES[e.id]);
-    const quick = [];
-    if (!maps.some(m => m.id === sampleMap.id) && !maps.some(m => m.id === cfg.mapId)) quick.push(h('button', { class: 'small', onclick: () => {
-      if (!byId(db().tilesets, 'ts_plaines')) return UI.alert('Tileset manquant', 'La map d\'exemple utilise le tileset « Plaines » des ressources par défaut. Crée plutôt ta propre map de camp dans l\'éditeur, puis choisis-la ici.');
-      maps.push(sampleMap);
-      const def = Defaults.lobby();
-      Object.assign(cfg, { enabled: true, mapId: sampleMap.id, start: def.start, board: Object.assign({}, cfg.board, { x: def.board.x, y: def.board.y }), shop: Object.assign({}, cfg.shop, { x: def.shop.x, y: def.shop.y }) });
-      if (!cfg.shop.stock.length) cfg.shop.stock = def.shop.stock.filter(id => byId(db().weapons, id) || byId(db().items, id));
-      change(); Editor.refresh(); renderBody(); UI.toast('Map « ' + sampleMap.name + ' » ajoutée au projet');
-    } }, 'Ajouter la map du camp d\'exemple'));
-    if (noPrices.length) quick.push(h('button', { class: 'small', onclick: () => {
-      for (const e of noPrices) e.price = Defaults.PRICES[e.id];
-      change(); renderBody(); UI.toast(noPrices.length + ' prix ajoutés');
-    } }, `Ajouter les prix par défaut (${noPrices.length} armes et objets)`));
-    if (quick.length) pane.append(h('div', { class: 'insp-actions', style: { margin: '4px 0 10px' } }, ...quick));
-    let redraw = () => {};
-    const goods = () => db().weapons.concat(db().items).filter(e => Lobby.price(e) > 0).map(e => ({ value: e.id, label: `${e.name} — ${Lobby.price(e)} or` }));
-    pane.append(UI.form([
-      { key: 'enabled', label: 'Activer le lobby (le jeu commence au camp et y revient après chaque chapitre)', type: 'checkbox' },
-      { type: 'row', fields: [
-        { key: 'name', label: 'Nom', type: 'text' },
-        { key: 'mapId', label: 'Map du lobby', type: 'select', empty: '— choisir —', options: maps.map(m => ({ value: m.id, label: `${m.name} (${m.width}×${m.height})` })) }] },
-      { type: 'row', fields: [
-        { key: 'heroId', label: 'Héros (personnage que l\'on déplace)', type: 'select', empty: '— premier personnage principal —', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
-        { key: 'startGold', label: 'Or au début de la partie', type: 'number', min: 0, max: 999999 },
-        { key: 'music', label: 'Musique', type: 'select', empty: '— celle de la phase joueur —', options: () => audioOpts('bgm') }] },
-      { type: 'heading', label: 'Équipe de départ' },
-      { type: 'custom', render: () => {
-        const roster = { initialRoster: Team.initialIds(db(), project.meta) };
-        const form = UI.form([{ key: 'initialRoster', label: 'Effectif recruté au début de la partie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
-          { type: 'info', text: 'Indépendant des PNJ placés au camp. Le héros du lobby est toujours inclus. Les autres recrutements se règlent dans les fiches Unités.' }], roster,
-          { onChange: () => { cfg.initialRoster = roster.initialRoster; change(); } });
-        const hero = Lobby.heroOf(cfg, db());
-        form.querySelectorAll('.chip').forEach((button, index) => { if (hero && db().units[index].id === hero.id) { button.disabled = true; button.title = 'Le héros du lobby fait toujours partie de l’effectif.'; } });
-        return form;
-      } },
-      { type: 'heading', label: 'Boutique' },
-      { type: 'row', fields: [
-        { key: 'shop.enabled', label: 'Boutique ouverte', type: 'checkbox' },
-        { key: 'shop.name', label: 'Nom du marchand', type: 'text' },
-        { key: 'board.label', label: 'Nom du tableau des quêtes', type: 'text' }] },
-      { key: 'shop.stock', label: 'Articles en vente', type: 'multicheck', options: goods, when: c => c.shop.enabled },
-      { type: 'info', text: "Seuls les objets qui ont un prix sont proposés (onglets Armes et Objets › Prix en boutique). La revente rapporte la moitié du prix, selon les utilisations restantes. L'or vient des récompenses de chapitre (onglet Chapitres) et des ennemis qui portent une bourse (inspecteur d'un ennemi, mode Unités)." },
-      { type: 'heading', label: 'Autel d’invocation' },
-      { type: 'row', fields: [
-        { key: 'summon.enabled', label: 'Autel d’invocation (orbes)', type: 'checkbox' },
-        { key: 'summon.name', label: 'Nom de l’autel', type: 'text' }] },
-      { type: 'info', text: 'Les bannières se règlent dans l’onglet Invocations. Place l’autel sur la map ci-dessous.' }
-    ], cfg, { onChange: (k) => { change(); if (['enabled', 'mapId', 'shop.enabled', 'heroId', 'name', 'shop.name', 'board.label', 'summon.enabled', 'summon.name'].includes(k)) renderBody(); else redraw(); } }));
-
-    // ---- placement sur la map
-    pane.append(h('div', { class: 'form-heading' }, 'Placement sur la map'));
-    const map = maps.find(m => m.id === cfg.mapId);
-    if (!map) { pane.append(h('p', { class: 'note' }, 'Choisis la map du lobby (crée-la comme une map de chapitre, dans l\'éditeur).')); return lobbyFooter(pane, cfg); }
-    const hero = Lobby.heroOf(cfg, db());
-    const targets = [['start', `Départ de ${hero ? hero.name : 'héros'}`], ['board', cfg.board.label || 'Tableau des quêtes']]
-      .concat(cfg.shop.enabled ? [['shop', cfg.shop.name || 'Boutique']] : [])
-      .concat(cfg.summon.enabled ? [['summon', cfg.summon.name || 'Autel']] : [])
-      .concat(cfg.spots.map((sp, i) => ['spot' + i, uName(sp.unitId)]));
-    if (!targets.some(t => t[0] === lobbyPick)) lobbyPick = 'start';
-    pane.append(h('div', { class: 'lobby-pick' }, h('span', { class: 'muted' }, 'Clique sur la map pour placer :'),
-      chips(targets.map(([value, label]) => ({ value, label })), lobbyPick, (v) => { lobbyPick = v; renderBody(); })));
-    const point = (key) => key === 'start' ? cfg.start : key === 'board' ? cfg.board : key === 'shop' ? cfg.shop : key === 'summon' ? cfg.summon : cfg.spots[Number(key.slice(4))];
-    const scale = Math.max(0.5, Math.min(2, 640 / (map.width * map.tileWidth)));
-    const cv = h('canvas', { class: 'lobby-map', width: Math.round(map.width * map.tileWidth * scale), height: Math.round(map.height * map.tileHeight * scale) });
-    pane.append(h('div', { class: 'res-stage lobby-stage' }, cv));
-    cv.addEventListener('click', (e) => {
-      const r = cv.getBoundingClientRect();
-      const x = Math.floor((e.clientX - r.left) / r.width * map.width), y = Math.floor((e.clientY - r.top) / r.height * map.height);
-      const p = point(lobbyPick); if (!p) return;
-      p.x = x; p.y = y; change();
-      renderBody();
-    });
-    const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
-    const my = animToken;
-    function drawPreview() {
-      if (my !== animToken) return;
-      g.setTransform(1, 0, 0, 1, 0, 0);
-      g.fillStyle = '#14161b'; g.fillRect(0, 0, cv.width, cv.height);
-      g.setTransform(scale, 0, 0, scale, 0, 0);
-      Render.drawMap(g, map, { scale: 1, baseUrl: Editor.baseUrl(), tilesets: db().tilesets });
-      const tw = map.tileWidth, th = map.tileHeight;
-      const mark = (p, color, text, on) => {
-        g.strokeStyle = color; g.lineWidth = on ? 3 / scale + 1 : 2; g.strokeRect(p.x * tw + 1.5, p.y * th + 1.5, tw - 3, th - 3);
-        g.font = `700 ${Math.round(11 / scale + 2)}px sans-serif`; g.textAlign = 'center'; g.textBaseline = 'bottom';
-        g.lineWidth = 3; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(text, p.x * tw + tw / 2, p.y * th - 1);
-        g.fillStyle = color; g.fillText(text, p.x * tw + tw / 2, p.y * th - 1);
-      };
-      const sprite = (unitId, p) => {
-        const u = byId(db().units, unitId); if (!u) return false;
-        const c = byId(db().classes, u.classId);
-        const meta = res().characters[u.mapSprite || (c && c.mapSprite)];
-        const img = meta && Render.readyImage(Editor.baseUrl(), meta.image);
-        if (!img) { if (meta) Render.loadImage(Editor.baseUrl(), meta.image).then(drawPreview); return false; }
-        Sprites.drawMapSprite(g, meta, img, p.x * tw + tw / 2, (p.y + 1) * th, tw / (meta.base || 16), { anim: 'idle', frame: 0, palette: 'blue' });
-        return true;
-      };
-      mark(cfg.board, '#f2d58a', cfg.board.label || 'Table', lobbyPick === 'board');
-      if (cfg.shop.enabled) mark(cfg.shop, '#9fe0ff', cfg.shop.name || 'Boutique', lobbyPick === 'shop');
-      if (cfg.summon.enabled) mark(cfg.summon, '#d6a8ff', cfg.summon.name || 'Autel', lobbyPick === 'summon');
-      cfg.spots.forEach((sp, i) => { sprite(sp.unitId, sp); mark(sp, sp.after ? '#c9a7ff' : '#9be59b', uName(sp.unitId) + (sp.after ? ' *' : ''), lobbyPick === 'spot' + i); });
-      if (hero) sprite(hero.id, cfg.start);
-      mark(cfg.start, '#ffffff', hero ? hero.name + ' (départ)' : 'Départ', lobbyPick === 'start');
-    }
-    redraw = drawPreview;
-    drawPreview();
-    pane.append(h('p', { class: 'form-info' }, `Map ${map.width}×${map.height}. Les cases infranchissables (murs, eau, pics…) bloquent le héros. Un personnage marqué * n'arrive qu'après le chapitre choisi.`));
-
-    // ---- personnages présents
-    pane.append(h('div', { class: 'form-heading' }, 'Personnages présents'));
-    const list = h('div', { class: 'lobby-spots' });
-    cfg.spots.forEach((sp, i) => {
-      const unitSel = h('select', {}, db().units.map(u => h('option', { value: u.id }, u.name)));
-      unitSel.value = sp.unitId;
-      unitSel.addEventListener('change', () => { sp.unitId = unitSel.value; change(); renderBody(); });
-      const afterSel = h('select', {}, [h('option', { value: '' }, 'dès le début')].concat(doneOpts().map(o => h('option', { value: o.value }, 'après ' + o.label.replace(/^(Chapitre|Acte) : /, (m, k) => k.toLowerCase() + ' ')))));
-      afterSel.value = sp.after || '';
-      afterSel.addEventListener('change', () => { sp.after = afterSel.value; change(); drawPreview(); });
-      const talks = (db().talks || []).filter(t => t.unitId === sp.unitId).length;
-      list.append(h('div', { class: 'lobby-spot' + (lobbyPick === 'spot' + i ? ' on' : '') },
-        unitSel, afterSel, h('span', { class: 'muted' }, `case ${sp.x},${sp.y}`),
-        h('a', { href: '#', onclick: (e) => { e.preventDefault(); selected.talks = ((db().talks || []).find(t => t.unitId === sp.unitId) || {}).id; open('talks'); } }, talks ? `${talks} conversation(s)` : 'aucune conversation'),
-        h('button', { class: 'small', onclick: () => { lobbyPick = 'spot' + i; renderBody(); } }, 'Placer'),
-        h('button', { class: 'small danger', html: Icons.icon('trash'), title: 'Retirer', onclick: () => { cfg.spots.splice(i, 1); change(); renderBody(); } })));
-    });
-    pane.append(list);
-    const free = db().units.filter(u => (!hero || u.id !== hero.id) && !cfg.spots.some(s => s.unitId === u.id));
-    if (free.length) {
-      pane.append(h('button', { class: 'small', style: { marginTop: '6px' }, onclick: () => {
-        const taken = new Set([cfg.start, cfg.board, cfg.shop, ...cfg.spots].map(p => p.x + ',' + p.y));
-        let x = cfg.start.x, y = cfg.start.y;
-        for (let d = 1; d < 6 && taken.has(x + ',' + y); d++) { x = Math.min(map.width - 1, cfg.start.x + d); }
-        cfg.spots.push({ unitId: free[0].id, x, y, after: '' }); lobbyPick = 'spot' + (cfg.spots.length - 1); change(); renderBody();
-      } }, '+ Ajouter un personnage'));
-    }
-    lobbyFooter(pane, cfg);
-  }
-  function lobbyFooter(pane, cfg) {
-    const errors = Lobby.validate(cfg, db(), Editor.project().maps);
-    for (const e of errors) pane.append(h('p', { class: 'note' }, '⚠ ' + e));
-    pane.append(h('div', { class: 'insp-actions', style: { margin: '12px 0 4px' } },
-      h('button', { class: 'small', onclick: () => open('talks') }, 'Conversations du lobby'),
-      h('button', { class: 'small primary', html: Icons.icon('play'), disabled: !cfg.enabled || errors.length > 0, onclick: async () => { await close(); Editor.playtest(Lobby.LOBBY_SAVE); } }, 'Tester le lobby')));
+  const lobbyGoods = () => db().weapons.concat(db().items).filter(e => Lobby.price(e) > 0).map(e => ({ value: e.id, label: `${e.name} — ${Lobby.price(e)} or` }));
+  /** Ouvre la map du camp dans l'éditeur (anciens liens vers les onglets Lobby et Conversations). */
+  async function openCamp(talkId) {
+    await close();
+    const p = Editor.project(), cfg = Lobby.defaults(p.meta.lobby);
+    const map = p.maps.find(m => m.id === cfg.mapId && m.kind === 'lobby') || p.maps.find(m => m.kind === 'lobby');
+    if (!map) return UI.alert('Pas de map de camp', 'Crée une map de camp dans le panneau Projet (section « Maps de camp », bouton +).');
+    Editor.selectCamp(map.id);
+    const talk = talkId && (db().talks || []).find(t => t.id === talkId);
+    if (talk && window.EditorLobby) window.EditorLobby.editTalk(talk);
   }
 
   // ------------------------------------------------------------------
@@ -1890,7 +1769,7 @@
       { type: 'row', fields: [
         { key: 'summon.pityEvery', label: 'Pitié : toutes les N invocations sans 5★', type: 'number', min: 0, max: 100 },
         { key: 'summon.pityStep', label: '… taux 5★ augmenté de (%)', type: 'number', min: 0, max: 10, step: 0.5 }] },
-      { type: 'info', text: 'Une séance d’invocation ouvre un cercle de 5 pierres : la 1re coûte le plus cher, il faut en ouvrir au moins une. Les bannières se règlent dans l’onglet Invocations, l’autel dans l’onglet Lobby, les orbes gagnées sur les actes et les conversations.' },
+      { type: 'info', text: 'Une séance d’invocation ouvre un cercle de 5 pierres : la 1re coûte le plus cher, il faut en ouvrir au moins une. Les bannières se règlent dans l’onglet Invocations, l’autel sur la map de camp (mode Unités), les orbes gagnées sur les actes et les conversations.' },
       { type: 'heading', label: 'Convoi (cargaison de départ)' },
       { key: 'convoy.capacity', label: 'Capacité', type: 'number', min: 1, max: 999 },
       { type: 'custom', render: (meta) => {
@@ -1956,5 +1835,7 @@
     if (e.key === 'Escape' && !$('#db').classList.contains('hidden') && !document.querySelector('.modal-back')) { e.preventDefault(); close(); }
   });
 
-  window.DBEditor = { open, close };
+  window.DBEditor = { open, close,
+    // formulaires partagés avec l'éditeur de camp (map de camp, mode Unités)
+    helpers: { audioOpts, doneOpts, goods: lobbyGoods, talkFields: (t) => TABS.talks.fields(t) } };
 })();

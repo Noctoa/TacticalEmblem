@@ -379,7 +379,7 @@
       }
       return { id, name, visible: true, data };
     };
-    return { id: 'map_camp', name: 'Camp de Varenne', width: w, height: h, tileWidth: 32, tileHeight: 32,
+    return { id: 'map_camp', name: 'Camp de Varenne', kind: 'lobby', width: w, height: h, tileWidth: 32, tileHeight: 32,
       tilesets: [{ tilesetId: 'ts_village', firstgid: 1 }],
       layers: [layer('l1', 'Sol', 'sol'), layer('l2', 'Chemins', 'chemins'), layer('l3', 'Décor', 'decor')],
       terrain: new Array(w * h).fill(''), objects: [] };

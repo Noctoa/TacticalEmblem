@@ -17,6 +17,7 @@
   const DB = () => S.project.db;
   const curMap = () => (S.project ? S.project.maps.find(m => m.id === S.mapId) || null : null);
   const chaptersOf = (map) => DB().chapters.filter(c => c.mapId === (map && map.id));
+  const isLobby = (map) => !!map && map.kind === 'lobby';
   const curChapter = () => { const c = DB().chapters.find(c => c.id === S.chapterId); return c && c.mapId === S.mapId ? c : null; };
   const byId = Rules.byId;
   function uid(prefix, list) { let i = list.length + 1; while (list.some(e => e.id === prefix + i)) i++; return prefix + i; }
@@ -65,6 +66,9 @@
     for (const u of p.db.units) { if (u.mapSprite === undefined) u.mapSprite = ''; if (u.battler === undefined) u.battler = ''; }
     if (!Array.isArray(p.db.talks)) p.db.talks = [];
     if (!Array.isArray(p.db.arcs)) p.db.arcs = [];
+    // maps de camp (lobby) et maps de chapitre : la map choisie comme camp devient une map de camp
+    const camp = p.meta.lobby && p.maps.find(m => m.id === p.meta.lobby.mapId);
+    if (camp && !camp.kind && !p.db.chapters.some(c => c.mapId === camp.id)) camp.kind = 'lobby';
     p.resources = p.resources || { characters: {}, battlers: {}, faces: [], tilesets: [], system: [] };
   }
 
@@ -204,7 +208,7 @@
     let before;
     if (kind === 'map') before = clone(S.project.maps.find(m => m.id === ref));
     else if (kind === 'chapter') before = clone(DB().chapters.find(c => c.id === ref));
-    else before = clone({ maps: S.project.maps, chapters: DB().chapters });
+    else before = clone({ maps: S.project.maps, chapters: DB().chapters, lobby: S.project.meta.lobby, talks: DB().talks });
     S.undo.push({ kind, ref, before, sel: { mapId: S.mapId, chapterId: S.chapterId } });
     if (S.undo.length > 200) S.undo.shift();
     S.redo = [];
@@ -221,8 +225,10 @@
       current = i >= 0 ? clone(DB().chapters[i]) : null;
       if (i >= 0) DB().chapters[i] = op.before;
     } else {
-      current = clone({ maps: S.project.maps, chapters: DB().chapters });
+      current = clone({ maps: S.project.maps, chapters: DB().chapters, lobby: S.project.meta.lobby, talks: DB().talks });
       S.project.maps = op.before.maps; DB().chapters = op.before.chapters;
+      if (op.before.lobby !== undefined) S.project.meta.lobby = op.before.lobby;
+      if (op.before.talks !== undefined) DB().talks = op.before.talks;
     }
     return Object.assign({}, op, { before: current });
   }
@@ -312,7 +318,7 @@
     ctx.drawImage(base, 0, 0);
 
     if (S.mode === 'terrain') drawTerrainOverlay(m, cs);
-    if (S.mode === 'units') drawUnitsOverlay(m, cs);
+    if (S.mode === 'units') { if (isLobby(m)) lobbyEd.overlay(ctx, m, cs); else drawUnitsOverlay(m, cs); }
 
     if (S.grid) {
       ctx.strokeStyle = 'rgba(255,255,255,.08)';
@@ -664,7 +670,7 @@
     const m = curMap(); if (!m) return;
     if (e.button === 1) return startPan(e);
     const c = cellFromEvent(e); if (!c) return;
-    if (S.mode === 'units') return unitsMouseDown(e, c);
+    if (S.mode === 'units') return isLobby(m) ? lobbyEd.mouseDown(e, c, m) : unitsMouseDown(e, c);
     if (e.button === 2) { // clic droit : pipette (tiles) / effacer la surcharge (terrain)
       if (S.mode === 'terrain') { beginStroke(); S.drag = { type: 'paint', erase: true }; stampAt(c, true); }
       else pickAt(c);
@@ -760,6 +766,7 @@
     if (!S.project) return;
     if (S.mode === 'tiles') return renderTilePalette(box);
     if (S.mode === 'terrain') return renderTerrainPalette(box);
+    if (isLobby(curMap())) return lobbyEd.palette(box, curMap());
     return renderUnitPalette(box);
   }
 
@@ -934,21 +941,32 @@
   function renderTree() {
     const box = $('#tree-list'); box.innerHTML = '';
     if (!S.project) return;
-    for (const m of S.project.maps) {
+    const item = (m) => {
       box.append(h('div', {
-        class: 'tree-item' + (m.id === S.mapId && (S.mode !== 'units' || !curChapter()) ? ' on' : ''),
+        class: 'tree-item' + (m.id === S.mapId && (S.mode !== 'units' || !curChapter() || isLobby(m)) ? ' on' : ''), 'data-map': m.id,
         onclick: () => selectMap(m.id), ondblclick: () => renameMap(m),
-        html: Icons.icon('map')
-      }, h('span', {}, m.name), h('span', { class: 'sub' }, `${m.width}×${m.height}`)));
+        html: Icons.icon(isLobby(m) ? 'units' : 'map')
+      }, h('span', {}, m.name), isLobby(m) && (S.project.meta.lobby || {}).mapId === m.id ? h('span', { class: 'start-badge', title: 'Camp utilisé par le jeu' }, 'camp') : h('span', { class: 'sub' }, `${m.width}×${m.height}`)));
+      if (isLobby(m)) return;
       for (const c of chaptersOf(m)) {
         box.append(h('div', {
           class: 'tree-item child' + (c.id === S.chapterId && m.id === S.mapId && S.mode === 'units' ? ' on' : ''),
           onclick: () => selectChapter(c.id), html: Icons.icon('flag')
         }, h('span', {}, c.name), S.project.meta.startChapter === c.id ? h('span', { class: 'start-badge', title: 'Acte de départ' }, 'départ') : null));
       }
-    }
+    };
+    const head = (title, kind, tip) => box.append(h('div', { class: 'tree-group' }, h('span', {}, title),
+      h('button', { class: 'mini', title: tip, 'data-new-map': kind, html: Icons.icon('plus'), onclick: () => newMap(kind) })));
+    head('Maps de chapitre', 'chapter', 'Nouvelle map de chapitre');
+    const chapterMaps = S.project.maps.filter(m => !isLobby(m));
+    chapterMaps.forEach(item);
+    if (!chapterMaps.length) box.append(h('p', { class: 'tree-empty' }, 'Aucune map de chapitre.'));
     const orphans = DB().chapters.filter(c => !S.project.maps.some(m => m.id === c.mapId));
     for (const c of orphans) box.append(h('div', { class: 'tree-item', onclick: () => DBEditor.open('chapters', c.id), html: Icons.icon('flag') }, h('span', {}, c.name), h('span', { class: 'sub' }, 'sans map')));
+    head('Maps de camp', 'lobby', 'Nouvelle map de camp (lobby)');
+    const lobbyMaps = S.project.maps.filter(isLobby);
+    lobbyMaps.forEach(item);
+    if (!lobbyMaps.length) box.append(h('p', { class: 'tree-empty' }, 'Aucune map de camp : crée-en une (+) pour un lobby.'));
   }
 
   function selectMap(id) {
@@ -957,7 +975,7 @@
     const chs = chaptersOf(curMap());
     if (changed || !chs.find(c => c.id === S.chapterId)) S.chapterId = chs[0] ? chs[0].id : null;
     if (changed) { S.layerIndex = 0; S.selected = null; fitZoom(); }
-    if (S.mode === 'units' && !changed) S.mode = 'tiles';
+    if (S.mode === 'units' && !changed && !isLobby(curMap())) S.mode = 'tiles';
     renderAll();
   }
   function selectChapter(id) {
@@ -971,10 +989,11 @@
     m.name = name; markDirty(); renderTree(); renderInspector();
   }
 
-  async function newMap() {
-    const data = { name: 'Map ' + (S.project.maps.length + 1), width: 20, height: 15, tile: (curMap() && curMap().tileWidth) || 32, tilesetId: S.paletteTs || '' };
+  async function newMap(kind) {
+    kind = kind === 'lobby' ? 'lobby' : 'chapter';
+    const data = { name: (kind === 'lobby' ? 'Camp ' : 'Map ') + (S.project.maps.length + 1), width: 20, height: 15, tile: (curMap() && curMap().tileWidth) || 32, tilesetId: S.paletteTs || '' };
     const ok = await UI.modal((box, close) => {
-      box.append(h('h3', {}, 'Nouvelle map'), UI.form([
+      box.append(h('h3', {}, kind === 'lobby' ? 'Nouvelle map de camp' : 'Nouvelle map de chapitre'), UI.form([
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'row', fields: [{ key: 'width', label: 'Largeur', type: 'number', min: 1, max: 500 }, { key: 'height', label: 'Hauteur', type: 'number', min: 1, max: 500 }, { key: 'tile', label: 'Tile (px)', type: 'number', min: 4, max: 256 }] },
         { key: 'tilesetId', label: 'Tile de fond (premier tile du tileset)', type: 'select', empty: '— vide —', options: DB().tilesets.map(t => ({ value: t.id, label: t.name })) }
@@ -983,12 +1002,13 @@
     if (!ok) return;
     snapshot('project');
     const w = Math.max(1, Math.min(500, data.width | 0)), hh = Math.max(1, Math.min(500, data.height | 0));
-    const map = { id: uid('map_', S.project.maps), name: data.name || 'Map', width: w, height: hh, tileWidth: data.tile | 0 || 32, tileHeight: data.tile | 0 || 32, tilesets: [], layers: [], terrain: new Array(w * hh).fill(''), objects: [] };
+    const map = { id: uid('map_', S.project.maps), name: data.name || 'Map', kind, width: w, height: hh, tileWidth: data.tile | 0 || 32, tileHeight: data.tile | 0 || 32, tilesets: [], layers: [], terrain: new Array(w * hh).fill(''), objects: [] };
     const first = data.tilesetId ? ensureTilesetRef(map, data.tilesetId) : 0;
     map.layers.push({ id: 'l1', name: 'Sol', visible: true, data: new Array(w * hh).fill(first || 0) });
     map.layers.push({ id: 'l2', name: 'Décor', visible: true, data: new Array(w * hh).fill(0) });
     S.project.maps.push(map);
     selectMap(map.id);
+    if (kind === 'lobby' && !(S.project.meta.lobby && S.project.maps.some(m => m.id === S.project.meta.lobby.mapId && isLobby(m)))) lobbyEd.useAsCamp(map); // premier camp : utilisé par le jeu
   }
 
   async function duplicateMap(m) {
@@ -1155,7 +1175,7 @@
     const m = curMap();
     if (!S.project) return;
     if (!m) { box.append(section('Projet', h('p', { class: 'note' }, 'Aucune map. Crée une map (+) ou importe une map Tiled.'), h('div', { class: 'insp-actions' }, h('button', { onclick: newMap }, 'Nouvelle map'), h('button', { onclick: importTiled }, 'Importer Tiled')))); return; }
-    if (S.mode === 'units') return renderChapterInspector(box, m);
+    if (S.mode === 'units') return isLobby(m) ? lobbyEd.inspector(box, m) : renderChapterInspector(box, m);
     renderMapInspector(box, m);
   }
 
@@ -1168,9 +1188,11 @@
         h('button', { class: 'small', onclick: () => resizeMap(m, sz.w, sz.h) }, 'Appliquer')),
       h('dl', { class: 'kv' }, h('dt', {}, 'Tiles'), h('dd', {}, `${m.tileWidth} × ${m.tileHeight} px`),
         m.source ? [h('dt', {}, 'Source Tiled'), h('dd', {}, m.source.file)] : null,
-        h('dt', {}, 'Actes'), h('dd', {}, String(chaptersOf(m).length))),
+        isLobby(m) ? null : [h('dt', {}, 'Actes'), h('dd', {}, String(chaptersOf(m).length))]),
+      mapKindField(m),
       h('div', { class: 'insp-actions' },
-        h('button', { class: 'small', onclick: () => createChapter(m, false), html: Icons.icon('flag') }, 'Nouvel acte'),
+        isLobby(m) ? h('button', { class: 'small primary', onclick: () => setMode('units'), html: Icons.icon('units') }, 'Réglages du camp (F3)')
+          : h('button', { class: 'small', onclick: () => createChapter(m, false), html: Icons.icon('flag') }, 'Nouvel acte'),
         h('button', { class: 'small', onclick: () => duplicateMap(m), html: Icons.icon('copy') }, 'Dupliquer'),
         h('button', { class: 'small danger', onclick: () => deleteMap(m), html: Icons.icon('trash') }, 'Supprimer'))
     ));
@@ -1209,6 +1231,17 @@
             beginStroke(); m.terrain.forEach((v, i) => setCell(m, 'terrain', i, '')); endStroke(); draw();
           } }, 'Effacer les surcharges'))));
     }
+  }
+
+  /** Type de map : chapitre (actes, unités) ou camp (lobby : repères, personnages, conversations). */
+  function mapKindField(m) {
+    const tmp = { kind: isLobby(m) ? 'lobby' : 'chapter' };
+    return UI.form([{ key: 'kind', label: 'Type de map', type: 'select', options: [{ value: 'chapter', label: 'Map de chapitre (actes)' }, { value: 'lobby', label: 'Map de camp (lobby)' }] }], tmp, { onChange: async () => {
+      if (tmp.kind === 'lobby' && chaptersOf(m).length) { await UI.alert('Map utilisée par des actes', 'Déplace ou supprime d’abord ses actes : une map de camp n’a pas d’acte.'); return renderInspector(); }
+      snapshot('project');
+      if (tmp.kind === 'lobby') m.kind = 'lobby'; else delete m.kind;
+      renderAll();
+    } });
   }
 
   function addLayer() {
@@ -1421,6 +1454,17 @@
     await safe(() => tf.playtest(S.dir, id));
   }
 
+  // ---------- maps de camp (lobby) : repères, personnages, conversations ----------
+  const lobbyEd = LobbyEditor.create({ h, project: () => S.project, DB, markDirty, snapshotProject: () => snapshot('project'),
+    renderAll, renderInspector, renderPalette, draw, section, playtest, save: cmdSave,
+    drawUnit: (unitId, x, y, cs) => drawPlacement({ unitId }, 'players', x, y, cs, {}),
+    unitIcon: (unitId) => {
+      const u = byId(DB().units, unitId), cls = u && byId(DB().classes, u.classId);
+      const meta = u && charMeta(u.mapSprite || (cls && cls.mapSprite));
+      return meta ? Sprites.icon(S.baseUrl, meta, iconPalette('player', u.colors, cls && cls.colors), 24) : h('span', { class: 'token player', style: { background: (u && u.color) || '' } }, u ? u.name.slice(0, 1) : '?');
+    } });
+  window.EditorLobby = lobbyEd;
+
   // ---------- commandes ----------
   const commands = {
     'new': cmdNew, 'open': () => cmdOpen(), 'save': cmdSave,
@@ -1435,7 +1479,7 @@
     'mode-tiles': () => S.project && setMode('tiles'), 'mode-terrain': () => S.project && setMode('terrain'), 'mode-units': () => S.project && setMode('units'),
     'database': () => S.project && DBEditor.open(),
     'playtest': () => S.project && playtest(),
-    'new-map': () => S.project && newMap()
+    'new-map': () => S.project && newMap(isLobby(curMap()) ? 'lobby' : 'chapter')
   };
   function isTyping() { const a = document.activeElement; return a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT'); }
 
@@ -1463,7 +1507,9 @@
   window.addEventListener('resize', UI.debounce(() => draw(), 100));
 
   // ---------- API pour la base de données ----------
-  window.Editor = {
+  /** Ouvre une map de camp sur ses réglages (repères, personnages, conversations). */
+  function selectCamp(id) { S.mapId = id; S.layerIndex = 0; S.selected = null; fitZoom(); setMode('units'); }
+  window.Editor = { selectCamp,
     get state() { return S; },
     db: () => DB(), project: () => S.project, baseUrl: () => S.baseUrl, dir: () => S.dir,
     markDirty, uid, invOptions, objectives: OBJECTIVES,
