@@ -18,6 +18,7 @@ const path = require('path');
 const Defaults = require('../shared/defaults.js');
 const Skills = require('../shared/skills.js');
 const Promotions = require('../shared/promotions.js');
+const Team = require('../shared/team.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -84,7 +85,7 @@ function loadProject(dir, assetsDir) {
 }
 
 function saveProject(dir, project) {
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db)];
+  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta)];
   if (errors.length) throw new Error(errors.join('\n'));
   Layout.ensureDirs(dir);
   fs.mkdirSync(mapsDirOf(dir), { recursive: true });
@@ -147,6 +148,7 @@ function createProject(dir, name, template, assetsDir) {
     map.name = 'Map 1';
     map.layers[0].data = map.layers[0].data.map(() => 1);
     project.db.chapters = [];
+    for (const unit of project.db.units) delete unit.recruitAfter;
     project.meta.startChapter = '';
   }
   saveProject(dir, project);

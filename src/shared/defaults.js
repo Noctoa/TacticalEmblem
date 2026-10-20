@@ -156,7 +156,7 @@
         inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }, { id: 'i_vulnerary' }],
         portrait: FACE('Hector'), bio: "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite." }),
       // Allié (unité verte) : classe générique, sprites propres à l'unité
-      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme',
+      u({ id: 'c_cloud', name: 'Cloud', classId: 'mercenary', level: 8, isLord: false, color: '#ca8a04', gender: 'homme', recruitAfter: 'ch_1',
         ending: "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
         stats: st(28, 10, 0, 12, 11, 6, 8, 2), growths: st(80, 50, 5, 50, 45, 30, 30, 15),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_wind_sword' }, { id: 'i_vulnerary' }, { id: 'i_master_seal' }],

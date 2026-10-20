@@ -271,6 +271,20 @@ Les probabilités fixes, Technique et Chance sont plafonnées entre 0 et 100 %. 
 
 Vantage déplace la première riposte avant le premier coup ennemi sans ajouter de coup ; sans arme utilisable à la distance du combat, il ne s’applique pas. Miracle intervient sur un coup mortel si les PV avant le coup étaient supérieurs à 1. Le coup suivant peut donc achever le porteur. Les coups cessent dès qu’un combattant est vaincu. Une arme brisée supprime les frappes suivantes avec cette arme ; elle ne permet pas d’utiliser automatiquement l’objet suivant pendant ce combat. Les attaques duo reçoivent les passifs, Garde et Miracle, mais ne déclenchent ni Luna ni Sol du partenaire.
 
-La prévision ne consomme aucun hasard. Elle affiche les dégâts hors déclenchements, les passifs actifs, les chances de Luna/Sol/Miracle, la variante de dégâts de Luna et la priorité de Vantage. L’IA utilise ces mêmes calculs pour son estimation de dégâts, de soin et de survie, en tenant compte de l’ordre des coups ; son score reste une estimation, pas une simulation exhaustive de toutes les branches et changements de conditions de PV. Les déclenchements sont annoncés et les PV soignés actualisés dans la scène animée comme sur la map. Le changement d’équipement des compétences hors bataille et les promotions à embranchements restent à réaliser.
+La prévision ne consomme aucun hasard. Elle affiche les dégâts hors déclenchements, les passifs actifs, les chances de Luna/Sol/Miracle, la variante de dégâts de Luna et la priorité de Vantage. L’IA utilise ces mêmes calculs pour son estimation de dégâts, de soin et de survie, en tenant compte de l’ordre des coups ; son score reste une estimation, pas une simulation exhaustive de toutes les branches et changements de conditions de PV. Les déclenchements sont annoncés et les PV soignés actualisés dans la scène animée comme sur la map.
 
-Les promotions à embranchements constituent le prochain chantier. Les programmes d’apprentissage des classes et des personnages restent à définir par le créateur dans son projet.
+Les programmes d’apprentissage des classes et des personnages restent à définir par le créateur dans son projet.
+
+**16. Promotions à embranchements — livrées**
+
+Les classes proposent plusieurs transitions avec conditions, objet requis, bonus et compétences accordées. L'arbre d'évolution, la comparaison des destinations et les raisons de verrouillage sont consultables en jeu. Une confirmation applique la promotion et consomme le sceau ; annuler conserve l'état de départ. La classe, le niveau effectif, les gains et les apprentissages sont conservés entre les actes et dans les sauvegardes.
+
+**17. Gestion de l'équipe au camp — livrée**
+
+Le menu Équipe distingue l'effectif recruté des PNJ dessinés dans le camp. Les réservistes sont accessibles même s'ils n'ont aucun placement sur cette map. L'éditeur règle l'équipe de départ dans Lobby et les recrutements après un acte ou un chapitre dans les fiches Unités. Les placements joueur recrutent au début de leur acte ; un PNJ du camp ne suffit pas. Les anciennes sauvegardes sont prises en charge, et les morts définitives restent exclues de l'équipe disponible.
+
+Chaque personnage peut équiper cinq compétences déjà apprises en plus de sa personnelle fixe. Retirer une compétence la conserve dans le répertoire. Les objets circulent entre tous les recrutés et le convoi en conservant leurs usages ; une destination pleine propose un échange. L'ordre d'inventaire peut être changé pour choisir la première arme utilisable. Les promotions sont également accessibles au camp, avec les mêmes conditions et bonus qu'en bataille, sans consommer de tour. La boutique peut fournir les réservistes.
+
+La sauvegarde au camp conserve l'ensemble de l'effectif, ses compétences et son équipement. Un scénario automatisé vérifie les échanges avec inventaires pleins, l'annulation, la promotion d'un réserviste, la sauvegarde réelle, son rechargement, le déploiement et un recrutement après victoire.
+
+Prochaine priorité : un écran de préparation avant la bataille pour choisir les personnages déployés parmi l'effectif, avec limite de places, personnages imposés et positions de départ. Pour l'instant, les placements joueur de chaque acte déterminent toujours les participants. Les villages, coffres et portes ainsi que la suspension au milieu d'une bataille restent des chantiers ultérieurs.

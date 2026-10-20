@@ -14,7 +14,7 @@
 
   function create(api) {
     const { G, h, R, $ } = api;
-    const S = { cfg: null, hero: null, npcs: [], facing: 'down', moving: false, held: [], panel: null, walkToken: 0 };
+    const S = { cfg: null, hero: null, npcs: [], members: [], facing: 'down', moving: false, held: [], panel: null, walkToken: 0 };
     const DIRS = { ArrowUp: [0, -1, 'up'], ArrowDown: [0, 1, 'down'], ArrowLeft: [-1, 0, 'left'], ArrowRight: [1, 0, 'right'] };
     const panelEl = () => $('#lobby-panel');
 
@@ -45,7 +45,7 @@
       S.hero = api.prep(api.applyCampaign(R.makeUnitFromCharacter(heroDef, G.db, { x: cfg.start.x, y: cfg.start.y })));
       S.npcs = Lobby.present(cfg, G.db, G.campaign).map(p => api.prep(api.applyCampaign(R.makeUnitFromCharacter(p.unit, G.db, { x: p.spot.x, y: p.spot.y }))));
       G.units = [S.hero, ...S.npcs];
-      Campaign.commit(G.campaign, G.units); // la boutique range les objets dans leur inventaire de campagne
+      S.members = []; refreshMembers(); commit();
       S.facing = 'down'; S.held = []; S.moving = false;
       G.cursor = { x: S.hero.x, y: S.hero.y };
       api.buildBase(); api.resize(); api.focus(S.hero.x, S.hero.y, true);
@@ -192,6 +192,7 @@
     }
     function renderPanel(focusIndex) {
       const el = panelEl();
+      el.classList.toggle('team-panel', S.panel.build === teamPanel.render);
       el.classList.remove('hidden');
       el.innerHTML = '';
       const body = h('div', { class: 'lp-body' });
@@ -259,13 +260,24 @@
       const errors = map ? Mission.validate(ch, G.db, map) : ["Map de l'acte introuvable."];
       if (errors.length) return UI.alert('Acte invalide', errors.join('\n'));
       if (!(await UI.confirm(`Partir pour « ${Lobby.actLabel(G.db, ch.id)} » ?`, { ok: 'Partir' }))) return;
-      Campaign.commit(G.campaign, G.units);
+      commit();
       leave();
       await api.loadChapter(ch);
     }
 
     // --- boutique
-    function members() { return [S.hero, ...S.npcs]; }
+    function refreshMembers() {
+      const ids = Team.sync(G.campaign, G.db, G.project.meta);
+      S.members = ids.map(id => S.members.find(u => u.sourceId === id) || G.units.find(u => u.sourceId === id) ||
+        api.prep(api.applyCampaign(R.makeUnitFromCharacter(R.byId(G.db.units, id), G.db, { x: 0, y: 0 }))));
+      return S.members;
+    }
+    function members() { return refreshMembers(); }
+    function commit() { Campaign.commit(G.campaign, S.members); }
+    const teamPanel = TeamPanel.create({ G, h, R, members, openPanel, rerender,
+      changed: () => { commit(); refreshHud(); }, openPromotion: api.openPromotion, showEvolution: api.showEvolution,
+      openSettings: api.openSettings });
+    function openTeam() { members(); openPanel('Équipe', teamPanel.render); }
     function openShop() {
       const MAX = 5;
       S.dest = S.dest || 'convoy';
@@ -319,7 +331,7 @@
       if (!r.ok) return UI.toast(r.error);
       const owner = members().find(u => u.uid === S.dest);
       if (owner) owner.inventory.push(r.slot); else G.convoy.push(r.slot);
-      Campaign.commit(G.campaign, G.units);
+      commit();
       UI.toast(`${Lobby.entryOf(G.db, id).name} acheté${owner ? ' pour ' + owner.name : ' (convoi)'}`);
       rerender(); refreshHud();
     }
@@ -330,7 +342,7 @@
       const r = Lobby.sell(G.campaign, G.db, slot);
       if (!r.ok) return UI.toast(r.error);
       group.list.splice(index, 1);
-      Campaign.commit(G.campaign, G.units);
+      commit();
       UI.toast(`+${r.amount} or`);
       rerender(); refreshHud();
     }
@@ -341,6 +353,7 @@
     function openMenu() {
       const all = Lobby.chapters(G.db, G.project.meta, G.campaign);
       api.showMenu([
+        { label: 'Équipe', sub: `${members().length} personnage(s) recruté(s)`, action: () => { api.hideMenu(); openTeam(); } },
         { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
         { label: 'Paramètres', sub: 'sauvegarde, son… (Échap)', action: () => { api.hideMenu(); G.ui = 'idle'; api.openSettings(); } },
@@ -403,6 +416,7 @@
     function key(e) {
       const k = e.key;
       if (S.panel) {
+        if (e.target.tagName === 'SELECT' && !['x', 'X', 'Escape', 'Backspace', 'Tab'].includes(k)) return true;
         e.preventDefault();
         const items = [...panelEl().querySelectorAll('.lp-focus:not([disabled])')];
         const i = items.indexOf(document.activeElement);
@@ -438,7 +452,7 @@
       if (thing) { face(x, y); refreshHint(); await interact(thing); }
     }
 
-    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
+    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
   }
 
   root.LobbyScene = { create };

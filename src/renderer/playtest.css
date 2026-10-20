@@ -286,3 +286,48 @@ body.in-settings #unit-win, body.in-settings #terrain-win { display: none !impor
 #lobby-panel .lp-act { background: rgba(255, 255, 255, .04); }
 #lobby-panel .lp-actnum { color: #c9b27a; font-weight: 800; margin-right: 2px; }
 #objective .act { font-size: 11px; color: #f2d58a; font-weight: 700; margin-bottom: 2px; }
+
+/* Préparatifs de l'effectif au camp. */
+#lobby-panel.team-panel { width: min(1000px, 95vw); background: rgba(16, 22, 41, .98); }
+#lobby-panel .team-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+#lobby-panel .team-toolbar p { flex: 1; }
+#lobby-panel .team-toolbar button { flex: none; }
+#lobby-panel .team-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; }
+#lobby-panel .team-roster { display: flex; flex-direction: column; gap: 8px; }
+#lobby-panel .team-member { display: flex; align-items: center; text-align: left; gap: 10px; padding: 10px; border: 1px solid transparent; }
+#lobby-panel .team-member.on { border-color: #e0b957; background: rgba(201, 178, 122, .25); }
+#lobby-panel .team-member b, #lobby-panel .team-member small { display: block; }
+#lobby-panel .team-member small { color: #c8cde0; font-size: 11px; margin-top: 4px; font-weight: 400; }
+.team-portrait { flex: none; width: 38px; height: 38px; display: grid; place-items: center; background: #252e43; border-radius: 4px; overflow: hidden; }
+.team-portrait img, .team-portrait canvas { width: 32px; height: 32px; object-fit: contain; image-rendering: pixelated; }
+.team-main { min-width: 0; }
+.team-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; }
+.team-heading h4 { font-size: 18px; color: #f2d58a; }
+.team-heading span { font-size: 12px; color: #c8cde0; }
+.team-stats { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 12px; margin: 12px 0; }
+#lobby-panel .team-main .lp-tabs { margin-bottom: 12px; }
+.team-personal { border: 1px solid #b99b54; border-radius: 6px; padding: 10px; margin: 10px 0; }
+.team-personal b { color: #f2d58a; font-size: 13px; }
+.team-personal p { margin: 6px 0 0; font-size: 12px; color: #c8cde0; }
+.team-skill-slot { margin-top: 12px; }
+.team-skill-slot label { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 12px; }
+#lobby-panel .team-skill-slot select { width: 100%; min-width: 0; background: #101629; color: #f3efe2; padding: 6px; border: 1px solid #62718a; border-radius: 4px; }
+.team-skill-slot p { margin: 5px 0 0 118px; }
+.team-reserve { margin-top: 16px; padding-top: 12px; border-top: 1px solid #4c5260; }
+.team-inventory h5 { margin: 16px 0 8px; font-size: 13px; color: #f2d58a; }
+.team-inventory-list { max-height: 260px; overflow: auto; padding-right: 4px; }
+.team-item { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-top: 1px solid rgba(201,178,122,.18); }
+.team-item > div:first-child { flex: 1; min-width: 0; }
+.team-item b { font-size: 13px; }
+.team-item small { display: block; margin-top: 3px; font-size: 11px; color: #c8cde0; }
+.team-item-actions { display: flex; gap: 4px; flex: none; }
+#lobby-panel .team-item-actions button { padding: 5px 8px; }
+.team-warning, .team-item small.team-warning { color: #ffc48f; font-size: 12px; }
+.team-promotion { margin: 12px 0; padding: 10px; border: 1px solid #4c5260; border-radius: 6px; }
+.team-promotion p { margin: 6px 0 0; }
+@media (max-width: 720px) {
+  #lobby-panel .team-layout { grid-template-columns: 1fr; }
+  #lobby-panel .team-roster { flex-direction: row; overflow: auto; }
+  #lobby-panel .team-member { flex: 0 0 175px; }
+  .team-item { flex-wrap: wrap; }
+}

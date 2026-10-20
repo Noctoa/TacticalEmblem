@@ -107,6 +107,8 @@
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
     const errors = Mission.validate(ch, G.db, G.map);
     if (errors.length) throw new Error(errors.join('\n'));
+    Team.sync(G.campaign, G.db, G.project.meta, ch.id);
+    Team.recruit(G.campaign, ch.players.map(p => p.unitId));
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
@@ -155,7 +157,7 @@
   /** Point de reprise à écrire : le camp tel qu'il est, ou le début du chapitre en cours. */
   function makeSave() {
     if (G.mode === 'lobby') {
-      Campaign.commit(G.campaign, G.units);
+      lobby.commit();
       G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
       return Object.assign({}, G.checkpoint, { info: { place: Lobby.defaults(G.project.meta.lobby).name, kind: 'camp' } });
     }
@@ -827,13 +829,14 @@
     } finally { G.busy = wasBusy; }
   }
   async function openPromotion(unit, itemIndex) {
+    const atCamp = G.mode === 'lobby', previousUi = G.ui, previousBusy = G.busy;
     hideMenu(); G.busy = true; G.ui = 'promotion';
     let completed = false;
     try {
       const options = Promotions.options(unit, G.db, itemIndex);
       const destination = await UI.modal((box, close) => {
         box.classList.add('promotion-choices');
-        box.append(h('h3', {}, 'Promotion de ' + unit.name), h('p', {}, 'Compare les branches avant de confirmer. La promotion consomme l’action de cette unité.'),
+        box.append(h('h3', {}, 'Promotion de ' + unit.name), h('p', {}, atCamp ? 'Compare les branches avant de confirmer. Le sceau requis doit se trouver dans l’inventaire du personnage.' : 'Compare les branches avant de confirmer. La promotion consomme l’action de cette unité.'),
           h('button', { onclick: () => showEvolution(unit) }, 'Voir l’arbre d’évolution'));
         for (const option of options) {
           const target = option.target, preview = Promotions.preview(unit, option, G.db);
@@ -861,17 +864,18 @@
       }, { wide: true });
       if (!destination) return;
       const option = options.find(o => o.row.classId === destination), item = R.byId(G.db.items, option.row.itemId);
-      if (!(await UI.confirm(`Promouvoir ${unit.name} en ${option.target.name} ? ` + (item ? `Une utilisation de ${item.name} sera consommée. ` : '') + 'Cette action termine son tour.', { title: 'Confirmer la promotion', ok: 'Promouvoir' }))) return;
+      if (!(await UI.confirm(`Promouvoir ${unit.name} en ${option.target.name} ? ` + (item ? `Une utilisation de ${item.name} sera consommée. ` : '') + (atCamp ? '' : 'Cette action termine son tour.'), { title: 'Confirmer la promotion', ok: 'Promouvoir' }))) return;
       const result = Promotions.apply(unit, destination, G.db, itemIndex);
       if (!result.ok) { await UI.alert('Promotion impossible', result.error); return; }
-      completed = true; lastInfoKey = ''; refreshDanger();
+      completed = true; lastInfoKey = ''; if (!atCamp) refreshDanger();
       Music.me('levelUp');
       await UI.alert('Promotion réussie !', `${unit.name} devient ${result.target.name}.\n` +
         R.STATS.filter(key => result.gains[key]).map(key => `${R.STAT_LABELS[key]} +${result.gains[key]}`).join(' · '));
       for (const id of result.learnedSkills) await announceLearning(unit, id);
     } finally {
-      G.busy = false;
-      if (completed) await finishAction(unit);
+      G.busy = previousBusy;
+      if (atCamp) { G.ui = previousUi; lobby.commit(); lobby.refreshHud(); }
+      else if (completed) await finishAction(unit);
       else { G.ui = 'menu'; openActionMenu(); }
     }
   }
@@ -1785,7 +1789,7 @@
   const lobby = LobbyScene.create({
     G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
     hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
-    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: () => settings.open()
+    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution
   });
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés

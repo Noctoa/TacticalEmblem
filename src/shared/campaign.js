@@ -62,6 +62,7 @@
       const errors = Skills.validateAssignment(u);
       if (errors.length) throw new Error('Compétences invalides dans la campagne : ' + errors.join(' '));
     }
+    if (save.campaign.recruited !== undefined && (!Array.isArray(save.campaign.recruited) || save.campaign.recruited.some(id => typeof id !== 'string' || !id) || new Set(save.campaign.recruited).size !== save.campaign.recruited.length)) throw new Error('Effectif recruté invalide dans la campagne.');
     return save;
   }
   function restore(save, supports) {
