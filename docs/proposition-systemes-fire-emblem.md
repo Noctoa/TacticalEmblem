@@ -287,4 +287,14 @@ Chaque personnage peut équiper cinq compétences déjà apprises en plus de sa 
 
 La sauvegarde au camp conserve l'ensemble de l'effectif, ses compétences et son équipement. Un scénario automatisé vérifie les échanges avec inventaires pleins, l'annulation, la promotion d'un réserviste, la sauvegarde réelle, son rechargement, le déploiement et un recrutement après victoire.
 
-Prochaine priorité : un écran de préparation avant la bataille pour choisir les personnages déployés parmi l'effectif, avec limite de places, personnages imposés et positions de départ. Pour l'instant, les placements joueur de chaque acte déterminent toujours les participants. Les villages, coffres et portes ainsi que la suspension au milieu d'une bataille restent des chantiers ultérieurs.
+**18. Écran de préparation avant bataille — livré**
+
+Les actes ouvrent des préparatifs avant leurs dialogues de début et leur premier tour, y compris lors d'un enchaînement d'actes ou dans une campagne sans lobby. L'effectif recruté et vivant fournit les participants possibles ; les unités vertes de l'acte restent fixes. La limite et les personnages imposés se règlent dans l'éditeur. Les personnages à protéger sont automatiquement imposés, et une prise de point obligatoire exige un participant ou un allié fixe autorisé. Un personnage requis mort définitivement bloque le départ avec une explication.
+
+Les placements joueur définissent les cases disponibles et la sélection recommandée. Le joueur peut remplacer un participant par un réserviste, consulter ses caractéristiques et échanger ses positions sur l'aperçu de la map ou via les boutons de cases. Les terrains sont contrôlés selon la classe actuelle, notamment après une promotion. Les positions sont propres à la campagne ; les données de placement du projet restent intactes. Le choix peut être désactivé pour un acte entièrement scénarisé.
+
+Les cinq emplacements de sauvegarde conservent la sélection et les positions. Une reprise ou un recommencement rouvre les préparatifs ; un déploiement devenu incompatible avec le projet est réajusté avec une annonce. Le retour au camp permet de reprendre les équipements et promotions dans le menu Équipe. Les équipements sont consultables, mais ne se modifient pas directement dans ce nouvel écran.
+
+Les tests couvrent les contraintes de sélection, les cases et types de mouvement, les sauvegardes et leur compatibilité. Un scénario en jeu vérifie le parcours jusqu'à la bataille, le chargement depuis les paramètres, l'acte suivant, une petite fenêtre et la désactivation des préparatifs.
+
+Prochaine priorité : les interactions de map (villages, coffres et portes). La suspension au milieu d'une bataille reste un chantier ultérieur.

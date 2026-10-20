@@ -50,8 +50,9 @@
       if (unit && !canPlace(ch, unit, p, terrainAt)) messages.push(`${unit.name} ne peut pas commencer sur cette case.`);
     }
     for (const id of forced(ch, db)) if (!ids.has(id)) messages.push(`${(db.units.find(u => u.id === id) || {}).name || id} est imposé et doit être disponible.`);
+    for (const id of Mission.required(ch, db).filter(id => allied(ch).has(id))) if (!members.some(u => u.sourceId === id)) messages.push(`${(db.units.find(u => u.id === id) || {}).name || id} doit être disponible comme allié à protéger.`);
     const needsSeizer = Mission.objectives(ch).some(o => o.type === 'seize') && (ch.victoryMode !== 'any' || Mission.objectives(ch).every(o => o.type === 'seize'));
-    if (needsSeizer && !plan.some(p => Mission.seizers(ch, db).includes(p.unitId)) && !(ch.allies || []).some(p => members.some(u => u.sourceId === p.unitId) && Mission.seizers(ch, db).includes(p.unitId))) messages.push('Déploie au moins un personnage autorisé à prendre les points.');
+    if (needsSeizer && !plan.some(p => Mission.seizers(ch, db).includes(p.unitId)) && !(ch.allies || []).some(p => allied(ch).has(p.unitId) && members.some(u => u.sourceId === p.unitId) && Mission.seizers(ch, db).includes(p.unitId))) messages.push('Déploie au moins un personnage autorisé à prendre les points.');
     return [...new Set(messages)];
   }
   // Appariement : une unité terrestre ne doit pas prendre la seule case accessible à un cavalier.
@@ -59,7 +60,8 @@
     const positions = slots(ch), occupied = new Map();
     function assign(id, visited) {
       const unit = members.find(u => u.sourceId === id), prior = previous.find(p => p.unitId === id);
-      const order = positions.map((p, i) => i).sort((a, b) => Number(!!prior && same(positions[b], prior)) - Number(!!prior && same(positions[a], prior)));
+      const score = i => prior && same(positions[i], prior) ? 2 : !occupied.has(i) ? 1 : 0;
+      const order = positions.map((p, i) => i).sort((a, b) => score(b) - score(a));
       for (const i of order) {
         if (visited.has(i) || !canPlace(ch, unit, positions[i], terrainAt)) continue;
         visited.add(i);

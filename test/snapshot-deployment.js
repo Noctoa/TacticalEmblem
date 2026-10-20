@@ -1,0 +1,131 @@
+'use strict';
+const fs = require('fs'), path = require('path'), os = require('os'), assert = require('assert/strict');
+const { app } = require('electron'), io = require('../src/main/project-io');
+module.exports = (editor, openPlaytest) => {
+  const out = process.env.TF_SNAPSHOT; fs.mkdirSync(out, { recursive: true });
+  const errors = [], delay = ms => new Promise(r => setTimeout(r, ms)), js = (wc, code) => wc.executeJavaScript(code, true);
+  const finish = result => { fs.writeFileSync(path.join(out, 'result.json'), JSON.stringify(result, null, 2)); app.exit(result.ok ? 0 : 1); };
+  const watchdog = setTimeout(() => finish({ ok: false, error: 'Délai global dépassé', errors }), 120000);
+  const until = async (wc, code) => {
+    const end = Date.now() + 16000;
+    while (Date.now() < end) { if (await js(wc, code)) return; await wc.capturePage(); await delay(80); }
+    throw new Error('Délai dépassé : ' + code);
+  };
+  const click = (wc, selector, text) => js(wc, `(() => { const button = [...document.querySelectorAll(${JSON.stringify(selector)})].find(el => el.textContent.includes(${JSON.stringify(text)})); if (!button) throw new Error('Bouton absent : ' + ${JSON.stringify(text)}); button.click(); })()`);
+  const shot = async (wc, name) => { await wc.capturePage(); await delay(200); fs.writeFileSync(path.join(out, name + '.png'), (await wc.capturePage()).toPNG()); };
+  const watch = wc => { wc.setBackgroundThrottling(false); wc.on('console-message', (e, level, message) => { if (level >= 3) errors.push(message); }); };
+  editor.webContents.once('did-finish-load', async () => {
+    try {
+      const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-deploy-ui-')), 'Jeu');
+      const p = io.createProject(dir, 'Préparatifs', 'sample', path.join(__dirname, '..', 'assets'));
+      p.meta.lobby.initialRoster = ['c_eliwood', 'c_lyn', 'c_hector', 'c_cloud'];
+      const ch = p.db.chapters[0];
+      ch.players = [{ unitId: 'c_eliwood', x: 3, y: 3 }, { unitId: 'c_lyn', x: 4, y: 3 }];
+      ch.requiredUnits = ['c_eliwood']; ch.deployment = { enabled: true, limit: 2, forcedUnits: [] };
+      ch.objective = { type: 'survive', turns: 99 }; ch.final = false;
+      ch.enemies = ch.enemies.filter(e => e.isBoss); ch.enemies[0].ai = 'stationary';
+      ch.events = [{ id: 'start', trigger: { type: 'start' }, once: true, script: 'Eliwood: Nous sommes prêts.' }];
+      const hector = p.db.units.find(u => u.id === 'c_hector'); hector.personalSkill = 'skill_precision'; hector.learnedSkills = ['skill_sol']; hector.equippedSkills = ['skill_sol'];
+      hector.inventory = [{ id: 'w_iron_axe', uses: 7 }]; io.saveProject(dir, p);
+      const ewc = editor.webContents; watch(ewc); await js(ewc, `Editor.open(${JSON.stringify(dir)})`);
+      await js(ewc, `DBEditor.open('chapters', 'ch_1')`);
+      assert.equal(await js(ewc, `(() => {
+        const label = [...document.querySelectorAll('#db-body .field-label')].find(el => el.textContent.startsWith('Nombre maximum de participants'));
+        const input = label.parentElement.querySelector('input'); if (input.value !== '2') return false;
+        input.value = '1'; input.dispatchEvent(new Event('change', { bubbles: true }));
+        return Editor.project().db.chapters[0].deployment.limit === 1;
+      })()`), true);
+      await js(ewc, 'DBEditor.close()');
+      const start = async (choice, projectDir = dir) => {
+        const win = openPlaytest(projectDir, ''); const wc = win.webContents; watch(wc);
+        await new Promise(r => wc.once('did-finish-load', r)); await until(wc, `!!document.querySelector('.choice-list')`);
+        await click(wc, '.choice-list button', choice); return { win, wc };
+      };
+      const depart = async wc => {
+        await until(wc, `PlaytestState.mode === 'lobby' && !PlaytestState.busy`);
+        await js(wc, `PlaytestLobby.openMenu(); PlaytestState.menu.items.find(i => i.label === PlaytestLobby.state.cfg.board.label).action()`);
+        await click(wc, '#lobby-panel .lp-go', 'Partir'); await until(wc, `!!document.querySelector('.modal-back')`);
+        await click(wc, '.modal-actions button', 'Partir'); await until(wc, `PlaytestState.mode === 'preparation'`);
+      };
+      const first = await start('Classique'), wc = first.wc; await depart(wc);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_eliwood"]').disabled`), true);
+      assert.equal(await js(wc, `!!document.querySelector('[data-deploy-toggle="c_cloud"]')`), false);
+      assert.equal(await js(wc, 'PlaytestState.fired.size'), 0); assert.equal(await js(wc, 'PlaytestState.turn'), 1);
+      assert.equal(await js(wc, '!!PlaytestState.dialogue'), false);
+      await js(wc, `document.querySelector('[data-deploy-toggle="c_hector"]').click()`);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_hector"]').checked`), false);
+      await js(wc, `document.querySelector('[data-deploy-toggle="c_lyn"]').click(); document.querySelector('[data-deploy-toggle="c_hector"]').click()`);
+      assert.deepEqual(await js(wc, `PlaytestPreparation.plan().map(p => p.unitId)`), ['c_eliwood', 'c_hector']);
+      await js(wc, `document.querySelector('[data-deploy-slot="0"]').click()`);
+      assert.equal(await js(wc, `PlaytestPreparation.plan().find(p => p.unitId === 'c_hector').x`), 3);
+      // Le clic sur la carte échange les deux personnages, puis on rétablit le choix voulu.
+      await js(wc, `(() => { const cv = document.querySelector('[data-deploy-map]'), r = cv.getBoundingClientRect(), m = PlaytestState.map; cv.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: r.left + 4.5 / m.width * r.width, clientY: r.top + 3.5 / m.height * r.height })); })()`);
+      assert.equal(await js(wc, `PlaytestPreparation.plan().find(p => p.unitId === 'c_hector').x`), 4);
+      await js(wc, `document.querySelector('[data-deploy-slot="0"]').click()`);
+      const ground = await js(wc, `PlaytestState.tgrid[3 * PlaytestState.map.width + 3]`);
+      await js(wc, `PlaytestState.terrains.prep_block = { cost: Object.fromEntries(Rules.MOVE_TYPES.map(type => [type.id, 99])) }; PlaytestState.tgrid[3 * PlaytestState.map.width + 3] = 'prep_block'`);
+      assert.ok((await js(wc, 'PlaytestPreparation.errors()')).some(text => text.includes('ne peut pas commencer')));
+      await js(wc, `document.querySelector('[data-deploy-start]').click()`);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-start]').disabled`), true);
+      await js(wc, `PlaytestState.tgrid[3 * PlaytestState.map.width + 3] = ${JSON.stringify(ground)}; document.querySelector('[data-deploy-slot="0"]').click()`);
+      await shot(wc, 'preparation');
+      const plan = await js(wc, 'PlaytestPreparation.plan()');
+      await js(wc, `document.querySelector('[data-deploy-save]').click()`); await until(wc, `document.querySelectorAll('#settings .st-slot').length === 5`);
+      assert.equal(await js(wc, `document.querySelector('#settings').textContent.includes('Debug')`), false);
+      await js(wc, `document.querySelector('#settings .st-go').click()`);
+      await until(wc, `document.querySelector('#settings .st-name').textContent.includes('Préparatifs')`);
+      const saved = await js(wc, `tf.loadCampaign(new URLSearchParams(location.search).get('dir'), 1)`);
+      assert.deepEqual(saved.deployment, plan); assert.equal(saved.info.kind, 'preparation');
+      await js(wc, 'PlaytestSettings.close()');
+      await js(wc, `document.querySelector('[data-deploy-cancel]').click()`);
+      await until(wc, `PlaytestState.mode === 'lobby'`);
+      assert.deepEqual(await js(wc, 'PlaytestState.campaign.cleared'), []);
+      first.win.close();
+      const resumed = await start('Continuer'), rwc = resumed.wc;
+      await until(rwc, `PlaytestState.mode === 'preparation'`); assert.deepEqual(await js(rwc, 'PlaytestPreparation.plan()'), plan);
+      await shot(rwc, 'preparation-restored');
+      resumed.win.setSize(720, 650);
+      await js(rwc, `document.querySelector('[data-deploy-unit="c_hector"]').click()`);
+      assert.equal(await js(rwc, `(() => { const button = document.querySelector('[data-deploy-start]').getBoundingClientRect(), panel = document.querySelector('#preparation'); return button.bottom <= innerHeight && panel.scrollWidth <= panel.clientWidth + 1; })()`), true);
+      await shot(rwc, 'preparation-small'); resumed.win.setSize(1100, 780);
+      await js(rwc, `document.querySelector('[data-deploy-start]').click()`);
+      await until(rwc, `!!PlaytestState.dialogue`); await js(rwc, 'PlaytestState.dialogue.skip()');
+      await until(rwc, `PlaytestState.mode === 'chapter' && !PlaytestState.busy && PlaytestState.phase === 'player'`);
+      const deployed = await js(rwc, `PlaytestState.units.filter(u => u.team === 'player').map(u => ({ unitId: u.sourceId, x: u.x, y: u.y }))`);
+      assert.deepEqual(deployed, plan.map(({ unitId, x, y }) => ({ unitId, x, y })));
+      assert.equal(await js(rwc, `PlaytestState.units.find(u => u.sourceId === 'c_cloud').team`), 'ally');
+      assert.deepEqual(await js(rwc, `PlaytestState.units.find(u => u.sourceId === 'c_hector').equippedSkills`), ['skill_sol']);
+      assert.equal(await js(rwc, `PlaytestState.units.find(u => u.sourceId === 'c_hector').inventory[0].uses`), 7);
+      assert.deepEqual(await js(rwc, 'PlaytestState.checkpoint.deployment'), plan);
+      await js(rwc, 'PlaytestDebug.saveSlot(2)');
+      assert.deepEqual((await js(rwc, `tf.loadCampaign(new URLSearchParams(location.search).get('dir'), 2)`)).deployment, plan);
+      // Une reprise pendant les préparatifs remplace proprement l'ancien écran, sans démarrer deux batailles.
+      await js(rwc, `PlaytestSettings.open('load')`);
+      await until(rwc, `document.querySelectorAll('#settings .st-slot').length === 5`);
+      await click(rwc, '#settings .st-slot .st-go', 'Charger'); await until(rwc, `!!document.querySelector('.modal-back')`);
+      await click(rwc, '.modal-actions button', 'Charger'); await until(rwc, `PlaytestState.mode === 'preparation'`);
+      assert.deepEqual(await js(rwc, 'PlaytestPreparation.plan()'), plan);
+      await js(rwc, `document.querySelector('[data-deploy-start]').click()`); await until(rwc, `!!PlaytestState.dialogue`); await js(rwc, 'PlaytestState.dialogue.skip()');
+      await until(rwc, `PlaytestState.mode === 'chapter' && !PlaytestState.busy`);
+      await js(rwc, `PlaytestState.cursor = { x: 0, y: 0 }; document.querySelector('#game').dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); PlaytestState.menu.items.find(i => i.label === 'Recommencer').action()`);
+      await until(rwc, `!!document.querySelector('.modal-back')`); await click(rwc, '.modal-actions button', 'OK');
+      await until(rwc, `PlaytestState.mode === 'preparation'`); assert.deepEqual(await js(rwc, 'PlaytestPreparation.plan()'), plan);
+      await js(rwc, `document.querySelector('[data-deploy-start]').click()`); await until(rwc, `!!PlaytestState.dialogue`); await js(rwc, 'PlaytestState.dialogue.skip()');
+      await until(rwc, `PlaytestState.mode === 'chapter' && !PlaytestState.busy`);
+      await js(rwc, `PlaytestState.turn = 100; void PlaytestDebug.checkEnd()`);
+      await until(rwc, `!!document.querySelector('#end button')`); await click(rwc, '#end button', 'Acte 2');
+      await until(rwc, `PlaytestState.mode === 'preparation' && PlaytestState.chapter.id === 'ch_1_2'`);
+      assert.equal(await js(rwc, 'PlaytestState.fired.size'), 0); assert.equal(await js(rwc, `PlaytestState.campaign.cleared.includes('ch_1')`), true);
+      // Un acte scénarisé et une campagne sans lobby peuvent désactiver cet écran.
+      const directDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-deploy-direct-')), 'Jeu');
+      const direct = io.createProject(directDir, 'Sans préparatifs', 'sample', path.join(__dirname, '..', 'assets'));
+      direct.meta.lobby.enabled = false; direct.db.chapters[0].deployment = { enabled: false }; direct.db.chapters[0].events = [];
+      io.saveProject(directDir, direct);
+      const directGame = await start('Classique', directDir);
+      await until(directGame.wc, `PlaytestState.mode === 'chapter' && !PlaytestState.busy`);
+      assert.equal(await js(directGame.wc, `document.querySelector('#preparation').classList.contains('hidden')`), true);
+      assert.deepEqual(errors, []); clearTimeout(watchdog);
+      finish({ ok: true, editor: true, forced: true, rosterAndLimit: true, swapAndMap: true, terrain: true, smallWindow: true, noEarlyEvents: true, saveAndResume: true, cancelToCamp: true, deployment: true, battleSave: true, loadInGame: true, restart: true, nextAct: true, disabledScreen: true, errors });
+    } catch (error) { clearTimeout(watchdog); finish({ ok: false, error: error.stack, errors }); }
+  });
+};

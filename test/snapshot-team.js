@@ -125,6 +125,7 @@ module.exports = (editor, openPlaytest) => {
       await js(rwc, 'PlaytestLobby.openTeam()'); await shot(rwc, 'team-restored');
       await js(rwc, 'PlaytestLobby.closePanel(); PlaytestLobby.openMenu(); PlaytestState.menu.items.find(i => i.label === PlaytestLobby.state.cfg.board.label).action()');
       await click(rwc, '#lobby-panel .lp-go', 'Partir'); await until(rwc, `!!document.querySelector('.modal-back')`); await click(rwc, '.modal-actions button', 'Partir');
+      await until(rwc, `PlaytestState.mode === 'preparation'`); await js(rwc, `document.querySelector('[data-deploy-start]').click()`);
       await until(rwc, `PlaytestState.mode === 'chapter' && !PlaytestState.busy && PlaytestState.phase === 'player'`);
       const deployed = await js(rwc, `PlaytestState.units.filter(u => u.team === 'player').map(u => ({ id: u.sourceId, classId: u.classId, equippedSkills: u.equippedSkills, inventory: u.inventory }))`);
       for (const unit of deployed) {

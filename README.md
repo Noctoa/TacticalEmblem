@@ -62,6 +62,12 @@ Au lancement, choisir **Classique** (pertes définitives) ou **Détente** (les u
 
 **Base de données › Chapitres › Conditions de victoire et de défaite** permet de choisir les personnages à protéger et ceux autorisés à prendre les points, de combiner plusieurs objectifs avec ET / OU et d'ajouter des défaites par limite de tours, pertes ou intrusion ennemie dans une zone. Les anciens chapitres héritent des Seigneurs pour la protection et la prise de point. Les conditions invalides sont signalées avant de lancer le test.
 
+**Préparatifs avant bataille** — Chaque acte commence par le choix des participants dans l'effectif recruté et vivant. Cocher un personnage le déploie ; cliquer sa fiche affiche ses statistiques, objets et compétences. Sélectionner ensuite une case sur la carte ou son bouton numéroté déplace ce personnage ; une case occupée échange les deux positions. Les terrains infranchissables pour leur classe actuelle sont refusés. Les alliés verts gardent leur placement et ne prennent pas de place dans la sélection. Les dialogues de début et le premier tour attendent **Commencer la bataille**.
+
+Dans **Base de données › Actes › Préparatifs et déploiement**, régler le nombre maximum de participants (`0` = toutes les cases) et les personnages imposés. Les placements joueur en mode Unités définissent les cases de départ et les recrues de l'acte ; ils servent aussi de sélection par défaut. Les personnages à protéger sont automatiquement imposés. Une prise de point obligatoire exige au moins un participant autorisé, ou un allié fixe autorisé. Décocher **Choisir l'équipe avant cet acte** conserve ses placements scénarisés. Les anciens actes bénéficient des préparatifs sans conversion manuelle.
+
+Le bouton **Sauvegarder…** et Échap donnent accès aux emplacements habituels : la sélection et les positions sont conservées. Recharger ou recommencer une bataille redonne accès à ses préparatifs. Si le projet ou l'effectif a changé, un déploiement devenu invalide est ajusté et signalé. **Retour au camp** permet de reprendre les équipements et promotions avant de repartir. Les modifications d'équipement restent dans le menu Équipe du camp.
+
 Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents, dans l'un des cinq emplacements de `saves/`. **Continuer la campagne** reprend la dernière sauvegarde au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
@@ -97,7 +103,7 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 - **Or** : récompense de chapitre (la première victoire, ou à chaque victoire), bourse des ennemis vaincus (réglée sur le placement de l'ennemi), revente.
 - X (ou clic droit) : menu du camp — équipe, chapitres, boutique, paramètres. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
 
-**Recrutement** — Dans **Lobby › Équipe de départ**, choisir l'effectif initial (le héros du camp est toujours inclus). Sans réglage explicite, les placements joueur de l'acte de départ servent d'effectif initial. Dans **Unités › Rejoint l'effectif après**, choisir un acte ou un chapitre entier : le personnage est recruté une fois cet objectif terminé. Les placements joueur rejoignent également l'effectif au lancement de leur acte. Placer un PNJ dans le camp ne le recrute pas. Les anciennes sauvegardes retrouvent l'effectif initial et les personnages des actes déjà terminés ; les personnages morts en Classique restent indisponibles. Pour l'instant, chaque acte garde ses placements de joueur : le choix des personnages à déployer sera un écran de préparation distinct.
+**Recrutement** — Dans **Lobby › Équipe de départ**, choisir l'effectif initial (le héros du camp est toujours inclus). Sans réglage explicite, les placements joueur de l'acte de départ servent d'effectif initial. Dans **Unités › Rejoint l'effectif après**, choisir un acte ou un chapitre entier : le personnage est recruté une fois cet objectif terminé. Les placements joueur rejoignent également l'effectif au lancement de leur acte. Placer un PNJ dans le camp ne le recrute pas. Les anciennes sauvegardes retrouvent l'effectif initial et les personnages des actes déjà terminés ; les personnages morts en Classique restent indisponibles. Les préparatifs permettent de choisir les participants parmi cet effectif, sur les cases de départ de chaque acte.
 
 **Chapitres et actes** — Un *acte* est un niveau jouable (map, placements, objectif, dialogues : onglet **Actes**, placements en mode Unités). Un *chapitre* regroupe des actes dans l'ordre (onglet **Chapitres** : nom, section Histoire ou Évènements, description, conditions et dates de déblocage, liste ordonnée des actes avec ▲ ▼, « Nouvel acte »). Les actes rangés dans aucun chapitre (anciens projets) s'affichent chacun comme un chapitre d'un seul acte. Les conditions « disponible après » acceptent un chapitre entier ou un acte précis. Fichier : `data/arcs.json`.
 
@@ -284,6 +290,8 @@ src/main/resources-layout.js  dossier ressources/ : inventaire, conversion des a
 src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, conversations, boutique — testé dans test/lobby.test.js
 src/shared/team.js         effectif recruté, équipement des compétences et transferts — testés dans test/team.test.js
 src/renderer/team-panel.js préparatifs de l'équipe au camp
+src/shared/deployment.js   règles de sélection et de placement — testées dans test/deployment.test.js
+src/renderer/preparation.js écran de préparation avant bataille
 src/renderer/settings-window.js  fenêtre Paramètres du playtest (sauvegarde, chargement, son, debug)
 src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
@@ -297,6 +305,7 @@ test/snapshot-supports.js  affinités, attaque duo, soutien, épilogue : TF_SNAP
 test/snapshot-settings.js  fenêtre Paramètres de bout en bout
 test/snapshot-lobby.js     lobby de bout en bout (camp, conversation, boutique, chapitre, retour) ; test/snapshot-lobby-editor.js : son édition
 test/snapshot-team.js      équipe de bout en bout (réservistes, compétences, échanges, promotion, sauvegarde et déploiement)
+test/snapshot-deployment.js préparatifs de bout en bout (sélection, carte, terrain, sauvegarde, déploiement, acte suivant et désactivation)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
@@ -304,4 +313,4 @@ test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, c
 
 ## Pistes pour la suite
 
-Priorité suivante : écran de préparation avant chaque bataille, avec choix des personnages parmi l'effectif recruté, nombre de places et déploiements imposés. Puis interactions de map (villages / coffres / portes), échanges entre unités pendant la bataille, animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les promotions à embranchements et les préparatifs de l'équipe au camp sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.
+Priorité suivante : interactions de map (villages / coffres / portes), puis échanges entre unités pendant la bataille, animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

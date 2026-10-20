@@ -99,13 +99,16 @@
   }
 
   /** Charge un chapitre. Les niveaux, objets, affinités et le convoi sont conservés d'un chapitre à l'autre. */
-  async function loadChapter(ch) {
+  let chapterLoad = 0;
+  async function loadChapter(ch, savedDeployment) {
+    const loadId = ++chapterLoad;
+    preparation.close();
     if (G.mode === 'lobby') lobby.leave();
     G.mode = 'chapter';
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = Mission.validate(ch, G.db, G.map);
+    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map)];
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
@@ -119,9 +122,28 @@
     $('#epilogue').classList.add('hidden');
     $('#end').className = 'hidden'; $('#end').innerHTML = '';
     buildBase();
+    G.deployment = null;
     setupUnits();
     resize();
-    await startChapter();
+    if (Deployment.enabled(ch)) {
+      G.mode = 'preparation'; G.phase = 'preparation'; G.ui = 'preparation'; G.busy = true;
+      const ids = [...new Set([...Team.sync(G.campaign, G.db, G.project.meta), ...(ch.allies || []).map(p => p.unitId)])];
+      const members = ids.filter(id => !G.campaign.dead.includes(id) && R.byId(G.db.units, id)).map(id => applyCampaign(R.makeUnitFromCharacter(R.byId(G.db.units, id), G.db, { x: 0, y: 0 })));
+      $('#help').textContent = 'Préparatifs · Tab : parcourir · Espace / Entrée : valider · Échap : paramètres';
+      preparation.open(members, savedDeployment, async plan => {
+        if (loadId !== chapterLoad) return;
+        try {
+          G.deployment = plan; G.mode = 'chapter'; G.phase = 'player'; G.ui = 'idle';
+          G.checkpoint.deployment = plan.map(p => ({ ...p }));
+          $('#help').textContent = defaultHelp;
+          setupUnits(); resize(); await startChapter();
+        } catch (error) { console.error(error); await UI.alert('Bataille impossible', error.message); }
+      }, async () => {
+        if (loadId !== chapterLoad) return;
+        G.sup = R.initSupports(G.db, G.supCfg); Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
+        await lobby.enter();
+      });
+    } else await startChapter();
   }
 
   /** Mémorise l'état des survivants pour le chapitre suivant. */
@@ -137,11 +159,12 @@
     if (!(await UI.confirm('Recommencer ce chapitre ? Les actions et pertes de cette tentative seront annulées.'))) { G.busy = wasBusy; return; }
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(G.checkpoint, G.sup));
-    await loadChapter(G.chapter);
+    await loadChapter(G.chapter, G.checkpoint.deployment);
   }
 
   /** Reprend une sauvegarde : camp (si le lobby est actif) ou début du chapitre sauvegardé. */
   async function startFromSave(save) {
+    ++chapterLoad; preparation.close();
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
     if (save.chapterId === Lobby.LOBBY_SAVE) {
@@ -152,10 +175,11 @@
     }
     const ch = R.byId(G.db.chapters, save.chapterId);
     if (!ch) throw new Error('Le chapitre sauvegardé a été supprimé du projet.');
-    return loadChapter(ch);
+    return loadChapter(ch, save.deployment);
   }
   /** Point de reprise à écrire : le camp tel qu'il est, ou le début du chapitre en cours. */
   function makeSave() {
+    if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation' } });
     if (G.mode === 'lobby') {
       lobby.commit();
       G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
@@ -176,7 +200,8 @@
   function setupUnits() {
     G.units = []; G.pending = [];
     const ch = G.chapter;
-    for (const pl of ch.players) {
+    const placements = G.deployment || ch.players;
+    for (const pl of placements) {
       const c = R.byId(G.db.units, pl.unitId);
       if (!c || G.campaign.dead.includes(pl.unitId)) continue;
       const u = applyCampaign(R.makeUnitFromCharacter(c, G.db, pl));
@@ -184,7 +209,7 @@
     }
     for (const pl of ch.allies || []) {
       const c = R.byId(G.db.units, pl.unitId);
-      if (!c || ch.players.some(p => p.unitId === pl.unitId)) continue;
+      if (!c || ch.players.some(p => p.unitId === pl.unitId) || placements.some(p => p.unitId === pl.unitId)) continue;
       if (G.campaign.dead.includes(pl.unitId)) continue;
       const u = applyCampaign(R.makeUnitFromCharacter(c, G.db, pl, 'ally'));
       u.control = pl.control || 'player'; u.ai = pl.ai || 'aggressive'; u.convoy = false; u.isLord = false;
@@ -1450,7 +1475,7 @@
   async function continueArc() {
     const next = Lobby.nextAct(G.db, G.chapter.id);
     const map = next && G.project.maps.find(m => m.id === next.mapId);
-    const errors = map ? Mission.validate(next, G.db, map) : ["Map de l'acte suivant introuvable."];
+    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
     if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
@@ -1483,7 +1508,7 @@
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? Mission.validate(next, G.db, map) : ["Map de l'acte suivant introuvable."];
+          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
         } }, 'Acte suivant →') : null,
@@ -1741,6 +1766,7 @@
     if (document.querySelector('.modal-back')) return;
     const k = e.key;
     if (settings.isOpen) return settings.key(e);
+    if (G.mode === 'preparation') return preparation.key(e);
     if (BattleScene.isActive()) {
       e.preventDefault();
       if (['z', 'Z', 'Enter', ' '].includes(k)) BattleScene.setFast(true);
@@ -1794,17 +1820,20 @@
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés
 
+  const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
+  window.PlaytestPreparation = preparation;
+
   // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
   const playerSide = () => alive().filter(u => u.team !== 'enemy');
   const later = (fn) => { settings.close(); setTimeout(fn, 0); };
   const settings = SettingsWindow.create({
     G, h, $, R, Music, dir: params.get('dir'), hideMenu,
     lobbyName: () => Lobby.defaults(G.project.meta.lobby).name,
-    canSave: () => G.mode === 'lobby' ? { ok: true }
+    canSave: () => G.mode === 'preparation' ? (preparation.errors().length ? { ok: false, reason: 'Termine une sélection et un placement valides avant de sauvegarder.' } : { ok: true }) : G.mode === 'lobby' ? { ok: true }
       : G.checkpoint && G.chapter ? { ok: true } : { ok: false, reason: 'Rien à sauvegarder pour le moment.' },
     makeSave, startFromSave,
     unitAtCursor: () => (G.sel || unitAt(G.cursor.x, G.cursor.y)),
-    afterClose: () => { if (G.mode === 'lobby') lobby.refreshHud(); else if (G.chapter && !G.over) updateObjective(); },
+    afterClose: () => { if (G.mode === 'lobby') lobby.refreshHud(); else if (G.mode !== 'preparation' && G.chapter && !G.over) updateObjective(); },
     debugChanged: (key) => { if (key === 'move' && G.mode === 'chapter') { applyDebugMove(); if (G.sel) select(G.sel); } },
     debug: {
       win: () => later(() => victory()),
