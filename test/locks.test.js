@@ -90,7 +90,7 @@ test('coffres : une récompense par campagne ou par rejeu, portes toujours refer
   assert.ok(L.claim(ch, 'chests', chest, unit, replay, db).ok); assert.equal(state.campaign.gold, 160); assert.equal(state.campaign.chestVisits.length, 1);
 });
 test('validation : positions, superpositions, clés, terrains et récompenses invalides avant écriture', t => {
-  const { p, db, ch, map, chest } = fixture(); assert.deepEqual(L.validate(ch, db, map), []); assert.deepEqual(L.validateKeys(db), []);
+  const { p, db, ch, map, chest } = fixture(); ch.events = []; assert.deepEqual(L.validate(ch, db, map), []); assert.deepEqual(L.validateKeys(db), []);
   const bad = mutate => { const copy = JSON.parse(JSON.stringify(ch)); mutate(copy); assert.ok(L.validate(copy, db, map).length); };
   bad(c => c.chests = {}); bad(c => c.chests.push({ ...c.chests[0] })); bad(c => c.doors[0].openTerrainId = 'wall'); bad(c => c.doors[0].keyItemId = 'i_chest_key');
   bad(c => c.chests[0].reward.itemId = 'missing'); bad(c => c.chests[0].x = map.width); bad(c => c.doors[0].x = 1); bad(c => c.doors[0].locked = 'oui');

@@ -474,7 +474,7 @@
       for (const pl of ch[kind] || []) {
         const sel = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
         if (S.drag && S.drag.type === 'placement' && S.drag.id === pl.id && S.hover) continue;
-        drawPlacement(pl, kind, pl.x, pl.y, cs, { boss: pl.isBoss, ghost: kind === 'enemies' && pl.appearTurn > 0, badge: kind === 'enemies' && pl.appearTurn > 0 ? String(pl.appearTurn) : null });
+        drawPlacement(pl, kind, pl.x, pl.y, cs, { boss: pl.isBoss, ghost: kind === 'enemies' && (pl.eventOnly || pl.appearTurn > 0), badge: kind === 'enemies' && pl.eventOnly ? 'Év' : kind === 'enemies' && pl.appearTurn > 0 ? String(pl.appearTurn) : null });
         if (sel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.strokeRect(pl.x * cs.w + 1, pl.y * cs.h + 1, cs.w - 2, cs.h - 2); ctx.setLineDash([]); }
       }
     }
@@ -1396,6 +1396,7 @@
         { type: 'row', fields: [
           { key: 'appearTurn', label: 'Arrive au tour', type: 'number', min: 0, max: 99, help: '0 = présent dès le début. Sinon : renfort qui apparaît au début de la phase ennemie de ce tour.' },
           { key: 'isBoss', label: 'Boss', type: 'checkbox' }] },
+        { key: 'eventOnly', label: 'Arrivée uniquement par événement', type: 'checkbox', help: 'Ce renfort attend une action d’événement ; le tour d’arrivée est ignoré. Il reste pris en compte par les objectifs visant les renforts.' },
         { key: 'inventory', label: 'Inventaire (vide = celui de la classe)', type: 'inventory', options: invOptions },
         { key: 'statBonus', label: 'Bonus de stats', type: 'stats', max: 99 }
       ], pl, ctxF),
