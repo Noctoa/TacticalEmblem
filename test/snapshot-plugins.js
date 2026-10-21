@@ -1,6 +1,6 @@
 /*
- * Plugins : onglet Plugins de la base de données, installation du plugin FE6 (ressources + liens) et du plugin
- * d'exemple (script), import des personnages FE6 (images venues du plugin), combat avec fond de combat,
+ * Plugins : onglet Plugins de la base de données, installation d'un plugin de ressources depuis un dossier (liens) et du plugin
+ * d'exemple (script), import des personnages FE6 (images de Roy venues du plugin), combat avec fond de combat,
  * script actif dans le jeu, désinstallation.
  * TF_SNAPSHOT=dossier TF_SNAPSHOT_SCRIPT=$PWD/test/snapshot-plugins.js npm start
  */
@@ -9,6 +9,7 @@ require('./auto-deploy.js');
 const path = require('path'), fs = require('fs'), os = require('os');
 const { app } = require('electron');
 const io = require(path.join(__dirname, '..', 'src/main/project-io.js'));
+const { makePlugin } = require('./fixtures/make-plugin');
 module.exports = (win, openPlaytest) => {
   const out = process.env.TF_SNAPSHOT; fs.mkdirSync(out, { recursive: true });
   const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -29,18 +30,19 @@ module.exports = (win, openPlaytest) => {
       await ejs(`Editor.open(${JSON.stringify(dir)})`); await wait(1200);
       await ejs(`DBEditor.open('plugins')`); await wait(1200);
       result.liste = await ejs(`[...document.querySelectorAll('#db-body [data-plugin]')].map(e => e.dataset.plugin)`);
-      assert(result.liste.length === 5, 'plugins fournis : ' + result.liste);
-      await ejs(`document.querySelector('[data-plugin="fe6-binding-blade"]').click()`); await wait(300);
+      assert(result.liste.includes('exemple-annonce-tours'), 'plugins fournis : ' + result.liste);
       await shot('a_plugins');
-      await ejs(`document.querySelector('[data-plugin-install="fe6-binding-blade"]').click()`); await wait(3000);
+      global.__pluginDirOverride = makePlugin(); // « Installer depuis un dossier… » sans boîte de dialogue
+      await ejs(`document.querySelector('[data-plugin-folder]').click()`); await wait(2500);
+      global.__pluginDirOverride = null;
       result.alerte = await ejs(`(document.querySelector('.modal-back') || {}).textContent || ''`);
       await shot('b_plugin_installe');
       await closeModal(); await wait(300);
       result.meta = await ejs(`Editor.project().meta.plugins`);
       result.fonds = await ejs(`Editor.db().terrains.filter(t => t.battleback).length`);
-      result.classes = await ejs(`Editor.db().classes.filter(c => /personnages\\/(Archer|Knight|Mage|Cavalier)\\//.test(c.battler + c.mapSprite)).map(c => c.id)`);
-      assert(result.meta && result.meta['fe6-binding-blade'] && result.fonds >= 12 && result.classes.length >= 3, 'liens du plugin FE6');
-      assert(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Roy', 'combat_Lord.json')), 'ressources FE6 copiées');
+      result.classes = await ejs(`Editor.db().classes.filter(c => /personnages\\/Testeur\\//.test(c.battler + c.mapSprite)).map(c => c.id)`);
+      assert(result.meta && result.meta['pack-test'] && result.fonds >= 1 && result.classes.includes('archer'), 'liens du plugin');
+      assert(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Testeur', 'combat_Arc.json')), 'ressources copiées');
       // plugin script
       await ejs(`document.querySelector('[data-plugin="exemple-annonce-tours"]').click()`); await wait(300);
       await ejs(`document.querySelector('[data-plugin-install="exemple-annonce-tours"]').click()`); await wait(1500);
@@ -51,7 +53,7 @@ module.exports = (win, openPlaytest) => {
       await ejs(`document.querySelectorAll('.fe-pack-row input').forEach(i => { if (i.checked !== (i.dataset.game === 'fe6')) i.click(); })`);
       await ejs(`document.querySelector('[data-fe-pack-ok]').click()`); await wait(1500);
       result.roy = await ejs(`(() => { const u = Editor.db().units.find(x => x.name === 'Roy'); return u && { id: u.id, portrait: u.portrait, battler: u.battler, mapSprite: u.mapSprite }; })()`);
-      assert(result.roy && /Roy\/combat_Lord$/.test(result.roy.battler) && /Roy\/portrait.png$/.test(result.roy.portrait), 'images de Roy (plugin)');
+      assert(result.roy && /RoyTest\/combat$/.test(result.roy.battler) && /RoyTest\/portrait.png$/.test(result.roy.portrait), 'images de Roy (plugin)');
       await ejs(`DBEditor.close()`);
       win.webContents.send('menu', 'save'); await wait(1500);
       // jeu : script actif, combat avec fond
@@ -91,7 +93,7 @@ module.exports = (win, openPlaytest) => {
       await ejs(`[...document.querySelectorAll('.modal-back button')].find(b => b.textContent.includes('Désinstaller')).click()`); await wait(1200);
       result.apres = await ejs(`[...document.querySelectorAll('#db-body [data-plugin]')].map(e => e.dataset.plugin + ':' + e.closest('.db-list-items').textContent.indexOf(e.textContent))`);
       result.installesApres = fs.readdirSync(path.join(dir, 'plugins'));
-      assert(!result.installesApres.includes('exemple-annonce-tours'), 'désinstallé');
+      assert(!result.installesApres.includes('exemple-annonce-tours') && result.installesApres.includes('pack-test'), 'désinstallé');
       await shot('e_apres_desinstallation');
     } catch (e) { errs.push(String(e.stack || e)); }
     finish();

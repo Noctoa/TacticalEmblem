@@ -1,34 +1,41 @@
 @echo off
 rem ---------------------------------------------------------------------------
-rem  Mise a jour de l'executable de Tactical Emblem a partir des fichiers de CE dossier
+rem  Mise a jour de l'executable a partir des fichiers de CE dossier
 rem  (rien n'est telecharge depuis GitHub).
+rem
+rem  Le nom de l'application est lu dans package.json (productName) :
+rem  l'executable s'appelle "<productName> <version>.exe".
 rem
 rem    1. regarde quels fichiers ont change depuis le dernier .exe
 rem    2. installe les dependances seulement si package.json a change
-rem    3. recompile le .exe (npm run dist) qui remplace l'ancien a la racine
+rem    3. recompile le .exe (npm run dist), qui remplace l'ancien a la racine
+rem    4. supprime les executables des anciens noms (Tactics Forge...)
 rem
 rem    update.bat force   recompile meme si rien n'a change
 rem ---------------------------------------------------------------------------
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
-title Mise à jour de Tactical Emblem
 
 if not exist "package.json" (
   echo Ce script doit être placé dans le dossier TacticalEmblem, à côté de package.json.
   goto :fail
 )
 
-rem --- l'application ne doit pas tourner (sinon l'.exe ne peut pas être remplacé)
-tasklist /FI "IMAGENAME eq Tactical Emblem*" 2>nul | find /I "Tactical Emblem" >nul
-if not errorlevel 1 (
-  echo Tactical Emblem est ouvert. Ferme-le puis relance la mise à jour.
+rem --- nom de l'application (package.json > productName)
+set "APPNAME="
+for /f "usebackq delims=" %%N in (`powershell -NoProfile -Command "(Get-Content -Raw -Encoding UTF8 'package.json' | ConvertFrom-Json).productName"`) do set "APPNAME=%%N"
+if not defined APPNAME (
+  echo Impossible de lire le nom de l'application dans package.json.
   goto :fail
 )
-rem     (ancien nom de l'application)
-tasklist /FI "IMAGENAME eq Tactics Forge*" 2>nul | find /I "Tactics Forge" >nul
-if not errorlevel 1 (
-  echo Tactics Forge est ouvert. Ferme-le puis relance la mise à jour.
+title Mise à jour de %APPNAME%
+echo Application : %APPNAME%
+
+rem --- l'application ne doit pas tourner (sinon l'.exe ne peut pas être remplacé), sous son nom actuel ou un ancien nom
+powershell -NoProfile -Command "$n = $env:APPNAME; $p = Get-Process | Where-Object { $_.ProcessName -like ($n + '*') -or $_.ProcessName -like 'Tactics Forge*' -or $_.ProcessName -like 'Tactical Emblem*' -or $_.ProcessName -like 'Tactics Emblem*' }; if ($p) { exit 1 } else { exit 0 }"
+if errorlevel 1 (
+  echo %APPNAME% est ouvert. Ferme-le puis relance la mise à jour.
   goto :fail
 )
 
@@ -41,14 +48,14 @@ if errorlevel 1 (
 
 rem ===========================================================================
 rem  1. Qu'est-ce qui a changé depuis le dernier .exe ?
-rem     code de sortie : 0 = rien de nouveau, 2 = fichiers modifiés, 3 = pas encore d'.exe
+rem     code de sortie : 0 = rien de nouveau, 2 = fichiers modifiés, 3 = pas encore d'.exe sous ce nom
 rem ===========================================================================
 echo.
-echo === 1/3  Recherche des fichiers modifiés depuis le dernier .exe
+echo === 1/4  Recherche des fichiers modifiés depuis le dernier .exe
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$root = (Get-Location).Path;" ^
-  "$exe = Get-ChildItem -LiteralPath $root -Filter '*.exe' -File | Where-Object { $_.Name -like 'Tactical Emblem*' -or $_.Name -like 'Tactics Forge*' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
-  "if (-not $exe) { Write-Host 'Aucun executable a la racine : il va etre cree.'; exit 3 };" ^
+  "$root = (Get-Location).Path; $name = $env:APPNAME;" ^
+  "$exe = Get-ChildItem -LiteralPath $root -Filter '*.exe' -File | Where-Object { $_.Name -like ($name + ' *.exe') } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "if (-not $exe) { Write-Host ('Pas encore d''executable ' + $name + ' a la racine : il va etre cree.'); exit 3 };" ^
   "Write-Host ('Executable actuel : ' + $exe.Name + ' (' + $exe.LastWriteTime.ToString('dd/MM/yyyy HH:mm') + ')');" ^
   "$items = @('main.js','preload.js','package.json','package-lock.json','src','assets','plugins') | Where-Object { Test-Path (Join-Path $root $_) } | ForEach-Object { Join-Path $root $_ };" ^
   "$changed = @(Get-ChildItem -LiteralPath $items -Recurse -File | Where-Object { $_.LastWriteTime -gt $exe.LastWriteTime } | Sort-Object LastWriteTime -Descending);" ^
@@ -64,14 +71,14 @@ if not "%STATE%"=="0" goto :deps
 echo.
 echo L'exécutable est déjà à jour avec les fichiers du dossier.
 choice /C ON /M "Recompiler quand même (O = oui, N = non)"
-if errorlevel 2 goto :done
+if errorlevel 2 goto :cleanup
 
 rem ===========================================================================
 rem  2. Dépendances : seulement si elles manquent ou si package.json a changé
 rem ===========================================================================
 :deps
 echo.
-echo === 2/3  Dépendances
+echo === 2/4  Dépendances
 set "NEED_INSTALL=0"
 if not exist "node_modules\.package-lock.json" set "NEED_INSTALL=1"
 if not exist "node_modules\electron" set "NEED_INSTALL=1"
@@ -95,24 +102,35 @@ rem  3. Compilation de l'.exe (npm run dist, puis copie à la racine par postdis
 rem ===========================================================================
 :build
 echo.
-echo === 3/3  Compilation de l'exécutable (npm run dist^)
+echo === 3/4  Compilation de l'exécutable (npm run dist^)
 call npm run dist
 if errorlevel 1 (
   echo.
-  echo La compilation a échoué. Si le message parle d'un fichier utilisé, ferme Tactical Emblem
+  echo La compilation a échoué. Si le message parle d'un fichier utilisé, ferme %APPNAME%
   echo puis relance ce script.
   goto :fail
 )
+echo.
+echo Nouvel exécutable :
+for %%F in ("%APPNAME% *.exe") do echo   %%~nxF
+
+rem ===========================================================================
+rem  4. Anciens noms de l'application : leurs exécutables sont retirés
+rem     (seulement si l'exécutable du nom actuel existe bien)
+rem ===========================================================================
+:cleanup
+echo.
+echo === 4/4  Anciens exécutables
+powershell -NoProfile -Command ^
+  "$root = (Get-Location).Path; $name = $env:APPNAME;" ^
+  "$current = Get-ChildItem -LiteralPath $root -Filter '*.exe' -File | Where-Object { $_.Name -like ($name + ' *.exe') };" ^
+  "if (-not $current) { Write-Host 'Pas d''executable au nom actuel : rien n''est supprime.'; exit 0 };" ^
+  "$old = Get-ChildItem -LiteralPath $root -Filter '*.exe' -File | Where-Object { ($_.Name -like 'Tactics Forge *.exe' -or $_.Name -like 'Tactical Emblem *.exe' -or $_.Name -like 'Tactics Emblem *.exe') -and -not ($_.Name -like ($name + ' *.exe')) };" ^
+  "if (-not $old) { Write-Host 'Aucun.'; exit 0 };" ^
+  "foreach ($f in $old) { Remove-Item -LiteralPath $f.FullName -Force; Write-Host ('   supprime : ' + $f.Name) }"
 
 echo.
-echo Terminé : le nouvel exécutable est à la racine du dossier.
-for %%F in ("Tactical Emblem*.exe") do echo   %%~nxF
-rem --- l'application s'appelait Tactics Forge : l'ancien exécutable est retiré
-for %%F in ("Tactics Forge*.exe") do (
-  if exist "Tactical Emblem*.exe" (
-    del /q "%%~F" && echo   ancien exécutable supprimé : %%~nxF
-  )
-)
+echo Terminé.
 
 :done
 echo.

@@ -8,6 +8,8 @@ const D = require('../src/shared/defaults');
 const P = require('../src/shared/fe-pack');
 
 const BUNDLED = path.join(__dirname, '..', 'plugins');
+const { makePlugin } = require('./fixtures/make-plugin');
+const PACK = makePlugin();
 
 test('fiches : validation, valeurs par défaut', () => {
   assert.deepEqual(Plugins.validate({ id: 'mon-plugin', name: 'Mon plugin' }), []);
@@ -20,10 +22,9 @@ test('fiches : validation, valeurs par défaut', () => {
   assert.deepEqual(n.links, { characters: {}, classes: {}, battlebacks: {} });
 });
 
-test('plugins fournis : un par jeu (FE6, FE7, FE8, customs) + exemple de script, fiches valides et fichiers présents', () => {
+test('plugins fournis : fiches valides, fichiers présents (dont l’exemple de script)', () => {
   const list = IO.listIn(BUNDLED);
-  const ids = list.map(m => m.id).sort();
-  assert.deepEqual(ids, ['customs-style-gba', 'exemple-annonce-tours', 'fe6-binding-blade', 'fe7-blazing-blade', 'fe8-sacred-stones']);
+  assert.ok(list.some(m => m.id === 'exemple-annonce-tours'));
   for (const m of list) {
     assert.ok(!m.error, m.id + ' : ' + m.error);
     for (const kind of ['characters', 'classes']) for (const e of Object.values(m.links[kind])) {
@@ -34,31 +35,26 @@ test('plugins fournis : un par jeu (FE6, FE7, FE8, customs) + exemple de script,
     for (const f of Object.values(m.links.battlebacks)) assert.ok(fs.existsSync(path.join(m.dir, f)), f);
     for (const s of m.scripts) assert.ok(fs.existsSync(path.join(m.dir, s)), s);
   }
-  const fe6 = list.find(m => m.id === 'fe6-binding-blade');
-  assert.ok(fe6.links.characters['fe6:Roy'].battler.endsWith('Roy/combat_Lord'));
-  assert.ok(Object.keys(fe6.links.battlebacks).length >= 12);
-  // les personnages d'un plugin sont ceux de son jeu
-  for (const m of list) for (const k of Object.keys(m.links.characters)) assert.ok(m.id.startsWith(k.split(':')[0]), m.id + ' ' + k);
 });
 
 test('installation dans un projet : ressources copiées sans écraser, fiche dans plugins/<id>, désinstallation', () => {
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-plug-')), 'Jeu');
   fs.mkdirSync(path.join(dir, 'ressources', 'fonds-combat'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'ressources', 'fonds-combat', 'fe6-plaine.png'), 'à moi');
-  const r = IO.install(dir, path.join(BUNDLED, 'fe6-binding-blade'));
-  assert.equal(r.manifest.id, 'fe6-binding-blade');
-  assert.ok(r.added > 300);
-  assert.equal(fs.readFileSync(path.join(dir, 'ressources', 'fonds-combat', 'fe6-plaine.png'), 'utf8'), 'à moi'); // rien d'écrasé
-  assert.ok(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Roy', 'combat_Lord.json')));
-  assert.ok(fs.existsSync(path.join(dir, 'plugins', 'fe6-binding-blade', 'plugin.json')));
-  assert.ok(!fs.existsSync(path.join(dir, 'plugins', 'fe6-binding-blade', 'ressources'))); // pas de double copie
+  fs.writeFileSync(path.join(dir, 'ressources', 'fonds-combat', 'test-plaine.png'), 'à moi');
+  const r = IO.install(dir, PACK);
+  assert.equal(r.manifest.id, 'pack-test');
+  assert.equal(r.added, 7);
+  assert.equal(fs.readFileSync(path.join(dir, 'ressources', 'fonds-combat', 'test-plaine.png'), 'utf8'), 'à moi'); // rien d'écrasé
+  assert.ok(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Testeur', 'combat_Arc.json')));
+  assert.ok(fs.existsSync(path.join(dir, 'plugins', 'pack-test', 'plugin.json')));
+  assert.ok(!fs.existsSync(path.join(dir, 'plugins', 'pack-test', 'ressources'))); // pas de double copie
   const s = IO.install(dir, path.join(BUNDLED, 'exemple-annonce-tours'));
   assert.ok(fs.existsSync(path.join(dir, 'plugins', 'exemple-annonce-tours', 'main.js')));
   assert.equal(s.added, 0);
-  assert.deepEqual(IO.listInstalled(dir).map(m => m.id).sort(), ['exemple-annonce-tours', 'fe6-binding-blade']);
+  assert.deepEqual(IO.listInstalled(dir).map(m => m.id).sort(), ['exemple-annonce-tours', 'pack-test']);
   assert.equal(IO.uninstall(dir, 'exemple-annonce-tours'), true);
-  assert.deepEqual(IO.listInstalled(dir).map(m => m.id), ['fe6-binding-blade']);
-  assert.ok(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Roy'))); // les ressources restent
+  assert.deepEqual(IO.listInstalled(dir).map(m => m.id), ['pack-test']);
+  assert.ok(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Testeur'))); // les ressources restent
   assert.throws(() => IO.uninstall(dir, '../x'));
   // dossier sans plugin.json / fiche invalide
   const bad = fs.mkdtempSync(path.join(os.tmpdir(), 'tf-bad-'));
@@ -68,15 +64,16 @@ test('installation dans un projet : ressources copiées sans écraser, fiche dan
 });
 
 test('liens : classes, terrains et personnages déjà présents, champs vides seulement', () => {
-  const m = IO.readManifest(path.join(BUNDLED, 'fe6-binding-blade'));
+  const m = IO.readManifest(PACK);
   const p = D.sampleProject('Liens');
   P.install(p.db, ['fe6'], { has: () => true }); // personnages FE6 sans images
   p.db.terrains.find(t => t.id === 'forest').battleback = 'ressources/fonds-combat/mien.png';
   const n = Plugins.applyLinks(p.db, m.links, { findUnit: (k) => P.findUnit(p.db, k) });
-  assert.ok(n.classes > 0 && n.terrains >= 12 && n.units > 0, JSON.stringify(n));
+  assert.deepEqual(n, { classes: 2, terrains: 1, units: 2 });
   assert.equal(p.db.terrains.find(t => t.id === 'forest').battleback, 'ressources/fonds-combat/mien.png');
+  assert.equal(p.db.terrains.find(t => t.id === 'plain').battleback, 'ressources/fonds-combat/test-plaine.png');
   const roy = p.db.units.find(u => u.name === 'Roy');
-  assert.ok(roy.battler.endsWith('Roy/combat_Lord') && roy.portrait.endsWith('Roy/portrait.png'));
+  assert.ok(roy.battler.endsWith('RoyTest/combat') && roy.portrait.endsWith('RoyTest/portrait.png'));
   const again = Plugins.applyLinks(p.db, m.links, { findUnit: (k) => P.findUnit(p.db, k) });
   assert.deepEqual(again, { classes: 0, terrains: 0, units: 0 });
   // fichiers absents : rien

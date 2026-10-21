@@ -191,17 +191,13 @@ Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Ut
 - **Relier à la base** : refait les liens ;
 - **Désinstaller** : retire la fiche et les scripts ; les images déjà copiées restent dans `ressources/`.
 
-Plugins fournis (un par jeu, à ajouter un par un) :
+Plugin fourni dans le dépôt : `exemple-annonce-tours`, un exemple de script qui annonce les tours et compte les ennemis vaincus.
 
-| Plugin | Contenu |
-|---|---|
-| `fe6-binding-blade` | animations, sprites de map et portraits de FE6, 19 fonds de combat |
-| `fe7-blazing-blade` | animations, sprites de map et portraits de FE7 |
-| `fe8-sacred-stones` | animations, sprites de map et portraits de FE8 |
-| `customs-style-gba` | customs « style FE GBA » (Final Fantasy, Zelda, Kingdom Hearts) |
-| `exemple-annonce-tours` | exemple de script : annonce les tours, compte les ennemis vaincus |
+Les plugins de ressources Fire Emblem (`fe6-binding-blade`, `fe7-blazing-blade`, `fe8-sacred-stones`, `customs-style-gba`) ne sont plus dans le dépôt. Ce sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix, pour un usage personnel. Pour les refaire à partir des planches de `tools/sprite-sources/fe-gba/` :
+- `python3 tools/build_fe_gba_pack.py` découpe les planches (réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés) ;
+- `tools/split_fe_gba_plugins.py` les range par jeu dans `plugins/`.
 
-Les plugins FE sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix : usage personnel. Ils sont refaits par `python3 tools/build_fe_gba_pack.py` (découpe des planches de `tools/sprite-sources/fe-gba/`, réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés), puis rangés par jeu par `tools/split_fe_gba_plugins.py`.
+On les installe ensuite avec **Installer depuis un dossier…**.
 
 **Créer un plugin** — un dossier avec un `plugin.json` :
 
