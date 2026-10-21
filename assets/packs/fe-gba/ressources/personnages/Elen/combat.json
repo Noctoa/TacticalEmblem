@@ -1,0 +1,58 @@
+{
+ "type": "battler",
+ "name": "Elen",
+ "facing": "left",
+ "cell": [
+  64,
+  70
+ ],
+ "anchor": [
+  35,
+  69
+ ],
+ "columns": 12,
+ "count": 8,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 2,
+   "approach": [
+    0,
+    1
+   ],
+   "retreat": [
+    4,
+    6
+   ]
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}

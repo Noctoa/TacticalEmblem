@@ -623,7 +623,8 @@
           { key: 'avoid', label: 'Bonus Esquive', type: 'number', min: -50, max: 100 },
           { key: 'heal', label: 'Soin / tour (%)', type: 'number', min: 0, max: 100 }] },
         { key: 'cost', label: 'Coût de déplacement (99 = infranchissable)', type: 'costs' },
-        { type: 'info', text: "L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
+        { key: 'battleback', label: 'Fond de combat', type: 'select', empty: '— la map, floutée —', options: () => (res().battlebacks || []).map(f => ({ value: f, label: f.split('/').pop().replace(/\.[a-z]+$/i, '') })) },
+        { type: 'info', text: "Fond de combat : décor affiché derrière les animations quand le défenseur est sur ce terrain (images du dossier ressources/fonds-combat). L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
       ]
     }
   };
@@ -780,7 +781,7 @@
       }
       refresh();
       box.append(h('h3', {}, 'Personnages de la série Fire Emblem'),
-        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Seuls Eliwood, Lyn et Hector (Fire Emblem 7) reçoivent des images : celles des ressources de base du projet (copiées si elles manquent). Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
+        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Les personnages et les classes qui ont des images dans le pack « Fire Emblem GBA » (animations de combat, sprites de map, portraits) les reçoivent : les dossiers sont copiés dans ressources/personnages/. Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
         h('div', { class: 'insp-actions' },
           h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
           h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
@@ -805,9 +806,12 @@
       return (r.faces || []).includes(val);
     };
     let copied = 0;
-    const missing = folders.filter(who => !Object.values(FEPack.ART).some(a => a.folder === who && has('portrait', a.portrait) && has('battler', a.battler) && has('mapSprite', a.mapSprite)));
+    const missing = folders; // copie sans écraser : seuls les fichiers absents arrivent
     if (missing.length && Editor.dir()) {
-      try { const out = await tf.installDefaultResources(Editor.dir(), missing); copied = out.added || 0; await Editor.rescanResources(); } catch (e) { /* projet non enregistré : on relie ce qui existe */ }
+      for (const pack of [...new Set(missing.map(f => f.pack))]) {
+        try { const out = await tf.installDefaultResources(Editor.dir(), missing.filter(f => f.pack === pack).map(f => f.folder), pack || undefined); copied += out.added || 0; } catch (e) { /* projet non enregistré ou pack absent : on relie ce qui existe */ }
+      }
+      await Editor.rescanResources();
     }
     return { has, copied };
   }
@@ -827,6 +831,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (['units', 'items', 'weapons'].includes(tab)) {
+          const refs = Scenario.references(db(), tab, cur.id);
+          if (refs.length) return UI.alert('Élément utilisé par un événement', 'Modifie d’abord ces événements : ' + refs.join(', ') + '.');
+        }
         if (['units', 'items', 'weapons', 'terrains'].includes(tab)) {
           const locks = Locks.references(db(), tab, cur.id);
           if (locks.length) return UI.alert('Élément utilisé par un coffre ou une porte', 'Modifie d’abord ces interactions : ' + locks.join(', ') + '.');
@@ -1056,13 +1064,6 @@
   // ------------------------------------------------------------------
   // Actes (niveaux jouables, data/chapters.json) : objectif + événements / dialogues
   // ------------------------------------------------------------------
-  const TRIGGERS = [
-    { value: 'start', label: "Début de l'acte" },
-    { value: 'turn', label: 'Début du tour (phase joueur)' },
-    { value: 'death', label: "Unité vaincue (mort ou retraite)" },
-    { value: 'area', label: 'Une unité du joueur entre dans une zone' },
-    { value: 'victory', label: 'Victoire' }
-  ];
 
   function renderChapters(body) {
     const list = db().chapters;
@@ -1126,47 +1127,8 @@
       h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(ch.id); } }, 'Ouvrir sur la map'),
       h('button', { class: 'small primary', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(ch.id); } }, 'Tester')));
 
-    // événements
-    pane.append(h('div', { class: 'form-heading', style: { maxWidth: '760px' } }, 'Événements & dialogues'));
-    const evBox = h('div', { class: 'events', style: { maxWidth: '760px', marginTop: '10px' } });
-    const targets = () => [{ value: '', label: '— choisir —' }]
-      .concat(ch.players.map(p => { const u = byId(db().units, p.unitId); return { value: 'unit:' + p.unitId, label: '★ ' + (u ? u.name : p.unitId) }; }))
-      .concat((ch.allies || []).map(p => { const u = byId(db().units, p.unitId); return { value: 'unit:' + p.unitId, label: '✚ ' + (u ? u.name : p.unitId) + ' (allié)' }; }))
-      .concat(ch.enemies.map(e => ({ value: e.id, label: `✖ ${e.name || e.classId} (${e.x},${e.y})` })));
-    ch.events.forEach((ev, i) => {
-      const trig = h('select', {}, TRIGGERS.map(t => h('option', { value: t.value }, t.label)));
-      trig.value = ev.trigger.type;
-      trig.addEventListener('change', () => { ev.trigger = { type: trig.value }; if (trig.value === 'turn') ev.trigger.turn = 2; if (trig.value === 'area') Object.assign(ev.trigger, { x: 0, y: 0, w: 1, h: 1 }); change(); renderBody(); });
-      const params = [];
-      if (ev.trigger.type === 'turn') {
-        const n = h('input', { type: 'number', min: 1, max: 99, style: { width: '70px' } }); n.value = ev.trigger.turn || 1;
-        n.addEventListener('change', () => { ev.trigger.turn = Number(n.value) || 1; change(); });
-        params.push(h('span', { class: 'muted' }, 'tour'), n);
-      }
-      if (ev.trigger.type === 'death') {
-        const s = h('select', {}, targets().map(o => h('option', { value: o.value }, o.label))); s.value = ev.trigger.target || '';
-        s.addEventListener('change', () => { ev.trigger.target = s.value; change(); });
-        params.push(s);
-      }
-      if (ev.trigger.type === 'area') {
-        for (const k of ['x', 'y', 'w', 'h']) {
-          const n = h('input', { type: 'number', min: k === 'w' || k === 'h' ? 1 : 0, max: 499, style: { width: '58px' }, title: k }); n.value = ev.trigger[k] ?? (k === 'w' || k === 'h' ? 1 : 0);
-          n.addEventListener('change', () => { ev.trigger[k] = Number(n.value) || 0; change(); });
-          params.push(h('span', { class: 'muted' }, k), n);
-        }
-      }
-      const once = h('input', { type: 'checkbox' }); once.checked = ev.once !== false;
-      once.addEventListener('change', () => { ev.once = once.checked; change(); });
-      const ta = h('textarea', { rows: 5, spellcheck: false, placeholder: 'Aldric: On avance !\nMaëlle: À vos ordres.' }); ta.value = ev.script || '';
-      ta.addEventListener('input', () => { ev.script = ta.value; change(); });
-      const up = h('button', { class: 'mini', html: Icons.icon('up'), title: 'Monter', onclick: () => { if (i > 0) { [ch.events[i - 1], ch.events[i]] = [ch.events[i], ch.events[i - 1]]; change(); renderBody(); } } });
-      const del = h('button', { class: 'mini', html: Icons.icon('trash'), title: 'Supprimer', onclick: () => { ch.events.splice(i, 1); change(); renderBody(); } });
-      evBox.append(h('div', { class: 'event-card' },
-        h('div', { class: 'event-head' }, h('span', { html: Icons.icon('chat') }), trig, ...params, h('span', { class: 'grow' }), h('label', { class: 'field checkbox' }, once, h('span', {}, 'une fois')), up, del),
-        h('div', { class: 'event-body' }, ta, h('div', { class: 'event-tip' }, 'Une réplique par ligne : « Nom: texte ». Le portrait est pris dans la fiche de l\'unité du même nom. Une ligne sans « : » = narration.'))));
-    });
-    evBox.append(h('div', {}, h('button', { class: 'small', html: Icons.icon('plus'), onclick: () => { ch.events.push({ id: Editor.uid('ev', ch.events), trigger: { type: 'start' }, once: true, script: '' }); change(); renderBody(); } }, 'Ajouter un événement')));
-    pane.append(evBox);
+    const eventMap = Editor.project().maps.find(m => m.id === ch.mapId);
+    if (eventMap) EventFields.render(pane, ch, db(), eventMap, { change, uid: Editor.uid });
   }
 
   // ------------------------------------------------------------------
@@ -1392,7 +1354,8 @@
     body.append(h('div', { class: 'db-list' }, tools, items, h('div', { class: 'db-list-actions' },
       h('button', { class: 'small', title: 'Ouvre le dossier de la ressource sélectionnée', onclick: () => tf.openResourceFolder(Editor.dir(), resSel ? folderOf(resSel.key) : 'ressources') }, 'Ouvrir le dossier'),
       h('button', { class: 'small', onclick: async () => { await Editor.rescanResources(); renderBody(); UI.toast('Ressources rechargées'); } }, 'Rescanner')),
-      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut'))));
+      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut')),
+      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', 'data-gba-pack': true, title: 'Animations de combat, sprites de map, portraits et fonds de combat de Fire Emblem 6, 7 et 8 (et customs « style GBA »)', onclick: installGbaPack }, 'Ajouter le pack Fire Emblem GBA'))));
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
     if (!resSel) { pane.append(h('div', { class: 'db-empty' }, 'Aucune ressource. Range tes images dans ressources/personnages/<Nom>/ puis « Rescanner ».')); return; }
@@ -1464,6 +1427,22 @@
         h('div', { style: { display: 'flex', gap: '8px' } }, talkBtn, smileBtn),
         h('p', { class: 'form-info' }, `Bouche en ${S.mouth.join(',')} · yeux en ${S.eyes.join(',')} (trouvés automatiquement). Portrait 96×80 dans les dialogues, mini-portrait 32×32 dans les fenêtres d'unité.`));
     });
+  }
+
+  /** Pack « Fire Emblem GBA » : copie tous ses dossiers (sans écraser), puis relie les classes sans sprite. */
+  async function installGbaPack() {
+    if (!Editor.dir()) return UI.alert('Pack Fire Emblem GBA', ['Enregistre d’abord le projet : les fichiers sont copiés dans son dossier ressources/.']);
+    let r;
+    try { r = await tf.installDefaultResources(Editor.dir(), null, 'fe-gba'); } catch (e) { return UI.alert('Pack Fire Emblem GBA', [String(e.message || e)]); }
+    await Editor.rescanResources();
+    const rr = res();
+    const has = (key, val) => key === 'mapSprite' ? !!(rr.characters || {})[val] : key === 'battler' ? !!(rr.battlers || {})[val] : (rr.faces || []).includes(val);
+    const linked = FEPack.applyClassArt(db(), has);
+    const bbs = FEPack.applyBattlebacks(db(), (f) => (rr.battlebacks || []).includes(f));
+    change(); renderBody();
+    UI.alert('Pack Fire Emblem GBA', [`${r.added} fichier(s) copié(s) dans ressources/ (personnages, fonds de combat)`, `${linked} sprite(s) relié(s) à des classes qui n’en avaient pas`,
+      `${bbs} terrain(s) reçoivent un fond de combat`,
+      'Les personnages de la série importés (Unités › Personnages de la série) reçoivent leurs images automatiquement.']);
   }
 
   async function installDefaults() {

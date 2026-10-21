@@ -1,0 +1,157 @@
+{
+ "type": "battler",
+ "name": "Maelduin — FE8",
+ "facing": "left",
+ "cell": [
+  133,
+  74
+ ],
+ "anchor": [
+  56,
+  73
+ ],
+ "columns": 12,
+ "count": 38,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 5,
+   "approach": [
+    2,
+    4
+   ],
+   "retreat": [
+    9,
+    11
+   ]
+  },
+  "critical": {
+   "frames": [
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+   ],
+   "durations": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 6,
+   "approach": [
+    3,
+    5
+   ],
+   "retreat": [
+    7,
+    9
+   ]
+  },
+  "dodge": {
+   "frames": [
+    23,
+    25
+   ],
+   "durations": [
+    260,
+    120
+   ]
+  },
+  "ranged": {
+   "frames": [
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    26
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 5,
+   "projectile": "axe"
+  },
+  "rangedCritical": {
+   "frames": [
+    33,
+    34,
+    35,
+    36,
+    37
+   ],
+   "durations": [
+    75,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 1,
+   "projectile": "axe"
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}

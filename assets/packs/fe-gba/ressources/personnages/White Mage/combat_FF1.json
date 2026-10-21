@@ -1,0 +1,87 @@
+{
+ "type": "battler",
+ "name": "White Mage — FF1",
+ "facing": "left",
+ "cell": [
+  91,
+  56
+ ],
+ "anchor": [
+  42,
+  55
+ ],
+ "columns": 12,
+ "count": 23,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 4,
+   "projectile": "wave"
+  },
+  "critical": {
+   "frames": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22
+   ],
+   "durations": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 8,
+   "projectile": "wave"
+  }
+ },
+ "source": "Custom « style FE GBA » (FF1) — crédits sur la planche d'origine"
+}

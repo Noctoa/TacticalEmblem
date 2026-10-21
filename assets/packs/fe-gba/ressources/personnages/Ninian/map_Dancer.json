@@ -1,0 +1,106 @@
+{
+ "type": "mapsprite",
+ "name": "Dancer (Niman) — FE7",
+ "frame": [
+  32,
+  32
+ ],
+ "anchor": [
+  16,
+  23
+ ],
+ "base": 16,
+ "anims": {
+  "idle": {
+   "row": 0,
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    500,
+    80,
+    500,
+    80
+   ]
+  },
+  "left": {
+   "row": 1,
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ]
+  },
+  "right": {
+   "row": 2,
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ]
+  },
+  "down": {
+   "row": 3,
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ]
+  },
+  "up": {
+   "row": 4,
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ]
+  },
+  "focus": {
+   "row": 5,
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    160,
+    100,
+    160,
+    100
+   ]
+  }
+ },
+ "source": "Fire Emblem 7 — map sprites (The Spriters Resource)"
+}

@@ -55,7 +55,7 @@
 
   /**
    * opts : { baseUrl, battlerOf(u), att, def, hp0: {[uid]: hp}, strikes, forecast, distance,
-   *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), projectileImg(meta, name),
+   *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), battleback (image du décor), projectileImg(meta, name),
    *          paletteOf(u) -> 'original' | 'blue' | 'red' | 'green',
    *          partner (attaque duo), helpers: [unité] (partenaires des attaques spéciales), mapSpriteOf(u) -> { meta, img } }
    */
@@ -249,15 +249,23 @@
     g.globalAlpha = 1;
     g.clearRect(0, 0, w, hh);
     g.globalAlpha = sc.fade;
-    // fond : la map floutée et assombrie
-    if (sc.opts.background) {
+    // fond : décor du terrain (fond de combat), sinon la map floutée et assombrie
+    const bb = sc.opts.battleback;
+    if (bb && bb.width) {
+      // décor posé sur toute la largeur ; sa bande du bas (le sol) passe sous les combattants
+      const s = Math.max(w / bb.width, (L.ground + 18 * L.S) / bb.height);
+      const dh = bb.height * s, y0 = L.ground + 18 * L.S - dh;
+      g.fillStyle = '#000'; g.fillRect(0, 0, w, hh);
+      g.drawImage(bb, (w - bb.width * s) / 2, y0, bb.width * s, dh);
+    } else if (sc.opts.background) {
       g.save(); g.filter = 'blur(6px) brightness(0.45) saturate(1.1)';
       const bg = sc.opts.background; const s = Math.max(w / bg.width, hh / bg.height) * 1.15;
       g.drawImage(bg, (w - bg.width * s) / 2, (hh - bg.height * s) / 2, bg.width * s, bg.height * s);
       g.restore();
     } else { g.fillStyle = '#10131c'; g.fillRect(0, 0, w, hh); }
     const sky = g.createLinearGradient(0, 0, 0, hh);
-    sky.addColorStop(0, 'rgba(10,14,30,.55)'); sky.addColorStop(0.6, 'rgba(10,14,30,.15)'); sky.addColorStop(1, 'rgba(0,0,0,.6)');
+    if (bb && bb.width) { sky.addColorStop(0, 'rgba(0,0,0,0)'); sky.addColorStop(0.75, 'rgba(0,0,0,0)'); sky.addColorStop(1, 'rgba(0,0,0,.55)'); }
+    else { sky.addColorStop(0, 'rgba(10,14,30,.55)'); sky.addColorStop(0.6, 'rgba(10,14,30,.15)'); sky.addColorStop(1, 'rgba(0,0,0,.6)'); }
     g.fillStyle = sky; g.fillRect(0, 0, w, hh);
     // plateformes (couleur du terrain de chaque combattant)
     const plat = (cx, terrain) => {

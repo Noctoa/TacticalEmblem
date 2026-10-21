@@ -1,0 +1,225 @@
+{
+ "type": "battler",
+ "name": "Archer — FE6",
+ "facing": "left",
+ "cell": [
+  74,
+  42
+ ],
+ "anchor": [
+  39,
+  41
+ ],
+ "columns": 12,
+ "count": 24,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    0
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 8,
+   "projectile": "arrow"
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    11,
+    12,
+    13,
+    0,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    19,
+    7,
+    22,
+    23,
+    9,
+    10,
+    0
+   ],
+   "durations": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 6,
+   "projectile": "arrow"
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    0
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 8,
+   "approach": [
+    5,
+    7
+   ]
+  },
+  "bow": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    0
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 8,
+   "projectile": "arrow"
+  },
+  "bowCritical": {
+   "frames": [
+    0,
+    11,
+    12,
+    13,
+    0,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    19,
+    7,
+    22,
+    23,
+    9,
+    10,
+    0
+   ],
+   "durations": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 6,
+   "projectile": "arrow"
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)",
+ "projectiles": {
+  "arrow": "combat_FE6_arrow.png"
+ }
+}

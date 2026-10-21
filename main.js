@@ -196,7 +196,7 @@ handle('tileset:importImage', importAsset(io.DIRS.tilesets));
 // portrait : rangé dans le dossier du personnage (ressources/personnages/<Nom>/)
 handle('portrait:import', importAsset((dir, owner) => io.DIRS.characters + '/' + Layout.safeName(owner || 'Portraits')));
 handle('resources:scan', (e, dir) => io.scanResources(dir));
-handle('resources:installDefaults', (e, dir, only) => io.installDefaults(dir, ASSETS, only));
+handle('resources:installDefaults', (e, dir, only, pack) => io.installDefaults(dir, ASSETS, only, pack));
 handle('resources:setTeamColors', (e, dir, key, colors) => io.setTeamColors(dir, key, colors));
 handle('resources:openFolder', (e, dir, sub) => {
   const target = path.resolve(dir, sub || Layout.ROOT);

@@ -51,6 +51,7 @@
       G.campaign = Campaign.create('classic');
       await Render.preloadTilesets(G.baseUrl, G.db.tilesets);
       await Promise.all(G.db.units.filter(u => u.portrait).map(u => Render.loadImage(G.baseUrl, u.portrait)));
+      await Promise.all((G.db.terrains || []).filter(t => t.battleback).map(t => Render.loadImage(G.baseUrl, t.battleback)));
       // sprites de map, battlers et projectiles utilisés par le projet
       const imgs = [];
       for (const m of Object.values(G.resources.characters)) imgs.push(m.image);
@@ -100,8 +101,9 @@
   }
 
   /** Charge un chapitre. Les niveaux, objets, affinités et le convoi sont conservés d'un chapitre à l'autre. */
-  let chapterLoad = 0;
+  let chapterLoad = 0, scenarioRunner = null;
   async function loadChapter(ch, savedDeployment) {
+    ch = JSON.parse(JSON.stringify(R.byId(G.db.chapters, ch.id) || ch));
     const loadId = ++chapterLoad;
     preparation.close();
     if (G.mode === 'lobby') lobby.leave();
@@ -109,15 +111,16 @@
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
-    Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, fired: new Set(), lost: [], sel: null,
+    Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
       reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set() });
+    scenarioRunner = Scenario.createRunner(ch, { state: () => G, action: scenarioRuntime.action, blocked: (ev, error) => UI.toast(`${ev.name || ev.id} : ${error}`, 'error') });
     hideMenu(); hideForecast();
     $('#convoy').classList.add('hidden');
     trade.hide();
@@ -221,7 +224,8 @@
       const u = R.makeEnemyFromPlacement(pl, G.db, 'enemy');
       if (!u) continue;
       prep(u);
-      if (pl.appearTurn > 0) G.pending.push(u); else G.units.push(u);
+      u.eventOnly = !!pl.eventOnly;
+      if (pl.eventOnly || pl.appearTurn > 0) G.pending.push(u); else G.units.push(u);
     }
     const lord = G.units.find(u => u.isLord) || G.units.find(u => u.team === 'player');
     if (lord) G.cursor = { x: lord.x, y: lord.y };
@@ -250,6 +254,8 @@
   const unitAt = (x, y) => alive().find(u => u.x === x && u.y === y) || null;
   const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
   const terrainOf = (u) => terrainAt(u.x, u.y);
+  /** Fond de combat du terrain d'une unité (image déjà chargée) ou null. */
+  const battlebackOf = (u) => { const t = terrainOf(u); return t && t.battleback ? Render.readyImage(G.baseUrl, t.battleback) : null; };
   const rctx = () => ({ width: G.map.width, height: G.map.height, terrainAt, unitAt });
   const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive(),
     protect: (u) => G.debug.god && u.team !== 'enemy' });
@@ -753,6 +759,7 @@
     if (G.chapter.turnLimit) $('#objective').append(h('div', { class: 'turn' }, 'Limite : ' + G.chapter.turnLimit + ' tours complets'));
     if (G.chapter.lossLimit) $('#objective').append(h('div', { class: 'turn' }, 'Défaite à ' + G.chapter.lossLimit + ' perte(s)'));
     if (G.chapter.defendZone && G.chapter.defendZone.enabled) $('#objective').append(h('div', { class: 'turn' }, 'Protéger la zone rouge'));
+    if (scenarioRunner && scenarioRunner.pending()) $('#objective').append(h('div', { class: 'turn' }, 'Événement en attente : libérer la place nécessaire'));
     if (G.lobbyOn) $('#objective').append(h('div', { class: 'turn' }, `Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}`));
   }
 
@@ -1234,6 +1241,7 @@
       applyDebugMove(); lastInfoKey = ''; refreshDanger();
       Music.se('confirm');
       await UI.alert(village.name || 'Village visité', messages.length ? messages.join('\n') : 'La visite est terminée.');
+      await runEvents('village', { target: village.id, unit: visitor });
     } catch (error) { console.error(error); await UI.alert('Visite impossible', error.message); }
     finally {
       G.busy = false;
@@ -1258,6 +1266,7 @@
       if (result.slot) messages.push(`Objet reçu : ${R.getEntry(G.db, result.slot.id).def.name} (${result.destination === 'convoy' ? 'convoi' : 'inventaire'}).`);
       lastInfoKey = ''; refreshDanger(); updateObjective(); Music.se('confirm');
       await UI.alert(object.name || (kind === 'doors' ? 'Porte ouverte' : 'Coffre ouvert'), messages.join('\n'));
+      await runEvents(kind === 'doors' ? 'door' : 'chest', { target: object.id, unit });
     } catch (error) { console.error(error); await UI.alert('Ouverture impossible', error.message); }
     finally { G.busy = false; if (completed) await finishAction(unit); else { G.ui = 'menu'; openActionMenu(); } }
   }
@@ -1307,6 +1316,7 @@
         paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'battle', false),
         partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf, overkill: res.overkill,
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
+        battleback: battlebackOf(def) || battlebackOf(att),
         projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null
       });
       document.body.classList.remove('in-battle');
@@ -1473,7 +1483,8 @@
 
   async function startPlayerPhase(first) {
     if (G.over) return;
-    if (await checkEnd()) return;
+    const before = Mission.evaluate(G.chapter, G.db, G);
+    if (before.outcome === 'defeat') { await defeat(before.reason); return; }
     G.phase = 'player'; G.busy = true;
     updateObjective();
     Music.bgm('playerPhase');
@@ -1565,7 +1576,7 @@
     Music.bgm('enemyPhase');
     await banner('Phase ennemie', 'enemy');
     // renforts
-    const arriving = G.pending.filter(u => u.appearTurn <= G.turn);
+    const arriving = G.pending.filter(u => !u.eventOnly && u.appearTurn <= G.turn);
     for (const u of arriving) {
       const spot = freeSpotNear(u.x, u.y, u);
       if (!spot) continue;
@@ -1606,18 +1617,20 @@
   // =====================================================================
   async function checkEnd() {
     if (G.over) return true;
+    await runEvents('condition', {});
     updateObjective();
     const result = Mission.evaluate(G.chapter, G.db, G);
     if (result.outcome === 'defeat') { await defeat(result.reason); return true; }
-    if (result.outcome === 'victory') { await victory(); return true; }
+    if (result.outcome === 'victory' && !scenarioRunner.pending()) { await victory(); return G.over; }
     return false;
   }
 
   async function victory() {
     if (G.over) return;
-    G.over = true; G.busy = true; deselect(); hideMenu(); hideForecast();
-    Music.victory();
-    await runEvents('victory', {});
+    G.busy = true; deselect(); hideMenu(); hideForecast();
+    if (!G.victoryStarted) { G.victoryStarted = true; await runEvents('victory', {}); }
+    if (scenarioRunner.pending()) { G.busy = false; G.ui = 'idle'; UI.toast('Un événement attend : libère la place nécessaire pour terminer la mission.', 'error'); return; }
+    G.over = true; Music.victory();
     showEnd(true);
   }
   async function defeat(reason) {
@@ -1766,26 +1779,11 @@
   // =====================================================================
   // Événements et dialogues
   // =====================================================================
-  function matchesUnit(target, u) {
-    if (!target || !u) return false;
-    if (target.startsWith('unit:')) return u.team !== 'enemy' && u.sourceId === target.slice(5);
-    return u.sourceId === target;
-  }
-
   async function runEvents(type, data) {
-    for (const ev of G.chapter.events || []) {
-      if (ev.once !== false && G.fired.has(ev.id)) continue;
-      const tr = ev.trigger || {};
-      if (tr.type !== type) continue;
-      if (type === 'turn' && Number(tr.turn) !== data.turn) continue;
-      if (type === 'death' && !matchesUnit(tr.target, data.unit)) continue;
-      if (type === 'area') {
-        const u = data.unit;
-        if (!(u.x >= tr.x && u.y >= tr.y && u.x < tr.x + (tr.w || 1) && u.y < tr.y + (tr.h || 1))) continue;
-      }
-      G.fired.add(ev.id);
-      await playDialogue(ev.script || '');
-    }
+    if (!scenarioRunner) return;
+    const busy = G.busy, ui = G.ui; G.busy = true; G.ui = 'event';
+    try { await scenarioRunner.run(type, data); }
+    finally { G.busy = busy; G.ui = ui; lastInfoKey = ''; refreshDanger(); updateObjective(); }
   }
   async function areaEvents(u) { if (u.team !== 'enemy') await runEvents('area', { unit: u }); }
 
@@ -1994,6 +1992,7 @@
   window.PlaytestPreparation = preparation;
   const trade = TradePanel.create({ G, h, R, portrait: u => portraitEl(u, 'mini'), hideMenu, returnToMenu: openActionMenu,
     changed: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateInfo(); } });
+  const scenarioRuntime = ScenarioRuntime.create({ G, R, playDialogue, freeSpotNear, float });
 
   // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
   const playerSide = () => alive().filter(u => u.team !== 'enemy');

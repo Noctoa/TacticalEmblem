@@ -1,0 +1,16 @@
+Mise à jour : pack Fire Emblem GBA complet + fonds de combat
+=============================================================
+Basée sur la version GitHub « Can now add events after another » (99740e4).
+Contient tout le pack Fire Emblem GBA (remplace les zips précédents du pack).
+
+Installation
+1. git pull
+2. Extraire ce zip à la racine du dossier TacticalEmblem (remplacer les fichiers)
+3. Lancer update.bat
+
+Fonds de combat
+- 19 décors FE6 : assets/packs/fe-gba/ressources/fonds-combat/
+- Terrains et tilesets > fiche d'un terrain > « Fond de combat ».
+- Base de données > Ressources > « Ajouter le pack Fire Emblem GBA » : copie le pack et pose un fond
+  sur chaque terrain qui n'en a pas (Plaine, Forêt, Montagne, Fort, Village, Trône...).
+- En combat, le décor vient du terrain du défenseur ; sans fond, la map floutée comme avant.

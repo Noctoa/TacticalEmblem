@@ -1,0 +1,55 @@
+{
+ "type": "battler",
+ "name": "Cleric — FE8",
+ "facing": "left",
+ "cell": [
+  31,
+  38
+ ],
+ "anchor": [
+  16,
+  37
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 2,
+   "projectile": "wave"
+  },
+  "dodge": {
+   "frames": [
+    6
+   ],
+   "durations": [
+    260
+   ]
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}

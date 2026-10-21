@@ -30,6 +30,7 @@ const ROOT = 'ressources';
 const DIRS = {
   characters: ROOT + '/personnages',
   tilesets: ROOT + '/tilesets',
+  battlebacks: ROOT + '/fonds-combat',
   system: ROOT + '/interface',
   bgm: ROOT + '/musiques',
   me: ROOT + '/jingles',
@@ -50,6 +51,7 @@ personnages/   un dossier par personnage (ou ennemi générique), avec dedans :
                  - son portrait            (image seule, face set 128×112 ou portrait simple)
                Les noms de fichiers sont libres, les sous-dossiers aussi.
 tilesets/      images de tilesets (maps)
+fonds-combat/  décors des animations de combat (un par terrain, réglé dans Terrains et tilesets)
 interface/     curseur, fenêtres…
 musiques/      musiques de phase
 jingles/       montée de niveau, victoire, game over
@@ -104,7 +106,7 @@ function ownerOf(rel) {
 
 /** Inventaire des ressources. Clés des sprites : chemin sans extension. */
 function scanResources(dir) {
-  const res = { characters: {}, battlers: {}, faces: [], tilesets: [], system: [], bgm: [], me: [], se: [], owners: [] };
+  const res = { characters: {}, battlers: {}, faces: [], tilesets: [], battlebacks: [], system: [], bgm: [], me: [], se: [], owners: [] };
   const files = walk(dir, ROOT);
   const set = new Set(files);
   const used = new Set();
@@ -132,6 +134,7 @@ function scanResources(dir) {
   const under = (d) => files.filter(f => f.startsWith(d + '/'));
   for (const f of under(DIRS.characters)) if (IMAGE_EXT.test(f) && !used.has(f)) res.faces.push(f);
   for (const f of under(DIRS.tilesets)) if (IMAGE_EXT.test(f)) res.tilesets.push(f);
+  for (const f of under(DIRS.battlebacks)) if (IMAGE_EXT.test(f)) res.battlebacks.push(f);
   for (const f of under(DIRS.system)) if (IMAGE_EXT.test(f)) res.system.push(f);
   for (const k of ['bgm', 'me', 'se']) for (const f of under(DIRS[k])) if (AUDIO_EXT.test(f)) res[k].push(f);
   const pDir = path.join(dir, DIRS.characters);

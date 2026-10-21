@@ -1,0 +1,93 @@
+{
+ "type": "battler",
+ "name": "Lugh",
+ "facing": "left",
+ "cell": [
+  48,
+  40
+ ],
+ "anchor": [
+  17,
+  39
+ ],
+ "columns": 12,
+ "count": 21,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 9,
+   "projectile": "wave"
+  },
+  "critical": {
+   "frames": [
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    0
+   ],
+   "durations": [
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "release": 2,
+   "projectile": "wave"
+  },
+  "dodge": {
+   "frames": [
+    19,
+    20
+   ],
+   "durations": [
+    260,
+    120
+   ]
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}

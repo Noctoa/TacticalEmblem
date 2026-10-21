@@ -81,12 +81,15 @@ test('couleur des pierres : danseuses incolores, épées rouges', () => {
 test('images du pack : Eliwood, Lyn et Hector ajoutés sans fiche reçoivent leurs ressources de base', () => {
   const fs = require('fs'), path = require('path');
   const root = path.join(__dirname, '..', 'assets', 'default');
-  for (const a of Object.values(P.ART)) {
-    assert.ok(fs.existsSync(path.join(root, a.portrait)), a.portrait);
-    assert.ok(fs.existsSync(path.join(root, a.battler + '.json')), a.battler);
-    assert.ok(fs.existsSync(path.join(root, a.mapSprite + '.json')), a.mapSprite);
+  for (const a of Object.values(P.ART).concat(Object.values(P.CLASS_ART))) {
+    const base = a.pack ? path.join(__dirname, '..', 'assets', 'packs', a.pack) : root;
+    if (a.portrait) assert.ok(fs.existsSync(path.join(base, a.portrait)), a.portrait);
+    if (a.battler) assert.ok(fs.existsSync(path.join(base, a.battler + '.json')), a.battler);
+    if (a.mapSprite) assert.ok(fs.existsSync(path.join(base, a.mapSprite + '.json')), a.mapSprite);
   }
-  assert.deepEqual(P.artFolders(['fe7', 'fe6']), ['Eliwood', 'Lyn', 'Hector']);
+  const folders = P.artFolders(['fe7', 'fe6']);
+  for (const who of ['Eliwood', 'Lyn', 'Hector']) assert.ok(folders.some(f => f.folder === who && f.pack === ''), who);
+  assert.ok(folders.some(f => f.folder === 'Roy' && f.pack === 'fe-gba'), 'Roy (pack GBA)');
   const p = D.sampleProject('Pack');
   p.db.units = p.db.units.filter(u => !['c_eliwood', 'c_lyn', 'c_hector'].includes(u.id));
   const res = P.install(p.db, ['fe7'], { has: () => true });
@@ -98,7 +101,7 @@ test('images du pack : Eliwood, Lyn et Hector ajoutés sans fiche reçoivent leu
   assert.equal(hec.portrait, 'ressources/personnages/Hector/portrait.png');
   assert.ok(res.art >= 3);
   const ninian = p.db.units.find(u => u.name === 'Ninian');
-  assert.equal(ninian.portrait, '');
+  assert.equal(ninian.portrait, P.ART['fe7:Ninian'] ? P.ART['fe7:Ninian'].portrait || '' : '');
   // ressource absente du projet : rien n'est relié
   const q = D.sampleProject('Pack2');
   q.db.units = q.db.units.filter(u => u.id !== 'c_lyn');
@@ -116,4 +119,15 @@ test('Xarrin a son propre sprite de map (pose unique, .json complet)', () => {
   assert.equal(meta.base, 32);
   for (const a of ['idle', 'left', 'right', 'down', 'up', 'focus']) assert.ok(meta.anims[a], a);
   assert.ok(meta.teamColors.length);
+});
+
+test('fonds de combat du pack GBA : posés sur les terrains qui n’en ont pas, fichiers présents', () => {
+  const fs = require('fs'), path = require('path');
+  const p = D.sampleProject('Fonds');
+  p.db.terrains.find(t => t.id === 'forest').battleback = 'ressources/fonds-combat/mien.png';
+  const n = P.applyBattlebacks(p.db);
+  assert.ok(n >= 12, String(n));
+  assert.equal(p.db.terrains.find(t => t.id === 'forest').battleback, 'ressources/fonds-combat/mien.png');
+  for (const t of p.db.terrains.filter(x => x.battleback && x.id !== 'forest')) assert.ok(fs.existsSync(path.join(__dirname, '..', 'assets', 'packs', 'fe-gba', t.battleback)), t.battleback);
+  assert.equal(P.applyBattlebacks(D.sampleProject('x').db, () => false), 0);
 });

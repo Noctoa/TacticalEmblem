@@ -1,0 +1,94 @@
+{
+ "type": "battler",
+ "name": "Nils",
+ "facing": "left",
+ "cell": [
+  43,
+  40
+ ],
+ "anchor": [
+  19,
+  39
+ ],
+ "columns": 12,
+ "count": 24,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    11,
+    16,
+    14,
+    17,
+    15,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 20,
+   "approach": [
+    17,
+    19
+   ],
+   "retreat": [
+    22,
+    24
+   ]
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}

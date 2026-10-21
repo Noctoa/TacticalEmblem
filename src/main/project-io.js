@@ -22,6 +22,7 @@ const Team = require('../shared/team.js');
 const Deployment = require('../shared/deployment.js');
 const Villages = require('../shared/villages.js');
 const Locks = require('../shared/locks.js');
+const Scenario = require('../shared/scenario.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -90,6 +91,7 @@ function loadProject(dir, assetsDir) {
 function saveProject(dir, project) {
   const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta), ...Locks.validateKeys(project.db)];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
+  for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) if (ch.villages !== undefined) {
     const map = project.maps.find(m => m.id === ch.mapId);
     // Comme les actes sans villages, un acte orphelin reste éditable après suppression de sa map.
@@ -134,8 +136,9 @@ function copyDir(src, dest) {
 }
 
 /** Copie les ressources par défaut dans un projet existant, sans écraser ses fichiers.
- *  only : liste de dossiers de personnages (ressources/personnages/<nom>) à copier ; absent = tout. */
-function installDefaults(dir, assetsDir, only) {
+ *  only : liste de dossiers de personnages (ressources/personnages/<nom>) à copier ; absent = tout.
+ *  pack : nom d'un pack de ressources (assets/packs/<pack>/ressources) au lieu des ressources par défaut. */
+function installDefaults(dir, assetsDir, only, pack) {
   let added = 0;
   const walk = (src, dest) => {
     fs.mkdirSync(dest, { recursive: true });
@@ -146,7 +149,9 @@ function installDefaults(dir, assetsDir, only) {
     }
   };
   // seulement assets/default/ressources : d'éventuels restes d'une ancienne version (img/, audio/) sont ignorés
-  const src = path.join(assetsDir, 'default', Layout.ROOT), dest = path.join(dir, Layout.ROOT);
+  const base = pack ? path.join(assetsDir, 'packs', path.basename(String(pack))) : path.join(assetsDir, 'default');
+  const src = path.join(base, Layout.ROOT), dest = path.join(dir, Layout.ROOT);
+  if (!fs.existsSync(src)) throw new Error('Pack de ressources introuvable : ' + pack);
   if (Array.isArray(only)) {
     const rel = path.relative(Layout.ROOT, Layout.DIRS.characters);
     for (const who of only) {
