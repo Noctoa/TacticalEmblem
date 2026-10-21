@@ -31,7 +31,7 @@
         if (object.recruitUnitId) errors.push(`${name} : le recrutement se règle sur un village.`);
         if (kind === 'doors') {
           if (!db.terrains.some(t => t.id === object.openTerrainId && R.moveCost(t, 'foot') < R.IMPASSABLE)) errors.push(`${name} : choisis un terrain de passage accessible à pied.`);
-          if ([...(ch.players || []), ...(ch.allies || []), ...(ch.enemies || []).filter(e => !(e.appearTurn > 0))].some(p => p.x === object.x && p.y === object.y)) errors.push(`${name} : une unité ne peut pas commencer sur une porte fermée.`);
+          if ([...(ch.players || []), ...(ch.allies || []), ...(ch.enemies || []).filter(e => !e.eventOnly && !(e.appearTurn > 0))].some(p => p.x === object.x && p.y === object.y)) errors.push(`${name} : une unité ne peut pas commencer sur une porte fermée.`);
           if (object.reward && ((object.reward.gold || 0) || object.reward.itemId)) errors.push(`${name} : les récompenses se règlent sur les coffres.`);
         }
       }

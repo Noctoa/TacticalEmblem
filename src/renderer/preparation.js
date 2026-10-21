@@ -58,7 +58,7 @@
       };
       for (const v of Villages.list(ch)) marker(v, '#987328', Villages.visited(G.campaign, ch, v) && !v.repeatOnReplay ? '✓' : 'V');
       for (const kind of Locks.lists) for (const object of Locks.list(ch, kind)) marker(object, '#925a2c', kind === 'chests' ? 'C' : 'P');
-      for (const e of ch.enemies || []) if (!(e.appearTurn > 0)) marker(e, '#a13232', e.isBoss ? '★' : '');
+      for (const e of ch.enemies || []) if (!e.eventOnly && !(e.appearTurn > 0)) marker(e, '#a13232', e.isBoss ? '★' : '');
       for (const a of ch.allies || []) if (!ch.players.some(p => p.unitId === a.unitId) && !G.campaign.dead.includes(a.unitId)) marker(a, '#258344', 'A');
       Deployment.slots(ch).forEach((p, i) => marker(p, S.plan.some(q => q.unitId === S.focus && q.x === p.x && q.y === p.y) ? '#a37c19' : '#2859a8', String(i + 1)));
       canvas.addEventListener('click', e => {

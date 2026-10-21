@@ -85,6 +85,18 @@ Les récompenses vont dans l'inventaire puis le convoi. Si les deux sont pleins,
 
 Flèches pour parcourir les deux colonnes, Z / Entrée pour choisir, X / Échap / clic droit pour annuler une sélection puis revenir. **Retour** ferme directement l'écran. Fermer sans transfert permet toujours d'annuler le déplacement ; après un transfert, le déplacement est validé et les objets restent échangés. Le personnage actif peut encore attaquer, soigner, utiliser un objet, échanger à nouveau ou attendre. Le partenaire garde son état de tour et n'est pas réactivé. Le verrou de déplacement disparaît au tour suivant. Recommencer restaure les inventaires de début d'acte ; une victoire et la sauvegarde de campagne conservent les échanges.
 
+**Événements scénarisés** — Dans **Base de données › Chapitres et actes › fiche d'acte › Événements & dialogues**, ajouter un événement, son déclencheur, ses conditions et ses actions. Les anciens dialogues restent lisibles et sont joués avant les nouvelles actions. Les actions se réordonnent et les événements se dupliquent. Les fiches peuvent être repliées pour naviguer dans un acte chargé.
+
+Déclencheurs : début d'acte, début de tour joueur, unité vaincue, fin d'action d'un joueur ou allié dans une zone, coffre ouvert, porte ouverte, village visité, conditions devenues vraies et victoire. Les conditions exigent tous les personnages choisis vivants et déployés, ainsi que les informations mémorisées demandées. Un réserviste ne compte pas comme présent. Par défaut, l'événement joue une fois par tentative ; **Une seule fois dans toute la campagne** évite aussi sa répétition après victoire et rejeu. Un événement conditionnel répétable attend que ses conditions deviennent fausses puis vraies avant de rejouer.
+
+Actions disponibles : dialogue, or, orbes d'invocation, arme ou objet avec ses utilisations et son destinataire, apparition d'un renfort, ouverture/fermeture de porte, remplacement de l'objectif, mémorisation d'une information vraie/fausse et choix entre deux réponses. Une information absente vaut faux. Son nom commence par une lettre et contient uniquement lettres, chiffres et `_` (64 caractères maximum). Par exemple, un choix mémorise `marche_accepte` ; un autre événement exige cette information vraie pour donner des orbes, et une branche peut exiger sa valeur fausse. Les choix et événements joués une fois par campagne sont conservés après victoire dans les sauvegardes, et peuvent servir dans les actes suivants.
+
+Pour un renfort, placer l'ennemi en **F3** et cocher **Arrivée uniquement par événement**, puis le choisir dans l'action. Le tour d'arrivée est alors ignoré. Il apparaît sur sa case ou une case accessible voisine et ne se duplique pas s'il est déjà apparu ou vaincu. Les renforts en attente restent inclus dans les objectifs qui les comptent. Une porte occupée attend avant de se fermer. Un objet va au personnage choisi, sinon au convoi si ce personnage est absent, vaincu ou plein ; sans destinataire, il va directement au convoi. Si aucune place n'est disponible, l'événement attend et reprend à cette action quand la place est libérée, sans redonner les récompenses précédentes. La victoire attend aussi la fin des événements en cours : libérer une place par un échange ou le convoi permet de récupérer une récompense de victoire bloquée.
+
+**Exemple d'embuscade** : déclencheur **Coffre ouvert**, choisir le coffre ; ajouter **Faire apparaître un renfort**, **Ouvrir / fermer une porte** avec la case Ouvrir décochée, puis **Changer l'objectif › Survivre › 5 tours**. Ces cinq tours se comptent à partir du tour courant, inclus. Le nouvel objectif remplace tous les objectifs de victoire et conserve les règles de défaite et les personnages à protéger. Pour un objectif de prise de point, prévoir un personnage autorisé dans les participants ou l'imposer dans les préparatifs.
+
+Les modifications de portes et d'objectifs restent propres à la tentative ; le projet d'édition reste intact. Recommencer ou abandonner restaure ensemble les récompenses, choix et informations du début d'acte. Les sauvegardes de bataille restent des débuts d'acte, et ne suspendent pas une séquence d'événements en cours. Les données et références invalides sont signalées et refusées avant écriture.
+
 Le menu de la map propose **Sauvegarder** : il enregistre le **début du chapitre**, avec la campagne, les classes, les inventaires, les soutiens, le convoi et les pertes des chapitres précédents, dans l'un des cinq emplacements de `saves/`. **Continuer la campagne** reprend la dernière sauvegarde au prochain lancement. **Recommencer** annule uniquement la tentative du chapitre courant. La suspension au milieu d'un tour n'est pas encore disponible.
 
 Ouvre une fenêtre de jeu sur le chapitre courant (le projet est enregistré avant). Les unités sont animées sur la map (attente, marche dans les 4 directions, survol, gris quand elles ont joué) et chaque combat ouvre une scène animée façon GBA : attaque, critique, attaque à distance avec projectile, esquive, barres de PV. Clic ou Z maintenu pour accélérer, X ou clic droit pour passer ; l'option se coupe dans le menu de la map ou dans Système.
@@ -364,6 +376,9 @@ src/shared/villages.js     accès aux villages, récompenses et historique — t
 src/renderer/village-fields.js réglages des villages partagés par l'éditeur de map et la fiche d'acte
 src/shared/locks.js        coffres, portes, clés, Crochetage et terrain des passages — testés dans test/locks.test.js
 src/renderer/lock-fields.js réglages des coffres et portes partagés par l'éditeur de map et la fiche d'acte
+src/shared/scenario.js     déclencheurs, conditions, mémoire et séquencement des événements — testés dans test/scenario.test.js
+src/renderer/event-fields.js éditeur des événements et de leurs actions
+src/renderer/scenario-runtime.js actions de scénario dans le playtest
 src/renderer/settings-window.js  fenêtre Paramètres du playtest (sauvegarde, chargement, son, debug)
 src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
@@ -381,6 +396,7 @@ test/snapshot-deployment.js préparatifs de bout en bout (sélection, carte, ter
 test/snapshot-villages.js   villages de bout en bout (placement, déplacement/annulation, récompenses, recrues, sauvegarde et rejeu)
 test/snapshot-locks.js      coffres et portes de bout en bout (édition, clés, Crochetage, passage, reprise et rejeu)
 test/snapshot-battle-trade.js échanges en bataille de bout en bout (annulation, inventaires pleins, déplacement, attaque, reprise et sauvegarde)
+test/snapshot-scenario.js   événements de bout en bout (édition, choix, coffre, embuscade, porte, objectif, récompenses en attente, reprise et sauvegarde)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 
@@ -388,4 +404,4 @@ test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, c
 
 ## Pistes pour la suite
 
-Priorités suivantes : animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les villages, coffres, portes, échanges en bataille, promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.
+Priorités suivantes : animations des classes génériques, brouillard de guerre, sauvegarde en milieu de bataille et export d'un jeu jouable autonome. Les événements à actions et choix mémorisés, villages, coffres, portes, échanges en bataille, promotions à embranchements, la gestion de l'équipe au camp et l'écran de préparation avant bataille sont disponibles. Le recrutement reste centré sur les invocations ; l'action Parler/recruter n'est pas prioritaire. La proposition complète et l'état des lots sont dans `docs/proposition-systemes-fire-emblem.md`.

@@ -4,10 +4,11 @@
  * de lobby déjà vues.
  */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
+  const common = typeof module !== 'undefined' && module.exports;
+  const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./scenario.js') : root.Scenario);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Campaign = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
   const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel', 'merges'];
@@ -61,6 +62,7 @@
       !save.campaign || !['classic', 'casual'].includes(save.campaign.mode) ||
       !Array.isArray(save.campaign.dead) || !save.campaign.units || typeof save.campaign.units !== 'object' || Array.isArray(save.campaign.units) ||
       !Array.isArray(save.convoy) || !save.supports || typeof save.supports !== 'object') throw new Error('Sauvegarde de campagne invalide ou version non prise en charge.');
+    if (!Scenario.validateMemory(save.campaign.scenario)) throw new Error('Mémoire des événements invalide dans la campagne.');
     for (const u of Object.values(save.campaign.units)) if (!u || !u.stats || !Number.isFinite(u.stats.hp) || !Array.isArray(u.inventory)) throw new Error('Une unité de la sauvegarde est illisible.');
     for (const u of Object.values(save.campaign.units)) {
       const errors = Skills.validateAssignment(u);

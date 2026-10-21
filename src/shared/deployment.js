@@ -28,7 +28,7 @@
       const key = p.x + ',' + p.y;
       if (points.has(key)) errors.push('Préparatifs : plusieurs cases de départ se superposent.');
       points.add(key);
-      if ((ch.enemies || []).some(e => !(e.appearTurn > 0) && same(e, p)) || (ch.allies || []).some(a => allied(ch).has(a.unitId) && same(a, p))) errors.push('Préparatifs : une case de départ est occupée par un ennemi ou un allié.');
+      if ((ch.enemies || []).some(e => !e.eventOnly && !(e.appearTurn > 0) && same(e, p)) || (ch.allies || []).some(a => allied(ch).has(a.unitId) && same(a, p))) errors.push('Préparatifs : une case de départ est occupée par un ennemi ou un allié.');
     }
     if (forced(ch, db).length > limit(ch)) errors.push('Préparatifs : la limite est inférieure au nombre de personnages imposés ou à protéger.');
     return [...new Set(errors)];

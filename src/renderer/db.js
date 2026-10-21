@@ -827,6 +827,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (['units', 'items', 'weapons'].includes(tab)) {
+          const refs = Scenario.references(db(), tab, cur.id);
+          if (refs.length) return UI.alert('Élément utilisé par un événement', 'Modifie d’abord ces événements : ' + refs.join(', ') + '.');
+        }
         if (['units', 'items', 'weapons', 'terrains'].includes(tab)) {
           const locks = Locks.references(db(), tab, cur.id);
           if (locks.length) return UI.alert('Élément utilisé par un coffre ou une porte', 'Modifie d’abord ces interactions : ' + locks.join(', ') + '.');
@@ -1056,13 +1060,6 @@
   // ------------------------------------------------------------------
   // Actes (niveaux jouables, data/chapters.json) : objectif + événements / dialogues
   // ------------------------------------------------------------------
-  const TRIGGERS = [
-    { value: 'start', label: "Début de l'acte" },
-    { value: 'turn', label: 'Début du tour (phase joueur)' },
-    { value: 'death', label: "Unité vaincue (mort ou retraite)" },
-    { value: 'area', label: 'Une unité du joueur entre dans une zone' },
-    { value: 'victory', label: 'Victoire' }
-  ];
 
   function renderChapters(body) {
     const list = db().chapters;
@@ -1126,47 +1123,8 @@
       h('button', { class: 'small', onclick: async () => { await close(); Editor.selectChapter(ch.id); } }, 'Ouvrir sur la map'),
       h('button', { class: 'small primary', html: Icons.icon('play'), onclick: async () => { await close(); Editor.playtest(ch.id); } }, 'Tester')));
 
-    // événements
-    pane.append(h('div', { class: 'form-heading', style: { maxWidth: '760px' } }, 'Événements & dialogues'));
-    const evBox = h('div', { class: 'events', style: { maxWidth: '760px', marginTop: '10px' } });
-    const targets = () => [{ value: '', label: '— choisir —' }]
-      .concat(ch.players.map(p => { const u = byId(db().units, p.unitId); return { value: 'unit:' + p.unitId, label: '★ ' + (u ? u.name : p.unitId) }; }))
-      .concat((ch.allies || []).map(p => { const u = byId(db().units, p.unitId); return { value: 'unit:' + p.unitId, label: '✚ ' + (u ? u.name : p.unitId) + ' (allié)' }; }))
-      .concat(ch.enemies.map(e => ({ value: e.id, label: `✖ ${e.name || e.classId} (${e.x},${e.y})` })));
-    ch.events.forEach((ev, i) => {
-      const trig = h('select', {}, TRIGGERS.map(t => h('option', { value: t.value }, t.label)));
-      trig.value = ev.trigger.type;
-      trig.addEventListener('change', () => { ev.trigger = { type: trig.value }; if (trig.value === 'turn') ev.trigger.turn = 2; if (trig.value === 'area') Object.assign(ev.trigger, { x: 0, y: 0, w: 1, h: 1 }); change(); renderBody(); });
-      const params = [];
-      if (ev.trigger.type === 'turn') {
-        const n = h('input', { type: 'number', min: 1, max: 99, style: { width: '70px' } }); n.value = ev.trigger.turn || 1;
-        n.addEventListener('change', () => { ev.trigger.turn = Number(n.value) || 1; change(); });
-        params.push(h('span', { class: 'muted' }, 'tour'), n);
-      }
-      if (ev.trigger.type === 'death') {
-        const s = h('select', {}, targets().map(o => h('option', { value: o.value }, o.label))); s.value = ev.trigger.target || '';
-        s.addEventListener('change', () => { ev.trigger.target = s.value; change(); });
-        params.push(s);
-      }
-      if (ev.trigger.type === 'area') {
-        for (const k of ['x', 'y', 'w', 'h']) {
-          const n = h('input', { type: 'number', min: k === 'w' || k === 'h' ? 1 : 0, max: 499, style: { width: '58px' }, title: k }); n.value = ev.trigger[k] ?? (k === 'w' || k === 'h' ? 1 : 0);
-          n.addEventListener('change', () => { ev.trigger[k] = Number(n.value) || 0; change(); });
-          params.push(h('span', { class: 'muted' }, k), n);
-        }
-      }
-      const once = h('input', { type: 'checkbox' }); once.checked = ev.once !== false;
-      once.addEventListener('change', () => { ev.once = once.checked; change(); });
-      const ta = h('textarea', { rows: 5, spellcheck: false, placeholder: 'Aldric: On avance !\nMaëlle: À vos ordres.' }); ta.value = ev.script || '';
-      ta.addEventListener('input', () => { ev.script = ta.value; change(); });
-      const up = h('button', { class: 'mini', html: Icons.icon('up'), title: 'Monter', onclick: () => { if (i > 0) { [ch.events[i - 1], ch.events[i]] = [ch.events[i], ch.events[i - 1]]; change(); renderBody(); } } });
-      const del = h('button', { class: 'mini', html: Icons.icon('trash'), title: 'Supprimer', onclick: () => { ch.events.splice(i, 1); change(); renderBody(); } });
-      evBox.append(h('div', { class: 'event-card' },
-        h('div', { class: 'event-head' }, h('span', { html: Icons.icon('chat') }), trig, ...params, h('span', { class: 'grow' }), h('label', { class: 'field checkbox' }, once, h('span', {}, 'une fois')), up, del),
-        h('div', { class: 'event-body' }, ta, h('div', { class: 'event-tip' }, 'Une réplique par ligne : « Nom: texte ». Le portrait est pris dans la fiche de l\'unité du même nom. Une ligne sans « : » = narration.'))));
-    });
-    evBox.append(h('div', {}, h('button', { class: 'small', html: Icons.icon('plus'), onclick: () => { ch.events.push({ id: Editor.uid('ev', ch.events), trigger: { type: 'start' }, once: true, script: '' }); change(); renderBody(); } }, 'Ajouter un événement')));
-    pane.append(evBox);
+    const eventMap = Editor.project().maps.find(m => m.id === ch.mapId);
+    if (eventMap) EventFields.render(pane, ch, db(), eventMap, { change, uid: Editor.uid });
   }
 
   // ------------------------------------------------------------------
