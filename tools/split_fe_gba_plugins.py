@@ -162,7 +162,7 @@ def main():
         manifest = {
             'id': spec['id'], 'name': spec['name'], 'version': VERSION, 'kind': 'ressources',
             'description': spec['description'],
-            'author': 'Tactics Forge (découpe) — planches : The Spriters Resource et leurs auteurs',
+            'author': 'Tactical Emblem (découpe) — planches : The Spriters Resource et leurs auteurs',
             'notice': "Ressources de fans et de leurs éditeurs (Nintendo / Intelligent Systems, Square Enix) : usage personnel.",
             'ressources': 'ressources',
             'links': {'characters': characters, 'classes': classes, 'battlebacks': battlebacks},

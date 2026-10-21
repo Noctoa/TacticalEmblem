@@ -1,6 +1,6 @@
 {
-  "name": "tactics-forge",
-  "productName": "Tactics Forge",
+  "name": "tactical-emblem",
+  "productName": "Tactical Emblem",
   "version": "0.1.0",
   "description": "Éditeur de Tactical RPG façon Fire Emblem : gestion de projet, maps, base de données, chapitres et playtest. Import Tiled (.tmx/.tmj).",
   "main": "main.js",
@@ -19,7 +19,7 @@
     "electron": "^33.0.0"
   },
   "build": {
-    "appId": "fr.luca.tacticsforge",
+    "appId": "fr.luca.tacticalemblem",
     "files": ["main.js", "preload.js", "src/**/*", "assets/**/*", "plugins/**/*", "node_modules/**/*"],
     "win": { "target": "portable" }
   }

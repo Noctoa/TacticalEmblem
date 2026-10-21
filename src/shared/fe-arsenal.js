@@ -1,6 +1,6 @@
 /*
  * Pack « Armes, objets et compétences de la série Fire Emblem » : fiches (stats, prix, effets) sans aucune image.
- * Les valeurs sont celles de l'ère GBA / Tellius quand elles existent, arrondies au moteur de Tactics Forge.
+ * Les valeurs sont celles de l'ère GBA / Tellius quand elles existent, arrondies au moteur de Tactical Emblem.
  * Les effets que le moteur ne gère pas sont simplifiés (expliqué dans la description des compétences).
  *
  * install(db, ['swords', 'skills', ...]) ajoute les fiches absentes (même nom = déjà là, sans tenir compte

@@ -1,6 +1,6 @@
 'use strict';
 /*
- * Plugins côté disque : plugins fournis avec Tactics Forge (dossier plugins/ de l'application), plugins installés
+ * Plugins côté disque : plugins fournis avec Tactical Emblem (dossier plugins/ de l'application), plugins installés
  * dans un projet (<projet>/plugins/<id>/), installation (copie des ressources sans écraser + fiche et scripts) et
  * désinstallation (la fiche et les scripts partent, les ressources copiées restent : elles peuvent être utilisées).
  */

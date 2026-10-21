@@ -192,13 +192,9 @@
     ];
   }
 
-  // Tileset d'exemple : index -> terrain
-  const SAMPLE_TILE_TERRAIN = {
-    0: 'plain', 1: 'plain', 2: 'forest', 3: 'mountain', 4: 'peak', 5: 'water', 6: 'road', 7: 'bridge',
-    8: 'sand', 9: 'fort', 10: 'village', 11: 'wall', 12: 'floor', 13: 'throne', 14: 'wall', 15: 'gate',
-    16: 'bush', 17: 'thicket'
-  };
-  const LEGEND = { '.': 0, ',': 1, T: 2, M: 3, '^': 4, '~': 5, '=': 6, B: 7, s: 8, F: 9, V: 10, '#': 11, _: 12, K: 13, H: 14, G: 15, b: 16, D: 17 };
+  // Map d'exemple : un caractère par case -> terrain de jeu (le décor est dessiné avec le tileset « Village »)
+  const LEGEND = { '.': 'plain', ',': 'plain', T: 'forest', M: 'mountain', '^': 'peak', '~': 'water', '=': 'road', B: 'bridge', s: 'sand',
+    F: 'fort', V: 'village', '#': 'wall', _: 'floor', K: 'throne', H: 'wall', G: 'gate', b: 'bush', D: 'thicket' };
 
   const SAMPLE_ASCII = [
     '^^MMM..TT..~~...TMM^',
@@ -210,29 +206,62 @@
     '..T...=====BB=====..',
     '...b..=...s~~s..=...',
     '..V...=....~~.b.=.TT',
-    '.....,=.b..~~..TT=TT',
-    '..TT..=.b..~~.....=.',
+    '.....,=.b..~~..T==TT',
+    '..TT..=.b..~~....==.',
     '.TTT..=...~~~..MM.=.',
     '..T..F=...~~..MMM...',
     'MM....=...~~....M..^',
     '^MM..,=,..~~.....M^^'
   ];
 
+  /**
+   * Map d'exemple dessinée avec le tileset « Village » (16 px, agrandi ×2) sur trois calques : sol (herbe, eau,
+   * terre), chemins (raccordés automatiquement) et décor (arbres, rochers, maisons, pont). Le terrain de jeu de
+   * chaque case suit SAMPLE_ASCII : là où le tile n'a pas déjà le bon terrain, la case est peinte en surcharge.
+   */
   function sampleMap() {
-    const h = SAMPLE_ASCII.length, w = SAMPLE_ASCII[0].length;
-    const data = [];
-    for (const row of SAMPLE_ASCII) {
-      if (row.length !== w) throw new Error('Ligne de map invalide : ' + row);
-      for (const ch of row) data.push((LEGEND[ch] || 0) + 1);
+    const rows = SAMPLE_ASCII, h = rows.length, w = rows[0].length;
+    for (const row of rows) if (row.length !== w) throw new Error('Ligne de map invalide : ' + row);
+    const at = (x, y) => (x < 0 || y < 0 || x >= w || y >= h) ? null : rows[y][x];
+    const wet = (c) => c === '~' || c === 'B';
+    const way = (c) => c === '=' || c === 'B';
+    const sol = [], paths = [], decor = [], terrain = [];
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const c = rows[y][x], i = y * w + x, alt = (x * 7 + y * 3) % 2;
+      // sol
+      let g = 17;
+      if (wet(c)) {
+        const L = !wet(at(x - 1, y)) && at(x - 1, y) !== null, R = !wet(at(x + 1, y)) && at(x + 1, y) !== null;
+        const D = at(x, y + 1) !== null && !wet(at(x, y + 1));
+        g = D ? (L && R ? 101 : L ? 96 : R ? 98 : 97) : (L && R ? 86 : L ? 80 : R ? 82 : 81);
+      } else if (c === 's') g = 129;
+      sol[i] = g + 1;
+      // chemins (le pont relie les deux rives)
+      let r = 0;
+      if (c === '=') {
+        const u = way(at(x, y - 1)), d = way(at(x, y + 1)), l = way(at(x - 1, y)), rt = way(at(x + 1, y));
+        const k = (u ? 1 : 0) + (d ? 2 : 0) + (l ? 4 : 0) + (rt ? 8 : 0);
+        r = { 1: 30, 2: 15, 3: 44, 4: 31, 8: 14, 12: 45, 5: 29, 9: 28, 6: 13, 10: 12, 7: 47, 11: 62, 13: 46, 14: 63, 15: 61 }[k] || 45;
+      }
+      paths[i] = r ? r + 1 : 0;
+      // décor
+      const dec = { T: alt ? 22 : 38, D: alt ? 24 : 40, b: alt ? 23 : 39, M: alt ? 54 : 55, '^': alt ? 56 : 72, V: 26, F: 58, H: 105, ',': alt ? 7 : 8,
+        B: way(at(x - 1, y)) && way(at(x + 1, y)) ? 91 : way(at(x - 1, y)) ? 92 : 90 }[c];
+      decor[i] = dec !== undefined ? dec + 1 : 0;
+      // terrain : surcharge seulement si le tile du dessus ne le donne pas déjà
+      const top = decor[i] || paths[i] || sol[i];
+      const want = LEGEND[c] || 'plain';
+      terrain[i] = VILLAGE_TERRAIN[top - 1] === want ? '' : want;
     }
     return {
       id: 'map_1', name: 'Plaine de Varenne', width: w, height: h, tileWidth: 32, tileHeight: 32,
-      tilesets: [{ tilesetId: 'ts_plaines', firstgid: 1 }],
+      tilesets: [{ tilesetId: 'ts_village', firstgid: 1 }],
       layers: [
-        { id: 'l1', name: 'Sol', visible: true, data },
-        { id: 'l2', name: 'Décor', visible: true, data: new Array(w * h).fill(0) }
+        { id: 'l1', name: 'Sol', visible: true, data: sol },
+        { id: 'l2', name: 'Chemins', visible: true, data: paths },
+        { id: 'l3', name: 'Décor', visible: true, data: decor }
       ],
-      terrain: new Array(w * h).fill(''),
+      terrain,
       objects: []
     };
   }
@@ -244,7 +273,8 @@
     const t = {};
     const set = (terrain, ...ids) => ids.forEach(i => { t[i] = terrain; });
     set('plain', 0, 1, 2, 3, 4, 5, 16, 17, 18, 19, 21, 32, 33, 34, 35, 36, 37);
-    set('plain', 112, 113, 114, 115, 128, 129, 130, 131, 133, 134, 144, 145, 146, 147, 150); // plateau de terre
+    set('plain', 112, 113, 114, 115, 128, 130, 131, 133, 134, 144, 145, 146, 147, 150); // plateau de terre
+    set('floor', 129); // terre battue : sol (portes ouvertes, intérieurs)
     set('wall', 48, 49, 50, 51, 52, 53, 64, 65, 66, 67, 68, 69, 116, 117, 118, 132, 148, 149, 160, 161, 162, 163, 164, 165); // falaises
     set('water', 70, 80, 81, 82, 83, 84, 85, 86, 96, 97, 98, 99, 100, 101, 102);
     set('road', 12, 13, 14, 15, 28, 29, 30, 31, 44, 45, 46, 47, 61, 62, 63);
@@ -261,14 +291,6 @@
       id: 'ts_village', name: 'Village', image: 'ressources/tilesets/village.png', tileWidth: 16, tileHeight: 16,
       columns: 16, tileCount: 256, margin: 0, spacing: 0, imageWidth: 256, imageHeight: 256,
       tileTerrain: Object.assign({}, VILLAGE_TERRAIN)
-    };
-  }
-
-  function sampleTileset() {
-    return {
-      id: 'ts_plaines', name: 'Plaines', image: 'ressources/tilesets/plaines.png', tileWidth: 32, tileHeight: 32,
-      columns: 8, tileCount: 18, margin: 0, spacing: 0, imageWidth: 256, imageHeight: 96,
-      tileTerrain: Object.assign({}, SAMPLE_TILE_TERRAIN)
     };
   }
 
@@ -553,7 +575,7 @@
   function sampleProject(name) {
     const db = emptyDatabase();
     db.units = characters();
-    db.tilesets = [sampleTileset(), villageTileset()];
+    db.tilesets = [villageTileset()];
     db.chapters = [sampleChapter(), ...extraActs()];
     db.arcs = arcs();
     db.supports = supports();

@@ -1,4 +1,4 @@
-**Tactics Forge — Compétences, promotions et règles de campagne**
+**Tactical Emblem — Compétences, promotions et règles de campagne**
 
 Proposition de conception du 18 octobre 2026, complétée par un premier lot d'implémentation. Le détail de ce qui est livré figure à la fin du document ; le reste demeure une proposition. Les valeurs proposées sont des points de départ à tester, pas des règles universelles de Fire Emblem.
 

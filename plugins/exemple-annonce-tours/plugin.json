@@ -4,6 +4,6 @@
  "version": "1.0.0",
  "kind": "script",
  "description": "Plugin d'exemple : annonce chaque nouveau tour du joueur et compte les ennemis vaincus pendant l'acte. Sert de modèle pour écrire ses propres scripts (voir main.js).",
- "author": "Tactics Forge",
+ "author": "Tactical Emblem",
  "scripts": ["main.js"]
 }

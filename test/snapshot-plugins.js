@@ -66,7 +66,7 @@ module.exports = (win, openPlaytest) => {
       const js = c => wc.executeJavaScript(c, true);
       const until = async (c) => { for (let i = 0; i < 200; i++) { if (await js(c)) return; await js(`PlaytestState.dialogue && PlaytestState.dialogue.skip()`); await wait(100); } throw new Error('délai ' + c); };
       await until(`!!document.querySelector('.choice-list')`);
-      result.scripts = await js(`TacticsForge.loaded().map(s => s.split('/').slice(-2).join('/'))`);
+      result.scripts = await js(`TacticalEmblem.loaded().map(s => s.split('/').slice(-2).join('/'))`);
       await js(`[...document.querySelectorAll('.choice-list button')].find(b => b.textContent.includes('Classique')).click()`);
       await until(`PlaytestState.phase === 'player' && !PlaytestState.busy && !PlaytestState.dialogue`);
       result.toasts = await js(`[...document.querySelectorAll('.toast')].map(t => t.textContent)`);

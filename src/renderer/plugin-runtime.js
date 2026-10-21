@@ -2,11 +2,11 @@
  * Scripts des plugins : chaque plugin actif du projet peut fournir des fichiers .js (plugin.json › scripts),
  * chargés dans l'éditeur et dans le jeu. Un script s'enregistre avec :
  *
- *   TacticsForge.register('mon-plugin', {
+ *   TacticalEmblem.register('mon-plugin', {
  *     editor(api) { ... },                 // une fois, à l'ouverture du projet dans l'éditeur
  *     game(api) { ... },                   // une fois, au lancement du jeu (playtest)
  *   });
- *   TacticsForge.on('turn:start', (e, api) => { ... });   // événements du jeu (voir EVENTS)
+ *   TacticalEmblem.on('turn:start', (e, api) => { ... });   // événements du jeu (voir EVENTS)
  *
  * api : { where ('editor' | 'game'), project, db, toast(texte), state (le jeu : PlaytestState), version }
  * Un script qui plante est signalé dans la console et n'arrête ni l'éditeur ni le jeu.
@@ -68,6 +68,7 @@
     return loaded.length;
   }
 
-  root.TacticsForge = TF;
+  root.TacticalEmblem = TF;
+  root.TacticsForge = TF; // ancien nom (Tactics Forge), gardé pour les plugins déjà écrits
   root.PluginRuntime = { load, EVENTS };
 })(typeof self !== 'undefined' ? self : this);

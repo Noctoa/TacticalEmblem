@@ -54,7 +54,7 @@ module.exports = function (editorWin, openPlaytest) {
       await wait(900);
       await shot(ew, '01_editeur_tiles');
       // peinture : on sélectionne la forêt dans la palette et on peint 3 cases sur le calque décor
-      await js(ew, `(() => { const S = Editor.state; S.layerIndex = 1; S.brush = { tilesetId: 'ts_plaines', x: 2, y: 0, w: 1, h: 1 }; })()`);
+      await js(ew, `(() => { const S = Editor.state; S.layerIndex = 1; S.brush = { tilesetId: 'ts_village', x: 7, y: 1, w: 1, h: 1 }; })()`);
       ew.send('menu', 'mode-terrain'); await wait(400);
       await shot(ew, '02_editeur_terrain');
       ew.send('menu', 'mode-units'); await wait(400);
@@ -79,7 +79,7 @@ module.exports = function (editorWin, openPlaytest) {
 
       // peinture réelle à la souris + annuler / rétablir
       ew.send('menu', 'mode-tiles'); await wait(300);
-      await js(ew, `(() => { const S = Editor.state; S.layerIndex = 1; S.brush = { tilesetId: 'ts_plaines', x: 2, y: 0, w: 1, h: 1 }; })()`);
+      await js(ew, `(() => { const S = Editor.state; S.layerIndex = 1; S.brush = { tilesetId: 'ts_village', x: 7, y: 1, w: 1, h: 1 }; })()`);
       const rect = JSON.parse(await js(ew, `JSON.stringify(document.getElementById('map-canvas').getBoundingClientRect())`));
       const cell = 32 * (await js(ew, 'Editor.state.zoom'));
       const pt = (cx, cy) => ({ x: Math.round(rect.x + cx * cell + cell / 2), y: Math.round(rect.y + cy * cell + cell / 2) });
@@ -95,7 +95,7 @@ module.exports = function (editorWin, openPlaytest) {
       ew.send('menu', 'redo'); await wait(200);
       const redone = await decor();
       log('peinture', painted, 'annuler', undone, 'rétablir', redone);
-      if (painted !== '[3,3,3]' || undone !== '[0,0,0]' || redone !== '[3,3,3]') errors.push('peinture/undo incorrects');
+      if (painted !== '[24,24,24]' || undone !== '[0,0,0]' || redone !== '[24,24,24]') errors.push('peinture/undo incorrects');
       await shot(ew, '07c_peinture');
 
       // import Tiled

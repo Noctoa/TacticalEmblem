@@ -1,6 +1,6 @@
 @echo off
 rem ---------------------------------------------------------------------------
-rem  Mise a jour de l'executable de Tactics Forge a partir des fichiers de CE dossier
+rem  Mise a jour de l'executable de Tactical Emblem a partir des fichiers de CE dossier
 rem  (rien n'est telecharge depuis GitHub).
 rem
 rem    1. regarde quels fichiers ont change depuis le dernier .exe
@@ -12,7 +12,7 @@ rem ---------------------------------------------------------------------------
 setlocal
 chcp 65001 >nul
 cd /d "%~dp0"
-title Mise à jour de Tactics Forge
+title Mise à jour de Tactical Emblem
 
 if not exist "package.json" (
   echo Ce script doit être placé dans le dossier TacticalEmblem, à côté de package.json.
@@ -20,6 +20,12 @@ if not exist "package.json" (
 )
 
 rem --- l'application ne doit pas tourner (sinon l'.exe ne peut pas être remplacé)
+tasklist /FI "IMAGENAME eq Tactical Emblem*" 2>nul | find /I "Tactical Emblem" >nul
+if not errorlevel 1 (
+  echo Tactical Emblem est ouvert. Ferme-le puis relance la mise à jour.
+  goto :fail
+)
+rem     (ancien nom de l'application)
 tasklist /FI "IMAGENAME eq Tactics Forge*" 2>nul | find /I "Tactics Forge" >nul
 if not errorlevel 1 (
   echo Tactics Forge est ouvert. Ferme-le puis relance la mise à jour.
@@ -41,10 +47,10 @@ echo.
 echo === 1/3  Recherche des fichiers modifiés depuis le dernier .exe
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
   "$root = (Get-Location).Path;" ^
-  "$exe = Get-ChildItem -LiteralPath $root -Filter 'Tactics Forge*.exe' -File | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
+  "$exe = Get-ChildItem -LiteralPath $root -Filter '*.exe' -File | Where-Object { $_.Name -like 'Tactical Emblem*' -or $_.Name -like 'Tactics Forge*' } | Sort-Object LastWriteTime -Descending | Select-Object -First 1;" ^
   "if (-not $exe) { Write-Host 'Aucun executable a la racine : il va etre cree.'; exit 3 };" ^
   "Write-Host ('Executable actuel : ' + $exe.Name + ' (' + $exe.LastWriteTime.ToString('dd/MM/yyyy HH:mm') + ')');" ^
-  "$items = @('main.js','preload.js','package.json','package-lock.json','src','assets') | Where-Object { Test-Path (Join-Path $root $_) } | ForEach-Object { Join-Path $root $_ };" ^
+  "$items = @('main.js','preload.js','package.json','package-lock.json','src','assets','plugins') | Where-Object { Test-Path (Join-Path $root $_) } | ForEach-Object { Join-Path $root $_ };" ^
   "$changed = @(Get-ChildItem -LiteralPath $items -Recurse -File | Where-Object { $_.LastWriteTime -gt $exe.LastWriteTime } | Sort-Object LastWriteTime -Descending);" ^
   "if ($changed.Count -eq 0) { Write-Host 'Aucun fichier modifie depuis.'; exit 0 };" ^
   "Write-Host ($changed.Count.ToString() + ' fichier(s) modifie(s) :');" ^
@@ -93,14 +99,20 @@ echo === 3/3  Compilation de l'exécutable (npm run dist^)
 call npm run dist
 if errorlevel 1 (
   echo.
-  echo La compilation a échoué. Si le message parle d'un fichier utilisé, ferme Tactics Forge
+  echo La compilation a échoué. Si le message parle d'un fichier utilisé, ferme Tactical Emblem
   echo puis relance ce script.
   goto :fail
 )
 
 echo.
 echo Terminé : le nouvel exécutable est à la racine du dossier.
-for %%F in ("Tactics Forge*.exe") do echo   %%~nxF
+for %%F in ("Tactical Emblem*.exe") do echo   %%~nxF
+rem --- l'application s'appelait Tactics Forge : l'ancien exécutable est retiré
+for %%F in ("Tactics Forge*.exe") do (
+  if exist "Tactical Emblem*.exe" (
+    del /q "%%~F" && echo   ancien exécutable supprimé : %%~nxF
+  )
+)
 
 :done
 echo.

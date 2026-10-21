@@ -27,6 +27,13 @@ function addRecent(dir, name) {
   fs.mkdirSync(app.getPath('userData'), { recursive: true });
   fs.writeFileSync(recentFile(), JSON.stringify(list.slice(0, 8), null, 1));
 }
+/** Ancien nom de l'application (Tactics Forge) : on reprend sa liste de projets récents. */
+function migrateOldUserData() {
+  try {
+    const now = recentFile(), old = path.join(app.getPath('appData'), 'Tactics Forge', 'recent.json');
+    if (!fs.existsSync(now) && fs.existsSync(old)) { fs.mkdirSync(path.dirname(now), { recursive: true }); fs.copyFileSync(old, now); }
+  } catch (e) { /* liste vide : rien de grave */ }
+}
 const payload = (dir, project) => ({ dir, baseUrl: pathToFileURL(dir).href.replace(/\/?$/, '/'), project });
 
 // ---------- fenêtres ----------
@@ -34,7 +41,7 @@ function createEditor() {
   editorWin = new BrowserWindow({
     show: !process.env.TF_SNAPSHOT,
     width: 1440, height: 900, minWidth: 1024, minHeight: 640, backgroundColor: '#15171c',
-    title: 'Tactics Forge',
+    title: 'Tactical Emblem',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false }
   });
   editorWin.loadFile(path.join(__dirname, 'src', 'renderer', 'editor.html'));
@@ -108,7 +115,7 @@ function buildMenu() {
       { label: 'Tester le chapitre', accelerator: 'F5', click: () => send('playtest') }
     ] },
     { label: 'Aide', submenu: [
-      { label: 'À propos', click: () => dialog.showMessageBox(editorWin, { title: 'Tactics Forge', message: 'Tactics Forge ' + app.getVersion(), detail: "Éditeur de tactical RPG façon Fire Emblem.\nImport de maps Tiled (.tmx / .tmj)." }) }
+      { label: 'À propos', click: () => dialog.showMessageBox(editorWin, { title: 'Tactical Emblem', message: 'Tactical Emblem ' + app.getVersion(), detail: "Éditeur de tactical RPG façon Fire Emblem.\nImport de maps Tiled (.tmx / .tmj)." }) }
     ] }
   ];
   Menu.setApplicationMenu(Menu.buildFromTemplate(tpl));
@@ -141,7 +148,7 @@ handle('project:new', async (e, { name, template }) => {
 handle('project:open', async (e, dir) => {
   if (!dir) {
     const res = await dialog.showOpenDialog(editorWin, {
-      title: 'Ouvrir un projet', properties: ['openFile'], filters: [{ name: 'Projet Tactics Forge', extensions: ['tfproj'] }]
+      title: 'Ouvrir un projet', properties: ['openFile'], filters: [{ name: 'Projet Tactical Emblem', extensions: ['tfproj'] }]
     });
     if (res.canceled || !res.filePaths.length) return null;
     dir = path.dirname(res.filePaths[0]);
@@ -228,6 +235,7 @@ handle('plugins:uninstall', (e, dir, id) => pluginsIO.uninstall(dir, id));
 handle('playtest:open', (e, dir, chapterId) => { openPlaytest(dir, chapterId); return true; });
 
 app.whenReady().then(() => {
+  migrateOldUserData();
   buildMenu();
   createEditor();
   // mode test automatisé : TF_SNAPSHOT=dossier → captures d'écran puis sortie

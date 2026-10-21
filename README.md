@@ -1,4 +1,4 @@
-# Tactics Forge
+# Tactical Emblem
 
 Éditeur de tactical RPG dans l'esprit de RPG Maker, mais pour faire du Fire Emblem : on gère un projet, ses maps, sa base de données, ses chapitres, et on teste les combats directement depuis l'éditeur. Les maps peuvent être faites dans Tiled et importées.
 
@@ -15,7 +15,7 @@ Node 18+ suffit. Pour sortir un .exe Windows portable :
 npm run dist
 ```
 
-Après une compilation réussie, le portable de `dist/` est automatiquement copié à la racine et remplace l'exécutable de même nom (`Tactics Forge 0.1.0.exe` pour cette version). Fermer l'application avant de reconstruire. Si le remplacement échoue parce qu'elle est ouverte, la compilation reste dans `dist/` ; fermer l'application puis lancer `npm run postdist` suffit pour refaire la copie.
+Après une compilation réussie, le portable de `dist/` est automatiquement copié à la racine et remplace l'exécutable de même nom (`Tactical Emblem 0.1.0.exe` pour cette version). Fermer l'application avant de reconstruire. Si le remplacement échoue parce qu'elle est ouverte, la compilation reste dans `dist/` ; fermer l'application puis lancer `npm run postdist` suffit pour refaire la copie.
 
 Le portable peut être utilisé seul. `dist/win-unpacked/` est la version décompressée : ses DLL, ressources et autres fichiers sont nécessaires lorsqu'on lance son propre exécutable. Les fichiers `builder-*.yml` / `.yaml` décrivent la compilation et servent au diagnostic. Une fois le portable copié à la racine, `dist/` peut être supprimé ; il sera recréé à la prochaine compilation. Un changement de version produit un nouveau nom de portable.
 
@@ -181,7 +181,7 @@ Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Ut
 
 ## Plugins
 
-**Base de données › Plugins** liste les plugins installés dans le projet et ceux fournis avec Tactics Forge (dossier `plugins/` de l'application). **Installer dans le projet** :
+**Base de données › Plugins** liste les plugins installés dans le projet et ceux fournis avec Tactical Emblem (dossier `plugins/` de l'application). **Installer dans le projet** :
 - copie les ressources du plugin dans `ressources/` du projet, sans rien écraser ;
 - range sa fiche et ses scripts dans `<projet>/plugins/<id>/` ;
 - relie ses images aux classes, aux terrains (fonds de combat) et aux personnages de la série déjà présents, sur les champs vides seulement.
@@ -224,11 +224,11 @@ Les plugins FE sont des rips (The Spriters Resource) de Nintendo / Intelligent S
 **Scripts** — chargés dans l'éditeur à l'ouverture du projet et dans le jeu au lancement, seulement pour les plugins activés :
 
 ```js
-TacticsForge.register('mon-plugin', {
+TacticalEmblem.register('mon-plugin', {
   editor(api) { /* une fois, dans l'éditeur */ },
   game(api) { api.toast('Mon plugin est actif'); }
 });
-TacticsForge.on('turn:start', (e, api) => { if (e.phase === 'player') api.toast('Tour ' + e.turn); });
+TacticalEmblem.on('turn:start', (e, api) => { if (e.phase === 'player') api.toast('Tour ' + e.turn); });
 ```
 
 Événements : `game:start`, `chapter:start` { chapter }, `turn:start` { phase, turn }, `combat:end` { attacker, defender, result }, `unit:defeated` { unit }, `chapter:victory` { chapter }. `api` donne `where` ('editor' ou 'game'), `project`, `db`, `state` (la partie en cours) et `toast(texte)`. Un script qui plante est signalé dans la console sans arrêter le jeu. Un script a les mêmes droits que l'éditeur : n'installe que des plugins de confiance.
@@ -423,7 +423,7 @@ src/shared/fe-arsenal.js   pack d'armes, objets et compétences de la série —
 src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, bannières) — testé dans test/fe-pack.test.js
 src/shared/plugins.js      plugins : fiches plugin.json, liens vers la base — testé dans test/plugins.test.js
 src/main/plugins-io.js     plugins fournis (plugins/), installation / désinstallation dans un projet
-src/renderer/plugin-runtime.js  scripts des plugins (TacticsForge.register / on), chargés dans l'éditeur et le jeu
+src/renderer/plugin-runtime.js  scripts des plugins (TacticalEmblem.register / on), chargés dans l'éditeur et le jeu
 src/shared/summon.js       invocations : bannières, taux, pitié, cercle de pierres, fusions — testé dans test/summon.test.js
 src/renderer/summon-panel.js  autel d'invocation du camp
 src/shared/roster.js       tri et recherche des personnages (nom, classe, arme, série) — testé dans test/roster.test.js

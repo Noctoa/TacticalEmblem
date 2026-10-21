@@ -1368,7 +1368,7 @@
     if (!inst.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'aucun')));
     inst.forEach(a => items.append(row(a)));
     const avail = all.filter(a => !a.installed);
-    items.append(h('div', { class: 'pick-group' }, 'Fournis avec Tactics Forge'));
+    items.append(h('div', { class: 'pick-group' }, 'Fournis avec Tactical Emblem'));
     if (!avail.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'tous installés')));
     avail.forEach(a => items.append(row(a)));
     body.append(h('div', { class: 'db-list' }, items, h('div', { class: 'db-list-actions' },
@@ -1919,7 +1919,7 @@
       } },
       { type: 'heading', label: 'Playtest' },
       { key: 'settings.debugMenu', label: 'Onglet Debug dans les paramètres en jeu (Échap) : victoire immédiate, or, niveaux, invincibilité…', type: 'checkbox' }
-    ], p.meta, { onChange: (k) => { change(); if (k === 'name') document.title = p.meta.name + ' — Tactics Forge'; } }));
+    ], p.meta, { onChange: (k) => { change(); if (k === 'name') document.title = p.meta.name + ' — Tactical Emblem'; } }));
     body.append(pane);
   }
 

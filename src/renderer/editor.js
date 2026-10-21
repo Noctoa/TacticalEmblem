@@ -38,8 +38,8 @@
     updateTitle();
   }
   function updateTitle() {
-    if (!S.project) { document.title = 'Tactics Forge'; return; }
-    document.title = (S.dirty ? '● ' : '') + S.project.meta.name + ' — Tactics Forge';
+    if (!S.project) { document.title = 'Tactical Emblem'; return; }
+    document.title = (S.dirty ? '● ' : '') + S.project.meta.name + ' — Tactical Emblem';
     $('#st-project').textContent = S.project.meta.name + (S.dirty ? ' (modifié)' : '');
   }
 

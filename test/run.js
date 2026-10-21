@@ -43,7 +43,7 @@ test('TMX + TSX externe + base64 zlib + CSV + objets', () => {
 
 test('TMJ : tileset intégré, gzip, flips, groupes, map infinie', () => {
   const dir = path.join(tmp, 'tmj'); fs.mkdirSync(dir);
-  fs.copyFileSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'tilesets', 'plaines.png'), path.join(dir, 'tiles.png'));
+  fs.copyFileSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'tilesets', 'village.png'), path.join(dir, 'tiles.png'));
   const chunkData = new Array(16 * 16).fill(1); chunkData[0] = 3 | 0x80000000; // flip H
   const buf = Buffer.alloc(chunkData.length * 4); chunkData.forEach((g, i) => buf.writeUInt32LE(g >>> 0, i * 4));
   const tmj = {
@@ -170,7 +170,6 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   lyn.projectiles = { arrow: 'img/battlers/Lyn_arrow.png' };
   fs.writeFileSync(path.join(dir, 'img/battlers/Lyn.json'), JSON.stringify(lyn));
   for (const n of ['Eliwood', 'Lyn', 'Hector', 'Brigand', 'Cloud', 'Xarrin']) mv(P + n + '/portrait.png', 'img/faces/' + n + '.png');
-  mv('ressources/tilesets/plaines.png', 'img/tilesets/plaines.png');
   mv('ressources/tilesets/village.png', 'img/tilesets/village.png');
   for (const f of ['Advance', 'Winning_Road']) mv('ressources/musiques/' + f + '.mp3', 'audio/bgm/' + f + '.mp3');
   for (const f of ['Level_Up', 'Game_Over']) mv('ressources/jingles/' + f + '.mp3', 'audio/me/' + f + '.mp3');
@@ -198,7 +197,7 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   assert.strictEqual(q.db.units.find(u => u.name === 'Cloud').mapSprite, P + 'Cloud/map');
   assert.strictEqual(q.db.classes.find(c => c.id === 'blade_lord').mapSprite, P + 'Lyn/map_BladeLord');
   assert.strictEqual(q.db.classes.find(c => c.id === 'brigand').battler, P + 'Brigand/combat');
-  assert.strictEqual(q.db.tilesets[0].image, 'ressources/tilesets/plaines.png');
+  assert.strictEqual(q.db.tilesets[0].image, 'ressources/tilesets/village.png');
   assert.strictEqual(q.meta.audio.enemyPhase, 'ressources/musiques/Advance.mp3');
   assert.strictEqual(q.meta.audio.levelUp, 'ressources/jingles/Level_Up.mp3');
   assert.strictEqual(q.resources.battlers[P + 'Lyn/combat'].projectiles.arrow, P + 'Lyn/combat_arrow.png');

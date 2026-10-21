@@ -16,7 +16,7 @@ function publishPortable(projectDir) {
     fs.renameSync(temporary, destination);
   } catch (error) {
     if (error.code === 'EBUSY' || error.code === 'EPERM' || error.code === 'EACCES') {
-      throw new Error('Impossible de remplacer l’exécutable. Ferme Tactics Forge, puis lance npm run postdist pour réessayer sans recompiler. Le nouveau fichier reste disponible dans dist.');
+      throw new Error('Impossible de remplacer l’exécutable. Ferme Tactical Emblem, puis lance npm run postdist pour réessayer sans recompiler. Le nouveau fichier reste disponible dans dist.');
     }
     throw error;
   } finally {
