@@ -144,12 +144,12 @@
   function characters() {
     const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', portrait: '', movBonus: 0, gender: '', protagonist: false, ending: '', series: '' }, o);
     return [
-      // protagoniste : héros du camp, chef d'escouade (convoi). Sprite de map : celui de la classe Seigneur, en attendant le sien.
+      // protagoniste : héros du camp, chef d'escouade (convoi). Il a son propre sprite de map (pose unique, ressources/personnages/Xarrin).
       u({ id: 'c_xarrin', name: 'Xarrin', series: 'Original', rarity: 5, classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
         ending: "Xarrin ne posa jamais vraiment son épée. Mais ceux qui l'avaient suivi savaient qu'il reviendrait toujours au camp, là où tout avait commencé.",
         stats: st(19, 6, 0, 6, 8, 6, 5, 1), growths: st(80, 50, 5, 50, 50, 45, 30, 30),
         inventory: [{ id: 'w_iron_sword' }, { id: 'w_slim_sword' }, { id: 'i_vulnerary' }],
-        battler: BT('Xarrin'), portrait: FACE('Xarrin'),
+        mapSprite: CH('Xarrin_Lord'), battler: BT('Xarrin'), portrait: FACE('Xarrin'),
         bio: "Épéiste au manteau vert qui mène la compagnie. Rapide, direct, et toujours le premier à charger." }),
       u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', rarity: 5, classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",

@@ -125,7 +125,7 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 - des croissances inspirées du jeu ;
 - des stats approximatives, calculées depuis la classe et le niveau, puis ajustées selon ses croissances.
 
-Aucune image n'est ajoutée : ils prennent les sprites de leur classe, ou un jeton, jusqu'à ce que tu leur donnes les tiens. L'import ajoute aussi :
+Images : Eliwood, Lyn et Hector (Blazing Blade) reçoivent les ressources de base du projet (portrait, animation de combat, sprite de map). Si leur dossier manque dans `ressources/personnages/`, il est recopié. S'ils sont déjà dans la base, seuls leurs champs d'image vides sont remplis. Le sprite de map reste celui de la classe quand elle en a un, pour que la promotion le change. Les autres personnages prennent les sprites de leur classe, ou un jeton, jusqu'à ce que tu leur donnes les tiens. Pour en équiper un autre, il suffit d'ajouter une ligne à `ART` dans `src/shared/fe-pack.js`. L'import ajoute aussi :
 - les classes qui manquent : Seigneur (épée / lance / hache / arc), Tacticien, Prêtresse guerrière, Myrmidon › Bretteur, Chevalier wyverne › Seigneur wyverne, Chevalier faucon, Danseuse, Troubadour › Valkyrie, Moine › Évêque, Shaman › Druide, Sage, Nomade › Sniper, Berserker, Chevalier noir ;
 - une bannière d'invocation par jeu, avec le ou les seigneurs mis en avant.
 
@@ -264,7 +264,7 @@ Chaque nouveau projet reçoit le contenu de `assets/default/ressources/` :
 
 | Dossier | Contenu |
 |---|---|
-| `personnages/Xarrin` | protagoniste : animation de combat (tirée de `xarrin.gif`), portrait. Pas encore de sprite de map : il prend celui de la classe Seigneur |
+| `personnages/Xarrin` | protagoniste : animation de combat (tirée de `xarrin.gif`), portrait, sprite de map `map_Lord` (tiré de `xarrin_map.png`, une seule pose dessinée en 64×64 pour des cases de 32 : `base: 32`) |
 | `personnages/Eliwood` | sprites de map Seigneur et Chevalier-Seigneur, animation de combat, portrait en face set (planche FE GBA animée) |
 | `personnages/Lyn` | Seigneur et Lame-Seigneur, animation (épée + arc, flèche en projectile), portrait |
 | `personnages/Hector` | Seigneur et Grand Seigneur, animation (hache + hachette lancée), portrait |
@@ -333,7 +333,7 @@ Les planches d'origine sont dans `tools/sprite-sources/` (dont `cloud.gif`). Le 
 python3 tools/build_default_resources.py --preview apercu/
 ```
 
-Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_combat.png` (même taille que la planche générée, y compris pour les animations tirées d'un GIF) : elle remplace la planche générée, le `.json` reste celui du script. Un face set se pose dans `<nom>_faceset.png`, un portrait simple dans `<nom>_portrait.png`. Les animations tirées d'un GIF (Cloud, Xarrin) se règlent dans `GIF_BATTLERS` : couleur de fond, ombre, frames de chaque animation, impact, avance / recul.
+Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_combat.png` (même taille que la planche générée, y compris pour les animations tirées d'un GIF) : elle remplace la planche générée, le `.json` reste celui du script. Un face set se pose dans `<nom>_faceset.png`, un portrait simple dans `<nom>_portrait.png`. Les animations tirées d'un GIF (Cloud, Xarrin) se règlent dans `GIF_BATTLERS` : couleur de fond, ombre, frames de chaque animation, impact, avance / recul. Un sprite de map dessiné en une seule pose (agrandi ×N accepté) se déclare dans `POSE_MAP_SPRITES` : le script le ramène à sa taille d'origine et simule les animations (respiration, petits sauts pendant la marche, miroir pour la droite). Le champ `base` du `.json` donne la taille de case pour laquelle le sprite est dessiné : 16 pour les sprites GBA, 32 pour Xarrin.
 
 (Pillow + numpy.) Les découpages, frames d'impact et cadrages des portraits sont réglés en haut du script.
 

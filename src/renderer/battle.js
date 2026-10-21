@@ -352,7 +352,7 @@
   function drawMapActor(sc, g, a, L) {
     if (!a.mapSp) return;
     const x = actorX(sc, a, L);
-    const k = L.S * 2.6;
+    const k = L.S * 2.6 * 16 / (a.mapSp.meta.base || 16);
     g.globalAlpha = sc.fade * a.alpha;
     g.fillStyle = 'rgba(0,0,0,.35)';
     g.beginPath(); g.ellipse(x, L.ground + 1, 12 * L.S, 3 * L.S, 0, 0, Math.PI * 2); g.fill();

@@ -780,7 +780,7 @@
       }
       refresh();
       box.append(h('h3', {}, 'Personnages de la série Fire Emblem'),
-        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Aucune image n’est ajoutée : ils prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
+        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Seuls Eliwood, Lyn et Hector (Fire Emblem 7) reçoivent des images : celles des ressources de base du projet (copiées si elles manquent). Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
         h('div', { class: 'insp-actions' },
           h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
           h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
@@ -790,9 +790,26 @@
           h('button', { class: 'primary', 'data-fe-pack-ok': true, onclick: () => close(true) }, 'Ajouter')));
     }, { wide: true });
     if (!ok || !picked.size) return;
-    const res = FEPack.install(db(), [...picked]);
+    const r = await packArt(FEPack.artFolders([...picked]));
+    const res = FEPack.install(db(), [...picked], { has: r.has });
     change(); renderBody();
-    UI.toast(`${res.units} personnage(s), ${res.classes} classe(s) et ${res.banners} bannière(s) ajoutés`);
+    UI.toast(`${res.units} personnage(s), ${res.classes} classe(s) et ${res.banners} bannière(s) ajoutés` + (res.art ? ` · ${res.art} image(s) reliée(s)` : '') + (r.copied ? ` · ${r.copied} fichier(s) de ressources copié(s)` : ''));
+  }
+
+  /** Ressources des personnages du pack : copie les dossiers de base qui manquent au projet, puis dit ce qui existe. */
+  async function packArt(folders) {
+    const has = (key, val) => {
+      const r = res();
+      if (key === 'mapSprite') return !!(r.characters || {})[val];
+      if (key === 'battler') return !!(r.battlers || {})[val];
+      return (r.faces || []).includes(val);
+    };
+    let copied = 0;
+    const missing = folders.filter(who => !Object.values(FEPack.ART).some(a => a.folder === who && has('portrait', a.portrait) && has('battler', a.battler) && has('mapSprite', a.mapSprite)));
+    if (missing.length && Editor.dir()) {
+      try { const out = await tf.installDefaultResources(Editor.dir(), missing); copied = out.added || 0; await Editor.rescanResources(); } catch (e) { /* projet non enregistré : on relie ce qui existe */ }
+    }
+    return { has, copied };
   }
 
   function renderListTab(body, def) {
@@ -1460,8 +1477,16 @@
       if (!c.mapSprite && def.mapSprite) { c.mapSprite = def.mapSprite; linked++; }
       if (!c.battler && def.battler) { c.battler = def.battler; linked++; }
     }
+    // et les personnages de base (Xarrin, Eliwood…) à leurs propres ressources, champ vide seulement
+    const r2 = res();
+    const exists = { mapSprite: (k) => !!(r2.characters || {})[k], battler: (k) => !!(r2.battlers || {})[k], portrait: (k) => (r2.faces || []).includes(k) };
+    for (const def of Defaults.characters()) {
+      const u = byId(db().units, def.id);
+      if (!u) continue;
+      for (const key of ['mapSprite', 'battler', 'portrait']) if (!u[key] && def[key] && exists[key](def[key])) { u[key] = def[key]; linked++; }
+    }
     change(); renderBody();
-    UI.alert('Ressources par défaut', [`${r.added} fichier(s) copié(s) dans ressources/`, `${linked} lien(s) sprite ajouté(s) sur des classes existantes`, `${addedCls} classe(s) de seigneur ajoutée(s)`]);
+    UI.alert('Ressources par défaut', [`${r.added} fichier(s) copié(s) dans ressources/`, `${linked} lien(s) sprite ajouté(s) sur des classes et personnages existants`, `${addedCls} classe(s) de seigneur ajoutée(s)`]);
   }
 
   function chips(options, cur, onPick) {
@@ -1472,7 +1497,7 @@
     pane.append(h('h2', {}, meta.name, h('span', { class: 'id' }, meta.image)));
     paletteChips(pane, true);
     const names = Object.keys(meta.anims);
-    const S = 4, cell = 32 * S;
+    const S = 4, u = 16 / (meta.base || 16), Sk = S * u, cell = Math.max(32, Math.ceil(meta.frame[0] * u)) * S;
     const cv = h('canvas', { width: names.length * (cell + 12), height: cell + 22, class: 'res-canvas' });
     pane.append(h('div', { class: 'res-stage' }, cv), h('p', { class: 'form-info' }, `Frames ${meta.frame[0]}×${meta.frame[1]} px · ancrage ${meta.anchor.join(',')} · base ${meta.base || 16} px` +
       (meta.palettes ? ' · ancienne planche à 4 palettes : seul le premier bloc est utilisé' : '')), usage);
@@ -1485,8 +1510,8 @@
         names.forEach((n, i) => {
           const x0 = i * (cell + 12);
           g.fillStyle = '#20242c'; g.fillRect(x0, 0, cell, cell);
-          g.fillStyle = '#2a2f39'; g.fillRect(x0 + 8 * S, 7 * S, 16 * S, 16 * S); // la case de 16×16
-          Sprites.drawMapSprite(g, meta, img, x0 + meta.anchor[0] * S, meta.anchor[1] * S, S, { anim: n, t, palette: resPalette });
+          g.fillStyle = '#2a2f39'; g.fillRect(x0 + meta.anchor[0] * Sk - 8 * S, meta.anchor[1] * Sk - 16 * S, 16 * S, 16 * S); // la case
+          Sprites.drawMapSprite(g, meta, img, x0 + meta.anchor[0] * Sk, meta.anchor[1] * Sk, Sk, { anim: n, t, palette: resPalette });
           g.fillStyle = '#a3a9b6'; g.font = '12px sans-serif'; g.textAlign = 'center'; g.fillText(n, x0 + cell / 2, cell + 16);
         });
         requestAnimationFrame(loop);

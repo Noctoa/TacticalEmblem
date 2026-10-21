@@ -25,7 +25,7 @@ contextBridge.exposeInMainWorld('tf', {
   importPortrait: (dir, owner) => call('portrait:import', dir, owner),
   playtest: (dir, chapterId) => call('playtest:open', dir, chapterId),
   scanResources: (dir) => call('resources:scan', dir),
-  installDefaultResources: (dir) => call('resources:installDefaults', dir),
+  installDefaultResources: (dir, only) => call('resources:installDefaults', dir, only),
   setTeamColors: (dir, key, colors) => call('resources:setTeamColors', dir, key, colors),
   openResourceFolder: (dir, sub) => call('resources:openFolder', dir, sub),
   onMenu: (fn) => ipcRenderer.on('menu', (e, cmd) => fn(cmd))

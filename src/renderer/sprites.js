@@ -100,8 +100,8 @@
     Render.loadImage(baseUrl, meta.image).then(img => {
       if (!img) return;
       const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
-      // on cadre la zone utile (24×24 autour du personnage) dans l'icône
-      const k = s / 24;
+      // on cadre la zone utile (24×24 autour du personnage, à l'échelle d'une case de 16) dans l'icône
+      const k = s / 24 * 16 / (meta.base || 16);
       drawMapSprite(g, meta, img, s / 2, (meta.anchor[1] - 2) * k, k, { anim: 'idle', frame: 0, palette });
     });
     return c;

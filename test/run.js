@@ -162,7 +162,7 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   };
   const sheets = { 'Eliwood/map_Lord': 'img/characters/Eliwood_Lord', 'Eliwood/map_KnightLord': 'img/characters/Eliwood_KnightLord', 'Lyn/map_Lord': 'img/characters/Lyn_Lord',
     'Lyn/map_BladeLord': 'img/characters/Lyn_BladeLord', 'Hector/map_Lord': 'img/characters/Hector_Lord', 'Hector/map_GreatLord': 'img/characters/Hector_GreatLord',
-    'Brigand/map': 'img/characters/Brigand', 'Cloud/map': 'img/characters/Cloud',
+    'Brigand/map': 'img/characters/Brigand', 'Cloud/map': 'img/characters/Cloud', 'Xarrin/map_Lord': 'img/characters/Xarrin_Lord',
     'Eliwood/combat': 'img/battlers/Eliwood', 'Lyn/combat': 'img/battlers/Lyn', 'Hector/combat': 'img/battlers/Hector', 'Brigand/combat': 'img/battlers/Brigand', 'Cloud/combat': 'img/battlers/Cloud', 'Xarrin/combat': 'img/battlers/Xarrin' };
   for (const [n, old] of Object.entries(sheets)) { mv(P + n + '.png', old + '.png'); mv(P + n + '.json', old + '.json'); back.set(P + n, old); }
   mv(P + 'Lyn/combat_arrow.png', 'img/battlers/Lyn_arrow.png');

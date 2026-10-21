@@ -133,8 +133,9 @@ function copyDir(src, dest) {
   }
 }
 
-/** Copie les ressources par défaut dans un projet existant, sans écraser ses fichiers. */
-function installDefaults(dir, assetsDir) {
+/** Copie les ressources par défaut dans un projet existant, sans écraser ses fichiers.
+ *  only : liste de dossiers de personnages (ressources/personnages/<nom>) à copier ; absent = tout. */
+function installDefaults(dir, assetsDir, only) {
   let added = 0;
   const walk = (src, dest) => {
     fs.mkdirSync(dest, { recursive: true });
@@ -145,7 +146,14 @@ function installDefaults(dir, assetsDir) {
     }
   };
   // seulement assets/default/ressources : d'éventuels restes d'une ancienne version (img/, audio/) sont ignorés
-  walk(path.join(assetsDir, 'default', Layout.ROOT), path.join(dir, Layout.ROOT));
+  const src = path.join(assetsDir, 'default', Layout.ROOT), dest = path.join(dir, Layout.ROOT);
+  if (Array.isArray(only)) {
+    const rel = path.relative(Layout.ROOT, Layout.DIRS.characters);
+    for (const who of only) {
+      const s = path.join(src, rel, path.basename(String(who)));
+      if (fs.existsSync(s)) walk(s, path.join(dest, rel, path.basename(String(who))));
+    }
+  } else walk(src, dest);
   Layout.ensureDirs(dir);
   return { added, resources: scanResources(dir) };
 }

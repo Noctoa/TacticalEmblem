@@ -1,8 +1,10 @@
 /*
  * Pack « Personnages de la série Fire Emblem » : fiches (classe, niveau, stats, croissances, inventaire,
- * rareté d'invocation, série, bio) des personnages principaux de chaque jeu, sans aucune image.
+ * rareté d'invocation, série, bio) des personnages principaux de chaque jeu.
  * Les stats sont approximatives : calculées depuis la classe et le niveau, avec la personnalité des
- * croissances du personnage. Les sprites et portraits restent ceux de la classe (ou un jeton) : à fournir.
+ * croissances du personnage. Images : seuls les personnages dont le projet fournit déjà les ressources
+ * (ART : Eliwood, Lyn, Hector, rangés dans ressources/personnages/) les reçoivent ; les autres gardent
+ * les sprites de leur classe (ou un jeton) jusqu'à ce qu'on leur donne les leurs.
  *
  * Installation (Base de données › Unités › Personnages de la série) : install(db, ['fe7', ...]) ajoute les
  * classes manquantes, les personnages absents (même nom et même série = déjà là) et une bannière par jeu.
@@ -259,6 +261,35 @@
   const GENDER = { h: 'homme', f: 'femme' };
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
   const slug = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+  // Personnages du pack qui ont des ressources dans le projet (fournies avec les ressources de base)
+  const RP = 'ressources/personnages/';
+  const art = (who, cls) => ({ folder: who, portrait: RP + who + '/portrait.png', battler: RP + who + '/combat', mapSprite: RP + who + '/map_' + cls });
+  const ART = {
+    'fe7:Eliwood': art('Eliwood', 'Lord'),
+    'fe7:Lyn': art('Lyn', 'Lord'),
+    'fe7:Hector': art('Hector', 'Lord')
+  };
+  const artOf = (game, name) => ART[game.id + ':' + name] || null;
+  /** Dossiers de ressources (ressources/personnages/<dossier>) utilisés par les jeux choisis. */
+  function artFolders(gameIds) {
+    const out = [];
+    for (const game of GAMES.filter(g => gameIds.includes(g.id))) for (const row of game.characters) { const a = artOf(game, row[0]); if (a && !out.includes(a.folder)) out.push(a.folder); }
+    return out;
+  }
+  /** Pose les ressources du pack sur une unité, champ par champ, seulement s'il est vide et si la ressource existe.
+   *  Le sprite de map n'est posé que si la classe n'en a pas : sinon la promotion ne changerait plus le sprite. */
+  function applyArt(unit, a, has, cls) {
+    let n = 0;
+    if (!a) return 0;
+    for (const key of ['portrait', 'battler', 'mapSprite']) {
+      if (unit[key] || (has && !has(key, a[key]))) continue;
+      if (key === 'mapSprite' && cls && cls.mapSprite) continue;
+      if (key === 'battler' && cls && cls.battler === a.battler) continue;
+      unit[key] = a[key]; n++;
+    }
+    return n;
+  }
+
   const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   /** Toutes les classes que le pack peut ajouter (celles du pack + classes de base utilisées). */
@@ -299,10 +330,12 @@
 
   /**
    * Installe les jeux choisis : classes manquantes, personnages absents, une bannière par jeu.
-   * Renvoie { units, classes, banners } (nombres ajoutés).
+   * opts.has(champ, clé) : la ressource existe-t-elle dans le projet ? (sans has : supposée présente)
+   * Renvoie { units, classes, banners, art } (nombres ajoutés ; art = images reliées).
    */
-  function install(db, gameIds) {
-    const out = { units: 0, classes: 0, banners: 0 };
+  function install(db, gameIds, opts) {
+    const has = opts && opts.has;
+    const out = { units: 0, classes: 0, banners: 0, art: 0 };
     const catalogue = classCatalogue();
     db.classes = db.classes || []; db.units = db.units || []; db.banners = db.banners || [];
     const ensureClass = (id) => {
@@ -319,11 +352,12 @@
       const ids = [];
       for (const row of game.characters) {
         const found = existing(db, game, row[0]);
-        if (found) { ids.push(found.id); continue; }
+        if (found) { out.art += applyArt(found, artOf(game, row[0]), has, db.classes.find(c => c.id === found.classId)); ids.push(found.id); continue; }
         const cls = ensureClass(row[1]);
         const unit = unitOf(game, row, cls);
         unit.inventory = unit.inventory.filter(s => (db.weapons || []).some(w => w.id === s.id) || (db.items || []).some(i => i.id === s.id));
         if (!unit.inventory.length && cls && cls.defaultInventory) unit.inventory = cls.defaultInventory.filter(id => (db.weapons || []).some(w => w.id === id)).map(id => ({ id }));
+        out.art += applyArt(unit, artOf(game, row[0]), has, cls);
         db.units.push(unit); ids.push(unit.id); out.units++;
       }
       const bannerId = 'bn_' + game.id;
@@ -345,5 +379,5 @@
   }
 
   const total = () => GAMES.reduce((n, g) => n + g.characters.length, 0);
-  return { CLASSES, GAMES, PROMOTIONS, classCatalogue, unitOf, summary, install, total };
+  return { CLASSES, GAMES, PROMOTIONS, ART, artOf, artFolders, classCatalogue, unitOf, summary, install, total };
 });

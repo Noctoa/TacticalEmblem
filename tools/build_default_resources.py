@@ -600,10 +600,82 @@ def build_gif_battler(name, spec):
         shutil.copyfile(pp, out_path(name, 'portrait', '.png'))
 
 
+# Sprites de map dessinés en une seule pose (image agrandie ×N acceptée) : les animations sont simulées
+# (respiration de 1 px, pas sautillés, miroir pour la droite). base = taille de case pour laquelle le sprite est dessiné.
+POSE_MAP_SPRITES = {
+    'Xarrin_Lord': {
+        'file': 'xarrin_map.png', 'label': 'Xarrin — Seigneur', 'base': 32,
+        'feet': (37, 47),                 # centre des pieds (pixels d'origine) : posé sur le bas de la case
+        'ground': 49,                     # ligne posée sur le bas de la case (juste sous l'ombre)
+        'waist': 33,                      # au-dessus de cette ligne, le corps « respire »
+        'team': ['#212b22', '#34523a', '#42694a'],   # manteau vert
+        'credit': 'Xarrin : sprite fourni par le projet',
+    },
+}
+
+
+def native(img):
+    """Ramène une image de pixel art agrandie ×N à sa taille d'origine (N = plus petit bloc de couleur)."""
+    a = np.array(img.convert('RGBA'))
+    runs = []
+    for axis in (0, 1):
+        b = a if axis == 0 else a.transpose(1, 0, 2)
+        for line in b[::max(1, b.shape[0] // 40)]:
+            ch = np.where((line[1:] != line[:-1]).any(1))[0] + 1
+            if len(ch) > 1:
+                runs.append(np.gcd.reduce(np.diff(np.concatenate(([0], ch)))))
+    n = int(np.gcd.reduce(runs)) if runs else 1
+    return Image.fromarray(a[::n, ::n]) if n > 1 else Image.fromarray(a), n
+
+
+def build_pose_map_sprites():
+    made = []
+    for name, sp in POSE_MAP_SPRITES.items():
+        base, n = native(Image.open(os.path.join(SRC, sp['file'])))
+        a = np.array(base)
+        fw, fh = a.shape[1], a.shape[0]
+        # pieds recentrés dans la cellule : le miroir (vers la droite) garde le même point d'ancrage
+        a = np.roll(a, fw // 2 - sp['feet'][0], axis=1)
+        w = sp['waist']
+
+        def breathe(x):                   # haut du corps 1 px plus bas
+            o = x.copy(); o[1:w + 1] = x[0:w]; o[0] = 0; return o
+
+        def hop(x):                       # tout le personnage 1 px plus haut, l'ombre reste
+            o = x.copy(); body = x[:sp['feet'][1] - 1]
+            o[:sp['feet'][1] - 1] = 0; o[:sp['feet'][1] - 2] = body[1:]; return o
+        pose, mirror = a, np.roll(a[:, ::-1], 1, axis=1)
+        rows = [
+            [pose, breathe(pose), pose, breathe(pose)],          # idle
+            [pose, hop(pose), pose, hop(pose)],                  # gauche
+            [mirror, hop(mirror), mirror, hop(mirror)],          # droite
+            [pose, hop(pose), pose, hop(pose)],                  # bas
+            [pose, hop(pose), pose, hop(pose)],                  # haut (pas de dos : même pose)
+            [pose, breathe(pose), hop(pose), breathe(pose)],     # sélection
+        ]
+        sheet = np.zeros((fh * 6, fw * 4, 4), np.uint8)
+        for r, line in enumerate(rows):
+            for c, fr in enumerate(line):
+                sheet[r * fh:(r + 1) * fh, c * fw:(c + 1) * fw] = fr
+        Image.fromarray(sheet, 'RGBA').save(out_path(name, 'map', '.png'))
+        walk = {'frames': [0, 1, 2, 3], 'durations': [110, 110, 110, 110]}
+        anims = {'idle': {'row': 0, 'frames': [0, 1, 2, 1], 'durations': [500, 160, 500, 160]}}
+        for i, k in enumerate(['left', 'right', 'down', 'up']):
+            anims[k] = dict(walk, row=i + 1)
+        anims['focus'] = {'row': 5, 'frames': [0, 1, 2, 1], 'durations': [160, 100, 160, 100]}
+        meta = {'type': 'mapsprite', 'name': sp['label'], 'frame': [fw, fh], 'anchor': [fw // 2, sp['ground']], 'base': sp['base'],
+                'teamColors': sp['team'], 'anims': anims, 'source': sp['credit']}
+        json.dump(meta, open(out_path(name, 'map', '.json'), 'w'), indent=1, ensure_ascii=False)
+        print(f'  {name} : pose {fw}x{fh} (source ×{n}), base {sp["base"]}')
+        made.append(name)
+    return made
+
+
 def main():
     print('Sprites de map')
     sheet = load('map_sheet.png')
     made = build_map_sprites(sheet) + build_custom_map_sprites(sheet)
+    pose_made = build_pose_map_sprites()
     print('  ', ', '.join(made))
     if PREVIEW:
         ims = [Image.open(out_path(m, 'map', '.png')) for m in made]

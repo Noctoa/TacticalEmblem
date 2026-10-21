@@ -1,0 +1,111 @@
+{
+ "type": "mapsprite",
+ "name": "Xarrin — Seigneur",
+ "frame": [
+  64,
+  64
+ ],
+ "anchor": [
+  32,
+  49
+ ],
+ "base": 32,
+ "teamColors": [
+  "#212b22",
+  "#34523a",
+  "#42694a"
+ ],
+ "anims": {
+  "idle": {
+   "row": 0,
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    500,
+    160,
+    500,
+    160
+   ]
+  },
+  "left": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ],
+   "row": 1
+  },
+  "right": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ],
+   "row": 2
+  },
+  "down": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ],
+   "row": 3
+  },
+  "up": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    110,
+    110,
+    110,
+    110
+   ],
+   "row": 4
+  },
+  "focus": {
+   "row": 5,
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    160,
+    100,
+    160,
+    100
+   ]
+  }
+ },
+ "source": "Xarrin : sprite fourni par le projet"
+}

@@ -53,7 +53,7 @@ test('installation dans le projet d’exemple : classes, personnages, bannières
 test('réinstaller ne duplique rien ; un projet vide reçoit aussi les classes de base utilisées', () => {
   const p = D.sampleProject('Pack');
   P.install(p.db, ['fe9']);
-  assert.deepEqual(P.install(p.db, ['fe9']), { units: 0, classes: 0, banners: 0 });
+  assert.deepEqual(P.install(p.db, ['fe9']), { units: 0, classes: 0, banners: 0, art: 0 });
   const empty = D.emptyDatabase();
   empty.classes = empty.classes.filter(c => !['paladin', 'pegasus'].includes(c.id));
   const res = P.install(empty, ['fe1']);
@@ -76,4 +76,44 @@ test('couleur des pierres : danseuses incolores, épées rouges', () => {
   assert.equal(S.colorOf(by('Olivia'), p.db).id, 'colorless');
   assert.equal(S.colorOf(by('Chrom'), p.db).id, 'red');
   assert.equal(S.colorOf(by('Tharja'), p.db).id, 'green');
+});
+
+test('images du pack : Eliwood, Lyn et Hector ajoutés sans fiche reçoivent leurs ressources de base', () => {
+  const fs = require('fs'), path = require('path');
+  const root = path.join(__dirname, '..', 'assets', 'default');
+  for (const a of Object.values(P.ART)) {
+    assert.ok(fs.existsSync(path.join(root, a.portrait)), a.portrait);
+    assert.ok(fs.existsSync(path.join(root, a.battler + '.json')), a.battler);
+    assert.ok(fs.existsSync(path.join(root, a.mapSprite + '.json')), a.mapSprite);
+  }
+  assert.deepEqual(P.artFolders(['fe7', 'fe6']), ['Eliwood', 'Lyn', 'Hector']);
+  const p = D.sampleProject('Pack');
+  p.db.units = p.db.units.filter(u => !['c_eliwood', 'c_lyn', 'c_hector'].includes(u.id));
+  const res = P.install(p.db, ['fe7'], { has: () => true });
+  const eli = p.db.units.find(u => u.name === 'Eliwood' && u.fromPack === 'fe7');
+  assert.equal(eli.portrait, 'ressources/personnages/Eliwood/portrait.png');
+  assert.equal(eli.battler, ''); // déjà donnée par la classe Seigneur
+  assert.equal(eli.mapSprite, ''); // idem : la classe garde la main (promotion → sprite de Chevalier-Seigneur)
+  const hec = p.db.units.find(u => u.name === 'Hector' && u.fromPack === 'fe7');
+  assert.equal(hec.portrait, 'ressources/personnages/Hector/portrait.png');
+  assert.ok(res.art >= 3);
+  const ninian = p.db.units.find(u => u.name === 'Ninian');
+  assert.equal(ninian.portrait, '');
+  // ressource absente du projet : rien n'est relié
+  const q = D.sampleProject('Pack2');
+  q.db.units = q.db.units.filter(u => u.id !== 'c_lyn');
+  P.install(q.db, ['fe7'], { has: () => false });
+  assert.equal(q.db.units.find(u => u.name === 'Lyn').portrait, '');
+});
+
+test('Xarrin a son propre sprite de map (pose unique, .json complet)', () => {
+  const fs = require('fs'), path = require('path');
+  const x = D.characters().find(u => u.id === 'c_xarrin');
+  assert.equal(x.mapSprite, 'ressources/personnages/Xarrin/map_Lord');
+  const meta = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'assets', 'default', x.mapSprite + '.json'), 'utf8'));
+  assert.equal(meta.type, 'mapsprite');
+  assert.deepEqual(meta.frame, [64, 64]);
+  assert.equal(meta.base, 32);
+  for (const a of ['idle', 'left', 'right', 'down', 'up', 'focus']) assert.ok(meta.anims[a], a);
+  assert.ok(meta.teamColors.length);
 });
