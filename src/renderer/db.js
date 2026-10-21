@@ -624,7 +624,7 @@
           { key: 'heal', label: 'Soin / tour (%)', type: 'number', min: 0, max: 100 }] },
         { key: 'cost', label: 'Coût de déplacement (99 = infranchissable)', type: 'costs' },
         { key: 'battleback', label: 'Fond de combat', type: 'select', empty: '— la map, floutée —', options: () => (res().battlebacks || []).map(f => ({ value: f, label: f.split('/').pop().replace(/\.[a-z]+$/i, '') })) },
-        { type: 'info', text: "Fond de combat : décor affiché derrière les animations quand le défenseur est sur ce terrain (images du dossier ressources/fonds-combat). L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
+        { type: 'info', text: ((res().battlebacks || []).length ? '' : 'Aucun fond de combat dans le projet pour l’instant : le plugin « Fire Emblem 6 » (onglet Plugins) ajoute 19 décors, ou range tes images dans ressources/fonds-combat. ') + "Fond de combat : décor affiché derrière les animations quand le défenseur est sur ce terrain (images du dossier ressources/fonds-combat). L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
       ]
     }
   };
@@ -632,12 +632,13 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
     if (t) tab = t;
     if (id) selected[tab] = id;
+    plug.installed = null; // relu à l'ouverture (le projet a pu changer)
     changed = false;
     $('#db').classList.remove('hidden');
     renderTabs(); renderBody();
@@ -663,6 +664,7 @@
     if (tab === 'chapters') return renderChapters(body);
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
+    if (tab === 'plugins') return renderPlugins(body);
     if (tab === 'arcs') return renderArcs(body);
   }
 
@@ -781,7 +783,7 @@
       }
       refresh();
       box.append(h('h3', {}, 'Personnages de la série Fire Emblem'),
-        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Les personnages et les classes qui ont des images dans le pack « Fire Emblem GBA » (animations de combat, sprites de map, portraits) les reçoivent : les dossiers sont copiés dans ressources/personnages/. Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
+        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Les personnages et les classes qui ont des images dans un plugin installé (onglet Plugins : Fire Emblem 6, 7, 8…) les reçoivent. Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
         h('div', { class: 'insp-actions' },
           h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
           h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
@@ -792,7 +794,8 @@
     }, { wide: true });
     if (!ok || !picked.size) return;
     const r = await packArt(FEPack.artFolders([...picked]));
-    const res = FEPack.install(db(), [...picked], { has: r.has });
+    const art = Plugins.mergeLinks(Plugins.enabled(Editor.project().meta, await installedPlugins()));
+    const res = FEPack.install(db(), [...picked], { has: r.has, art });
     change(); renderBody();
     UI.toast(`${res.units} personnage(s), ${res.classes} classe(s) et ${res.banners} bannière(s) ajoutés` + (res.art ? ` · ${res.art} image(s) reliée(s)` : '') + (r.copied ? ` · ${r.copied} fichier(s) de ressources copié(s)` : ''));
   }
@@ -805,11 +808,11 @@
       if (key === 'battler') return !!(r.battlers || {})[val];
       return (r.faces || []).includes(val);
     };
-    let copied = 0;
+    let copied = 0; // dossiers de base (Eliwood, Lyn, Hector) ; les autres images viennent des plugins installés
     const missing = folders; // copie sans écraser : seuls les fichiers absents arrivent
     if (missing.length && Editor.dir()) {
       for (const pack of [...new Set(missing.map(f => f.pack))]) {
-        try { const out = await tf.installDefaultResources(Editor.dir(), missing.filter(f => f.pack === pack).map(f => f.folder), pack || undefined); copied += out.added || 0; } catch (e) { /* projet non enregistré ou pack absent : on relie ce qui existe */ }
+        try { const out = await tf.installDefaultResources(Editor.dir(), missing.filter(f => f.pack === pack).map(f => f.folder)); copied += out.added || 0; } catch (e) { /* projet non enregistré : on relie ce qui existe */ }
       }
       await Editor.rescanResources();
     }
@@ -1233,13 +1236,14 @@
   let animToken = 0;
   let resSel = null, resPalette = 'original', resAnim = 'attack';
   const PAL_LABELS = Palettes.LABELS;
-  const KIND_LABEL = { characters: 'Sprite de map', battlers: 'Animation de combat', faces: 'Portrait', tilesets: 'Tileset' };
+  const KIND_LABEL = { characters: 'Sprite de map', battlers: 'Animation de combat', faces: 'Portrait', tilesets: 'Tileset', battlebacks: 'Fond de combat' };
 
   function usageOfResource(key) {
     const out = [];
     for (const c of db().classes) if (c.mapSprite === key || c.battler === key) out.push('Classe « ' + c.name + ' »');
     for (const u of db().units) if (u.mapSprite === key || u.battler === key || u.portrait === key) out.push('Unité « ' + u.name + ' »');
     for (const t of db().tilesets) if (t.image === key) out.push('Tileset « ' + t.name + ' »');
+    for (const t of db().terrains) if (t.battleback === key) out.push('Terrain « ' + t.name + ' »');
     return out;
   }
 
@@ -1275,19 +1279,20 @@
     const hit = (it) => !q || q.split(/\s+/).every(w => [it.label, it.key, it.owner, KIND_LABEL[it.kind], ...(it.owner ? ownerSeries(it.owner) : []), ...(it.owner ? ownerWeapons(it.owner).map(Roster.weaponLabel) : [])].some(t => foldText(t).includes(w)));
     const chars = owners.flatMap(o => byOwner.get(o)).filter(hit);
     const tiles = tilesets.filter(hit);
-    const tileGroup = { section: 'Tilesets', folder: 'ressources/tilesets', label: '', items: tiles };
+    const tileGroup = { section: 'Tilesets', folder: 'ressources/tilesets', label: '', items: tiles.filter(t => t.kind === 'tilesets') };
+    const bbGroup = { section: 'Fonds de combat', folder: 'ressources/fonds-combat', label: '', items: tiles.filter(t => t.kind === 'battlebacks') };
     const sectionP = 'Personnages', folderP = 'ressources/personnages';
     const by = view.by || '';
     if (by === 'type') {
       return ['characters', 'battlers', 'faces'].map(kind => ({ section: sectionP, folder: folderP, label: { characters: 'Sprites de map', battlers: 'Animations de combat', faces: 'Portraits' }[kind], items: chars.filter(it => it.kind === kind) }))
-        .filter(g => g.items.length || !q).concat([tileGroup]);
+        .filter(g => g.items.length || !q).concat([tileGroup, bbGroup]);
     }
     const groups = new Map();
     const push = (key, label, it) => { if (!groups.has(key)) groups.set(key, { section: sectionP, folder: folderP, label, items: [] }); if (it) groups.get(key).items.push(it); };
     if (!by) {
       for (const o of owners) if (!q) push(o, o);
       for (const it of chars) push(it.owner || '(sans dossier)', it.owner || '(sans dossier)', it);
-      return [...groups.values()].concat([tileGroup]);
+      return [...groups.values()].concat([tileGroup, bbGroup]);
     }
     for (const it of chars) {
       const keys = by === 'series' ? ownerSeries(it.owner) : ownerWeapons(it.owner).map(Roster.weaponLabel);
@@ -1298,7 +1303,108 @@
     const out = [...groups.entries()].sort(([a], [b]) => (a === '~') - (b === '~') || (by === 'weapon' ? order.indexOf(a) - order.indexOf(b) : a.localeCompare(b, 'fr'))).map(([, g]) => g);
     // à l'intérieur d'un groupe : par personnage puis par type
     for (const g of out) g.items.sort((a, b) => (a.owner || '').localeCompare(b.owner || '', 'fr') || ({ characters: 0, battlers: 1, faces: 2 }[a.kind] - { characters: 0, battlers: 1, faces: 2 }[b.kind]));
-    return out.concat([tileGroup]);
+    return out.concat([tileGroup, bbGroup]);
+  }
+
+  // ------------------------------------------------------------------
+  // Plugins : packs de ressources et scripts, installés dans le projet (<projet>/plugins/<id>/)
+  // ------------------------------------------------------------------
+  const plug = { installed: null, bundled: null, sel: null };
+  async function installedPlugins() {
+    if (!Editor.dir()) return [];
+    try { return await tf.installedPlugins(Editor.dir()); } catch (e) { return []; }
+  }
+  async function refreshPlugins() {
+    plug.installed = await installedPlugins();
+    try { plug.bundled = await tf.bundledPlugins(); } catch (e) { plug.bundled = []; }
+  }
+  const pluginConf = (id) => ((Editor.project().meta.plugins || {})[id]) || null;
+  const linkPlugin = (m) => Plugins.applyLinks(db(), m.links, { has: Plugins.hasIn(res()), findUnit: (k) => FEPack.findUnit(db(), k) });
+
+  async function installPlugin(from) {
+    if (!Editor.dir()) return UI.alert('Plugins', ['Enregistre d’abord le projet : le plugin est copié dans son dossier.']);
+    let r;
+    try { r = await tf.installPlugin(Editor.dir(), from); } catch (e) { return UI.alert('Plugin non installé', [String(e.message || e)]); }
+    if (!r) return;
+    await Editor.rescanResources();
+    const m = r.manifest, meta = Editor.project().meta;
+    meta.plugins = meta.plugins || {};
+    meta.plugins[m.id] = { enabled: true, version: m.version, name: m.name };
+    const n = linkPlugin(m);
+    change(); await refreshPlugins(); plug.sel = 'i:' + m.id; renderBody();
+    UI.alert('Plugin installé : ' + m.name, [
+      `${r.added} fichier(s) copié(s) dans ressources/ (rien n’est écrasé)`,
+      `Reliés : ${n.classes} sprite(s) de classe, ${n.terrains} fond(s) de combat, ${n.units} image(s) de personnage`,
+      Object.keys(m.links.characters).length ? 'Les personnages de la série importés ensuite (Unités › Personnages de la série) recevront aussi leurs images.' : '',
+      (m.scripts || []).length ? 'Scripts : actifs au prochain lancement du jeu, et dans l’éditeur à la réouverture du projet.' : ''].filter(Boolean));
+  }
+
+  async function uninstallPlugin(m) {
+    if (!(await UI.confirm(`Désinstaller « ${m.name} » ?\nSa fiche et ses scripts sont retirés du projet. Les images déjà copiées dans ressources/ restent (elles peuvent être utilisées) : tu peux les supprimer à la main.`, { danger: true, ok: 'Désinstaller' }))) return;
+    await tf.uninstallPlugin(Editor.dir(), m.id);
+    const meta = Editor.project().meta;
+    if (meta.plugins) delete meta.plugins[m.id];
+    change(); await refreshPlugins(); plug.sel = null; renderBody();
+    UI.toast('Plugin désinstallé');
+  }
+
+  function renderPlugins(body) {
+    if (!plug.installed) { refreshPlugins().then(() => { if (tab === 'plugins') renderBody(); }); body.append(h('div', { class: 'db-empty' }, 'Chargement des plugins…')); return; }
+    const installedIds = new Set(plug.installed.map(m => m.id));
+    const all = plug.installed.map(m => ({ key: 'i:' + m.id, m, installed: true }))
+      .concat(plug.bundled.filter(m => !installedIds.has(m.id)).map(m => ({ key: 'b:' + m.id, m, installed: false })));
+    if (!all.find(a => a.key === plug.sel)) plug.sel = all[0] ? all[0].key : null;
+    const items = h('div', { class: 'db-list-items' });
+    const row = (a) => {
+      const conf = pluginConf(a.m.id);
+      const off = a.installed && conf && conf.enabled === false;
+      return h('div', { class: 'db-item' + (plug.sel === a.key ? ' on' : '') + (off ? ' off' : ''), 'data-plugin': a.m.id, title: a.m.id,
+        onclick: () => { plug.sel = a.key; renderBody(); } },
+        h('span', { class: 'res-kind' }, a.m.error ? '⚠' : (a.m.kind === 'ressources' ? '▣' : '⚙')),
+        h('span', {}, a.m.name), h('span', { class: 'meta' }, a.m.error ? 'erreur' : off ? 'désactivé' : 'v' + a.m.version));
+    };
+    items.append(h('div', { class: 'pick-group' }, 'Installés dans le projet', h('span', { class: 'muted res-folder' }, 'plugins/')));
+    const inst = all.filter(a => a.installed);
+    if (!inst.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'aucun')));
+    inst.forEach(a => items.append(row(a)));
+    const avail = all.filter(a => !a.installed);
+    items.append(h('div', { class: 'pick-group' }, 'Fournis avec Tactics Forge'));
+    if (!avail.length) items.append(h('div', { class: 'db-item', style: { cursor: 'default' } }, h('span', { class: 'muted' }, 'tous installés')));
+    avail.forEach(a => items.append(row(a)));
+    body.append(h('div', { class: 'db-list' }, items, h('div', { class: 'db-list-actions' },
+      h('button', { class: 'small', 'data-plugin-folder': true, title: 'Choisir un dossier qui contient un plugin.json', onclick: () => installPlugin(null) }, 'Installer depuis un dossier…'),
+      h('button', { class: 'small', onclick: () => tf.openResourceFolder(Editor.dir(), 'plugins') }, 'Ouvrir le dossier'))));
+    const pane = h('div', { class: 'db-form plugin-pane' });
+    body.append(pane);
+    const cur = all.find(a => a.key === plug.sel);
+    if (!cur) { pane.append(h('div', { class: 'db-empty' }, 'Aucun plugin.')); return; }
+    const m = cur.m;
+    pane.append(h('h2', {}, m.name, h('span', { class: 'id' }, m.id + (m.version ? ' · v' + m.version : ''))));
+    if (m.error) { pane.append(h('p', { class: 'form-info warn' }, m.error)); return; }
+    const L = m.links || { characters: {}, classes: {}, battlebacks: {} };
+    pane.append(...[
+      h('p', { class: 'plugin-kind' }, Plugins.KIND_LABELS[m.kind] || m.kind, m.author ? h('span', { class: 'muted' }, ' · ' + m.author) : null),
+      m.description ? h('p', {}, m.description) : null,
+      h('ul', { class: 'plugin-facts' },
+        h('li', {}, cur.installed ? 'Ressources copiées dans ressources/ du projet' : `${m.files || 0} fichier(s) de ressources`),
+        h('li', {}, `${Object.keys(L.characters).length} personnage(s) de la série, ${Object.keys(L.classes).length} classe(s), ${Object.keys(L.battlebacks).length} fond(s) de combat reliés`),
+        (m.scripts || []).length ? h('li', {}, 'Scripts : ' + m.scripts.join(', ')) : null),
+      m.notice ? h('p', { class: 'form-info' }, m.notice) : null,
+      (m.scripts || []).length ? h('p', { class: 'form-info warn' }, 'Un script s’exécute dans l’éditeur et dans le jeu, avec les mêmes droits qu’eux : n’installe que des plugins de confiance.') : null].filter(Boolean));
+    const actions = h('div', { class: 'insp-actions' });
+    if (cur.installed) {
+      const conf = pluginConf(m.id) || {};
+      const box = h('input', { type: 'checkbox', 'data-plugin-enabled': m.id });
+      box.checked = conf.enabled !== false;
+      box.addEventListener('change', () => { const meta = Editor.project().meta; meta.plugins = meta.plugins || {}; meta.plugins[m.id] = Object.assign({ version: m.version, name: m.name }, meta.plugins[m.id], { enabled: box.checked }); change(); renderBody(); UI.toast(box.checked ? 'Plugin activé' : 'Plugin désactivé (scripts et liens futurs)'); });
+      actions.append(h('label', { class: 'check' }, box, ' Activé'),
+        h('button', { class: 'small', 'data-plugin-link': m.id, title: 'Relie de nouveau les images du plugin aux classes, terrains et personnages qui n’en ont pas', onclick: async () => { await Editor.rescanResources(); const n = linkPlugin(m); change(); renderBody(); UI.toast(`${n.classes + n.terrains + n.units} lien(s) posé(s)`); } }, 'Relier à la base'),
+        h('button', { class: 'small danger', 'data-plugin-remove': m.id, onclick: () => uninstallPlugin(m) }, 'Désinstaller'));
+    } else {
+      actions.append(h('button', { class: 'primary', 'data-plugin-install': m.id, onclick: () => installPlugin({ bundled: m.id }) }, 'Installer dans le projet'));
+    }
+    pane.append(actions,
+      h('p', { class: 'form-info' }, 'Un plugin est un dossier avec un plugin.json : ses ressources sont copiées dans ressources/ du projet sans rien écraser, puis reliées aux classes, terrains et personnages qui n’ont pas encore d’image. Voir « Plugins » dans le README pour en créer un.'));
   }
 
   function renderResources(body) {
@@ -1317,14 +1423,15 @@
     const order = { characters: 0, battlers: 1, faces: 2 };
     const owners = [...byOwner.keys()].sort((a, b) => a.localeCompare(b, 'fr'));
     for (const o of owners) byOwner.get(o).sort((a, b) => order[a.kind] - order[b.kind] || a.label.localeCompare(b.label, 'fr'));
-    const tilesets = r.tilesets.map(k => ({ kind: 'tilesets', key: k, label: k.split('/').pop() }));
+    const tilesets = r.tilesets.map(k => ({ kind: 'tilesets', key: k, label: k.split('/').pop() }))
+      .concat((r.battlebacks || []).map(k => ({ kind: 'battlebacks', key: k, label: k.split('/').pop().replace(/\.[a-z]+$/i, '') })));
     const all = owners.flatMap(o => byOwner.get(o)).concat(tilesets);
     if (!resSel || !all.find(a => a.key === resSel.key)) resSel = all[0] || null;
 
     const items = h('div', { class: 'db-list-items' });
     const item = (it) => {
       const ic = it.kind === 'characters' ? Sprites.icon(Editor.baseUrl(), r.characters[it.key], 'original', 24)
-        : h('span', { class: 'res-kind', title: KIND_LABEL[it.kind] }, { battlers: '⚔', faces: '☺', tilesets: '▦' }[it.kind] || '•');
+        : h('span', { class: 'res-kind', title: KIND_LABEL[it.kind] }, { battlers: '⚔', faces: '☺', tilesets: '▦', battlebacks: '◩' }[it.kind] || '•');
       return h('div', { class: 'db-item' + (resSel && resSel.key === it.key ? ' on' : ''), title: it.key, onclick: () => { resSel = { kind: it.kind, key: it.key }; renderBody(); } },
         ic, h('span', {}, it.kind === 'faces' && resView.by && it.owner ? it.owner + ' — portrait' : it.label), h('span', { class: 'meta' }, resView.by === 'type' ? (it.owner || '') : KIND_LABEL[it.kind]));
     };
@@ -1354,8 +1461,7 @@
     body.append(h('div', { class: 'db-list' }, tools, items, h('div', { class: 'db-list-actions' },
       h('button', { class: 'small', title: 'Ouvre le dossier de la ressource sélectionnée', onclick: () => tf.openResourceFolder(Editor.dir(), resSel ? folderOf(resSel.key) : 'ressources') }, 'Ouvrir le dossier'),
       h('button', { class: 'small', onclick: async () => { await Editor.rescanResources(); renderBody(); UI.toast('Ressources rechargées'); } }, 'Rescanner')),
-      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut')),
-      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', 'data-gba-pack': true, title: 'Animations de combat, sprites de map, portraits et fonds de combat de Fire Emblem 6, 7 et 8 (et customs « style GBA »)', onclick: installGbaPack }, 'Ajouter le pack Fire Emblem GBA'))));
+      h('div', { class: 'db-list-actions' }, h('button', { class: 'small', onclick: installDefaults }, 'Ajouter les ressources par défaut'))));
     const pane = h('div', { class: 'db-form' });
     body.append(pane);
     if (!resSel) { pane.append(h('div', { class: 'db-empty' }, 'Aucune ressource. Range tes images dans ressources/personnages/<Nom>/ puis « Rescanner ».')); return; }
@@ -1364,7 +1470,8 @@
     if (resSel.kind === 'characters') return previewCharacter(pane, resSel.key, r.characters[resSel.key], usage);
     if (resSel.kind === 'battlers') return previewBattler(pane, resSel.key, r.battlers[resSel.key], usage);
     pane.append(h('h2', {}, resSel.key.split('/').pop(), h('span', { class: 'id' }, resSel.key)),
-      h('div', { class: 'res-stage' }, h('img', { src: Render.imageUrl(Editor.baseUrl(), resSel.key), class: 'res-img' + (resSel.kind === 'faces' ? ' big' : '') })), usage);
+      h('div', { class: 'res-stage' }, h('img', { src: Render.imageUrl(Editor.baseUrl(), resSel.key), class: 'res-img' + (resSel.kind === 'faces' ? ' big' : resSel.kind === 'battlebacks' ? ' wide' : '') })), usage);
+    if (resSel.kind === 'battlebacks') pane.append(h('p', { class: 'form-info' }, 'Fond de combat : à choisir dans la fiche d’un terrain (Terrains et tilesets › « Fond de combat »).'));
     if (resSel.kind === 'faces') previewFaceset(pane, resSel.key);
   }
 
@@ -1427,22 +1534,6 @@
         h('div', { style: { display: 'flex', gap: '8px' } }, talkBtn, smileBtn),
         h('p', { class: 'form-info' }, `Bouche en ${S.mouth.join(',')} · yeux en ${S.eyes.join(',')} (trouvés automatiquement). Portrait 96×80 dans les dialogues, mini-portrait 32×32 dans les fenêtres d'unité.`));
     });
-  }
-
-  /** Pack « Fire Emblem GBA » : copie tous ses dossiers (sans écraser), puis relie les classes sans sprite. */
-  async function installGbaPack() {
-    if (!Editor.dir()) return UI.alert('Pack Fire Emblem GBA', ['Enregistre d’abord le projet : les fichiers sont copiés dans son dossier ressources/.']);
-    let r;
-    try { r = await tf.installDefaultResources(Editor.dir(), null, 'fe-gba'); } catch (e) { return UI.alert('Pack Fire Emblem GBA', [String(e.message || e)]); }
-    await Editor.rescanResources();
-    const rr = res();
-    const has = (key, val) => key === 'mapSprite' ? !!(rr.characters || {})[val] : key === 'battler' ? !!(rr.battlers || {})[val] : (rr.faces || []).includes(val);
-    const linked = FEPack.applyClassArt(db(), has);
-    const bbs = FEPack.applyBattlebacks(db(), (f) => (rr.battlebacks || []).includes(f));
-    change(); renderBody();
-    UI.alert('Pack Fire Emblem GBA', [`${r.added} fichier(s) copié(s) dans ressources/ (personnages, fonds de combat)`, `${linked} sprite(s) relié(s) à des classes qui n’en avaient pas`,
-      `${bbs} terrain(s) reçoivent un fond de combat`,
-      'Les personnages de la série importés (Unités › Personnages de la série) reçoivent leurs images automatiquement.']);
   }
 
   async function installDefaults() {

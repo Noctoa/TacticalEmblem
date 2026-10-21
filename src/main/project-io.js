@@ -136,9 +136,8 @@ function copyDir(src, dest) {
 }
 
 /** Copie les ressources par défaut dans un projet existant, sans écraser ses fichiers.
- *  only : liste de dossiers de personnages (ressources/personnages/<nom>) à copier ; absent = tout.
- *  pack : nom d'un pack de ressources (assets/packs/<pack>/ressources) au lieu des ressources par défaut. */
-function installDefaults(dir, assetsDir, only, pack) {
+ *  only : liste de dossiers de personnages (ressources/personnages/<nom>) à copier ; absent = tout. */
+function installDefaults(dir, assetsDir, only) {
   let added = 0;
   const walk = (src, dest) => {
     fs.mkdirSync(dest, { recursive: true });
@@ -149,9 +148,7 @@ function installDefaults(dir, assetsDir, only, pack) {
     }
   };
   // seulement assets/default/ressources : d'éventuels restes d'une ancienne version (img/, audio/) sont ignorés
-  const base = pack ? path.join(assetsDir, 'packs', path.basename(String(pack))) : path.join(assetsDir, 'default');
-  const src = path.join(base, Layout.ROOT), dest = path.join(dir, Layout.ROOT);
-  if (!fs.existsSync(src)) throw new Error('Pack de ressources introuvable : ' + pack);
+  const src = path.join(assetsDir, 'default', Layout.ROOT), dest = path.join(dir, Layout.ROOT);
   if (Array.isArray(only)) {
     const rel = path.relative(Layout.ROOT, Layout.DIRS.characters);
     for (const who of only) {

@@ -57,6 +57,13 @@
       for (const m of Object.values(G.resources.characters)) imgs.push(m.image);
       for (const m of Object.values(G.resources.battlers)) { imgs.push(m.image); for (const p of Object.values(m.projectiles || {})) imgs.push(p); }
       await Promise.all(imgs.map(i => Render.loadImage(G.baseUrl, i)));
+      // scripts des plugins actifs du projet
+      try {
+        const installed = await tf.installedPlugins(params.get('dir'));
+        G.plugins = installed.filter(m => !m.error);
+        await PluginRuntime.load(G.baseUrl, G.plugins, G.project.meta, 'game', { project: G.project, db: G.db, state: G, toast: (t, k) => UI.toast(t, k) });
+      } catch (e) { console.error('[plugin] chargement', e); }
+      TacticsForge.emit('game:start', {});
       const chId = params.get('chapter');
       let first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
       if (!first) throw new Error('Aucun chapitre à jouer.');
@@ -110,6 +117,7 @@
     G.mode = 'chapter';
     G.chapter = ch;
     G.map = G.project.maps.find(m => m.id === ch.mapId);
+    TacticsForge.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
     const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     if (errors.length) throw new Error(errors.join('\n'));
@@ -1395,6 +1403,7 @@
       const last = res.strikes.filter(s => !s.overkillStrike).pop();
       await grantExp(res.duo.partner, R.combatExp(res.duo.partner, def, res.duo.dmg > 0, def.hp <= 0 && last && last.dual, G.db));
     }
+    TacticsForge.emit('combat:end', { attacker: att, defender: def, result: res });
     return res;
   }
 
@@ -1433,6 +1442,7 @@
     if (instant) u.alpha = 0;
     else for (let i = 10; i >= 0; i--) { u.alpha = i / 10; await sleep(35); }
     u.dead = true;
+    TacticsForge.emit('unit:defeated', { unit: u });
     Music.se('death');
     if (u.team === 'enemy' && u.gold > 0) {
       G.campaign.gold = (G.campaign.gold || 0) + u.gold;
@@ -1487,6 +1497,7 @@
     if (before.outcome === 'defeat') { await defeat(before.reason); return; }
     G.phase = 'player'; G.busy = true;
     updateObjective();
+    TacticsForge.emit('turn:start', { phase: 'player', turn: G.turn });
     Music.bgm('playerPhase');
     await banner('Phase joueur', '');
     for (const u of players()) { u.done = false; u.tradeLocked = false; }
@@ -1507,6 +1518,7 @@
     const allies = team('ally');
     if (!allies.length) return endPlayerPhase(true);
     G.phase = 'ally'; G.busy = true;
+    TacticsForge.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
     await banner('Phase alliée', 'ally');
     for (const u of allies) u.done = false;
@@ -1573,6 +1585,7 @@
     if (G.over || !['player', 'ally'].includes(G.phase)) return;
     deselect(); hideMenu(); hideForecast();
     G.phase = 'enemy'; G.busy = true;
+    TacticsForge.emit('turn:start', { phase: 'enemy', turn: G.turn });
     Music.bgm('enemyPhase');
     await banner('Phase ennemie', 'enemy');
     // renforts
@@ -1631,6 +1644,7 @@
     if (!G.victoryStarted) { G.victoryStarted = true; await runEvents('victory', {}); }
     if (scenarioRunner.pending()) { G.busy = false; G.ui = 'idle'; UI.toast('Un événement attend : libère la place nécessaire pour terminer la mission.', 'error'); return; }
     G.over = true; Music.victory();
+    TacticsForge.emit('chapter:victory', { chapter: G.chapter });
     showEnd(true);
   }
   async function defeat(reason) {

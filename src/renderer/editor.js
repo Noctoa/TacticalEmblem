@@ -91,6 +91,11 @@
     fitZoom();
     renderAll();
     updateTitle();
+    // scripts des plugins actifs du projet
+    try {
+      S.plugins = (await tf.installedPlugins(S.dir)).filter(m => !m.error);
+      await PluginRuntime.load(S.baseUrl, S.plugins, S.project.meta, 'editor', { project: S.project, db: DB(), toast: (t, k) => UI.toast(t, k) });
+    } catch (e) { console.error('[plugin] chargement', e); }
     const mig = S.project.migration;
     if (mig) {
       delete S.project.migration;

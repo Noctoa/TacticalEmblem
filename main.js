@@ -7,8 +7,10 @@ const io = require('./src/main/project-io.js');
 const Layout = require('./src/main/resources-layout.js');
 const campaignIO = require('./src/main/campaign-io.js');
 const { importTiled } = require('./src/main/tiled.js');
+const pluginsIO = require('./src/main/plugins-io.js');
 
 const ASSETS = path.join(__dirname, 'assets');
+const BUNDLED_PLUGINS = path.join(__dirname, 'plugins'); // plugins fournis avec l'application
 let editorWin = null;
 let editorDirty = false;
 let forceClose = false;
@@ -196,7 +198,7 @@ handle('tileset:importImage', importAsset(io.DIRS.tilesets));
 // portrait : rangé dans le dossier du personnage (ressources/personnages/<Nom>/)
 handle('portrait:import', importAsset((dir, owner) => io.DIRS.characters + '/' + Layout.safeName(owner || 'Portraits')));
 handle('resources:scan', (e, dir) => io.scanResources(dir));
-handle('resources:installDefaults', (e, dir, only, pack) => io.installDefaults(dir, ASSETS, only, pack));
+handle('resources:installDefaults', (e, dir, only) => io.installDefaults(dir, ASSETS, only));
 handle('resources:setTeamColors', (e, dir, key, colors) => io.setTeamColors(dir, key, colors));
 handle('resources:openFolder', (e, dir, sub) => {
   const target = path.resolve(dir, sub || Layout.ROOT);
@@ -204,6 +206,24 @@ handle('resources:openFolder', (e, dir, sub) => {
   fs.mkdirSync(target, { recursive: true });
   return shell.openPath(target);
 });
+
+// ---------- plugins ----------
+handle('plugins:bundled', () => pluginsIO.listIn(BUNDLED_PLUGINS).map(m => Object.assign({}, m, { dir: undefined })));
+handle('plugins:installed', (e, dir) => pluginsIO.listInstalled(dir));
+handle('plugins:install', async (e, dir, from) => {
+  let src;
+  if (from && from.bundled) src = pluginsIO.bundledDir(BUNDLED_PLUGINS, from.bundled);
+  else {
+    src = global.__pluginDirOverride; // utilisé par le test automatisé
+    if (!src) {
+      const res = await dialog.showOpenDialog(editorWin, { title: 'Choisir le dossier du plugin (celui qui contient plugin.json)', properties: ['openDirectory'] });
+      if (res.canceled || !res.filePaths.length) return null;
+      src = res.filePaths[0];
+    }
+  }
+  return pluginsIO.install(dir, src);
+});
+handle('plugins:uninstall', (e, dir, id) => pluginsIO.uninstall(dir, id));
 
 handle('playtest:open', (e, dir, chapterId) => { openPlaytest(dir, chapterId); return true; });
 

@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' file: data:; img-src 'self' file: data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' file:">
 <title>Playtest</title>
 <link rel="stylesheet" href="ui.css">
 <link rel="stylesheet" href="playtest.css">
@@ -71,6 +71,8 @@
 <script src="preparation.js"></script>
 <script src="settings-window.js"></script>
 <script src="scenario-runtime.js"></script>
+<script src="../shared/plugins.js"></script>
+<script src="plugin-runtime.js"></script>
 <script src="playtest.js"></script>
 </body>
 </html>

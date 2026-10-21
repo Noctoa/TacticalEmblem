@@ -1,0 +1,210 @@
+{
+ "id": "fe8-sacred-stones",
+ "name": "Fire Emblem 8 — The Sacred Stones",
+ "version": "1.0.0",
+ "kind": "ressources",
+ "description": "Animations de combat, sprites de map et portraits de Fire Emblem 8 (rips The Spriters Resource).",
+ "author": "Tactics Forge (découpe) — planches : The Spriters Resource et leurs auteurs",
+ "notice": "Ressources de fans et de leurs éditeurs (Nintendo / Intelligent Systems, Square Enix) : usage personnel.",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe8:Amelia": {
+    "folder": "Amelia",
+    "portrait": "ressources/personnages/Amelia/portrait.png",
+    "battler": "ressources/personnages/Amelia/combat"
+   },
+   "fe8:Artur": {
+    "folder": "Artur",
+    "portrait": "ressources/personnages/Artur/portrait.png",
+    "battler": "ressources/personnages/Artur/combat"
+   },
+   "fe8:Colm": {
+    "folder": "Colm",
+    "portrait": "ressources/personnages/Colm/portrait.png",
+    "battler": "ressources/personnages/Colm/combat"
+   },
+   "fe8:Eirika": {
+    "folder": "Eirika",
+    "portrait": "ressources/personnages/Eirika/portrait.png",
+    "battler": "ressources/personnages/Eirika/combat",
+    "mapSprite": "ressources/personnages/Eirika/map_Lord"
+   },
+   "fe8:Ephraim": {
+    "folder": "Ephraim",
+    "portrait": "ressources/personnages/Ephraim/portrait.png",
+    "battler": "ressources/personnages/Ephraim/combat",
+    "mapSprite": "ressources/personnages/Ephraim/map_Lord"
+   },
+   "fe8:Ewan": {
+    "folder": "Ewan",
+    "portrait": "ressources/personnages/Ewan/portrait.png",
+    "battler": "ressources/personnages/Ewan/combat"
+   },
+   "fe8:Franz": {
+    "folder": "Franz",
+    "portrait": "ressources/personnages/Franz/portrait.png"
+   },
+   "fe8:Innes": {
+    "folder": "Innes",
+    "portrait": "ressources/personnages/Innes/portrait.png"
+   },
+   "fe8:Joshua": {
+    "folder": "Joshua",
+    "portrait": "ressources/personnages/Joshua/portrait.png"
+   },
+   "fe8:L'Arachel": {
+    "folder": "L'Arachel",
+    "portrait": "ressources/personnages/L'Arachel/portrait.png",
+    "battler": "ressources/personnages/L'Arachel/combat"
+   },
+   "fe8:Lute": {
+    "folder": "Lute",
+    "portrait": "ressources/personnages/Lute/portrait.png"
+   },
+   "fe8:Myrrh": {
+    "folder": "Myrrh",
+    "portrait": "ressources/personnages/Myrrh/portrait.png",
+    "battler": "ressources/personnages/Myrrh/combat"
+   },
+   "fe8:Neimi": {
+    "folder": "Neimi",
+    "portrait": "ressources/personnages/Neimi/portrait.png"
+   },
+   "fe8:Seth": {
+    "folder": "Seth",
+    "portrait": "ressources/personnages/Seth/portrait.png"
+   },
+   "fe8:Tethys": {
+    "folder": "Tethys",
+    "portrait": "ressources/personnages/Tethys/portrait.png"
+   },
+   "fe8:Vanessa": {
+    "folder": "Vanessa",
+    "portrait": "ressources/personnages/Vanessa/portrait.png"
+   }
+  },
+  "classes": {
+   "archer": {
+    "folder": "Archer",
+    "mapSprite": "ressources/personnages/Archer/map_FE8"
+   },
+   "knight": {
+    "folder": "Knight",
+    "mapSprite": "ressources/personnages/Knight/map_FE8"
+   },
+   "cavalier": {
+    "folder": "Cavalier",
+    "mapSprite": "ressources/personnages/Cavalier/map_FE8"
+   },
+   "fighter": {
+    "folder": "Fighter",
+    "mapSprite": "ressources/personnages/Fighter/map_FE8"
+   },
+   "mercenary": {
+    "folder": "Mercenary",
+    "mapSprite": "ressources/personnages/Mercenary/map_FE8"
+   },
+   "fe_myrmidon": {
+    "folder": "Myrmidon",
+    "mapSprite": "ressources/personnages/Myrmidon/map_FE8"
+   },
+   "fe_swordmaster": {
+    "folder": "Swordmaster",
+    "mapSprite": "ressources/personnages/Swordmaster/map_FE8"
+   },
+   "warrior": {
+    "folder": "Warrior",
+    "mapSprite": "ressources/personnages/Warrior/map_FE8"
+   },
+   "hero": {
+    "folder": "Hero",
+    "mapSprite": "ressources/personnages/Hero/map_FE8"
+   },
+   "paladin": {
+    "folder": "Paladin",
+    "mapSprite": "ressources/personnages/Paladin/map_FE8"
+   },
+   "great_knight": {
+    "folder": "Great Knight",
+    "mapSprite": "ressources/personnages/Great Knight/map_FE8"
+   },
+   "recruit": {
+    "folder": "Recruit",
+    "mapSprite": "ressources/personnages/Recruit/map_FE8"
+   },
+   "cleric": {
+    "folder": "Cleric",
+    "battler": "ressources/personnages/Cleric/combat_FE8",
+    "mapSprite": "ressources/personnages/Cleric/map_FE8"
+   },
+   "pegasus": {
+    "folder": "Pegasus Knight",
+    "mapSprite": "ressources/personnages/Pegasus Knight/map_FE8"
+   },
+   "fe_falcon": {
+    "folder": "Falcon Knight",
+    "mapSprite": "ressources/personnages/Falcon Knight/map_FE8"
+   },
+   "fe_wyvern": {
+    "folder": "Wyvern Rider",
+    "mapSprite": "ressources/personnages/Wyvern Rider/map_FE8"
+   },
+   "fe_wyvern_lord": {
+    "folder": "Wyvern Lord",
+    "mapSprite": "ressources/personnages/Wyvern Lord/map_FE8"
+   },
+   "soldier": {
+    "folder": "Soldier",
+    "mapSprite": "ressources/personnages/Soldier/map_FE8"
+   },
+   "brigand": {
+    "folder": "Brigand",
+    "mapSprite": "ressources/personnages/Brigand/map_FE8"
+   },
+   "fe_berserker": {
+    "folder": "Berserker",
+    "mapSprite": "ressources/personnages/Berserker/map_FE8"
+   },
+   "fe_dancer": {
+    "folder": "Dancer",
+    "battler": "ressources/personnages/Dancer/combat_FE8",
+    "mapSprite": "ressources/personnages/Dancer/map_FE8"
+   },
+   "fe_troubadour": {
+    "folder": "Troubadour",
+    "mapSprite": "ressources/personnages/Troubadour/map_FE8"
+   },
+   "fe_valkyrie": {
+    "folder": "Valkyrie",
+    "mapSprite": "ressources/personnages/Valkyrie/map_FE8"
+   },
+   "fe_monk": {
+    "folder": "Monk",
+    "mapSprite": "ressources/personnages/Monk/map_FE8"
+   },
+   "fe_bishop": {
+    "folder": "Bishop",
+    "mapSprite": "ressources/personnages/Bishop/map_FE8"
+   },
+   "fe_shaman": {
+    "folder": "Shaman",
+    "mapSprite": "ressources/personnages/Shaman/map_FE8"
+   },
+   "fe_druid": {
+    "folder": "Druid",
+    "mapSprite": "ressources/personnages/Druid/map_FE8"
+   },
+   "fe_sage": {
+    "folder": "Sage",
+    "mapSprite": "ressources/personnages/Sage/map_FE8"
+   },
+   "fe_sniper": {
+    "folder": "Sniper",
+    "mapSprite": "ressources/personnages/Sniper/map_FE8"
+   }
+  },
+  "battlebacks": {}
+ },
+ "scripts": []
+}

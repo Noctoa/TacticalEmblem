@@ -141,18 +141,9 @@ Images : Eliwood, Lyn et Hector (Blazing Blade) reçoivent les ressources de bas
 - les classes qui manquent : Seigneur (épée / lance / hache / arc), Tacticien, Prêtresse guerrière, Myrmidon › Bretteur, Chevalier wyverne › Seigneur wyverne, Chevalier faucon, Danseuse, Troubadour › Valkyrie, Moine › Évêque, Shaman › Druide, Sage, Nomade › Sniper, Berserker, Chevalier noir ;
 - une bannière d'invocation par jeu, avec le ou les seigneurs mis en avant.
 
-**Pack de ressources Fire Emblem GBA** — `assets/packs/fe-gba/` contient les planches du dossier « FE Asset » découpées pour le moteur. On y trouve des rips de FE6, FE7 et FE8 (The Spriters Resource) et des customs « style FE GBA » (Final Fantasy, Zelda, Kingdom Hearts). Pour chaque personnage ou classe (`ressources/personnages/<Nom>/`), le pack fournit :
-- `combat_<variante>.png` + `.json` : l'animation de combat (garde, attaque, critique, à distance, esquive) ;
-- `map_<variante>.png` + `.json` : le sprite de map, tiré des planches « Map Sprites » ;
-- `portrait.png` : le face set 128×112 tiré des planches « Mugshots », ou à défaut un buste découpé dans la garde. Tous les face sets d'un jeu sont aussi rangés dans `Portraits FE6/portrait_001.png`, etc.
+Les autres personnages reçoivent leurs images si un **plugin** de leur jeu est installé dans le projet (voir « Plugins » plus bas) : Roy, Eirika, Ephraim, Guy, Florina… et les classes Archer, Chevalier, Mage… qui n'avaient pas de sprite. Installer le plugin avant ou après l'import revient au même : à l'installation, il relie aussi les personnages déjà présents.
 
-Le pack contient aussi 19 **fonds de combat** de FE6 (`ressources/fonds-combat/fe6-plaine.png`, `fe6-foret.png`, `fe6-salle-du-trone.png`…). Chaque terrain peut en avoir un (Terrains et tilesets › fiche du terrain › **Fond de combat**). L'animation de combat l'affiche derrière les combattants, d'après le terrain du défenseur. Sans fond, c'est la map floutée qui sert de décor, comme avant. Le bouton « Ajouter le pack Fire Emblem GBA » pose un fond sur chaque terrain de base qui n'en a pas.
-
-Le pack n'est pas copié dans les nouveaux projets. Il arrive de deux façons :
-- **à l'import des personnages de la série** : les dossiers des personnages et des classes concernés sont copiés, puis reliés (Roy, Lilina, Dieck…, et les classes Archer, Chevalier, Mage… qui n'avaient pas de sprite) ;
-- **en entier** : Base de données › Ressources › **Ajouter le pack Fire Emblem GBA**.
-
-Rien n'est écrasé. Les planches d'origine sont dans `tools/sprite-sources/fe-gba/`. `python3 tools/build_fe_gba_pack.py` refait le pack (`--preview dossier` produit les aperçus numérotés) ; les réglages planche par planche sont dans `tools/fe_gba_overrides.py`. Ce sont des ressources de fans et de Nintendo / Intelligent Systems / Square Enix, à garder pour un usage personnel.
+**Fonds de combat** — Chaque terrain peut avoir un décor (Terrains et tilesets › fiche du terrain › **Fond de combat**), une image de `ressources/fonds-combat/`. L'animation de combat l'affiche derrière les combattants, d'après le terrain du défenseur. Sans fond, c'est la map floutée qui sert de décor. Le plugin Fire Emblem 6 en fournit 19 et en pose un sur chaque terrain de base qui n'en a pas.
 
 Un personnage déjà présent (même nom, même série) n'est pas dupliqué. Les manaketes et les laguz ne sont pas inclus (pas de pierre de dragon ni de transformation dans le moteur).
 
@@ -187,6 +178,60 @@ Trois propriétés d'arme ont été ajoutées pour l'occasion (fiche d'arme) :
 - **Inspecteur (à droite)** : nom, héros, or de départ, musique, bouton *Tester le camp*. Pour le personnage sélectionné : le chapitre après lequel il arrive. Puis les **conversations** du camp (cliquer pour les modifier dans une fenêtre : personnage, chapitre à terminer avant, personnages vivants requis, affinité et orbes gagnées, une seule fois, dialogue « Nom: texte »), l'**équipe de départ**, la **boutique** et l'**autel**.
 
 Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Utiliser comme camp du jeu »). Tout cela est annulable (Ctrl+Z). Les chapitres et leurs actes se règlent dans Base de données › **Chapitres et actes** (section, conditions, **dates réelles**, or à la victoire, rejouable). Sans lobby (case décochée), les chapitres s'enchaînent comme avant.
+
+## Plugins
+
+**Base de données › Plugins** liste les plugins installés dans le projet et ceux fournis avec Tactics Forge (dossier `plugins/` de l'application). **Installer dans le projet** :
+- copie les ressources du plugin dans `ressources/` du projet, sans rien écraser ;
+- range sa fiche et ses scripts dans `<projet>/plugins/<id>/` ;
+- relie ses images aux classes, aux terrains (fonds de combat) et aux personnages de la série déjà présents, sur les champs vides seulement.
+
+**Installer depuis un dossier…** prend n'importe quel dossier qui contient un `plugin.json`. Dans la fiche d'un plugin installé :
+- **Activé** : décoché, ses scripts ne tournent plus et l'import des personnages ne prend plus ses images ;
+- **Relier à la base** : refait les liens ;
+- **Désinstaller** : retire la fiche et les scripts ; les images déjà copiées restent dans `ressources/`.
+
+Plugins fournis (un par jeu, à ajouter un par un) :
+
+| Plugin | Contenu |
+|---|---|
+| `fe6-binding-blade` | animations, sprites de map et portraits de FE6, 19 fonds de combat |
+| `fe7-blazing-blade` | animations, sprites de map et portraits de FE7 |
+| `fe8-sacred-stones` | animations, sprites de map et portraits de FE8 |
+| `customs-style-gba` | customs « style FE GBA » (Final Fantasy, Zelda, Kingdom Hearts) |
+| `exemple-annonce-tours` | exemple de script : annonce les tours, compte les ennemis vaincus |
+
+Les plugins FE sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix : usage personnel. Ils sont refaits par `python3 tools/build_fe_gba_pack.py` (découpe des planches de `tools/sprite-sources/fe-gba/`, réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés), puis rangés par jeu par `tools/split_fe_gba_plugins.py`.
+
+**Créer un plugin** — un dossier avec un `plugin.json` :
+
+```json
+{
+ "id": "mon-plugin", "name": "Mon plugin", "version": "1.0.0", "kind": "mixte",
+ "description": "…", "author": "…",
+ "ressources": "ressources",
+ "links": {
+  "characters": { "fe7:Guy": { "portrait": "ressources/personnages/Guy/portrait.png", "battler": "ressources/personnages/Guy/combat_Myrmidon" } },
+  "classes": { "archer": { "battler": "ressources/personnages/Archer/combat_FE7", "mapSprite": "ressources/personnages/Archer/map_FE7Male" } },
+  "battlebacks": { "plain": "ressources/fonds-combat/ma-plaine.png" }
+ },
+ "scripts": ["main.js"]
+}
+```
+
+`kind` vaut `ressources`, `script` ou `mixte`. `ressources/` reprend l'arborescence d'un projet (`personnages/<Nom>/`, `fonds-combat/`, `tilesets/`, `musiques/`…). `links` est facultatif : `characters` utilise les clés « jeu:Nom » du pack de personnages de la série, `classes` les identifiants de classes, `battlebacks` les identifiants de terrains.
+
+**Scripts** — chargés dans l'éditeur à l'ouverture du projet et dans le jeu au lancement, seulement pour les plugins activés :
+
+```js
+TacticsForge.register('mon-plugin', {
+  editor(api) { /* une fois, dans l'éditeur */ },
+  game(api) { api.toast('Mon plugin est actif'); }
+});
+TacticsForge.on('turn:start', (e, api) => { if (e.phase === 'player') api.toast('Tour ' + e.turn); });
+```
+
+Événements : `game:start`, `chapter:start` { chapter }, `turn:start` { phase, turn }, `combat:end` { attacker, defender, result }, `unit:defeated` { unit }, `chapter:victory` { chapter }. `api` donne `where` ('editor' ou 'game'), `project`, `db`, `state` (la partie en cours) et `toast(texte)`. Un script qui plante est signalé dans la console sans arrêter le jeu. Un script a les mêmes droits que l'éditeur : n'installe que des plugins de confiance.
 
 ## Affinités (soutiens) et épilogue
 
@@ -376,7 +421,9 @@ src/shared/lobby.js        lobby : chapitres débloqués, évènements datés, c
 src/shared/rules.js        (resolveCombat) overkill : coups restants après le coup fatal, bonus d'EXP — testé dans test/overkill.test.js
 src/shared/fe-arsenal.js   pack d'armes, objets et compétences de la série — testé dans test/fe-arsenal.test.js
 src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, bannières) — testé dans test/fe-pack.test.js
-src/shared/fe-gba-art.js   index généré du pack de ressources Fire Emblem GBA (tools/build_fe_gba_pack.py)
+src/shared/plugins.js      plugins : fiches plugin.json, liens vers la base — testé dans test/plugins.test.js
+src/main/plugins-io.js     plugins fournis (plugins/), installation / désinstallation dans un projet
+src/renderer/plugin-runtime.js  scripts des plugins (TacticsForge.register / on), chargés dans l'éditeur et le jeu
 src/shared/summon.js       invocations : bannières, taux, pitié, cercle de pierres, fusions — testé dans test/summon.test.js
 src/renderer/summon-panel.js  autel d'invocation du camp
 src/shared/roster.js       tri et recherche des personnages (nom, classe, arme, série) — testé dans test/roster.test.js

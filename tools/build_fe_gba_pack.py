@@ -2,7 +2,7 @@
 """
 Pack de ressources « Fire Emblem GBA » : découpe automatique des planches de tools/sprite-sources/fe-gba/
 (rips The Spriters Resource de FE6 / FE7 / FE8 et customs « style FE GBA ») vers
-assets/packs/fe-gba/ressources/personnages/<Perso ou classe>/ :
+build/fe-gba/ressources/personnages/<Perso ou classe>/ (puis rangé en plugins par jeu dans plugins/) :
 
   combat_<variante>.png + .json   animation de combat (frames découpées, sections lues sur la planche)
   portrait.png                    face set 128×112 (planches « Mugshots ») ou buste découpé dans la garde
@@ -22,7 +22,7 @@ import pytesseract
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'tools', 'sprite-sources', 'fe-gba')
-OUT = os.path.join(ROOT, 'assets', 'packs', 'fe-gba')
+OUT = os.path.join(ROOT, 'build', 'fe-gba')  # dossier de travail ; les plugins sont rangés par tools/split_fe_gba_plugins.py
 PERSO = os.path.join(OUT, 'ressources', 'personnages')
 ARROW = os.path.join(ROOT, 'assets', 'default', 'ressources', 'personnages', 'Lyn', 'combat_arrow.png')
 ARG = lambda k: sys.argv[sys.argv.index(k) + 1] if k in sys.argv else None
@@ -783,13 +783,9 @@ def main():
         if info['kind'] == 'map':
             maps += build_map_sheet(info)
     json.dump([{'owner': o, 'variant': v, 'label': l} for o, v, l in maps], open(os.path.join(OUT, 'maps.json'), 'w'), indent=1, ensure_ascii=False)
-    write_art_index()
-
-
-PROMOTED = ('great', 'master', 'knightlord', 'swordmaster', 'druid', 'trooper', 'bishop', 'sniper', 'paladin', 'general', 'hero', 'warrior',
-            'sage', 'valkyrie', 'falcon', 'wyvernlord', 'berserker', 'assassin', 'ranger')
-GAME_ORDER = ['FE7', 'FE8', 'FE6']
-FEMALE_CLASSES = ('cleric', 'pegasus', 'fe_troubadour', 'fe_valkyrie', 'fe_dancer', 'fe_falcon')
+    import split_fe_gba_plugins
+    print('Plugins')
+    split_fe_gba_plugins.main()
 
 
 BB_DIR = os.path.join(OUT, 'ressources', 'fonds-combat')
@@ -819,74 +815,6 @@ def build_battlebacks(info):
             made.append(name)
     print(f'  {info["game"]} : {len(made)} fonds de combat')
     return made
-
-
-def write_art_index():
-    """src/shared/fe-gba-art.js : ressources du pack pour les personnages et les classes du pack de personnages FE."""
-    from fe_gba_overrides import CHAR_NAMES, CLASS_IDS
-    rp = 'ressources/personnages/'
-    owners = {}
-    for d in sorted(x for x in os.listdir(PERSO) if os.path.isdir(os.path.join(PERSO, x))):
-        fs = os.listdir(os.path.join(PERSO, d))
-        owners[d] = {
-            'battlers': [f[:-5] for f in sorted(fs) if f.startswith('combat') and f.endswith('.json')],
-            'maps': [f[:-5] for f in sorted(fs) if f.startswith('map') and f.endswith('.json')],
-            'portrait': 'portrait.png' in fs,
-        }
-
-    def pick(keys, prefer_games=None, female=False):
-        def score(k):
-            low = k.lower()
-            promoted = any(w in low for w in PROMOTED)
-            g = next((i for i, x in enumerate(GAME_ORDER) if x.lower() in low), len(GAME_ORDER))
-            sex = ('female' in low) != female
-            return (promoted, sex, g if prefer_games else 0, len(k))
-        return sorted(keys, key=score)[0] if keys else None
-    characters, classes = {}, {}
-    for owner, o in owners.items():
-        if owner.startswith('Portraits'):
-            continue
-        name = CHAR_NAMES.get(owner)
-        if not name:
-            continue
-        for key in ([name] if isinstance(name, str) else name):
-            e = {'folder': owner, 'pack': 'fe-gba'}
-            if o['portrait']:
-                e['portrait'] = rp + owner + '/portrait.png'
-            b = pick(o['battlers'])
-            if b:
-                e['battler'] = rp + owner + '/' + b
-            mp = pick(o['maps'])
-            if mp:
-                e['mapSprite'] = rp + owner + '/' + mp
-            characters[key] = e
-    for label, cid in CLASS_IDS.items():
-        o = owners.get(label)
-        if not o:
-            continue
-        fem = cid in FEMALE_CLASSES
-        e = {'folder': label, 'pack': 'fe-gba'}
-        b = pick(o['battlers'], True, fem)
-        if b:
-            e['battler'] = rp + label + '/' + b
-        mp = pick(o['maps'], True, fem)
-        if mp:
-            e['mapSprite'] = rp + label + '/' + mp
-        if len(e) > 2:
-            classes[cid] = e
-    bbs = {}
-    if os.path.isdir(BB_DIR):
-        have = set(os.listdir(BB_DIR))
-        for terrain, name in TERRAIN_BATTLEBACKS.items():
-            if name in have:
-                bbs[terrain] = 'ressources/fonds-combat/' + name
-    body = json.dumps({'pack': 'fe-gba', 'characters': characters, 'classes': classes, 'battlebacks': bbs}, indent=1, ensure_ascii=False)
-    js = ('/*\n * Généré par tools/build_fe_gba_pack.py : ressources du pack « Fire Emblem GBA » (assets/packs/fe-gba)\n'
-          ' * pour les personnages (clé « jeu:Nom » du pack de personnages) et les classes. Ne pas modifier à la main.\n */\n'
-          '(function (root, factory) {\n  const api = factory();\n  if (typeof module !== \'undefined\' && module.exports) module.exports = api;\n'
-          '  else root.FEGbaArt = api;\n})(typeof self !== \'undefined\' ? self : this, function () {\n  \'use strict\';\n  return ' + body.replace('\n', '\n  ') + ';\n});\n')
-    open(os.path.join(ROOT, 'src', 'shared', 'fe-gba-art.js'), 'w').write(js)
-    print(f'Index : {len(characters)} personnages, {len(classes)} classes -> src/shared/fe-gba-art.js')
 
 
 if __name__ == '__main__':

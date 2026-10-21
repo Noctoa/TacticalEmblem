@@ -2,19 +2,17 @@
  * Pack « Personnages de la série Fire Emblem » : fiches (classe, niveau, stats, croissances, inventaire,
  * rareté d'invocation, série, bio) des personnages principaux de chaque jeu.
  * Les stats sont approximatives : calculées depuis la classe et le niveau, avec la personnalité des
- * croissances du personnage. Images (ART) : Eliwood, Lyn et Hector prennent les ressources de base du projet ;
- * les autres personnages et les classes prennent celles du pack « Fire Emblem GBA » (assets/packs/fe-gba,
- * index src/shared/fe-gba-art.js) quand il en a. Les dossiers nécessaires sont copiés dans le projet à l'import.
- *
+ * croissances du personnage. Images : Eliwood, Lyn et Hector prennent les ressources de base du projet (ART) ;
+ * les autres personnages et les classes prennent celles des plugins de ressources installés dans le projet
+ * (plugin.json › links, voir src/shared/plugins.js), passées à install() dans opts.art.
  * Installation (Base de données › Unités › Personnages de la série) : install(db, ['fe7', ...]) ajoute les
  * classes manquantes, les personnages absents (même nom et même série = déjà là) et une bannière par jeu.
  */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./defaults.js') : root.Defaults,
-    common ? require('./fe-gba-art.js') : root.FEGbaArt);
+  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./defaults.js') : root.Defaults);
   if (common) module.exports = api; else root.FEPack = api;
-})(typeof self !== 'undefined' ? self : this, function (Rules, Defaults, GbaArt) {
+})(typeof self !== 'undefined' ? self : this, function (Rules, Defaults) {
   'use strict';
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
   const CAPS1 = st(60, 20, 20, 20, 20, 30, 20, 20), CAPS2 = st(60, 26, 26, 26, 26, 30, 25, 26);
@@ -265,39 +263,37 @@
   // Personnages du pack qui ont des ressources dans le projet (fournies avec les ressources de base)
   const RP = 'ressources/personnages/';
   const art = (who, cls) => ({ folder: who, pack: '', portrait: RP + who + '/portrait.png', battler: RP + who + '/combat', mapSprite: RP + who + '/map_' + cls });
-  const GBA = (GbaArt && GbaArt.characters) || {};
-  const ART = Object.assign({}, GBA, {
+  const ART = Object.assign({}, {
     'fe7:Eliwood': art('Eliwood', 'Lord'),
     'fe7:Lyn': art('Lyn', 'Lord'),
     'fe7:Hector': art('Hector', 'Lord')
   });
-  const CLASS_ART = (GbaArt && GbaArt.classes) || {};
-  const artOf = (game, name) => ART[game.id + ':' + name] || null;
-  /** Dossiers de ressources à copier pour les jeux choisis : [{ folder, pack }] (pack '' = ressources de base). */
+  /** Images d'un personnage : plugins installés (extra = liens « jeu:Nom ») puis ressources de base. */
+  const artOf = (game, name, extra) => ART[game.id + ':' + name] || (extra && extra[game.id + ':' + name]) || null;
+  /** Dossiers de base à copier pour les jeux choisis (Eliwood, Lyn, Hector) : [{ folder, pack: '' }]. */
   function artFolders(gameIds) {
     const out = [];
-    const add = (a) => { if (a && !out.some(o => o.folder === a.folder && o.pack === (a.pack || ''))) out.push({ folder: a.folder, pack: a.pack || '' }); };
-    const classIds = new Set();
-    for (const game of GAMES.filter(g => gameIds.includes(g.id))) for (const row of game.characters) { add(artOf(game, row[0])); classIds.add(row[1]); }
-    for (const id of classIds) add(CLASS_ART[id]);
+    for (const game of GAMES.filter(g => gameIds.includes(g.id))) for (const row of game.characters) {
+      const a = ART[game.id + ':' + row[0]];
+      if (a && !out.some(o => o.folder === a.folder)) out.push({ folder: a.folder, pack: '' });
+    }
     return out;
   }
-  /** Fonds de combat du pack GBA sur les terrains de la base qui n'en ont pas (fichier présent). Renvoie le nombre posé. */
-  function applyBattlebacks(db, has) {
-    const BB = (GbaArt && GbaArt.battlebacks) || {};
-    let n = 0;
-    for (const t of db.terrains || []) if (!t.battleback && BB[t.id] && (!has || has(BB[t.id]))) { t.battleback = BB[t.id]; n++; }
-    return n;
-  }
-  /** Sprites du pack GBA sur les classes de la base qui n'en ont pas (champ vide seulement, ressource présente). */
-  function applyClassArt(db, has) {
+  /** Sprites des classes (liens « classes » des plugins) sur les classes de la base qui n'en ont pas. */
+  function applyClassArt(db, has, classArt) {
     let n = 0;
     for (const c of db.classes || []) {
-      const a = CLASS_ART[c.id];
+      const a = (classArt || {})[c.id];
       if (!a) continue;
       for (const key of ['battler', 'mapSprite']) if (a[key] && !c[key] && (!has || has(key, a[key]))) { c[key] = a[key]; n++; }
     }
     return n;
+  }
+  /** Personnage du pack déjà dans la base, d'après une clé « jeu:Nom » (liens des plugins). */
+  function findUnit(db, key) {
+    const [gid, ...rest] = String(key).split(':');
+    const game = GAMES.find(g => g.id === gid);
+    return game ? existing(db, game, rest.join(':')) : null;
   }
   /** Pose les ressources du pack sur une unité, champ par champ, seulement s'il est vide et si la ressource existe.
    *  Le sprite de map n'est posé que si la classe n'en a pas : sinon la promotion ne changerait plus le sprite. */
@@ -354,10 +350,12 @@
   /**
    * Installe les jeux choisis : classes manquantes, personnages absents, une bannière par jeu.
    * opts.has(champ, clé) : la ressource existe-t-elle dans le projet ? (sans has : supposée présente)
+   * opts.art : liens des plugins installés { characters, classes } (Plugins.mergeLinks)
    * Renvoie { units, classes, banners, art } (nombres ajoutés ; art = images reliées).
    */
   function install(db, gameIds, opts) {
     const has = opts && opts.has;
+    const extra = (opts && opts.art && opts.art.characters) || {};
     const out = { units: 0, classes: 0, banners: 0, art: 0 };
     const catalogue = classCatalogue();
     db.classes = db.classes || []; db.units = db.units || []; db.banners = db.banners || [];
@@ -375,12 +373,12 @@
       const ids = [];
       for (const row of game.characters) {
         const found = existing(db, game, row[0]);
-        if (found) { out.art += applyArt(found, artOf(game, row[0]), has, db.classes.find(c => c.id === found.classId)); ids.push(found.id); continue; }
+        if (found) { out.art += applyArt(found, artOf(game, row[0], extra), has, db.classes.find(c => c.id === found.classId)); ids.push(found.id); continue; }
         const cls = ensureClass(row[1]);
         const unit = unitOf(game, row, cls);
         unit.inventory = unit.inventory.filter(s => (db.weapons || []).some(w => w.id === s.id) || (db.items || []).some(i => i.id === s.id));
         if (!unit.inventory.length && cls && cls.defaultInventory) unit.inventory = cls.defaultInventory.filter(id => (db.weapons || []).some(w => w.id === id)).map(id => ({ id }));
-        out.art += applyArt(unit, artOf(game, row[0]), has, cls);
+        out.art += applyArt(unit, artOf(game, row[0], extra), has, cls);
         db.units.push(unit); ids.push(unit.id); out.units++;
       }
       const bannerId = 'bn_' + game.id;
@@ -391,7 +389,7 @@
         out.banners++;
       }
     }
-    out.art += applyClassArt(db, has);
+    out.art += applyClassArt(db, has, opts && opts.art && opts.art.classes);
     // promotions entre classes du pack (si les deux classes sont dans la base)
     for (const [a, b] of PROMOTIONS) {
       const from = db.classes.find(c => c.id === a), to = db.classes.find(c => c.id === b);
@@ -403,5 +401,5 @@
   }
 
   const total = () => GAMES.reduce((n, g) => n + g.characters.length, 0);
-  return { CLASSES, GAMES, PROMOTIONS, ART, CLASS_ART, artOf, artFolders, applyClassArt, applyBattlebacks, classCatalogue, unitOf, summary, install, total };
+  return { CLASSES, GAMES, PROMOTIONS, ART, artOf, artFolders, applyClassArt, findUnit, classCatalogue, unitOf, summary, install, total };
 });
