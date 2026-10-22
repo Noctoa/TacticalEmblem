@@ -217,6 +217,7 @@
     startClock(save && save.info && save.info.playTime); // temps de jeu (cadre PLAYTIME des sauvegardes)
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
+    G.settings.aiDifficulty = R.normalizeAiDifficulty(save.aiDifficulty === undefined ? (G.project.meta.settings || {}).aiDifficulty : save.aiDifficulty);
     if (save.chapterId === Lobby.LOBBY_SAVE) {
       if (G.lobbyOn) return lobby.enter();
       const start = R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
@@ -232,6 +233,9 @@
   const playTime = () => Math.round((G.playBase || 0) + (performance.now() - (G.playStart || performance.now())));
   function startClock(base) { G.playBase = Number(base) || 0; G.playStart = performance.now(); }
   function makeSave() {
+    return Object.assign({}, makeCheckpointSave(), { aiDifficulty: R.normalizeAiDifficulty(G.settings.aiDifficulty) });
+  }
+  function makeCheckpointSave() {
     if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation', playTime: playTime() } });
     if (G.mode === 'lobby') {
       lobby.commit();
@@ -1248,9 +1252,16 @@
     showMenu(choices.map(s => ({ label: s.weapon.name, sub: s.weapon.restore ? 'Soigne les altérations' : `Soin : ${s.weapon.heal || 10} + Mag`, action: () => { hideMenu(); heal(u, t, s.index); } })), u, 'items');
   }
   async function heal(u, t, staffIndex) {
-    const st = R.staves(u, G.db).find(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon));
-    if (!st) return;
+    if (!R.staves(u, G.db).some(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon))) return;
     G.busy = true; G.ui = 'busy';
+    await performStaff(u, t, staffIndex);
+    G.busy = false;
+    await finishAction(u);
+  }
+  // Exécution commune au joueur et à l'IA ; la phase reste pilotée par l'appelant.
+  async function performStaff(u, t, staffIndex) {
+    const st = R.staves(u, G.db).find(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon));
+    if (!st || u.dead || u.hp <= 0) return false;
     const amount = (st.weapon.heal || 10) + u.stats.mag;
     const before = t.hp;
     await lunge(u, t);
@@ -1278,14 +1289,19 @@
     await sleep(500);
     if (healRun) await healRun.done;
     if (u.team !== 'enemy') await grantExp(u, R.staffExp(u, G.db));
-    G.busy = false;
-    await finishAction(u);
+    return true;
   }
 
   async function useItem(u, index) {
-    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !Statuses.canAct(u) || !['heal', 'boost', 'restore'].includes(it.effect)) return;
-    if (it.effect === 'restore' && !Statuses.canCure(u, it.cure)) return;
     G.busy = true;
+    const used = await performItem(u, index);
+    G.busy = false;
+    if (used) await finishAction(u);
+  }
+  async function performItem(u, index) {
+    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !Statuses.canAct(u) || !['heal', 'boost', 'restore'].includes(it.effect)) return;
+    if (u.dead || u.hp <= 0 || slot.uses <= 0 || (it.effect === 'heal' && u.hp >= u.stats.hp)) return false;
+    if (it.effect === 'restore' && !Statuses.canCure(u, it.cure)) return;
     if (it.effect === 'heal') {
       const before = u.hp; u.hp = Math.min(u.stats.hp, u.hp + (it.amount || 10));
       float(u.x, u.y, '+' + (u.hp - before), '#7dffa8');
@@ -1297,8 +1313,7 @@
     }
     slot.uses--; if (slot.uses <= 0) u.inventory.splice(index, 1);
     await sleep(600);
-    G.busy = false;
-    await finishAction(u);
+    return true;
   }
 
   async function seize(u) {
@@ -1678,9 +1693,13 @@
   /** Fait jouer une liste d'unités par l'IA. Renvoie true si la partie est terminée. */
   async function aiTurn(list, foesFn) {
     if (G.debug.passive && list.some(u => u.team === 'enemy')) { for (const e of list) e.done = true; return false; } // debug
-    for (const e of list) {
+    const acted = new Set();
+    // Une unité endormie attend : si Rétablissement la réveille, elle peut encore jouer.
+    while (true) {
       if (G.over) return true;
-      if (e.done || e.dead) continue;
+      const e = list.find(u => !acted.has(u) && !u.done && !u.dead && u.hp > 0 && Statuses.canAct(u));
+      if (!e) break;
+      acted.add(e);
       const plan = R.planEnemy(e, foesFn(), ropts());
       e.done = true;
       if (!plan) continue;
@@ -1690,13 +1709,19 @@
       if (plan.path && plan.path.length > 1) await animateMove(e, plan.path);
       await areaEvents(e);
       if (await checkEnd()) return true;
-      if (plan.target && !plan.target.dead) {
+      if (e.dead || !Statuses.canAct(e)) continue;
+      if (plan.action === 'staff') {
+        await performStaff(e, plan.target, plan.weaponIndex);
+      } else if (plan.action === 'item') {
+        await performItem(e, plan.itemIndex);
+      } else if (plan.target && !plan.target.dead) {
         R.equip(e, plan.weaponIndex);
         await sleep(160);
         await runCombat(e, 0, plan.target);
-        refreshDanger();
-        if (await checkEnd()) return true;
       }
+      lastInfoKey = '';
+      refreshDanger();
+      if (await checkEnd()) return true;
       await sleep(80);
     }
     return false;

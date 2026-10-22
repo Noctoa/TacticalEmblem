@@ -1120,6 +1120,7 @@
     if (['range', 'portee', 'attente', 'wait'].includes(n)) return 'range';
     if (['stationary', 'immobile', 'fixe', 'garde'].includes(n)) return 'stationary';
     if (['aggressive', 'agressif', 'charge'].includes(n)) return 'aggressive';
+    if (['support', 'soutien', 'healer', 'soigneur'].includes(n)) return 'support';
     return boss ? 'stationary' : 'aggressive';
   }
 
@@ -1276,7 +1277,8 @@
   const AIS = [
     { value: 'aggressive', label: 'Agressif — fonce sur le joueur' },
     { value: 'range', label: 'À portée — attaque si on entre dans sa zone' },
-    { value: 'stationary', label: 'Immobile — attaque sans bouger' }
+    { value: 'stationary', label: 'Immobile — agit sans bouger' },
+    { value: 'support', label: 'Soutien — soigne et accompagne ses alliés' }
   ];
 
   function renderChapterInspector(box, m) {
