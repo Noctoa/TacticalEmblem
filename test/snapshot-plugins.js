@@ -30,7 +30,7 @@ module.exports = (win, openPlaytest) => {
       await ejs(`Editor.open(${JSON.stringify(dir)})`); await wait(1200);
       await ejs(`DBEditor.open('plugins')`); await wait(1200);
       result.liste = await ejs(`[...document.querySelectorAll('#db-body [data-plugin]')].map(e => e.dataset.plugin)`);
-      assert(result.liste.includes('exemple-annonce-tours'), 'plugins fournis : ' + result.liste);
+      assert(result.liste.includes('invocations'), 'plugins fournis : ' + result.liste);
       await shot('a_plugins');
       global.__pluginDirOverride = makePlugin(); // « Installer depuis un dossier… » sans boîte de dialogue
       await ejs(`document.querySelector('[data-plugin-folder]').click()`); await wait(2500);
@@ -44,8 +44,9 @@ module.exports = (win, openPlaytest) => {
       assert(result.meta && result.meta['pack-test'] && result.fonds >= 1 && result.classes.includes('archer'), 'liens du plugin');
       assert(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Testeur', 'combat_Arc.json')), 'ressources copiées');
       // plugin script
-      await ejs(`document.querySelector('[data-plugin="exemple-annonce-tours"]').click()`); await wait(300);
-      await ejs(`document.querySelector('[data-plugin-install="exemple-annonce-tours"]').click()`); await wait(1500);
+      global.__pluginDirOverride = path.join(__dirname, 'fixtures', 'exemple-annonce-tours'); // plugin de script de test
+      await ejs(`document.querySelector('[data-plugin-folder]').click()`); await wait(1500);
+      global.__pluginDirOverride = null;
       await closeModal(); await wait(300);
       // personnages FE6 : images du plugin
       await ejs(`DBEditor.open('units')`); await wait(400);

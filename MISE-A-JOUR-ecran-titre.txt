@@ -1,0 +1,20 @@
+Écran titre — mise à jour
+=========================
+Base : origin/main 41e3717 (« Gacha into Plugin »).
+
+1. Dézipper à la racine du projet TacticalEmblem en écrasant les fichiers.
+2. Lancer update.bat (ou npm start pour tester).
+
+Ce qui change
+- Le jeu (bouton Tester) s'ouvre sur un écran titre : nom du jeu, sous-titre, Jouer / Crédits / Quitter
+  (flèches + Z / Entrée, ou la souris ; X / Échap pour revenir).
+  · Jouer sans sauvegarde : la partie est créée directement (Classique par défaut).
+  · Jouer avec des sauvegardes : Continuer, Charger une sauvegarde (s'il y en a plusieurs), Nouvelle partie.
+  · Crédits : nom du jeu, auteur, puis ton texte.
+  · Quitter : ferme le jeu.
+  · Testé depuis l'éditeur sur un acte précis : une entrée « Test : … » le lance directement.
+- Base de données › Système › « Écran titre et crédits » : sous-titre, mode d'une nouvelle partie
+  (Classique / Détente / demander), image de fond (ressources/interface ou fonds de combat), musique,
+  et le texte des crédits (« Rôle : Nom » sur deux colonnes, « Titre : » en titre, ligne vide = nouveau bloc).
+- Tu as retiré le plugin d'exemple « exemple-annonce-tours » : les tests qui s'en servaient utilisent
+  maintenant une copie dans test/fixtures/ (il n'est plus proposé dans Base de données › Plugins).

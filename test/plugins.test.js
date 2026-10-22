@@ -22,9 +22,8 @@ test('fiches : validation, valeurs par défaut', () => {
   assert.deepEqual(n.links, { characters: {}, classes: {}, battlebacks: {} });
 });
 
-test('plugins fournis : fiches valides, fichiers présents (dont l’exemple de script)', () => {
+test('plugins fournis : fiches valides, fichiers présents (dont le plugin Invocations)', () => {
   const list = IO.listIn(BUNDLED);
-  assert.ok(list.some(m => m.id === 'exemple-annonce-tours'));
   assert.ok(list.some(m => m.id === 'invocations' && m.kind === 'script'));
   for (const m of list) {
     assert.ok(!m.error, m.id + ' : ' + m.error);
@@ -50,7 +49,7 @@ test('installation dans un projet : ressources copiées sans écraser, fiche dan
   assert.ok(fs.existsSync(path.join(dir, 'ressources', 'personnages', 'Testeur', 'combat_Arc.json')));
   assert.ok(fs.existsSync(path.join(dir, 'plugins', 'pack-test', 'plugin.json')));
   assert.ok(!fs.existsSync(path.join(dir, 'plugins', 'pack-test', 'ressources'))); // pas de double copie
-  const s = IO.install(dir, path.join(BUNDLED, 'exemple-annonce-tours'));
+  const s = IO.install(dir, path.join(__dirname, 'fixtures', 'exemple-annonce-tours')); // plugin de script de test
   assert.ok(fs.existsSync(path.join(dir, 'plugins', 'exemple-annonce-tours', 'main.js')));
   assert.equal(s.added, 0);
   assert.deepEqual(IO.listInstalled(dir).map(m => m.id).sort(), ['exemple-annonce-tours', 'pack-test']);

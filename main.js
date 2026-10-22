@@ -66,7 +66,9 @@ function openPlaytest(dir, chapterId) {
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, autoplayPolicy: 'no-user-gesture-required' }
   });
   win.setMenu(null);
-  win.loadFile(path.join(__dirname, 'src', 'renderer', 'playtest.html'), { query: { dir, chapter: chapterId || '' } });
+  // scénarios de test automatiques : lanceur direct, sans écran titre (sauf TF_TITLE=1)
+  const title = process.env.TF_SNAPSHOT && !process.env.TF_TITLE ? '0' : '1';
+  win.loadFile(path.join(__dirname, 'src', 'renderer', 'playtest.html'), { query: { dir, chapter: chapterId || '', title } });
   win.webContents.on('before-input-event', (e, input) => {
     if (input.type === 'keyDown' && input.key === 'F12') win.webContents.toggleDevTools();
   });

@@ -57,7 +57,13 @@ npm test
 
 ## Playtest (F5)
 
-Au lancement, choisir **Classique** (pertes définitives) ou **Détente** (les unités vaincues reviennent au chapitre suivant). Les personnages requis par le chapitre doivent survivre dans les deux modes. Dans la fiche d'un personnage, « Toujours se retirer » permet son retour même en Classique.
+**Écran titre** — Le jeu s'ouvre sur un écran titre : le nom du jeu (Système › Nom du jeu), un sous-titre, puis **Jouer**, **Crédits** et **Quitter** (flèches + Z / Entrée, ou la souris).
+- **Jouer** sans sauvegarde crée la partie tout de suite (Classique par défaut ; *Détente* ou *Demander* dans Système) ; avec des sauvegardes, il propose **Continuer**, **Charger une sauvegarde** (s'il y en a plusieurs) et **Nouvelle partie**.
+- **Crédits** affiche le nom du jeu, l'auteur et le texte de **Système › Écran titre et crédits** : une ligne « Rôle : Nom » sur deux colonnes, une ligne qui finit par « : » en titre, une ligne vide entre les blocs.
+- Le même endroit règle le sous-titre, une image de fond (dossier `ressources/interface` ou fonds de combat) et une musique.
+- Lancé depuis l'éditeur sur un acte précis, l'écran titre ajoute « Test : « l'acte » » pour le jouer directement.
+
+Une nouvelle partie se joue en **Classique** (pertes définitives) ou **Détente** (les unités vaincues reviennent au chapitre suivant). Les personnages requis par le chapitre doivent survivre dans les deux modes. Dans la fiche d'un personnage, « Toujours se retirer » permet son retour même en Classique.
 
 **Base de données › Chapitres et actes › (un acte) › Conditions de victoire et de défaite** permet de choisir les personnages à protéger et ceux autorisés à prendre les points, de combiner plusieurs objectifs avec ET / OU et d'ajouter des défaites par limite de tours, pertes ou intrusion ennemie dans une zone. Les anciens chapitres héritent des Seigneurs pour la protection et la prise de point. Les conditions invalides sont signalées avant de lancer le test.
 
@@ -195,7 +201,9 @@ Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Ut
 
 Plugins fournis dans le dépôt :
 - `invocations` : le gacha façon Fire Emblem Heroes (voir **Invocations (plugin)** plus haut) ; c'est aussi l'exemple complet d'un plugin qui ajoute un système au jeu ;
-- `exemple-annonce-tours` : un petit script qui annonce les tours et compte les ennemis vaincus.
+- `fe6-binding-blade` : fonds de combat de Fire Emblem 6.
+
+Un petit exemple de script (annonce des tours, ennemis vaincus) est dans `test/fixtures/exemple-annonce-tours/`.
 
 Les plugins de ressources Fire Emblem (`fe6-binding-blade`, `fe7-blazing-blade`, `fe8-sacred-stones`, `customs-style-gba`) ne sont plus dans le dépôt. Ce sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix, pour un usage personnel. Pour les refaire à partir des planches de `tools/sprite-sources/fe-gba/` :
 - `python3 tools/build_fe_gba_pack.py` découpe les planches (réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés) ;
@@ -442,6 +450,7 @@ src/shared/fe-arsenal.js   pack d'armes, objets et compétences de la série —
 src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, bannières) — testé dans test/fe-pack.test.js
 src/shared/plugins.js      plugins : fiches plugin.json, liens vers la base — testé dans test/plugins.test.js
 src/main/plugins-io.js     plugins fournis (plugins/), installation / désinstallation dans un projet
+src/renderer/title-screen.js  écran titre du jeu (Jouer, Crédits, Quitter)
 src/renderer/plugin-runtime.js  scripts des plugins (TacticalEmblem.register / on), chargés dans l'éditeur et le jeu
 src/shared/extensions.js   points d'extension des plugins (onglets, champs, actions, lieux du camp, récompenses…)
 plugins/invocations/       plugin Invocations : summon.js (taux, pitié, cercle de pierres, fusions — test/summon.test.js),

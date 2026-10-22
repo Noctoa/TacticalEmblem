@@ -576,6 +576,9 @@
         // systèmes devenus des plugins : un projet neuf ne les reçoit pas automatiquement (Base de données › Plugins)
         pluginMigrations: ['invocations'],
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
+        // écran titre : sous-titre, fond, musique, mode d'une nouvelle partie ; crédits (bouton Crédits)
+        title: { subtitle: 'Les héros de Varenne', background: '', music: '', newGameMode: 'classic' },
+        credits: 'Histoire et cartes :\nProjet d’exemple de Tactical Emblem\n\nGraphismes :\nSprites de Fire Emblem 7 : Lexou, Grim & Bonzai\nCloud (édition FE) : Lord Zymeth\n\nMusiques :\nFire Emblem 6 (Enhanced Soundtrack) : Yuka Tsujiyoko\n\nDroits :\nFire Emblem : Nintendo / Intelligent Systems\nCloud (Final Fantasy VII) : Square Enix',
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
           effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true, overkill: true, overkillExp: 30,

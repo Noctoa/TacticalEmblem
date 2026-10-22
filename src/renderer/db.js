@@ -1835,6 +1835,8 @@
     // réglages ajoutés après la création du projet : valeurs par défaut affichées
     const st = Editor.project().meta.settings || (Editor.project().meta.settings = {});
     for (const k of ['overkill', 'overkillExp']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
+    Editor.project().meta.title = Object.assign({ subtitle: '', background: '', music: '', newGameMode: 'classic' }, Editor.project().meta.title || {});
+    if (typeof Editor.project().meta.credits !== 'string') Editor.project().meta.credits = '';
     // sections des plugins (Extensions « system » : { label, prepare(meta), fields(meta) })
     const pluginSections = Extensions.list('system').flatMap(sec => {
       try { if (typeof sec.prepare === 'function') sec.prepare(Editor.project().meta); return [{ type: 'heading', label: sec.label }, ...(sec.fields(Editor.project().meta) || [])]; }
@@ -1842,6 +1844,21 @@
     });
     pane.append(UI.form([
       { type: 'row', fields: [{ key: 'name', label: 'Nom du jeu', type: 'text' }, { key: 'author', label: 'Auteur', type: 'text' }] },
+      // écran titre du jeu (title-screen.js) : nom du jeu, Jouer / Crédits / Quitter
+      { type: 'heading', label: 'Écran titre et crédits' },
+      { type: 'row', fields: [
+        { key: 'title.subtitle', label: 'Sous-titre (sous le nom du jeu)', type: 'text', placeholder: 'ex. Les héros de Varenne' },
+        { key: 'title.newGameMode', label: '« Jouer » sans sauvegarde', type: 'select', options: [
+          { value: 'classic', label: 'Nouvelle partie Classique, directement' },
+          { value: 'casual', label: 'Nouvelle partie Détente, directement' },
+          { value: 'ask', label: 'Demander : Classique ou Détente' }] }] },
+      { type: 'row', fields: [
+        { key: 'title.background', label: 'Image de fond', type: 'select', empty: '— ciel étoilé —', options: () => [...(res().system || []), ...(res().battlebacks || [])].map(f => ({ value: f, label: f.replace(/^ressources\//, '') })),
+          help: 'Images de ressources/interface ou des fonds de combat.' },
+        { key: 'title.music', label: 'Musique', type: 'select', empty: '— aucune —', options: () => audioOpts('bgm') }] },
+      { key: 'credits', label: 'Crédits (bouton « Crédits » de l’écran titre)', type: 'textarea', rows: 8,
+        placeholder: 'Graphismes :\nSprites : Lexou, Grim & Bonzai\nMusiques : Yuka Tsujiyoko\n\nMerci d’avoir joué !' },
+      { type: 'info', text: 'Une ligne « Rôle : Nom » s’affiche sur deux colonnes ; une ligne qui finit par « : » devient un titre ; une ligne vide sépare les blocs. Le nom du jeu et l’auteur s’affichent en haut. Le jeu (bouton Tester) s’ouvre sur l’écran titre : Jouer crée une partie s’il n’y a pas de sauvegarde, sinon propose de continuer ou de charger.' },
       { type: 'row', fields: [
         { key: 'startChapter', label: 'Acte de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'defaultTerrain', label: 'Terrain par défaut', type: 'select', options: () => db().terrains.map(t => ({ value: t.id, label: t.name })), help: 'Utilisé pour les cases dont le tile n\'a pas de terrain.' }] },

@@ -43,7 +43,8 @@
         const d = R.getEntry(G.db, e.id); return d ? { id: e.id, uses: e.uses || d.def.uses || 0 } : null;
       }).filter(Boolean);
       const lobbyCfg = Lobby.defaults(G.project.meta.lobby);
-      Music.setup(G.baseUrl, Object.assign({}, G.project.meta.audio || {}, { lobby: lobbyCfg.music || (G.project.meta.audio || {}).playerPhase || '' }));
+      Music.setup(G.baseUrl, Object.assign({}, G.project.meta.audio || {}, { lobby: lobbyCfg.music || (G.project.meta.audio || {}).playerPhase || '',
+        title: ((G.project.meta.title || {}).music) || '' })); // musique de l'écran titre (Système › Écran titre)
       G.lobbyOn = lobby.enabled(G.project);
       G.supCfg = Object.assign({}, R.DEFAULT_SUPPORT, G.project.meta.supports || {});
       G.sup = R.initSupports(G.db, G.supCfg);
@@ -73,24 +74,51 @@
       catch (e) { await UI.alert('Sauvegarde non chargée', e.message); }
       const atLobby = (s) => s && s.chapterId === Lobby.LOBBY_SAVE;
       const camp = lobbyCfg.name || 'le camp';
+      const slotOptions = () => slots.map(s => ({ value: s.slot, label: `Emplacement ${s.slot} — ` + (atLobby(s) ? (s.info && s.info.place) || camp : 'Début de « ' + ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId) + ' »'),
+        desc: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', s.info && s.info.savedAt ? new Date(s.info.savedAt).toLocaleString('fr-FR') : ''].filter(Boolean).join(' · ') }));
       // avec un lobby : la partie commence au camp ; « Tester » un chapitre depuis l'éditeur peut aussi le lancer directement
       const direct = G.lobbyOn && chId && chId !== Lobby.LOBBY_SAVE && R.byId(G.db.chapters, chId);
-      const choice = await UI.choose('Lancer une partie', [
-        ...(saved ? [{ value: 'continue', label: 'Continuer', desc: `Dernière sauvegarde (emplacement ${saved.slot}) : ` + (atLobby(saved) ? camp + (G.lobbyOn ? '' : ' (lobby désactivé : premier chapitre)') : (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId) }] : []),
-        ...(slots.length > 1 ? [{ value: 'load', label: 'Charger une sauvegarde…', desc: `${slots.length} emplacements utilisés` }] : []),
-        { value: 'classic', label: 'Nouvelle partie — Classique', desc: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
-        { value: 'casual', label: 'Nouvelle partie — Détente', desc: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' + (G.lobbyOn ? ` Départ : ${camp}.` : '') },
-        ...(direct ? [{ value: 'direct', label: `Tester « ${direct.name} » directement`, desc: 'Nouvelle partie Classique qui commence par ce chapitre ; la victoire ramène au camp.' }] : [])
-      ], G.lobbyOn ? `Le jeu commence à ${camp} : chapitres, boutique et conversations.` : 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.');
-      if (!choice) { window.close(); return; }
+      const modeLabel = { classic: 'Classique', casual: 'Détente' };
+      const modeDesc = {
+        classic: 'Mort définitive des unités vaincues. Les personnages à protéger restent obligatoires.' + (G.lobbyOn ? ` Départ : ${camp}.` : ''),
+        casual: 'Les unités vaincues reviennent au chapitre suivant. Les conditions de défaite restent actives.' + (G.lobbyOn ? ` Départ : ${camp}.` : '')
+      };
+      const continueOpt = () => saved ? [{ value: 'continue', label: 'Continuer', desc: `Dernière sauvegarde (emplacement ${saved.slot}) : ` + (atLobby(saved) ? camp + (G.lobbyOn ? '' : ' (lobby désactivé : premier chapitre)') : (R.byId(G.db.chapters, saved.chapterId) || {}).name || saved.chapterId) }] : [];
+      const loadOpt = () => slots.length > 1 ? [{ value: 'load', label: 'Charger une sauvegarde…', desc: `${slots.length} emplacements utilisés` }] : [];
+      const newOpts = (prefix) => ['classic', 'casual'].map(m => ({ value: m, label: prefix + modeLabel[m], desc: modeDesc[m] }));
+      const directOpt = () => direct ? [{ value: 'direct', label: `Tester « ${direct.name} » directement`, desc: 'Nouvelle partie Classique qui commence par ce chapitre ; la victoire ramène au camp.' }] : [];
+      const intro = G.lobbyOn ? `Le jeu commence à ${camp} : chapitres, boutique et conversations.` : 'Nouvelle partie : ' + first.name + '. Les sauvegardes reprennent au début du chapitre.';
+      let choice = null;
+      if (params.get('title') === '0') {
+        // lanceur sans écran titre (scénarios de test automatiques) : tous les choix d'un coup
+        choice = await UI.choose('Lancer une partie', [...continueOpt(), ...loadOpt(), ...newOpts('Nouvelle partie — '), ...directOpt()], intro);
+        if (!choice) { window.close(); return; }
+      } else {
+        // écran titre : Jouer (nouvelle partie automatique, ou reprise s'il existe des sauvegardes), Crédits, Quitter
+        const title = TitleScreen.settings(G.project.meta);
+        const ask = title.newGameMode === 'ask', mode = title.newGameMode === 'casual' ? 'casual' : 'classic';
+        const modes = () => newOpts('');
+        const newGame = ask ? { value: 'new', label: 'Nouvelle partie', title: 'Nouvelle partie', items: modes } : { value: mode, label: 'Nouvelle partie', desc: modeDesc[mode] };
+        const hasSaves = !!saved || slots.length > 0;
+        const playEntry = !hasSaves
+          ? (ask ? { title: 'Nouvelle partie', items: modes } : { value: mode }) // aucune sauvegarde : la partie se crée toute seule
+          : { title: 'Jouer', items: () => [...continueOpt(),
+            ...(slots.length > 1 ? [{ value: 'load', label: 'Charger une sauvegarde', desc: `${slots.length} emplacements utilisés`, title: 'Charger', items: () => slotOptions().map(o => Object.assign(o, { value: 'slot:' + o.value })) }] : []),
+            newGame] };
+        Music.bgm('title');
+        const pick = await TitleScreen.show({ meta: G.project.meta, baseUrl: G.baseUrl, play: playEntry,
+          extra: direct ? [{ value: 'direct', label: `Test : « ${direct.name} »`, dev: true }] : [] });
+        if (pick === 'quit') { window.close(); return; }
+        if (String(pick).startsWith('slot:')) { saved = await tf.loadCampaign(params.get('dir'), Number(pick.slice(5))); choice = 'loaded'; }
+        else choice = pick;
+      }
       let toLobby = G.lobbyOn;
       if (choice === 'load') {
-        const pick = await UI.choose('Charger une sauvegarde', slots.map(s => ({ value: s.slot, label: `Emplacement ${s.slot} — ` + (atLobby(s) ? (s.info && s.info.place) || camp : 'Début de « ' + ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId) + ' »'),
-          desc: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', s.info && s.info.savedAt ? new Date(s.info.savedAt).toLocaleString('fr-FR') : ''].filter(Boolean).join(' · ') })));
+        const pick = await UI.choose('Charger une sauvegarde', slotOptions());
         if (!pick) { window.close(); return; }
         saved = await tf.loadCampaign(params.get('dir'), pick);
       }
-      if (choice === 'continue' || choice === 'load') {
+      if (choice === 'continue' || choice === 'load' || choice === 'loaded') {
         requestAnimationFrame(loop);
         return startFromSave(saved);
       } else {
