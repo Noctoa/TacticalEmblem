@@ -362,6 +362,9 @@
           { key: 'description', label: 'Description du créateur (facultative)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de la compétence.' },
           { type: 'heading', label: 'Effet' },
           { key: 'effect', label: 'Type d’effet', type: 'select', options: Skills.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
+          ...(s.effect === 'inflictStatus' ? [
+            { key: 'statusId', label: 'Altération infligée', type: 'select', options: Statuses.TYPES.map(s => ({ value: s.id, label: s.name })) },
+            { key: 'statusTurns', label: 'Durée (phases de la cible)', type: 'number', min: 1, max: 9 }] : []),
           ...(effect.utility ? [{ type: 'info', text: 'Compétence de carte : elle doit être personnelle ou équipée et ne consomme pas de clé. Certains coffres ou portes peuvent interdire Crochetage et imposer une clé.' }] : []),
           ...(effect.amount ? [{ key: 'amount', label: effect.amount, type: 'number', min: 1, max: effect.max }] : []),
           ...(s.effect === 'auraAvoid' ? [
@@ -481,6 +484,7 @@
       label: 'Armes', list: () => db().weapons, prefix: 'w_',
       sub: (w) => (Rules.WEAPON_TYPES.find(t => t.id === w.type) || {}).name,
       create: () => ({ name: 'Nouvelle arme', type: 'sword', might: 5, hit: 80, crit: 0, weight: 5, minRange: 1, maxRange: 1, uses: 40, effective: [], heal: 0 }),
+      onField: (key, w) => { if (key === 'type') { if (w.type === 'staff') delete w.inflict; else delete w.restore; } },
       fields: (w) => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'type', label: 'Type', type: 'select', options: wtypes }] },
         w.type === 'staff'
@@ -503,8 +507,9 @@
           { key: 'brave', label: 'Brave : chaque attaque frappe deux fois', type: 'checkbox' },
           { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
           { key: 'drain', label: 'Drain : soigne des dégâts infligés', type: 'checkbox' }] },
+        { type: 'custom', render: () => StatusFields.weapon(w, change) },
         priceField,
-        { type: 'info', text: (w) => w.type === 'staff' ? 'Soigne un allié : PV rendus = Soin + Magie.' :
+        { type: 'info', text: (w) => w.type === 'staff' ? (w.restore ? 'Soigne les altérations choisies d’un allié, sans rendre de PV.' : 'Soigne un allié : PV rendus = Soin + Magie.') :
           Rules.MAGIC_TYPES.includes(w.type) || w.magic ? 'Arme magique : utilise la Magie et cible la Résistance.' :
           'Arme physique : utilise la Force et cible la Défense. Le poids au-delà de la Force réduit la vitesse d\'attaque.' }
       ].filter(Boolean),
@@ -512,17 +517,18 @@
     },
     items: {
       label: 'Objets', list: () => db().items, prefix: 'i_',
-      sub: (i) => i.effect === 'heal' ? 'soin' : i.effect === 'promotion' ? 'promotion' : i.effect === 'key' ? 'clé' : 'stat',
+      sub: (i) => i.effect === 'heal' ? 'soin' : i.effect === 'promotion' ? 'promotion' : i.effect === 'key' ? 'clé' : i.effect === 'restore' ? 'altérations' : 'stat',
       create: () => ({ name: 'Nouvel objet', effect: 'heal', amount: 10, stat: 'hp', uses: 3 }),
-      onField: (key, it) => { if (key === 'effect' && it.effect === 'key' && !it.keyType) it.keyType = 'both'; },
+      onField: (key, it) => { if (key === 'effect' && it.effect === 'key' && !it.keyType) it.keyType = 'both'; if (key === 'effect' && it.effect === 'restore' && !it.cure) it.cure = 'all'; },
       fields: (it) => [
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'row', fields: [
-          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }, { value: 'key', label: 'Ouvre une serrure' }] },
+          { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }, { value: 'key', label: 'Ouvre une serrure' }, { value: 'restore', label: 'Soigne une altération' }] },
           ...(['heal', 'boost'].includes(it.effect) ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
           { key: 'uses', label: 'Utilisations', type: 'number', min: 1, max: 99 }] },
         it.effect === 'boost' ? { key: 'stat', label: 'Stat', type: 'select', options: Rules.STATS.map(k => ({ value: k, label: Rules.STAT_LABELS[k] })).concat([{ value: 'mov', label: 'Déplacement' }]) } : null,
         it.effect === 'key' ? { key: 'keyType', label: 'Serrures compatibles', type: 'select', options: [{ value: 'chest', label: 'Coffres' }, { value: 'door', label: 'Portes' }, { value: 'both', label: 'Coffres et portes' }] } : null,
+        it.effect === 'restore' ? { key: 'cure', label: 'Altérations soignées', type: 'select', options: [{ value: 'all', label: 'Toutes' }, ...Statuses.TYPES.map(s => ({ value: s.id, label: s.name }))] } : null,
         priceField
       ].filter(Boolean),
       rerenderOn: ['effect']
@@ -902,6 +908,13 @@
       }
     }));
     const pane = h('div', { class: 'db-form' });
+    if (['weapons', 'items', 'skills'].includes(tab)) {
+      const statusExamples = tab === 'skills' ? Statuses.TYPES.map(s => Object.assign(Skills.create('inflictStatus'), { id: 'skill_status_' + s.id, name: 'Frappe — ' + s.name, statusId: s.id })) : Statuses.examples()[tab];
+      const missing = statusExamples.filter(e => !byId(list, e.id) && (tab === 'skills' || !Rules.getEntry(db(), e.id)));
+      if (missing.length) pane.append(h('button', { class: 'small', 'data-add-status-examples': tab, onclick: () => {
+        list.push(...missing); selected[tab] = missing[0].id; change(); renderBody(); UI.toast('Exemples d’altérations ajoutés.');
+      } }, 'Ajouter les exemples d’altérations manquants'));
+    }
     if (tab === 'items') {
       const missingKeys = Defaults.items().filter(it => it.effect === 'key' && !Rules.getEntry(db(), it.id));
       if (missingKeys.length) pane.append(h('button', { class: 'small', 'data-add-key-examples': true, onclick: () => {

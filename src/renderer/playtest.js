@@ -150,6 +150,7 @@
     TacticalEmblem.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
     const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
+    errors.push(...Statuses.validateDefinitions(G.db));
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
@@ -286,7 +287,7 @@
   const players = () => alive().filter(u => u.team !== 'enemy');      // joueur + alliés (camp ami)
   const team = (t) => alive().filter(u => u.team === t);
   /** Unité commandable maintenant : unités du joueur en phase joueur, alliés « jouables » en phase alliée. */
-  const controllable = (u) => !!u && !u.dead && !u.done &&
+  const controllable = (u) => !!u && !u.dead && !u.done && Statuses.canAct(u) &&
     ((G.phase === 'player' && u.team === 'player') || (G.phase === 'ally' && u.team === 'ally' && u.control !== 'ai'));
   const enemies = () => alive().filter(u => u.team === 'enemy');
   const unitAt = (x, y) => alive().find(u => u.x === x && u.y === y) || null;
@@ -369,7 +370,7 @@
   }
   function staffTargetsFrom(u) {
     const st = R.staves(u, G.db); if (!st.length) return [];
-    return players().filter(p => p !== u && p.hp < p.stats.hp && st.some(s => { const d = R.dist(u, p); return d >= (s.weapon.minRange || 1) && d <= (s.weapon.maxRange || 1); }));
+    return players().filter(p => st.some(s => R.staffCanTarget(u, p, s.weapon)));
   }
   function rangesFor(u, list) {
     let min = 99, max = 0;
@@ -471,6 +472,11 @@
 
     const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
+    for (const u of list) {
+      const statuses = Statuses.list(u); if (!statuses.length || u.dead || u.alpha <= 0) continue;
+      const [x, y, w, hh] = tileRect(u.rx, u.ry), size = Math.max(10, Math.min(15, hh * .35));
+      statuses.forEach((s, i) => { const left = x + w - (statuses.length - i) * size; ctx.fillStyle = '#111827'; ctx.fillRect(left, y + hh - size, size, size); ctx.fillStyle = s.color; ctx.font = `bold ${size - 2}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.icon, left + size / 2, y + hh - size / 2); });
+    }
     if (G.mode === 'chapter') drawVillages();
     if (G.mode === 'lobby') lobby.drawOverlay(ctx, t);
     if (!G.busy && ['player', 'ally'].includes(G.phase) && !G.over && !G.dialogue) drawCursor(t);
@@ -728,7 +734,7 @@
     const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : unitAt(c.x, c.y);
     const uw = $('#unit-win');
     const k = u ? [u.uid, u.hp, u.level, u.exp, u.x, u.y, u.inventory.map(s => s.id + s.uses).join(),
-      u.personalSkill, (u.learnedSkills || []).join(), (u.equippedSkills || []).join(), G.busy, G.over, leftHalf, topHalf].join('|') : '';
+      u.personalSkill, (u.learnedSkills || []).join(), (u.equippedSkills || []).join(), JSON.stringify(u.statuses || {}), G.busy, G.over, leftHalf, topHalf].join('|') : '';
     if (k === lastInfoKey) return;
     lastInfoKey = k;
     uw.innerHTML = '';
@@ -790,6 +796,7 @@
       if (Number(t.def)) parts.push(`Déf ${t.def > 0 ? '+' : ''}${t.def}`);
       tags.push(h('span', { class: 'tag terrain' }, `${t.name} : ${parts.join(' · ')}`));
     }
+    for (const s of Statuses.list(u)) tags.push(h('span', { class: 'tag status', title: s.description, style: { color: s.color }, 'data-unit-status': s.id }, `${s.name} · ${s.turns} phase(s)`));
     return tags.length ? h('div', { class: 'u-tags' }, tags) : '';
   }
 
@@ -846,6 +853,7 @@
 
   function openActionMenu() {
     const u = G.sel;
+    if (!Statuses.canAct(u)) { hideMenu(); deselect(); return UI.toast('Cette unité dort.'); }
     const items = [];
     if (u.team === 'player') for (const kind of Locks.lists) for (const object of Locks.list(G.chapter, kind)) {
       if (R.dist(u, object) !== (kind === 'doors' ? 1 : 0) || Locks.opened(G.chapter, kind, object, lockState())) continue;
@@ -951,7 +959,7 @@
           return { label: it.name, sub: available ? `${slot.uses} · choisir une promotion` : choices.length ? choices[0].reasons.join(' ') : 'Aucune branche ne demande cet objet.',
             disabled: !available, action: () => openPromotion(u, i) };
         }
-        const disabled = it.effect === 'heal' && u.hp >= u.stats.hp;
+        const disabled = (it.effect === 'heal' && u.hp >= u.stats.hp) || (it.effect === 'restore' && !Statuses.canCure(u, it.cure));
         return { label: it.name, sub: `${slot.uses}`, disabled, action: () => { hideMenu(); useItem(u, i); } };
       }
       return { label: w ? w.name : slot.id, sub: w ? `${slot.uses || '∞'}` : '', disabled: true, action: () => {} };
@@ -1167,6 +1175,9 @@
     };
     skillExtras(u, fc.att, fc.att.skills, fc.att.aura);
     skillExtras(t, fc.def, fc.defSkills, fc.defAura);
+    for (const [unit, st] of [[u, fc.att], [t, fc.def]]) for (const status of st ? st.statusInflict || [] : [])
+      extra.push(h('div', { class: 'fc-skills' }, `${unit.name} : ${status.name} ${status.chance} % après un coup réussi · ${status.turns} phase(s)`));
+    if ((fc.att.statusInflict || []).length || (fc.def && (fc.def.statusInflict || []).length)) extra.push(h('div', { class: 'fc-skill-note' }, 'Le sommeil ou le silence infligé peut supprimer une riposte ou des coups suivants.'));
     if (fc.vantage) extra.push(h('div', { class: 'fc-skills' }, ...skillLabel(fc.vantage, ` : ${t.name} riposte en premier`)));
     if ([...fc.att.skills, ...fc.defSkills].some(skill => ['luna', 'sol', 'miracle'].includes(skill.effect)))
       extra.push(h('div', { class: 'fc-skill-note' }, 'DGT hors déclenchements. Un seul effet offensif par coup : affinité, puis Luna, puis Sol.'));
@@ -1203,15 +1214,25 @@
     await finishAction(u);
   }
 
-  async function heal(u, t) {
-    const st = R.staves(u, G.db).find(s => { const d = R.dist(u, t); return d >= (s.weapon.minRange || 1) && d <= (s.weapon.maxRange || 1); });
+  function chooseStaff(u, t) {
+    const choices = R.staves(u, G.db).filter(s => R.staffCanTarget(u, t, s.weapon));
+    if (choices.length === 1) return heal(u, t, choices[0].index);
+    if (!choices.length) return;
+    showMenu(choices.map(s => ({ label: s.weapon.name, sub: s.weapon.restore ? 'Soigne les altérations' : `Soin : ${s.weapon.heal || 10} + Mag`, action: () => { hideMenu(); heal(u, t, s.index); } })), u, 'items');
+  }
+  async function heal(u, t, staffIndex) {
+    const st = R.staves(u, G.db).find(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon));
     if (!st) return;
     G.busy = true; G.ui = 'busy';
     const amount = (st.weapon.heal || 10) + u.stats.mag;
     const before = t.hp;
     await lunge(u, t);
-    t.hp = Math.min(t.stats.hp, t.hp + amount);
-    float(t.x, t.y, '+' + (t.hp - before), '#7dffa8', false, t.hp > before ? { num: t.hp - before, style: 'heal' } : null);
+    if (st.weapon.restore) {
+      const removed = Statuses.cure(t, st.weapon.restore); float(t.x, t.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8');
+    } else {
+      t.hp = Math.min(t.stats.hp, t.hp + amount);
+      float(t.x, t.y, '+' + (t.hp - before), '#7dffa8', false, t.hp > before ? { num: t.hp - before, style: 'heal' } : null);
+    }
     const slot = u.inventory[st.index];
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
@@ -1221,11 +1242,14 @@
   }
 
   async function useItem(u, index) {
-    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !['heal', 'boost'].includes(it.effect)) return;
+    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !Statuses.canAct(u) || !['heal', 'boost', 'restore'].includes(it.effect)) return;
+    if (it.effect === 'restore' && !Statuses.canCure(u, it.cure)) return;
     G.busy = true;
     if (it.effect === 'heal') {
       const before = u.hp; u.hp = Math.min(u.stats.hp, u.hp + (it.amount || 10));
       float(u.x, u.y, '+' + (u.hp - before), '#7dffa8');
+    } else if (it.effect === 'restore') {
+      const removed = Statuses.cure(u, it.cure); float(u.x, u.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8');
     } else {
       if (it.stat === 'mov') u.mov += it.amount; else { u.stats[it.stat] += it.amount; if (it.stat === 'hp') u.hp += it.amount; }
       float(u.x, u.y, `${R.STAT_LABELS[it.stat] || it.stat} +${it.amount}`, '#f2d58a');
@@ -1406,6 +1430,7 @@
         if (s.overkill) float(tgt.x, tgt.y - 0.45, `Overkill +${s.overkill}`, '#ff8a5c', true);
         if (s.heal) { src.dispHp = s.srcHpAfter; float(src.x, src.y, '+' + s.heal, '#7dffa8'); }
         if (s.broke) float(src.x, src.y - 0.4, 'Arme brisée !', '#ffb36b');
+        for (const status of s.statuses || []) float(tgt.x, tgt.y - .5, `${status.name} · ${status.turns} phases`, status.color, true);
         combatHud(att, def);
         await sleep(420);
       }
@@ -1486,6 +1511,7 @@
   }
 
   async function killUnit(u, instant) {
+    u.statuses = {};
     if (instant) u.alpha = 0;
     else for (let i = 10; i >= 0; i--) { u.alpha = i / 10; await sleep(35); }
     u.dead = true;
@@ -1548,6 +1574,7 @@
     Music.bgm('playerPhase');
     await banner('Phase joueur', '');
     for (const u of players()) { u.done = false; u.tradeLocked = false; }
+    await statusPhase(team('player'));
     await skillRecovery(team('player'));
     await terrainHeal(team('player'));
     await runEvents('turn', { turn: G.turn });
@@ -1563,12 +1590,14 @@
     if (G.over || G.phase !== 'player') return;
     deselect(); hideMenu(); hideForecast();
     const allies = team('ally');
+    endStatusPhase(team('player'));
     if (!allies.length) return endPlayerPhase(true);
     G.phase = 'ally'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
     await banner('Phase alliée', 'ally');
     for (const u of allies) u.done = false;
+    await statusPhase(allies);
     await skillRecovery(allies);
     await terrainHeal(allies);
     if (await aiTurn(allies.filter(u => u.control === 'ai'), () => team('enemy'))) return;
@@ -1614,6 +1643,15 @@
     }
     if (events.length) { lastInfoKey = ''; await sleep(700); }
   }
+  async function statusPhase(units) {
+    const events = Statuses.beginPhase(units, u => G.debug.god && u.team !== 'enemy');
+    for (const e of events) float(e.unit.x, e.unit.y, e.damage ? `Poison −${e.damage} PV` : 'Poison', e.status.color);
+    lastInfoKey = ''; if (events.length) await sleep(450);
+  }
+  function endStatusPhase(units) {
+    for (const e of Statuses.endPhase(units)) float(e.unit.x, e.unit.y, e.status.name + ' dissipé', '#a8e3b1');
+    lastInfoKey = '';
+  }
 
   async function terrainHeal(list) {
     let any = false;
@@ -1630,6 +1668,7 @@
 
   async function endPlayerPhase() {
     if (G.over || !['player', 'ally'].includes(G.phase)) return;
+    endStatusPhase(team(G.phase));
     deselect(); hideMenu(); hideForecast();
     G.phase = 'enemy'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'enemy', turn: G.turn });
@@ -1652,11 +1691,13 @@
     if (arriving.length) await sleep(300);
     updateObjective();
     for (const e of enemies()) if (!arriving.includes(e)) e.done = false;
+    await statusPhase(enemies());
     await skillRecovery(enemies());
     await terrainHeal(enemies());
 
     if (await aiTurn(enemies(), players)) return;
     for (const e of enemies()) e.done = false;
+    endStatusPhase(enemies());
     G.turn++;
     G.busy = false;
     await startPlayerPhase();
@@ -1942,7 +1983,7 @@
         return;
       }
       case 'target': { const t = currentTarget(); if (t) attack(G.sel, t); return; }
-      case 'staff': { const t = currentTarget(); if (t) heal(G.sel, t); return; }
+      case 'staff': { const t = currentTarget(); if (t) chooseStaff(G.sel, t); return; }
     }
   }
 

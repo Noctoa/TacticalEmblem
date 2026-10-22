@@ -1,9 +1,9 @@
 /* Catalogue, attribution, apprentissage et conditions des compétences. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./statuses.js') : root.Statuses);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Skills = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Statuses) {
   'use strict';
   const EFFECTS = [
     { id: 'hit', name: 'Bonus de précision', amount: 'Précision +', value: 10, max: 100, combat: true },
@@ -16,7 +16,8 @@
     { id: 'sol', name: 'Sol — soin lié aux dégâts', amount: 'Dégâts réels convertis en soin (%)', value: 50, max: 100, combat: true, proc: true },
     { id: 'vantage', name: 'Vantage — riposte en premier', combat: true },
     { id: 'miracle', name: 'Miracle — survit à un coup mortel', combat: true, proc: true },
-    { id: 'lockpick', name: 'Crochetage — ouvre les coffres et les portes', utility: true }
+    { id: 'lockpick', name: 'Crochetage — ouvre les coffres et les portes', utility: true },
+    { id: 'inflictStatus', name: 'Inflige une altération après un coup réussi', combat: true, proc: true }
   ];
   const effectOf = skill => EFFECTS.find(e => e.id === skill.effect);
   function parameters(effect) {
@@ -24,7 +25,8 @@
     if (!spec) throw new Error('Effet de compétence inconnu.');
     return { effect, amount: spec.value || 0, activation: spec.proc ? (effect === 'miracle' ? 'lck' : 'skl') : 'always',
       chance: 20, phase: 'any', hpCondition: effect === 'vantage' ? 'below' : 'any', hpThreshold: 50,
-      weaponType: '', adjacentAlly: false, range: 1 };
+      weaponType: '', adjacentAlly: false, range: 1,
+      ...(effect === 'inflictStatus' ? { statusId: 'poison', statusTurns: 3, activation: 'fixed', chance: 30 } : {}) };
   }
   const create = (effect = 'hit') => Object.assign({ name: 'Nouvelle compétence', icon: '✦', description: '' }, parameters(effect));
   function presets() {
@@ -51,6 +53,7 @@
     if (typeof s.description !== 'string') errors.push('La description doit être du texte.');
     if (s.image !== undefined && s.image !== '' && !/^feh:\d+-\d+$/.test(String(s.image))) errors.push('Icône inconnue.');
     if (!spec) errors.push('Effet inconnu.');
+    if (s.effect === 'inflictStatus' && (!Statuses.get(s.statusId) || !Number.isInteger(s.statusTurns) || s.statusTurns < 1 || s.statusTurns > 9)) errors.push('Altération ou durée invalide (1 à 9 phases).');
     if (spec && spec.utility && (s.phase !== 'any' || s.hpCondition !== 'any' || s.weaponType || s.adjacentAlly)) errors.push('Crochetage est disponible sans condition de combat, de PV ou d’adjacence.');
     if (spec && spec.amount && (!Number.isInteger(s.amount) || s.amount < 1 || s.amount > spec.max)) errors.push(`La valeur doit être un entier de 1 à ${spec.max}.`);
     if (!['any', 'initiate', 'defend'].includes(s.phase)) errors.push('Phase de combat inconnue.');
@@ -85,7 +88,8 @@
       sol: `Rend des PV à hauteur de ${s.amount} % des PV réellement retirés à la cible, sans dépasser les PV maximum.`,
       vantage: 'Riposte avant le premier coup adverse si une riposte est possible.',
       miracle: 'Survit à un coup mortel avec 1 PV si l’unité possédait plus de 1 PV avant ce coup.',
-      lockpick: 'Ouvre les coffres et les portes sans clé, sauf serrure interdisant le crochetage. Doit être personnelle ou équipée. L’ouverture consomme l’action.'
+      lockpick: 'Ouvre les coffres et les portes sans clé, sauf serrure interdisant le crochetage. Doit être personnelle ou équipée. L’ouverture consomme l’action.',
+      inflictStatus: `Après un coup réussi sur une cible survivante : ${(Statuses.get(s.statusId) || {}).name || 'altération'} pendant ${s.statusTurns} phase(s) de la cible. Ne se cumule pas avec le même effet ; prolonge une durée plus courte.`
     }[s.effect];
     const conditions = [];
     if (spec.combat && s.phase !== 'any') conditions.push(s.phase === 'initiate' ? 'l’unité engage le combat' : 'l’ennemi engage le combat');

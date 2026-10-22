@@ -73,6 +73,20 @@ Une nouvelle partie se joue en **Classique** (pertes définitives) ou **Détente
 
 **Icônes de compétences** — Chaque compétence peut avoir une icône façon *Heroes* (Base de données › Compétences › *Icône* › « Choisir une icône… ») : plus de 1 300 icônes rangées en 9 planches (`src/renderer/img/skills/`), toutes disponibles même si aucune compétence de base ne les utilise encore. Les compétences de base ont la leur (un ancien projet la reçoit à l'ouverture) ; sans icône, le symbole s'affiche comme avant. L'icône apparaît dans la liste des compétences, les prévisions de combat, la fiche des compétences en jeu, l'équipe au camp et le bandeau turquoise des combats animés.
 
+**Altérations d'état** — Poison, Sommeil et Silence sont disponibles dans le noyau, sans plugin. Les lettres **P / Z / S** apparaissent sur la map ; la fiche d'unité affiche le nom et la durée restante, avec le détail au survol.
+
+- **Poison** : au début de la phase du porteur, retire 10 % de ses PV maximum, arrondis au supérieur, sans descendre sous 1 PV. L'effet passe avant Régénération et le soin du terrain.
+- **Sommeil** : empêche déplacement, action, riposte et participation offensive à un duo. Recevoir un coup ne réveille pas. Un allié réveillé par un soin peut agir s'il n'avait pas déjà joué ; un soin ne réactive pas une action dépensée.
+- **Silence** : empêche les tomes, les armes physiques marquées magiques et tous les bâtons. Les armes physiques normales, objets et déplacements restent accessibles. La première arme utilisable de l'inventaire sert d'équipement de secours.
+
+La durée se règle de **1 à 9 phases du porteur** : activation au début, diminution à la fin de sa phase. Un statut appliqué pendant sa phase agit immédiatement mais attend la prochaine phase complète pour décompter sa durée. Plusieurs altérations différentes peuvent coexister. Réappliquer le même effet ne le multiplie pas et ne raccourcit pas sa durée : seule une durée supérieure la prolonge. Les unités endormies du joueur peuvent attendre via **Fin du tour** ; leurs phases continuent de faire avancer la durée.
+
+Dans **Armes**, cocher **Inflige une altération** et choisir l'effet, sa chance après un coup réussi et sa durée. Dans **Compétences**, l'effet **Inflige une altération après un coup réussi** utilise les conditions habituelles, une probabilité fixe, la Technique ou la Chance ; la compétence doit être personnelle ou équipée. Cette altération est indépendante du choix exclusif entre attaque spéciale, Luna et Sol. Elle peut s'appliquer sur un coup à zéro dégât, si la cible survit ; aucun effet sur un raté, une cible vaincue ou un coup d'overkill. Le sommeil ou le silence peut interrompre la riposte ou les coups suivants du combat en cours. Les prévisions affichent les chances par coup réussi et la durée ; l'IA prend en compte les restrictions et ajoute une estimation de l'intérêt des altérations à son choix d'attaque.
+
+Dans **Objets**, choisir **Soigne une altération** puis l'effet concerné ou Toutes. L'objet se consomme depuis le menu Objet uniquement quand il peut soigner le porteur. Pour soigner un autre personnage, un **bâton** peut régler **Soigne une altération** : le rétablissement est accessible même sur un allié à tous ses PV et ne rend pas de PV lui-même. Quand plusieurs bâtons conviennent à la cible, le jeu propose lequel utiliser. Un porteur sous Silence ne peut pas lancer ce soin ; un porteur endormi ne peut pas utiliser d'objet lui-même.
+
+Les onglets **Armes**, **Objets** et **Compétences** proposent **Ajouter les exemples d'altérations manquants** : épée empoisonnée et bâton Rétablissement, Antidote et Remède universel, trois compétences d'altération à 30 %. Les exemples s'ajoutent sans remplacer les fiches existantes et ne sont pas distribués automatiquement aux personnages. Les événements proposent aussi **Appliquer / soigner une altération**, pour un personnage vivant déployé ou un ennemi déjà apparu. Les altérations sont propres à la bataille : elles ne sont pas conservées au camp ou au chapitre suivant. Recommencer restaure le début d'acte et rejoue ses éventuelles altérations scénarisées ; la sauvegarde reste un début d'acte.
+
 **Overkill** — Quand un coup abat l'ennemi, les dégâts en trop sont affichés (« OVERKILL +18 »). Celui qui l'a abattu termine ensuite les coups qu'il avait prévus (double attaque, arme à plusieurs coups). Ces coups ne retirent plus de PV ; leur précision et leurs critiques sont tirées normalement, sans usure d'arme ni compétence, et leurs dégâts s'ajoutent à l'overkill. En combat animé, la barre de PV de l'ennemi vaincu se remplit en rouge et son compteur affiche « −54 ». Si l'overkill atteint une deuxième fois les PV max de l'ennemi (54 dégâts en trop sur un brigand de 18 PV max, par exemple), le bandeau « OVERKILL ×2 ! » s'affiche et l'attaquant reçoit un bonus d'EXP (30 par défaut). L'EXP d'un combat reste plafonnée à 100. Ces réglages se trouvent dans **Système › Overkill** (activer / désactiver, montant du bonus, 0 = pas de bonus). Une riposte fatale donne l'overkill au défenseur.
 
 **Préparatifs avant bataille** — Chaque acte commence par le choix des participants dans l'effectif recruté et vivant. Cocher un personnage le déploie ; cliquer sa fiche affiche ses statistiques, objets et compétences. Sélectionner ensuite une case sur la carte ou son bouton numéroté déplace ce personnage ; une case occupée échange les deux positions. Les terrains infranchissables pour leur classe actuelle sont refusés. Les alliés verts gardent leur placement et ne prennent pas de place dans la sélection. Les dialogues de début et le premier tour attendent **Commencer la bataille**.
@@ -481,6 +495,8 @@ src/main/campaign-io.js    emplacements de sauvegarde (saves/slot-N.json)
 src/renderer/lobby-scene.js  lobby jouable dans le playtest (déplacements, panneaux chapitres / boutique, conversations)
 src/shared/palettes.js     couleurs d'équipe (détection, recoloration, réglage origine / équipe) — testées dans test/palettes.test.js
 src/shared/rules.js        règles du jeu (combat, déplacement, IA, exp) — testées dans test/run.js
+src/shared/statuses.js     poison, sommeil, silence, durées, soins et validation — testés dans test/statuses.test.js
+src/renderer/status-fields.js réglage des altérations et soins des armes/bâtons dans l'éditeur
 src/shared/defaults.js     base de données par défaut + chapitre d'exemple
 src/renderer/              éditeur (editor.js, db.js), playtest (playtest.js), scène de combat (battle.js), sprites (sprites.js)
 tools/                     conversion des planches de sprites
@@ -494,6 +510,7 @@ test/snapshot-villages.js   villages de bout en bout (placement, déplacement/an
 test/snapshot-locks.js      coffres et portes de bout en bout (édition, clés, Crochetage, passage, reprise et rejeu)
 test/snapshot-battle-trade.js échanges en bataille de bout en bout (annulation, inventaires pleins, déplacement, attaque, reprise et sauvegarde)
 test/snapshot-scenario.js   événements de bout en bout (édition, choix, coffre, embuscade, porte, objectif, récompenses en attente, reprise et sauvegarde)
+test/snapshot-statuses.js   altérations de bout en bout (éditeur, soins, bâtons, combats animés/map, durée, expiration et reprise)
 test/snapshot-ressources.js  conversion d'un ancien projet, onglet Ressources, couleurs en jeu (TF_OLD_PROJECT=dossier pour tester un vrai projet)
 ```
 

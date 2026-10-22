@@ -1,9 +1,9 @@
 /* Événements : conditions, validation et séquencement sans dépendance au rendu. */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./extensions.js') : root.Extensions);
+  const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./extensions.js') : root.Extensions, common ? require('./statuses.js') : root.Statuses);
   if (common) module.exports = api; else root.Scenario = api;
-})(typeof self !== 'undefined' ? self : this, function (Mission, Extensions) {
+})(typeof self !== 'undefined' ? self : this, function (Mission, Extensions, Statuses) {
   'use strict';
   const TRIGGERS = [
     ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
@@ -13,7 +13,7 @@
   // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
   const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'],
     ['item', 'Donner une arme ou un objet'], ['reinforcement', 'Faire apparaître un renfort'], ['door', 'Ouvrir / fermer une porte'],
-    ['objective', 'Changer l’objectif'], ['flag', 'Mémoriser une information'], ['choice', 'Proposer un choix']].map(([value, label]) => ({ value, label }));
+    ['objective', 'Changer l’objectif'], ['flag', 'Mémoriser une information'], ['choice', 'Proposer un choix'], ['status', 'Appliquer / soigner une altération']].map(([value, label]) => ({ value, label }));
   const pluginAction = type => (Extensions ? Extensions.find('action', 'type', type) : null);
   /** Actions proposées : celles du noyau puis celles des plugins actifs. */
   function actionTypes() { return ACTIONS.concat(Extensions ? Extensions.list('action').map(d => ({ value: d.type, label: d.label || d.type, plugin: true })) : []); }
@@ -75,6 +75,10 @@
         }
         if (!a || !ACTIONS.some(t => t.value === a.type)) { bad('action inconnue.'); continue; }
         if (a.type === 'dialogue' && typeof a.text !== 'string') bad('texte de dialogue invalide.');
+        if (a.type === 'status') {
+          const target = typeof a.target === 'string' && (a.target.startsWith('unit:') ? known(a.target.slice(5)) : (ch.enemies || []).some(u => u.id === a.target));
+          if (!target || typeof a.remove !== 'boolean' || !(Statuses.get(a.statusId) || (a.remove && a.statusId === 'all')) || (!a.remove && (!Number.isInteger(a.turns) || a.turns < 1 || a.turns > 9))) bad('cible, altération ou durée invalide.');
+        }
         if (a.type === 'gold' && (!Number.isInteger(a.amount) || a.amount < 1 || a.amount > 999999)) bad('montant de récompense invalide.');
         if (a.type === 'item') {
           if (![...(db.items || []), ...(db.weapons || [])].some(i => i.id === a.itemId)) bad('récompense introuvable.');
@@ -96,7 +100,7 @@
     return [...new Set(errors)];
   }
   function references(db, kind, id) {
-    return (db.chapters || []).flatMap(ch => list(ch).filter(e => kind === 'units' ? (e.conditions || {}).present?.includes(id) || e.trigger?.target === 'unit:' + id || (e.actions || []).some(a => a.unitId === id) : (e.actions || []).some(a => a.type === 'item' && a.itemId === id)).map(e => `${ch.name} — ${e.name || e.id}`));
+    return (db.chapters || []).flatMap(ch => list(ch).filter(e => kind === 'units' ? (e.conditions || {}).present?.includes(id) || e.trigger?.target === 'unit:' + id || (e.actions || []).some(a => a.unitId === id || (a.type === 'status' && a.target === 'unit:' + id)) : (e.actions || []).some(a => a.type === 'item' && a.itemId === id)).map(e => `${ch.name} — ${e.name || e.id}`));
   }
   function createRunner(ch, api) {
     const progress = new Map(), warned = new Map(), conditionEdges = new Set(); let running = false;

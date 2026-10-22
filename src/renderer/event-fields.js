@@ -8,6 +8,7 @@
     pane.append(h('div', { class: 'form-heading' }, 'Événements & dialogues'), box);
     const fields = (rows, model, dynamic) => UI.form(rows, model, { onChange: key => {
       if (key === 'objective.type') { model.objective.turns ??= 5; model.objective.x ??= 0; model.objective.y ??= 0; }
+      if (key === 'remove' && !model.remove && model.statusId === 'all') model.statusId = 'poison';
       api.change(); if ((dynamic || []).includes(key)) redraw();
     } });
     const targets = options(db.units, u => u.name).map(o => ({ ...o, value: 'unit:' + o.value })).concat(options(ch.enemies));
@@ -18,9 +19,14 @@
       if (plug) return Object.assign({ plugin: plug.plugin || '' }, JSON.parse(JSON.stringify(plug.defaults || {})));
       return { dialogue: { text: '' }, gold: { amount: 100 }, item: { itemId: '', uses: 0, unitId: '' },
         reinforcement: { target: '' }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
-        flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' } }[type];
+        flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' }, status: { target: '', statusId: 'poison', turns: 3, remove: false } }[type];
     }
     function actionFields(a) {
+      if (a.type === 'status') return [{ key: 'target', label: 'Unité ciblée', type: 'select', empty: '— choisir —', options: targets },
+        { key: 'remove', label: 'Soigner (décoché = appliquer)', type: 'checkbox' },
+        { key: 'statusId', label: 'Altération', type: 'select', options: [...(a.remove ? [{ value: 'all', label: 'Toutes' }] : []), ...Statuses.TYPES.map(s => ({ value: s.id, label: s.name }))] },
+        ...(!a.remove ? [{ key: 'turns', label: 'Durée (phases de la cible)', type: 'number', min: 1, max: 9 }] : []),
+        { type: 'info', text: 'Cible vivante et présente sur la map uniquement. Une unité absente ou un renfort non encore apparu est ignoré. Les altérations disparaissent après la bataille.' }];
       if (a.type === 'dialogue') return [{ key: 'text', label: 'Dialogue', type: 'textarea', rows: 4 }];
       if (a.type === 'gold') return [{ key: 'amount', label: 'Or donné', type: 'number', min: 1, max: 999999 }];
       const plug = Scenario.pluginAction(a.type);
@@ -80,7 +86,7 @@
           const action = h('div', { 'data-event-action': String(i), style: { borderTop: '1px solid var(--line-2)', paddingTop: '10px', marginTop: '10px' } });
           const selector = h('select', { 'data-action-type': true }, Scenario.actionTypes().concat(Scenario.actionTypes().some(o => o.value === a.type) ? [] : [{ value: a.type, label: a.type + ' (plugin absent)' }]).map(o => h('option', { value: o.value }, o.label))); selector.value = a.type;
           selector.addEventListener('change', () => { ev.actions[i] = { type: selector.value, ...defaults(selector.value) }; changed(); });
-          action.append(h('b', {}, `Action ${i + 1} `), selector, fields(actionFields(a), a, ['objective.type']),
+          action.append(h('b', {}, `Action ${i + 1} `), selector, fields(actionFields(a), a, ['objective.type', 'remove']),
             h('div', { class: 'insp-actions' }, h('button', { class: 'small', disabled: i === 0, onclick: () => { [ev.actions[i - 1], ev.actions[i]] = [a, ev.actions[i - 1]]; changed(); } }, 'Monter'),
               h('button', { class: 'small', disabled: i === ev.actions.length - 1, onclick: () => { [ev.actions[i + 1], ev.actions[i]] = [a, ev.actions[i + 1]]; changed(); } }, 'Descendre'),
               h('button', { class: 'small danger', onclick: () => { ev.actions.splice(i, 1); changed(); } }, 'Retirer l’action'))); card.append(action);
