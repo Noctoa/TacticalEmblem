@@ -13,8 +13,17 @@
   const caps = st(60, 20, 20, 20, 20, 30, 20, 20);
   const T = (foot, horse, armor, flier) => ({ foot, horse, armor, flier });
 
+  // fonds de combat de base (ressources/fonds-combat, décors de Fire Emblem 6) : un par terrain
+  const BB = 'ressources/fonds-combat/';
+  const BATTLEBACKS = {
+    plain: 'fe6-plaine.png', road: 'fe6-plaine.png', bush: 'fe6-plaine.png', forest: 'fe6-foret.png', thicket: 'fe6-foret-ancienne.png',
+    mountain: 'fe6-montagne.png', peak: 'fe6-montagne.png', water: 'fe6-mer.png', bridge: 'fe6-riviere.png', sand: 'fe6-desert.png',
+    fort: 'fe6-fort.png', village: 'fe6-village.png', wall: 'fe6-rempart.png', floor: 'fe6-chateau.png', throne: 'fe6-salle-du-trone.png', gate: 'fe6-rempart.png'
+  };
+  /** Fond de combat par défaut d'un terrain de base ('' si aucun). */
+  const battlebackOf = (id) => (BATTLEBACKS[id] ? BB + BATTLEBACKS[id] : '');
   function terrains() {
-    return [
+    return withBattlebacks([
       { id: 'plain', name: 'Plaine', avoid: 0, def: 0, heal: 0, color: '#9ccc65', cost: T(1, 1, 1, 1) },
       { id: 'forest', name: 'Forêt', avoid: 20, def: 1, heal: 0, color: '#2e7d32', cost: T(2, 3, 2, 1) },
       { id: 'bush', name: 'Buisson', avoid: 10, def: 0, heal: 0, color: '#66bb6a', cost: T(1, 2, 2, 1) },
@@ -31,8 +40,9 @@
       { id: 'floor', name: 'Sol', avoid: 0, def: 0, heal: 0, color: '#bcaaa4', cost: T(1, 1, 1, 1) },
       { id: 'throne', name: 'Trône', avoid: 30, def: 3, heal: 10, color: '#c62828', cost: T(1, 1, 1, 1) },
       { id: 'gate', name: 'Portail', avoid: 20, def: 3, heal: 10, color: '#6d4c41', cost: T(1, 1, 1, 1) }
-    ];
+    ]);
   }
+  function withBattlebacks(list) { for (const t of list) t.battleback = battlebackOf(t.id); return list; }
 
   // prix en boutique (0 ou absent : ne se vend pas) ; la revente rapporte la moitié, au prorata des utilisations
   const PRICES = {
@@ -574,7 +584,7 @@
         // lobby : le jeu commence au camp, on y choisit les chapitres, on achète, on parle aux alliés
         lobby: lobby(),
         // systèmes devenus des plugins : un projet neuf ne les reçoit pas automatiquement (Base de données › Plugins)
-        pluginMigrations: ['invocations'],
+        pluginMigrations: ['invocations', 'fonds-combat'],
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         // écran titre : sous-titre, fond, musique, mode d'une nouvelle partie ; crédits (bouton Crédits)
         title: { subtitle: 'Les héros de Varenne', background: '', music: '', newGameMode: 'classic' },
@@ -603,5 +613,5 @@
     };
   }
 
-  return { terrains, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { terrains, battlebackOf, BATTLEBACKS, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

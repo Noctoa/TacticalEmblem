@@ -187,6 +187,9 @@
   const ICON_ORDER = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff'];
   const teamColor = (u) => (u.team === 'enemy' ? 'red' : u.team === 'ally' ? 'green' : u.team === 'player' ? 'blue' : 'gray');
   /** Échelle de l'interface : le bandeau du bas garde les proportions d'un écran GBA (52 px sur 160). */
+  // thèmes de l'interface (img/ui/<thème>/, styles .theme-<id> de playtest.css) : hauteur du bandeau du bas en pixels GBA
+  const HUD_THEMES = { gba: { band: 52 }, ff9: { band: 53 } };
+  const hudTheme = (sc) => (HUD_THEMES[sc.opts.hudTheme] ? sc.opts.hudTheme : 'gba');
   function hudScale(w, hh) { return Math.max(2, Math.min(6, Math.floor(Math.min(w / 240, hh / 170)))); }
 
   function buildDom(sc) {
@@ -205,7 +208,7 @@
         h('div', { class: 'gb-weapon' },
           h('i', { class: 'gb-icon', style: icon >= 0 ? `--icon:${icon}` : 'display:none' }),
           h('span', { class: 'gb-wname' }, sideWeapon(sc, actor))),
-        h('div', { class: 'gb-hp' }, hpNum, hpBar),
+        h('div', { class: 'gb-hp ' + color }, hpNum, hpBar),
         h('div', { class: 'gb-stats ' + color },
           row('hit', s ? String(s.hit) : '--'),
           row('dmg', s ? String(s.dmg) + (s.count > 1 ? '×' + s.count : '') : '--'),
@@ -214,7 +217,7 @@
     const plate = (actor) => h('div', { class: 'gb-plate ' + actor.side + ' ' + teamColor(actor.unit) }, h('span', {}, actor.unit.name));
     const cv = h('canvas', { class: 'b-canvas' });
     sc.canvas = cv; sc.ctx = cv.getContext('2d');
-    sc.hud = h('div', { class: 'gb-hud' }, plate(sc.L), plate(sc.R), h('div', { class: 'gb-bottom' }, side(sc.L), side(sc.R)));
+    sc.hud = h('div', { class: 'gb-hud theme-' + hudTheme(sc) }, plate(sc.L), plate(sc.R), h('div', { class: 'gb-bottom' }, side(sc.L), side(sc.R)));
     sc.dom = h('div', { id: 'battle' }, cv, sc.hud,
       h('div', { class: 'b-hint' }, 'Clic / Z maintenu : accélérer · X / clic droit : passer'));
     document.body.append(sc.dom);
@@ -264,10 +267,10 @@
     const w = sc.canvas.clientWidth, hh = sc.canvas.clientHeight;
     const S = Math.max(2, Math.min(4, Math.floor(Math.min(w / 250, (hh - 150) / 140))));
     // le sol des combattants reste au-dessus du bandeau d'interface du bas
-    const hudTop = hh - 52 * (sc.hudS || hudScale(w, hh));
+    const hudTop = hh - HUD_THEMES[hudTheme(sc)].band * (sc.hudS || hudScale(w, hh));
     const ground = Math.min(Math.round(hh * 0.66), hudTop - 6 * S);
     const sep = (sc.ranged ? 70 : 46) * S;
-    return { w, h: hh, S, ground, homeL: w / 2 - sep, homeR: w / 2 + sep, meet: 30 * S };
+    return { w, h: hh, S, ground, hudTop, homeL: w / 2 - sep, homeR: w / 2 + sep, meet: 30 * S };
   }
 
   function actorX(sc, a, L) {
@@ -294,8 +297,10 @@
     const bb = sc.opts.battleback;
     if (bb && bb.width) {
       // décor posé sur toute la largeur ; sa bande du bas (le sol) passe sous les combattants
-      const s = Math.max(w / bb.width, (L.ground + 18 * L.S) / bb.height);
-      const dh = bb.height * s, y0 = L.ground + 18 * L.S - dh;
+      // le bas du décor (le sol) descend jusqu'au bandeau d'interface : pas de bande noire entre les deux
+      const bottom = Math.max(L.ground + 18 * L.S, L.hudTop + 4 * L.S);
+      const s = Math.max(w / bb.width, bottom / bb.height);
+      const dh = bb.height * s, y0 = bottom - dh;
       g.fillStyle = '#000'; g.fillRect(0, 0, w, hh);
       g.drawImage(bb, (w - bb.width * s) / 2, y0, bb.width * s, dh);
     } else if (sc.opts.background) {
@@ -308,21 +313,9 @@
     if (bb && bb.width) { sky.addColorStop(0, 'rgba(0,0,0,0)'); sky.addColorStop(0.75, 'rgba(0,0,0,0)'); sky.addColorStop(1, 'rgba(0,0,0,.55)'); }
     else { sky.addColorStop(0, 'rgba(10,14,30,.55)'); sky.addColorStop(0.6, 'rgba(10,14,30,.15)'); sky.addColorStop(1, 'rgba(0,0,0,.6)'); }
     g.fillStyle = sky; g.fillRect(0, 0, w, hh);
-    // plateformes (couleur du terrain de chaque combattant)
-    const plat = (cx, terrain) => {
-      const col = (terrain && terrain.color) || '#7a8a5a';
-      const pw = 92 * L.S, ph = 10 * L.S;
-      const gr = g.createLinearGradient(0, L.ground - ph * 0.2, 0, L.ground + ph);
-      gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(0,0,0,.85)');
-      g.fillStyle = gr;
-      g.beginPath(); g.ellipse(cx, L.ground + ph * 0.25, pw / 2, ph, 0, 0, Math.PI * 2); g.fill();
-      g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 1.5; g.stroke();
-    };
     let sx = 0, sy = 0;
     if (sc.shake > 0.3) { sx = (Math.random() - 0.5) * sc.shake; sy = (Math.random() - 0.5) * sc.shake * 0.6; sc.shake *= 0.88; } else sc.shake = 0;
     g.save(); g.translate(sx, sy);
-    plat(L.homeL, sc.opts.terrainOf(sc.L.unit));
-    plat(L.homeR, sc.opts.terrainOf(sc.R.unit));
     // déplacement lissé
     for (const a of [sc.L, sc.R, ...sc.helpers]) {
       a.travel += (a.travelTarget - a.travel) * 0.32;

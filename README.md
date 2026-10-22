@@ -67,6 +67,8 @@ Une nouvelle partie se joue en **Classique** (pertes définitives) ou **Détente
 
 **Base de données › Chapitres et actes › (un acte) › Conditions de victoire et de défaite** permet de choisir les personnages à protéger et ceux autorisés à prendre les points, de combiner plusieurs objectifs avec ET / OU et d'ajouter des défaites par limite de tours, pertes ou intrusion ennemie dans une zone. Les anciens chapitres héritent des Seigneurs pour la protection et la prise de point. Les conditions invalides sont signalées avant de lancer le test.
 
+**Interface des combats animés** — **Système › Règles de combat › Interface des combats animés** : *GBA* (par défaut, style Fire Emblem) ou *FF9* (texture tissu, d'après Cynon). Les plaques de nom, les encadrés PRÉC / DGT / CRIT et les panneaux de PV prennent la couleur du camp (rouge ennemi, bleu joueur, vert allié). Pièces dans `src/renderer/img/ui/` (thème GBA) et `img/ui/ff9/`, regénérées par `python3 tools/build_ui_gba.py`.
+
 **Overkill** — Quand un coup abat l'ennemi, les dégâts en trop sont affichés (« OVERKILL +18 »). Celui qui l'a abattu termine ensuite les coups qu'il avait prévus (double attaque, arme à plusieurs coups). Ces coups ne retirent plus de PV ; leur précision et leurs critiques sont tirées normalement, sans usure d'arme ni compétence, et leurs dégâts s'ajoutent à l'overkill. En combat animé, la barre de PV de l'ennemi vaincu se remplit en rouge et son compteur affiche « −54 ». Si l'overkill atteint une deuxième fois les PV max de l'ennemi (54 dégâts en trop sur un brigand de 18 PV max, par exemple), le bandeau « OVERKILL ×2 ! » s'affiche et l'attaquant reçoit un bonus d'EXP (30 par défaut). L'EXP d'un combat reste plafonnée à 100. Ces réglages se trouvent dans **Système › Overkill** (activer / désactiver, montant du bonus, 0 = pas de bonus). Une riposte fatale donne l'overkill au défenseur.
 
 **Préparatifs avant bataille** — Chaque acte commence par le choix des participants dans l'effectif recruté et vivant. Cocher un personnage le déploie ; cliquer sa fiche affiche ses statistiques, objets et compétences. Sélectionner ensuite une case sur la carte ou son bouton numéroté déplace ce personnage ; une case occupée échange les deux positions. Les terrains infranchissables pour leur classe actuelle sont refusés. Les alliés verts gardent leur placement et ne prennent pas de place dans la sélection. Les dialogues de début et le premier tour attendent **Commencer la bataille**.
@@ -149,7 +151,7 @@ Images : Eliwood, Lyn et Hector (Blazing Blade) reçoivent les ressources de bas
 
 Les autres personnages reçoivent leurs images si un **plugin** de leur jeu est installé dans le projet (voir « Plugins » plus bas) : Roy, Eirika, Ephraim, Guy, Florina… et les classes Archer, Chevalier, Mage… qui n'avaient pas de sprite. Installer le plugin avant ou après l'import revient au même : à l'installation, il relie aussi les personnages déjà présents.
 
-**Fonds de combat** — Chaque terrain peut avoir un décor (Terrains et tilesets › fiche du terrain › **Fond de combat**), une image de `ressources/fonds-combat/`. L'animation de combat l'affiche derrière les combattants, d'après le terrain du défenseur. Sans fond, c'est la map floutée qui sert de décor. Le plugin Fire Emblem 6 en fournit 19 et en pose un sur chaque terrain de base qui n'en a pas.
+**Fonds de combat** — Chaque terrain peut avoir un décor (Terrains et tilesets › fiche du terrain › **Fond de combat**), une image de `ressources/fonds-combat/`. L'animation de combat l'affiche derrière les combattants, d'après le terrain du défenseur. Sans fond, c'est la map floutée qui sert de décor. Le projet de base en fournit 19 (décors de *Fire Emblem 6*, dans `assets/default/ressources/fonds-combat/`), déjà posés sur les terrains de base ; un projet créé avant les reçoit à sa première ouverture (une seule fois, sans remplacer un décor déjà choisi). Les combattants se tiennent directement sur le décor, sans plateforme.
 
 Un personnage déjà présent (même nom, même série) n'est pas dupliqué. Les manaketes et les laguz ne sont pas inclus (pas de pierre de dragon ni de transformation dans le moteur).
 
@@ -200,12 +202,13 @@ Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Ut
 - **Désinstaller** : retire la fiche et les scripts ; les images déjà copiées restent dans `ressources/`.
 
 Plugins fournis dans le dépôt :
-- `invocations` : le gacha façon Fire Emblem Heroes (voir **Invocations (plugin)** plus haut) ; c'est aussi l'exemple complet d'un plugin qui ajoute un système au jeu ;
-- `fe6-binding-blade` : fonds de combat de Fire Emblem 6.
+- `invocations` : le gacha façon Fire Emblem Heroes (voir **Invocations (plugin)** plus haut) ; c'est aussi l'exemple complet d'un plugin qui ajoute un système au jeu.
+
+Les fonds de combat de Fire Emblem 6 font maintenant partie des ressources de base (voir **Fonds de combat**).
 
 Un petit exemple de script (annonce des tours, ennemis vaincus) est dans `test/fixtures/exemple-annonce-tours/`.
 
-Les plugins de ressources Fire Emblem (`fe6-binding-blade`, `fe7-blazing-blade`, `fe8-sacred-stones`, `customs-style-gba`) ne sont plus dans le dépôt. Ce sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix, pour un usage personnel. Pour les refaire à partir des planches de `tools/sprite-sources/fe-gba/` :
+Les plugins de ressources Fire Emblem (sprites de `fe6-binding-blade`, `fe7-blazing-blade`, `fe8-sacred-stones`, `customs-style-gba`) ne sont plus dans le dépôt. Ce sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix, pour un usage personnel. Pour les refaire à partir des planches de `tools/sprite-sources/fe-gba/` :
 - `python3 tools/build_fe_gba_pack.py` découpe les planches (réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés) ;
 - `tools/split_fe_gba_plugins.py` les range par jeu dans `plugins/`.
 
@@ -434,7 +437,7 @@ Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_comba
 
 **Crédits** : sprites rippés de *Fire Emblem: The Blazing Blade* (Intelligent Systems / Nintendo) par Lexou, Grim & Bonzai. Cloud : édition FE par Lord Zymeth (personnage Square Enix, base Nintendo). Musiques : *Fire Emblem: The Binding Blade*, Yuka Tsujiyoko (Enhanced Soundtrack). À garder pour un usage perso / fan-game : à retirer de `assets/default/ressources/` et `tools/sprite-sources/` avant toute diffusion publique de l'outil.
 
-**Interface** : thème « Soft Dark » repris des jetons de [Soft Dark UI](https://github.com/Otaku17/soft-dark-ui) (licence MIT, voir `src/renderer/soft-dark.css`) ; police [Inter](https://github.com/rsms/inter) (SIL OFL 1.1).
+**Interface** : thème « Soft Dark » repris des jetons de [Soft Dark UI](https://github.com/Otaku17/soft-dark-ui) (licence MIT, voir `src/renderer/soft-dark.css`) ; police [Inter](https://github.com/rsms/inter) (SIL OFL 1.1). Thème « FF9 » de l'interface de combat : *FF9 Inspired Battle Screen* de **Cynon** (dépôt FE-Repo, libre de modification ; planches dans `tools/ui-ff9/`).
 
 ## Code
 

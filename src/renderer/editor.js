@@ -1539,7 +1539,28 @@
   const PLUGIN_MIGRATIONS = [
     { id: 'invocations', name: 'Invocations', uses: (p) => (p.db.banners || []).length > 0 || !!(p.meta.lobby && p.meta.lobby.summon && p.meta.lobby.summon.enabled) }
   ];
+  /**
+   * Fonds de combat de base (ex-plugin « Fire Emblem 6 ») : un ancien projet reçoit les décors de
+   * ressources/fonds-combat et ses terrains de base sans décor sont reliés, une seule fois.
+   */
+  async function migrateBattlebacks() {
+    const meta = S.project.meta;
+    if ((meta.pluginMigrations || []).includes('fonds-combat')) return;
+    meta.pluginMigrations = [...(meta.pluginMigrations || []), 'fonds-combat'];
+    let linked = 0;
+    try {
+      const r = await tf.installDefaultResources(S.dir, ['dir:fonds-combat']);
+      if (r && r.resources) S.project.resources = r.resources;
+      const have = new Set((S.project.resources && S.project.resources.battlebacks) || []);
+      for (const t of DB().terrains || []) {
+        const f = Defaults.battlebackOf(t.id);
+        if (!t.battleback && f && have.has(f)) { t.battleback = f; linked++; }
+      }
+    } catch (e) { console.error('[fonds de combat]', e); }
+    if (linked) { markDirty(); UI.toast(`Fonds de combat de base ajoutés : ${linked} terrain(s) relié(s).`); }
+  }
   async function migrateToPlugins() {
+    await migrateBattlebacks();
     const meta = S.project.meta, done = meta.pluginMigrations || [];
     for (const mig of PLUGIN_MIGRATIONS) {
       if (done.includes(mig.id)) continue;

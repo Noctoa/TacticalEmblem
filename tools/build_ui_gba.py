@@ -8,6 +8,9 @@ Découpe les planches d'interface « style GBA » (tools/ui-gba/) en pièces uti
   fiche.png       → fenêtre dorée, cadre de portrait, plaque rouge (fiche d'unité)
   + icônes de types d'arme (dessinées ici, 16×16)
 
+Thème « FF9 » (Système › Interface de combat) : tools/ui-ff9/hud-combat-variante1.png de Cynon (FE-Repo, libre de
+modification) → src/renderer/img/ui/ff9/ (mêmes noms de pièces, autre découpe).
+
   python3 tools/build_ui_gba.py
 """
 import os
@@ -226,8 +229,34 @@ def icons():
     return names
 
 
+# ---------------------------------------------------------------------------
+# thème FF9 (Cynon) : plaques 64×24 ouvertes sur le bord, encadrés 46×33, panneau d'arme 78×23, PV 123×20
+FF9_RED = {'p1': (184, 48, 32), 'p2': (168, 32, 24), 's1': (144, 24, 16)}
+FF9_TEAMS = {
+    'red': FF9_RED,
+    'blue': {'p1': (32, 56, 184), 'p2': (24, 40, 176), 's1': (16, 32, 168)},
+    'green': {'p1': (48, 152, 72), 'p2': (32, 136, 56), 's1': (24, 112, 40)},
+    'gray': {'p1': (128, 128, 144), 'p2': (112, 112, 128), 's1': (96, 96, 112)},
+}
+
+
+def ff9():
+    src = os.path.join(ROOT, 'tools', 'ui-ff9', 'hud-combat-variante1.png')
+    a = np.array(Image.open(src).convert('RGBA'))
+    out = os.path.join(OUT, 'ff9')
+    os.makedirs(out, exist_ok=True)
+    keep = lambda arr, name: Image.fromarray(arr.astype(np.uint8), 'RGBA').save(os.path.join(out, name), optimize=True)
+    pieces = {'plate': keyed(a[5:29, 5:69]), 'stats': keyed(a[107:140, 5:51]), 'hp': keyed(a[140:160, 5:128])}  # PV : couleur du camp
+    for prefix, piece in pieces.items():
+        for team, pal in FF9_TEAMS.items():
+            keep(recolor(piece, {FF9_RED[k]: pal[k] for k in FF9_RED}), f'{prefix}-{team}.png')
+    keep(keyed(a[117:140, 50:128]), 'weapon.png')
+    return out
+
+
 if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
+    print('thème FF9 →', ff9())
     hud()
     windows()
     print('icônes :', ', '.join(icons()))

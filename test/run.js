@@ -206,9 +206,10 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
     if (c.battler) assert.ok(q.resources.battlers[c.battler], c.battler);
   }
   for (const u of q.db.units) if (u.portrait) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait); // les personnages à invoquer n'ont pas de portrait
-  // ressources par défaut sur un projet converti : rien en double, seuls les effets sonores (absents de l'ancienne version) arrivent
-  const sons = fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', 'sons')).filter(f => !f.startsWith('.')).length;
-  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, sons);
+  // ressources par défaut sur un projet converti : rien en double, seuls les effets sonores et les fonds de combat
+  // (absents de l'ancienne version) arrivent
+  const count = d => fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', d)).filter(f => !f.startsWith('.')).length;
+  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, count('sons') + count('fonds-combat'));
   // réouverture : plus rien à convertir
   assert.ok(!io.loadProject(dir).migration);
 });

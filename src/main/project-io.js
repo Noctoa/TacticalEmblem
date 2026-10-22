@@ -161,7 +161,12 @@ function installDefaults(dir, assetsDir, only) {
   const src = path.join(assetsDir, 'default', Layout.ROOT), dest = path.join(dir, Layout.ROOT);
   if (Array.isArray(only)) {
     const rel = path.relative(Layout.ROOT, Layout.DIRS.characters);
-    for (const who of only) {
+    // « dir:fonds-combat » : un dossier entier de ressources/ (ex. les fonds de combat de base)
+    for (const d of only.filter(o => String(o).startsWith('dir:'))) {
+      const sub = path.basename(String(d).slice(4));
+      if (sub && fs.existsSync(path.join(src, sub))) walk(path.join(src, sub), path.join(dest, sub));
+    }
+    for (const who of only.filter(o => !String(o).startsWith('dir:'))) {
       const s = path.join(src, rel, path.basename(String(who)));
       if (fs.existsSync(s)) walk(s, path.join(dest, rel, path.basename(String(who))));
     }

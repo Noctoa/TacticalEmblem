@@ -69,6 +69,7 @@ test('liens : classes, terrains et personnages déjà présents, champs vides se
   const p = D.sampleProject('Liens');
   P.install(p.db, ['fe6'], { has: () => true }); // personnages FE6 sans images
   p.db.terrains.find(t => t.id === 'forest').battleback = 'ressources/fonds-combat/mien.png';
+  p.db.terrains.find(t => t.id === 'plain').battleback = ''; // la plaine a un décor de base : vidé pour tester le lien
   const n = Plugins.applyLinks(p.db, m.links, { findUnit: (k) => P.findUnit(p.db, k) });
   assert.deepEqual(n, { classes: 2, terrains: 1, units: 2 });
   assert.equal(p.db.terrains.find(t => t.id === 'forest').battleback, 'ressources/fonds-combat/mien.png');

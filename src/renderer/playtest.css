@@ -483,3 +483,24 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 @keyframes ts-in { from { opacity: 0; } }
 @keyframes ts-twinkle { from { opacity: .3; } to { opacity: .7; } }
 @keyframes ts-nudge { from { transform: translate(0, -50%); } to { transform: translate(3px, -50%); } }
+
+/* thème « FF9 » de l'interface de combat (Cynon, FE-Repo ; pièces dans img/ui/ff9/, Système › Règles de combat) :
+   plaques 64×24 ouvertes sur le bord de l'écran, encadrés 46×33, panneau d'arme 78×23, panneau des PV 123×20 */
+#battle .gb-hud.theme-ff9 .gb-plate { top: calc(5 * var(--u)); height: calc(24 * var(--u)); min-width: calc(64 * var(--u)); }
+#battle .gb-hud.theme-ff9 .gb-plate::before { border-image-source: url('img/ui/ff9/plate-gray.png'); border-image-slice: 0 8 0 0 fill; border-image-width: 0 calc(8 * var(--u)) 0 0; border-image-repeat: repeat stretch; }
+#battle .gb-hud.theme-ff9 .gb-plate.red::before { border-image-source: url('img/ui/ff9/plate-red.png'); }
+#battle .gb-hud.theme-ff9 .gb-plate.blue::before { border-image-source: url('img/ui/ff9/plate-blue.png'); }
+#battle .gb-hud.theme-ff9 .gb-plate.green::before { border-image-source: url('img/ui/ff9/plate-green.png'); }
+#battle .gb-hud.theme-ff9 .gb-bottom { height: calc(53 * var(--u)); }
+#battle .gb-hud.theme-ff9 .gb-weapon { top: calc(10 * var(--u)); height: calc(23 * var(--u)); padding-top: calc(2 * var(--u)); }
+#battle .gb-hud.theme-ff9 .gb-weapon::before { border-image-source: url('img/ui/ff9/weapon.png'); border-image-slice: 0 7 fill; border-image-width: 0 calc(7 * var(--u)); border-image-repeat: repeat stretch; }
+#battle .gb-hud.theme-ff9 .gb-hp { top: calc(33 * var(--u)); height: calc(20 * var(--u)); padding-top: calc(var(--u)); }
+#battle .gb-hud.theme-ff9 .gb-hp::before { border-image-source: url('img/ui/ff9/hp-gray.png'); border-image-slice: 0 10 0 9 fill; border-image-width: 0 calc(10 * var(--u)) 0 calc(9 * var(--u)); border-image-repeat: repeat stretch; }
+#battle .gb-hud.theme-ff9 .gb-hp.red::before { border-image-source: url('img/ui/ff9/hp-red.png'); }
+#battle .gb-hud.theme-ff9 .gb-hp.blue::before { border-image-source: url('img/ui/ff9/hp-blue.png'); }
+#battle .gb-hud.theme-ff9 .gb-hp.green::before { border-image-source: url('img/ui/ff9/hp-green.png'); }
+#battle .gb-hud.theme-ff9 .gb-stats { height: calc(33 * var(--u)); padding-top: calc(6 * var(--u)); }
+#battle .gb-hud.theme-ff9 .gb-stats::before { background-image: url('img/ui/ff9/stats-gray.png'); }
+#battle .gb-hud.theme-ff9 .gb-stats.red::before { background-image: url('img/ui/ff9/stats-red.png'); }
+#battle .gb-hud.theme-ff9 .gb-stats.blue::before { background-image: url('img/ui/ff9/stats-blue.png'); }
+#battle .gb-hud.theme-ff9 .gb-stats.green::before { background-image: url('img/ui/ff9/stats-green.png'); }

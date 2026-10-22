@@ -1353,6 +1353,7 @@
         partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf, overkill: res.overkill,
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
         battleback: battlebackOf(def) || battlebackOf(att),
+        hudTheme: G.settings.battleHud || 'gba', // interface de combat (Système › Règles de combat)
         projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null
       });
       document.body.classList.remove('in-battle');

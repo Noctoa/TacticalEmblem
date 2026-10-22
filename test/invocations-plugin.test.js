@@ -24,7 +24,7 @@ test('le noyau seul : pas de bannière, pas d’autel, pas d’orbes dans le pro
   assert.equal(p.meta.summon, undefined);
   assert.equal(L.defaults(p.meta.lobby).summon, undefined);
   assert.ok(p.db.chapters.every(ch => ch.orbs === undefined) && p.db.talks.every(t => t.orbs === undefined));
-  assert.deepEqual(j(p.meta.pluginMigrations), j(['invocations'])); // un projet neuf ne reçoit pas le plugin automatiquement
+  assert.deepEqual(j(p.meta.pluginMigrations), j(['invocations', 'fonds-combat'])); // un projet neuf ne reçoit pas le plugin automatiquement
   assert.ok(!Sc.actionTypes().some(a => a.value === 'orbs'));
 });
 

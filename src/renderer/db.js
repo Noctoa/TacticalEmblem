@@ -581,7 +581,7 @@
           { key: 'heal', label: 'Soin / tour (%)', type: 'number', min: 0, max: 100 }] },
         { key: 'cost', label: 'Coût de déplacement (99 = infranchissable)', type: 'costs' },
         { key: 'battleback', label: 'Fond de combat', type: 'select', empty: '— la map, floutée —', options: () => (res().battlebacks || []).map(f => ({ value: f, label: f.split('/').pop().replace(/\.[a-z]+$/i, '') })) },
-        { type: 'info', text: ((res().battlebacks || []).length ? '' : 'Aucun fond de combat dans le projet pour l’instant : le plugin « Fire Emblem 6 » (onglet Plugins) ajoute 19 décors, ou range tes images dans ressources/fonds-combat. ') + "Fond de combat : décor affiché derrière les animations quand le défenseur est sur ce terrain (images du dossier ressources/fonds-combat). L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
+        { type: 'info', text: ((res().battlebacks || []).length ? '' : 'Aucun fond de combat dans le projet pour l’instant : Ressources › « Ajouter les ressources par défaut » copie les 19 décors de base, ou range tes images dans ressources/fonds-combat. ') + "Fond de combat : décor affiché derrière les animations quand le défenseur est sur ce terrain (images du dossier ressources/fonds-combat). L'identifiant du terrain (ou son nom) est la valeur à mettre dans la propriété « terrain » des tiles dans Tiled." }
       ]
     }
   };
@@ -1865,6 +1865,8 @@
       { type: 'heading', label: 'Règles de combat' },
       { key: 'settings.trueHit', label: 'Vrai hit (moyenne de 2 tirages, comme FE6–FE13)', type: 'checkbox' },
       { key: 'settings.battleAnims', label: 'Animations de combat (si les deux unités ont un battler)', type: 'checkbox' },
+      { key: 'settings.battleHud', label: 'Interface des combats animés', type: 'select', empty: 'GBA (Fire Emblem, par défaut)', options: [{ value: 'ff9', label: 'FF9 (texture tissu, par Cynon)' }],
+        help: 'Plaques de nom, encadrés PRÉC / DGT / CRIT, panneaux d’arme et de PV pendant les combats animés.' },
       { key: 'settings.colors', label: 'Couleurs des sprites (par défaut, modifiable par classe, unité ou placement)', type: 'select', empty: `Par défaut (${Palettes.MODES[0].label.toLowerCase()})`, options: Palettes.MODES,
         help: "Couleur d'équipe : bleu pour le joueur, rouge pour les ennemis, vert pour les alliés. Couleur d'origine : celle de la planche." },
       { type: 'row', fields: [
