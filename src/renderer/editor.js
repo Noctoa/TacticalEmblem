@@ -504,19 +504,19 @@
         }
         ctx.globalAlpha = 1;
       }
-      ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 1.5;
+      ctx.strokeStyle = '#efb383'; ctx.lineWidth = 1.5;
       ctx.strokeRect(hv.x * cs.w + .5, hv.y * cs.h + .5, bw * cs.w - 1, bh * cs.h - 1);
       return;
     }
-    ctx.strokeStyle = S.mode === 'units' && S.placeTool ? ({ players: '#4f8cff', allies: '#2fd37a' }[S.placeTool.kind] || '#ec5a4f') : '#f2c46a';
+    ctx.strokeStyle = S.mode === 'units' && S.placeTool ? ({ players: '#7fa7e8', allies: '#8cc7a0' }[S.placeTool.kind] || '#e48c8c') : '#efb383';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(hv.x * cs.w + .5, hv.y * cs.h + .5, cs.w - 1, cs.h - 1);
   }
   function drawRectPreview(cs) {
     const r = rectOf(S.drag.start, S.hover);
-    ctx.fillStyle = S.tool === 'eraser' ? 'rgba(236,90,79,.25)' : 'rgba(227,168,59,.22)';
+    ctx.fillStyle = S.tool === 'eraser' ? 'rgba(228,140,140,.25)' : 'rgba(232,160,106,.22)';
     ctx.fillRect(r.x0 * cs.w, r.y0 * cs.h, (r.x1 - r.x0 + 1) * cs.w, (r.y1 - r.y0 + 1) * cs.h);
-    ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 1.5;
+    ctx.strokeStyle = '#efb383'; ctx.lineWidth = 1.5;
     ctx.strokeRect(r.x0 * cs.w + .5, r.y0 * cs.h + .5, (r.x1 - r.x0 + 1) * cs.w - 1, (r.y1 - r.y0 + 1) * cs.h - 1);
   }
   const rectOf = (a, b) => ({ x0: Math.min(a.x, b.x), y0: Math.min(a.y, b.y), x1: Math.max(a.x, b.x), y1: Math.max(a.y, b.y) });
@@ -815,11 +815,11 @@
     pctx.stroke();
     const b = S.brush;
     if (b && b.tilesetId === ts.id) {
-      pctx.fillStyle = 'rgba(227,168,59,.18)';
+      pctx.fillStyle = 'rgba(232,160,106,.2)';
       const x = (m + b.x * (ts.tileWidth + sp)) * sc, y = (m + b.y * (ts.tileHeight + sp)) * sc;
       const w = (b.w * (ts.tileWidth + sp) - sp) * sc, hh = (b.h * (ts.tileHeight + sp) - sp) * sc;
       pctx.fillRect(x, y, w, hh);
-      pctx.strokeStyle = '#f2c46a'; pctx.lineWidth = 2; pctx.strokeRect(x + 1, y + 1, w - 2, hh - 2);
+      pctx.strokeStyle = '#efb383'; pctx.lineWidth = 2; pctx.strokeRect(x + 1, y + 1, w - 2, hh - 2);
     }
   }
   function palCell(e) {

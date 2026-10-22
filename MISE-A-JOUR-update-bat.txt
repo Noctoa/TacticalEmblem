@@ -1,5 +1,0 @@
-Mise a jour : update.bat (nom de l application lu dans package.json)
-Basee sur la version GitHub "Supression tileset IA" (09a2f00).
-1. git pull
-2. Extraire ce zip a la racine du dossier TacticalEmblem (remplacer les fichiers)
-3. Lancer update.bat : il construit "Tactical Emblem 0.1.0.exe" et supprime l ancien "Tactics Forge 0.1.0.exe".

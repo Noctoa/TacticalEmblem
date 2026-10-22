@@ -1,0 +1,149 @@
+/*
+ * Thème « Soft Dark » de l'éditeur.
+ * Jetons de couleurs, rayons, typographie et ombres repris de Soft Dark UI 1.2.0
+ * (https://github.com/Otaku17/soft-dark-ui, src/styles/tokens.css + scrollbar.css), sous licence MIT :
+ *
+ * MIT License
+ *
+ * Copyright (c) 2026 Ota
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Police Inter (rsms/inter, licence SIL OFL 1.1 : fonts/OFL-Inter.txt).
+ * ui.css relie les variables historiques de l'éditeur (--bg, --panel, --gold…) à ces jetons.
+ */
+@font-face { font-family: 'Inter'; src: url('fonts/InterVariable.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+
+  /* Surfaces, lowest to highest */
+  --color-inset: #121418;
+  --color-bg: #16181d;
+  --color-surface: #1e2127;
+  --color-surface-hover: #252931;
+  --color-elevated: #2a2e37;
+  --color-elevated-hover: #323743;
+  --color-scrim: rgba(8, 9, 12, 0.62);
+
+  /* Borders */
+  --color-border: #2e333c;
+  --color-border-strong: #3a404b;
+  --color-border-hover: #4a5160;
+
+  /* Text */
+  --color-text: #d6d9de;
+  --color-text-muted: #9198a3;
+  --color-text-subtle: #6b727d;
+
+  /* Accent */
+  --color-accent: #7fa7e8;
+  --color-accent-hover: #95b6ec;
+  --color-accent-soft: rgba(127, 167, 232, 0.12);
+  --color-accent-text: #10131a;
+  --color-focus-ring: rgba(127, 167, 232, 0.35);
+
+  /* Status */
+  --color-success: #8cc7a0;
+  --color-success-soft: rgba(140, 199, 160, 0.12);
+  --color-warning: #e3c07e;
+  --color-warning-soft: rgba(227, 192, 126, 0.12);
+  --color-danger: #e48c8c;
+  --color-danger-soft: rgba(228, 140, 140, 0.12);
+
+  /* Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
+  --radius-full: 9999px;
+
+  /* Font sizes */
+  --font-size-xs: 12px;
+  --font-size-sm: 13px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 30px;
+
+  /* Font weights and line heights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+
+  /* Font families */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* Spacing (4px base) */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.28);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.4);
+
+  /* Status bar */
+  --statusbar-height: 26px;
+  --statusbar-font-size: var(--font-size-xs);
+  --statusbar-padding-x: var(--space-1);
+  --statusbar-item-padding-x: var(--space-2);
+  --statusbar-item-gap: var(--space-0-5);
+  --statusbar-icon-size: var(--icon-xs);
+  --statusbar-icon-gap: 6px;
+  --statusbar-dot: 6px;
+
+  /* Scrollbar */
+  --scrollbar-size: 10px;
+  --scrollbar-inset: 2px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: var(--color-border-strong);
+  --scrollbar-thumb-hover: var(--color-text-subtle);
+  --scrollbar-thumb-active: var(--color-text-muted);
+
+  /* Transitions */
+  --t-fast: 120ms ease;
+  --t-normal: 200ms ease;
+}
+
+/* Barres de défilement (Soft Dark UI › scrollbar.css) */
+::-webkit-scrollbar { width: var(--scrollbar-size); height: var(--scrollbar-size); }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { min-height: 32px; background-color: var(--scrollbar-thumb); background-clip: padding-box; border: var(--scrollbar-inset) solid transparent; border-radius: var(--radius-full); }
+::-webkit-scrollbar-thumb:hover { background-color: var(--scrollbar-thumb-hover); }
+::-webkit-scrollbar-thumb:active { background-color: var(--scrollbar-thumb-active); }
+::-webkit-scrollbar-corner, ::-webkit-scrollbar-button { display: none; background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}

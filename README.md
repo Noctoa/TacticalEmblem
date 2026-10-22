@@ -405,6 +405,8 @@ Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_comba
 
 **Crédits** : sprites rippés de *Fire Emblem: The Blazing Blade* (Intelligent Systems / Nintendo) par Lexou, Grim & Bonzai. Cloud : édition FE par Lord Zymeth (personnage Square Enix, base Nintendo). Musiques : *Fire Emblem: The Binding Blade*, Yuka Tsujiyoko (Enhanced Soundtrack). À garder pour un usage perso / fan-game : à retirer de `assets/default/ressources/` et `tools/sprite-sources/` avant toute diffusion publique de l'outil.
 
+**Interface** : thème « Soft Dark » repris des jetons de [Soft Dark UI](https://github.com/Otaku17/soft-dark-ui) (licence MIT, voir `src/renderer/soft-dark.css`) ; police [Inter](https://github.com/rsms/inter) (SIL OFL 1.1).
+
 ## Code
 
 ```

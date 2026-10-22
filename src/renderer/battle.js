@@ -181,43 +181,81 @@
     return w ? w.name : '—';
   }
 
+  // ------------------------------------------------------------------
+  // Interface de combat façon GBA (pièces découpées dans img/ui par tools/build_ui_gba.py)
+  // ------------------------------------------------------------------
+  const ICON_ORDER = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff'];
+  const teamColor = (u) => (u.team === 'enemy' ? 'red' : u.team === 'ally' ? 'green' : u.team === 'player' ? 'blue' : 'gray');
+  /** Échelle de l'interface : le bandeau du bas garde les proportions d'un écran GBA (52 px sur 160). */
+  function hudScale(w, hh) { return Math.max(2, Math.min(6, Math.floor(Math.min(w / 240, hh / 170)))); }
+
   function buildDom(sc) {
     const fc = sc.opts.forecast;
     const statsOf = (actor) => (actor.unit === sc.opts.att ? fc.att : fc.def);
-    const panel = (actor) => {
+    const side = (actor) => {
       const s = statsOf(actor);
-      const hpBar = h('div', { class: 'b-hpbar' });
+      const color = teamColor(actor.unit);
+      const w = sc.opts.weaponOf(actor.unit);
+      const icon = w ? ICON_ORDER.indexOf(w.type) : -1;
+      const hpBar = h('canvas', { class: 'gb-bar' });
       const hpNum = h('b', { class: 'b-hpnum' }, String(actor.hpShown));
       actor.hpEls = { hpBar, hpNum };
-      return h('div', { class: 'b-panel ' + (actor.side === 'L' ? 'enemy' : actor.unit.team === 'ally' ? 'ally' : 'player') },
-        h('div', { class: 'b-top' }, h('span', { class: 'b-name' }, actor.unit.name), h('span', { class: 'b-weap' }, sideWeapon(sc, actor))),
-        h('div', { class: 'b-stats' },
-          h('div', {}, h('span', {}, 'PRÉC'), h('b', {}, s ? String(s.hit) : '--')),
-          h('div', {}, h('span', {}, 'DGT'), h('b', {}, s ? String(s.dmg) + (s.count > 1 ? ' ×' + s.count : '') : '--')),
-          h('div', {}, h('span', {}, 'CRIT'), h('b', {}, s ? String(s.crit) : '--'))),
-        h('div', { class: 'b-hp' }, hpNum, hpBar));
+      const row = (label, val) => h('div', { class: 'gb-row' }, h('i', { class: 'gb-label ' + label }), h('b', {}, val));
+      return h('div', { class: 'b-panel gb-side ' + actor.side + ' ' + (actor.side === 'L' ? 'enemy' : actor.unit.team === 'ally' ? 'ally' : 'player') },
+        h('div', { class: 'gb-weapon' },
+          h('i', { class: 'gb-icon', style: icon >= 0 ? `--icon:${icon}` : 'display:none' }),
+          h('span', { class: 'gb-wname' }, sideWeapon(sc, actor))),
+        h('div', { class: 'gb-hp' }, hpNum, hpBar),
+        h('div', { class: 'gb-stats ' + color },
+          row('hit', s ? String(s.hit) : '--'),
+          row('dmg', s ? String(s.dmg) + (s.count > 1 ? '×' + s.count : '') : '--'),
+          row('crt', s ? String(s.crit) : '--')));
     };
+    const plate = (actor) => h('div', { class: 'gb-plate ' + actor.side + ' ' + teamColor(actor.unit) }, h('span', {}, actor.unit.name));
     const cv = h('canvas', { class: 'b-canvas' });
     sc.canvas = cv; sc.ctx = cv.getContext('2d');
-    sc.dom = h('div', { id: 'battle' }, cv,
-      h('div', { class: 'b-hud' }, panel(sc.L), panel(sc.R)),
+    sc.hud = h('div', { class: 'gb-hud' }, plate(sc.L), plate(sc.R), h('div', { class: 'gb-bottom' }, side(sc.L), side(sc.R)));
+    sc.dom = h('div', { id: 'battle' }, cv, sc.hud,
       h('div', { class: 'b-hint' }, 'Clic / Z maintenu : accélérer · X / clic droit : passer'));
     document.body.append(sc.dom);
+    fitHud(sc);
     updateHp(sc.L); updateHp(sc.R);
+  }
+
+  /** Recalcule l'échelle de l'interface quand la fenêtre change de taille. */
+  function fitHud(sc) {
+    const w = sc.dom.clientWidth || window.innerWidth, hh = sc.dom.clientHeight || window.innerHeight;
+    const s = hudScale(w, hh);
+    if (sc.hudS === s) return s;
+    sc.hudS = s;
+    sc.hud.style.setProperty('--s', s);
+    return s;
   }
 
   function showBanner(sc, text, kind) { sc.banner = { text, kind, t0: performance.now() }; }
 
+  // jauge de PV GBA : une colonne de 1 px par PV séparée d'un liseré, 40 PV par ligne au plus
+  const BAR = { edge: '#000', sep: '#2878a0', fill: '#78f090', shine: '#e8f8d8', empty: '#808898', over: '#f87850', overShine: '#ffd0b8' };
   function updateHp(actor) {
     if (!actor.hpEls) return;
     const { hpBar, hpNum } = actor.hpEls;
-    const max = actor.unit.stats.hp;
-    const over = Math.round(actor.hpShown) <= 0 ? (actor.over || 0) : 0;
-    hpNum.textContent = over ? '−' + over : String(Math.max(0, Math.round(actor.hpShown)));
+    const max = Math.max(1, actor.unit.stats.hp);
+    const cur = Math.max(0, Math.round(actor.hpShown));
+    const over = cur <= 0 ? (actor.over || 0) : 0;
+    hpNum.textContent = over ? '−' + over : String(cur);
     hpNum.classList.toggle('over', !!over);
-    hpBar.innerHTML = '';
-    // barre segmentée, une case par PV (comme sur GBA) ; à 0 PV, l'overkill la remplit en rouge
-    for (let i = 0; i < max; i++) hpBar.append(h('i', { class: i < Math.round(actor.hpShown) ? 'on' : i < over ? 'over' : '' }));
+    const per = Math.min(max, 40), lines = Math.ceil(max / per);
+    const W = per * 2 + 1, H = lines * 6 + 1;
+    if (hpBar.width !== W || hpBar.height !== H) { hpBar.width = W; hpBar.height = H; hpBar.style.setProperty('--w', W); hpBar.style.setProperty('--h', H); }
+    const g = hpBar.getContext('2d');
+    g.fillStyle = BAR.edge; g.fillRect(0, 0, W, H);
+    for (let i = 0; i < max; i++) {
+      const line = Math.floor(i / per), x = (i % per) * 2 + 1, y = line * 6 + 1;
+      const on = i < cur, ov = !on && i < over;
+      g.fillStyle = BAR.sep; g.fillRect(x - 1, y, 1, 5); g.fillRect(x + 1, y, 1, 5);
+      g.fillStyle = on ? BAR.fill : ov ? BAR.over : BAR.empty; g.fillRect(x, on || ov ? y : y + 1, 1, on || ov ? 5 : 4);
+      if (on || ov) { g.fillStyle = on ? BAR.shine : BAR.overShine; g.fillRect(x, y + 1, 1, 1); }
+    }
     hpBar.classList.toggle('over-full', over >= max);
   }
 
@@ -225,7 +263,9 @@
   function layout(sc) {
     const w = sc.canvas.clientWidth, hh = sc.canvas.clientHeight;
     const S = Math.max(2, Math.min(4, Math.floor(Math.min(w / 250, (hh - 150) / 140))));
-    const ground = Math.round(hh * 0.66);
+    // le sol des combattants reste au-dessus du bandeau d'interface du bas
+    const hudTop = hh - 52 * (sc.hudS || hudScale(w, hh));
+    const ground = Math.min(Math.round(hh * 0.66), hudTop - 6 * S);
     const sep = (sc.ranged ? 70 : 46) * S;
     return { w, h: hh, S, ground, homeL: w / 2 - sep, homeR: w / 2 + sep, meet: 30 * S };
   }
@@ -245,6 +285,7 @@
     const g = sc.ctx;
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.imageSmoothingEnabled = false;
+    if (sc.hud) fitHud(sc);
     const L = layout(sc);
     g.globalAlpha = 1;
     g.clearRect(0, 0, w, hh);
@@ -301,7 +342,7 @@
       if (k < 0) continue; // texte différé
       const a = f.actor; const x = actorX(sc, a, L);
       g.globalAlpha = sc.fade * (k < 0.75 ? 1 : (1 - k) * 4);
-      g.font = `900 ${Math.round((f.big ? 15 : 11) * L.S)}px "Segoe UI", system-ui, sans-serif`;
+      g.font = `600 ${Math.round((f.big ? 15 : 11) * L.S)}px "Pixelify Sans", "Segoe UI", system-ui, sans-serif`;
       g.textAlign = 'center'; g.textBaseline = 'middle';
       const y = L.ground - (52 + (f.dy || 0)) * L.S - k * 18 * L.S;
       g.lineWidth = 2 * L.S; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(f.text, x, y);
@@ -319,7 +360,7 @@
         const ok = sc.banner.kind === 'overkill', c0 = ok ? 'rgba(255,120,60,0)' : 'rgba(255,90,160,0)', c1 = ok ? 'rgba(200,52,24,.92)' : 'rgba(190,40,110,.9)';
         gr.addColorStop(0, c0); gr.addColorStop(0.2, c1); gr.addColorStop(0.8, c1); gr.addColorStop(1, c0);
         g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
-        g.font = '800 22px "Segoe UI", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+        g.font = '600 22px "Pixelify Sans", "Segoe UI", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
         g.fillStyle = '#fff'; g.fillText((ok ? '✸ ' : '♥ ') + sc.banner.text, w / 2, by + bh / 2 + 1);
         g.globalAlpha = 1;
       }
