@@ -19,9 +19,16 @@
       if (plug) return Object.assign({ plugin: plug.plugin || '' }, JSON.parse(JSON.stringify(plug.defaults || {})));
       return { dialogue: { text: '' }, gold: { amount: 100 }, item: { itemId: '', uses: 0, unitId: '' },
         reinforcement: { target: '' }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
-        flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' }, status: { target: '', statusId: 'poison', turns: 3, remove: false } }[type];
+        flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' }, status: { target: '', statusId: 'poison', turns: 3, remove: false },
+        weather: { weather: { type: 'none', intensity: 2, direction: 'right' } } }[type];
     }
     function actionFields(a) {
+      if (a.type === 'weather') return [
+        { key: 'weather.type', label: 'Météo', type: 'select', options: Weather.TYPES },
+        { key: 'weather.intensity', label: 'Intensité (1 légère, 2 modérée, 3 forte)', type: 'number', min: 1, max: 3 },
+        { key: 'weather.direction', label: 'Direction du vent', type: 'select', options: [{ value: 'right', label: 'Vers la droite' }, { value: 'left', label: 'Vers la gauche' }] },
+        { type: 'info', text: 'Aucune fait cesser l’effet. Le changement concerne cette tentative ; recommencer restaure la météo initiale de l’acte.' }
+      ];
       if (a.type === 'status') return [{ key: 'target', label: 'Unité ciblée', type: 'select', empty: '— choisir —', options: targets },
         { key: 'remove', label: 'Soigner (décoché = appliquer)', type: 'checkbox' },
         { key: 'statusId', label: 'Altération', type: 'select', options: [...(a.remove ? [{ value: 'all', label: 'Toutes' }] : []), ...Statuses.TYPES.map(s => ({ value: s.id, label: s.name }))] },

@@ -75,6 +75,7 @@
       box.append(h('div', { class: 'prep-layout' }, h('section', {}, h('h3', {}, 'Participants'), roster, detail),
         h('section', {}, h('h3', {}, 'Positions de départ'), mapBox, positions)),
       h('p', { class: 'prep-objective' }, Mission.objectives(ch).map(o => Mission.label(o, ch)).join(ch.victoryMode === 'any' ? ' OU ' : ' ET ') + ` · ${ch.enemies.filter(e => !(e.appearTurn > 0)).length} ennemi(s), ${ch.enemies.filter(e => e.appearTurn > 0).length} renfort(s)`),
+      Weather.normalize(ch.weather).type !== 'none' ? h('p', { class: 'prep-muted' }, 'Météo : ' + Weather.label(ch.weather) + ' (ambiance visuelle)') : null,
       h('div', { class: 'prep-errors', role: 'status' }, messages.map(text => h('p', {}, text))),
       h('footer', { class: 'prep-actions' },
         G.lobbyOn ? h('button', { 'data-deploy-cancel': true, onclick: () => { close(); S.onCancel(); } }, 'Retour au camp') : null,

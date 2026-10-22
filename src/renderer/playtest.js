@@ -156,13 +156,14 @@
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
     const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     errors.push(...Statuses.validateDefinitions(G.db));
+    errors.push(...Weather.validate(ch.weather));
     if (errors.length) throw new Error(errors.join('\n'));
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
-    Object.assign(G, { turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
+    Object.assign(G, { weather: Weather.normalize(ch.weather), turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
       reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set() });
     scenarioRunner = Scenario.createRunner(ch, { state: () => G, action: scenarioRuntime.action, blocked: (ev, error) => UI.toast(`${ev.name || ev.id} : ${error}`, 'error') });
     hideMenu(); hideForecast();
@@ -218,6 +219,7 @@
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
     G.settings.aiDifficulty = R.normalizeAiDifficulty(save.aiDifficulty === undefined ? (G.project.meta.settings || {}).aiDifficulty : save.aiDifficulty);
+    G.settings.weatherEffects = save.weatherEffects !== false;
     if (save.chapterId === Lobby.LOBBY_SAVE) {
       if (G.lobbyOn) return lobby.enter();
       const start = R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
@@ -233,7 +235,7 @@
   const playTime = () => Math.round((G.playBase || 0) + (performance.now() - (G.playStart || performance.now())));
   function startClock(base) { G.playBase = Number(base) || 0; G.playStart = performance.now(); }
   function makeSave() {
-    return Object.assign({}, makeCheckpointSave(), { aiDifficulty: R.normalizeAiDifficulty(G.settings.aiDifficulty) });
+    return Object.assign({}, makeCheckpointSave(), { aiDifficulty: R.normalizeAiDifficulty(G.settings.aiDifficulty), weatherEffects: G.settings.weatherEffects !== false });
   }
   function makeCheckpointSave() {
     if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation', playTime: playTime() } });
@@ -485,6 +487,11 @@
 
     const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
+    if (G.mode !== 'lobby' && G.settings.weatherEffects !== false) {
+      const x = Math.max(0, -V.camX), y = Math.max(0, -V.camY);
+      WeatherFX.draw(ctx, G.weather, { x, y, width: Math.min(V.w, G.map.width * TW() - V.camX) - x,
+        height: Math.min(V.h, G.map.height * TH() - V.camY) - y, scale: V.s }, t);
+    }
     for (const u of list) {
       const statuses = Statuses.list(u); if (!statuses.length || u.dead || u.alpha <= 0) continue;
       const [x, y, w, hh] = tileRect(u.rx, u.ry), size = Math.max(10, Math.min(15, hh * .35));
@@ -1461,6 +1468,7 @@
     if (animate) {
       document.body.classList.add('in-battle');
       await BattleScene.play({
+        weather: G.settings.weatherEffects !== false ? G.weather : undefined,
         baseUrl: G.baseUrl, battlerOf, att, def, hp0, strikes: res.strikes, forecast: res.forecast, distance,
         paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'battle', false),
         partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf, overkill: res.overkill,

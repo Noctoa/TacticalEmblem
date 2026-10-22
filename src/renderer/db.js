@@ -1331,6 +1331,7 @@
         (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ]), ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
+    pane.append(h('div', { class: 'form-heading' }, 'Ambiance météo'), WeatherFields.form(ch, { change }));
     renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
     renderVillages(pane, ch);

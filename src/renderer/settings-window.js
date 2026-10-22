@@ -139,6 +139,11 @@
       });
       body.append(h('label', { class: 'st-check' }, h('span', {}, 'Difficulté de l’IA ennemie'), select), description,
         h('p', { class: 'st-info' }, 'S’applique aux prochaines décisions ennemies, sans changer leurs statistiques ni leurs chances de réussite. Les alliés conservent une IA normale. Ce choix est conservé quand tu sauvegardes la partie.'));
+      const weather = h('input', { type: 'checkbox', class: 'st-focus', 'data-weather-effects': '' });
+      weather.checked = G.settings.weatherEffects !== false;
+      weather.addEventListener('change', () => { G.settings.weatherEffects = weather.checked; api.Music.se('confirm'); });
+      body.append(h('label', { class: 'st-check' }, weather, h('span', {}, 'Afficher les effets météo')),
+        h('p', { class: 'st-info' }, 'Brouillard, sable et neige sur la carte et en combat. Le choix est conservé dans ta sauvegarde.'));
     }
 
     // ------------------------------------------------------------------

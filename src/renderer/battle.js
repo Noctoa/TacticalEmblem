@@ -329,6 +329,9 @@
     const order = sc.front && sc.front.helper ? [...sc.helpers.filter(a => a !== sc.front), ...main, sc.front] : [...sc.helpers, ...main];
     for (const a of order) drawActor(sc, g, a, L);
     if (sc.projectile) drawProjectile(sc, g, L);
+    g.save(); g.globalAlpha = sc.fade;
+    WeatherFX.draw(g, sc.opts.weather, { x: 0, y: 0, width: w, height: L.hudTop, scale: L.S / 2 }, performance.now());
+    g.restore();
     // animations d'attaque (Base de données › Animations)
     for (let i = sc.runs.length - 1; i >= 0; i--) { const r = sc.runs[i]; r.draw(g); if (!r.active && !r.flashes.length) sc.runs.splice(i, 1); }
     // textes flottants

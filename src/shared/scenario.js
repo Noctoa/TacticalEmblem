@@ -1,9 +1,10 @@
 /* Événements : conditions, validation et séquencement sans dépendance au rendu. */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./extensions.js') : root.Extensions, common ? require('./statuses.js') : root.Statuses);
+  const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./extensions.js') : root.Extensions, common ? require('./statuses.js') : root.Statuses,
+    common ? require('./weather.js') : root.Weather);
   if (common) module.exports = api; else root.Scenario = api;
-})(typeof self !== 'undefined' ? self : this, function (Mission, Extensions, Statuses) {
+})(typeof self !== 'undefined' ? self : this, function (Mission, Extensions, Statuses, Weather) {
   'use strict';
   const TRIGGERS = [
     ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
@@ -13,7 +14,8 @@
   // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
   const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'],
     ['item', 'Donner une arme ou un objet'], ['reinforcement', 'Faire apparaître un renfort'], ['door', 'Ouvrir / fermer une porte'],
-    ['objective', 'Changer l’objectif'], ['flag', 'Mémoriser une information'], ['choice', 'Proposer un choix'], ['status', 'Appliquer / soigner une altération']].map(([value, label]) => ({ value, label }));
+    ['objective', 'Changer l’objectif'], ['flag', 'Mémoriser une information'], ['choice', 'Proposer un choix'], ['status', 'Appliquer / soigner une altération'],
+    ['weather', 'Changer la météo']].map(([value, label]) => ({ value, label }));
   const pluginAction = type => (Extensions ? Extensions.find('action', 'type', type) : null);
   /** Actions proposées : celles du noyau puis celles des plugins actifs. */
   function actionTypes() { return ACTIONS.concat(Extensions ? Extensions.list('action').map(d => ({ value: d.type, label: d.label || d.type, plugin: true })) : []); }
@@ -75,6 +77,10 @@
         }
         if (!a || !ACTIONS.some(t => t.value === a.type)) { bad('action inconnue.'); continue; }
         if (a.type === 'dialogue' && typeof a.text !== 'string') bad('texte de dialogue invalide.');
+        if (a.type === 'weather') {
+          if (a.weather === undefined) bad('météo manquante.');
+          else for (const e of Weather.validate(a.weather)) bad(e);
+        }
         if (a.type === 'status') {
           const target = typeof a.target === 'string' && (a.target.startsWith('unit:') ? known(a.target.slice(5)) : (ch.enemies || []).some(u => u.id === a.target));
           if (!target || typeof a.remove !== 'boolean' || !(Statuses.get(a.statusId) || (a.remove && a.statusId === 'all')) || (!a.remove && (!Number.isInteger(a.turns) || a.turns < 1 || a.turns > 9))) bad('cible, altération ou durée invalide.');

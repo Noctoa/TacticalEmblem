@@ -25,6 +25,7 @@ const Locks = require('../shared/locks.js');
 const Scenario = require('../shared/scenario.js');
 const Statuses = require('../shared/statuses.js');
 const Animations = require('../shared/animations.js');
+const Weather = require('../shared/weather.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -100,6 +101,8 @@ function loadProject(dir, assetsDir) {
 }
 
 function saveProject(dir, project) {
+  const weatherErrors = (project.db.chapters || []).flatMap(ch => Weather.validate(ch.weather).map(e => `${ch.name || ch.id} : ${e}`));
+  if (weatherErrors.length) throw new Error(weatherErrors.join('\n'));
   const statusErrors = Statuses.validateDefinitions(project.db);
   if (statusErrors.length) throw new Error(statusErrors.join('\n'));
   const errors = [

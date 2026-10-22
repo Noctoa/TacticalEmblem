@@ -264,6 +264,16 @@
   const ctx = canvas.getContext('2d');
   const base = document.createElement('canvas');
   const bctx = base.getContext('2d');
+  let weatherFrame = 0, weatherStamp = 0;
+  function animateWeather(t) {
+    weatherFrame = 0;
+    const m = curMap();
+    if (!m || S.mode !== 'units' || isLobby(m) || Weather.normalize((curChapter() || {}).weather).type === 'none') return;
+    if (t - weatherStamp >= 50 && !document.hidden && $('#db').classList.contains('hidden')) {
+      weatherStamp = t; draw();
+    }
+    if (!weatherFrame) weatherFrame = requestAnimationFrame(animateWeather);
+  }
 
   function cellSize() { const m = curMap(); return { w: m.tileWidth * S.zoom, h: m.tileHeight * S.zoom }; }
 
@@ -321,6 +331,15 @@
 
     if (S.mode === 'terrain') drawTerrainOverlay(m, cs);
     if (S.mode === 'units') { if (isLobby(m)) lobbyEd.overlay(ctx, m, cs); else drawUnitsOverlay(m, cs); }
+
+    if (S.mode === 'units' && !isLobby(m)) {
+      const weather = (curChapter() || {}).weather;
+      const b = canvas.getBoundingClientRect(), v = $('#center').getBoundingClientRect();
+      const x = Math.max(0, v.left - b.left), y = Math.max(0, v.top - b.top);
+      WeatherFX.draw(ctx, weather, { x, y, width: Math.min(canvas.width, v.right - b.left) - x,
+        height: Math.min(canvas.height, v.bottom - b.top) - y, scale: S.zoom }, performance.now());
+      if (!weatherFrame && Weather.normalize(weather).type !== 'none') weatherFrame = requestAnimationFrame(animateWeather);
+    }
 
     if (S.grid) {
       ctx.strokeStyle = 'rgba(255,255,255,.08)';
@@ -1321,6 +1340,8 @@
         h('button', { class: 'small', onclick: () => DBEditor.open('chapters', ch.id), html: Icons.icon('chat') }, 'Conditions & événements'),
         h('button', { class: 'small primary', onclick: () => playtest(ch.id), html: Icons.icon('play') }, 'Tester'))
     ));
+
+    box.append(section('Ambiance météo', WeatherFields.form(ch, { change, beforeChange: () => snapshot('chapter', ch.id) })));
 
     // liste des placements
     const list = h('div', { class: 'placement-list' });
