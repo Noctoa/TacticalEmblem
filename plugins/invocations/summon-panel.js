@@ -62,8 +62,8 @@
         rates.pity ? h('div', { class: 'lp-sub sm-pity' }, `Pitié : +${pct(rates.pity)} de 5★ (aucun 5★ depuis ${(G.campaign.summons.pity || {})[b.id] || 0} invocation(s) sur cette bannière)`) : null,
         entry.reasons.length ? h('div', { class: 'lp-why' }, entry.reasons.join(' · ')) : null,
         h('div', { class: 'sm-actions' },
-          h('span', { class: 'sm-orbs' }, orbLabel()),
-          h('button', { class: 'lp-go lp-focus sm-start', disabled: !entry.open || G.campaign.orbs < cost, onclick: () => start(b) }, `Invoquer (${cost} orbes)`)),
+          h('span', { class: 'sm-orbs' }, orbs()),
+          h('button', { class: 'lp-go lp-focus sm-start', disabled: !entry.open || G.campaign.orbs < cost, onclick: () => start(b) }, 'Invoquer', orbs(cost))),
         G.campaign.orbs < cost && entry.open ? h('div', { class: 'lp-why' }, 'Pas assez d\'orbes : termine des actes ou parle à tes compagnons au camp.') : null);
       body.append(card);
       // liste des personnages possibles
@@ -80,6 +80,7 @@
     }
     const mergeTag = (id) => { const n = (G.campaign.merges || {})[id] || 0; return n ? ` +${n}` : ''; };
     const orbLabel = () => `Orbes : ${(G.campaign.orbs || 0).toLocaleString('fr-FR')}`;
+    const orbs = (n) => UI.money(n === undefined ? G.campaign.orbs : n, G.baseUrl + 'plugins/invocations/img/orb.png', 'Orbes'); // orbe d'invocation de Heroes
 
     function start(banner) {
       G.campaign.summons.session = Summon.circle(banner, G.db, G.campaign, meta(), Math.random);
@@ -114,7 +115,7 @@
       body.append(ring);
       const done = ses.pulled >= 5;
       body.append(h('div', { class: 'sm-actions' },
-        h('span', { class: 'sm-orbs' }, orbLabel() + (done ? '' : ` · prochaine pierre : ${cost} orbe(s)`)),
+        h('span', { class: 'sm-orbs' }, orbs(), done ? '' : ` · prochaine pierre : `, done ? null : orbs(cost)),
         h('button', { class: 'lp-go lp-focus sm-end', disabled: ses.pulled === 0, title: ses.pulled === 0 ? 'Ouvre au moins une pierre' : '', onclick: finish }, done ? 'Terminer' : 'Arrêter là')));
       if (ses.pulled === 0) body.append(h('p', { class: 'lp-sub' }, 'Choisis une pierre : sa couleur indique l\'arme du personnage (rouge : épée / anima, bleu : lance / lumière, vert : hache / ténèbres, incolore : arc / bâton). Il faut en ouvrir au moins une.'));
       else if (!done && G.campaign.orbs < cost) body.append(h('p', { class: 'lp-why' }, 'Plus assez d\'orbes pour la pierre suivante.'));

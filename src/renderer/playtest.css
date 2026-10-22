@@ -504,3 +504,60 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 #battle .gb-hud.theme-ff9 .gb-stats.red::before { background-image: url('img/ui/ff9/stats-red.png'); }
 #battle .gb-hud.theme-ff9 .gb-stats.blue::before { background-image: url('img/ui/ff9/stats-blue.png'); }
 #battle .gb-hud.theme-ff9 .gb-stats.green::before { background-image: url('img/ui/ff9/stats-green.png'); }
+
+/* monnaies avec icône : or (img/ui/gold.png), orbes du plugin Invocations… (UI.money) */
+.money-row { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
+.money { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.money-icon { width: 1.35em; height: 1.35em; object-fit: contain; flex: none; filter: drop-shadow(0 1px 1px rgba(0,0,0,.45)); }
+.lp-go .money { margin-left: 6px; }
+/* fiche de personnage façon Radiant Dawn (unit-sheet.js ; fond img/ui/radiant/, 240 × 160 px à l'échelle --s) */
+.rd-sheet { --s: 3; position: relative; width: calc(var(--s) * 240px); height: calc(var(--s) * 160px); flex: none;
+  background: url('img/ui/radiant/status.png') 0 0 / 100% 100% no-repeat; image-rendering: pixelated;
+  font-family: 'Pixelify Sans', 'Segoe UI', system-ui, sans-serif; font-size: calc(var(--s) * 8px); line-height: 1; color: #eaf4f5; user-select: none; }
+.rd-sheet.blank { background-image: url('img/ui/radiant/status-blank.png'); }
+.rd-abs { position: absolute; box-sizing: border-box; }
+.rd-portrait { overflow: hidden; display: flex; align-items: flex-end; justify-content: center; }
+.rd-portrait .rd-face { width: 100%; height: auto; max-height: 100%; object-fit: contain; object-position: bottom; image-rendering: pixelated; display: block; }
+.rd-initial { margin: auto; font-size: calc(var(--s) * 36px); font-weight: 600; color: rgba(60, 40, 20, .55); }
+.rd-name { display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: calc(var(--s) * 9px); color: #3b2512; text-shadow: 0 calc(var(--s) * .5px) 0 rgba(255, 240, 210, .6); white-space: nowrap; overflow: hidden; }
+.rd-wood { display: flex; align-items: center; color: #3b2512; font-weight: 600; white-space: nowrap; overflow: hidden; }
+.rd-wood b { color: #1d1208; }
+.rd-split { justify-content: space-between; gap: calc(var(--s) * 4px); }
+.rd-hp { background: rgba(40, 24, 10, .55); border-radius: calc(var(--s) * 1px); overflow: hidden; }
+.rd-hp i { display: block; height: 100%; background: #7fd36a; }
+.rd-hp.low i { background: #e2573f; }
+.rd-sprite { display: flex; align-items: flex-end; justify-content: center; }
+.rd-sprite-cv { width: 100%; height: 100%; image-rendering: pixelated; }
+.rd-panel { position: absolute; inset: 0; pointer-events: none; }
+.rd-panel button, .rd-panel .rd-list { pointer-events: auto; }
+.rd-tabs { display: flex; gap: calc(var(--s) * 2px); align-items: center; }
+.rd-tab { font: inherit; font-size: calc(var(--s) * 7px); padding: 0 calc(var(--s) * 3px); height: calc(var(--s) * 11px); line-height: calc(var(--s) * 11px); border: calc(var(--s) * .5px) solid rgba(242, 213, 138, .35); border-radius: calc(var(--s) * 2px); background: rgba(0, 0, 0, .25); color: #c9dde0; cursor: pointer; }
+.rd-tab.on { background: #e8c873; color: #2a1a08; border-color: #f2d58a; }
+.rd-row { display: flex; align-items: flex-end; justify-content: space-between; gap: calc(var(--s) * 2px); white-space: nowrap; }
+.rd-lbl { color: #f0d488; font-weight: 600; font-size: calc(var(--s) * 7.5px); }
+.rd-row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.rd-row b.rd-max { color: #8ff09c; }
+.rd-gauge { background: #e9b949; transform: skewX(-40deg); transform-origin: 0 100%; }
+.rd-gauge.max { background: #7fe08a; }
+.rd-boxed { padding: calc(var(--s) * 3px); display: flex; flex-direction: column; gap: calc(var(--s) * 2.5px); font-size: calc(var(--s) * 7px); overflow: hidden; }
+.rd-boxed-title { display: flex; align-items: center; gap: calc(var(--s) * 2px); font-weight: 600; color: #f0d488; white-space: nowrap; overflow: hidden; }
+.rd-boxed-sub { color: #cfe3e6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rd-sup { display: flex; justify-content: space-between; }
+.rd-sup b { color: #ff9ecb; }
+.rd-icon { display: inline-block; flex: none; width: calc(var(--s) * 10px); height: calc(var(--s) * 10px); background: url('img/ui/weapon-icons.png') no-repeat; background-size: calc(var(--s) * 80px) calc(var(--s) * 10px); image-rendering: pixelated; }
+.rd-icon-txt { background: none; display: inline-flex; align-items: center; justify-content: center; color: #9be0a8; font-size: calc(var(--s) * 8px); }
+.rd-list { display: flex; flex-direction: column; gap: calc(var(--s) * 2px); }
+.rd-item { display: flex; align-items: center; gap: calc(var(--s) * 3px); height: calc(var(--s) * 15px); padding: 0 calc(var(--s) * 3px); border-bottom: calc(var(--s) * 1px) solid rgba(8, 24, 24, .9); white-space: nowrap; }
+.rd-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.rd-item i { font-style: normal; font-size: calc(var(--s) * 6px); color: #2a1a08; background: #e8c873; border-radius: calc(var(--s) * 1px); padding: 0 calc(var(--s) * 1.5px); }
+.rd-item b { font-variant-numeric: tabular-nums; color: #f0d488; }
+.rd-item.eq .rd-item-name { color: #fff; font-weight: 600; }
+.rd-skillbox { flex: none; width: calc(var(--s) * 12px); height: calc(var(--s) * 12px); display: inline-flex; align-items: center; justify-content: center; overflow: visible; }
+.rd-skillbox > .skill-icon { flex: none; transform: scale(calc(var(--s) * 0.375)); font-size: 22px; }
+.rd-empty { color: #9fb9bd; padding: calc(var(--s) * 4px); }
+.rd-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(4, 6, 10, .78); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.rd-help { color: #cfd6e2; font-size: 12px; }
+#unit-win .u-sheet-button { margin-top: 4px; }
+.team-sheet { margin: 0 0 12px; overflow-x: auto; }
+.rd-status-list { display: inline-flex; gap: calc(var(--s) * 2px); }
+.rd-st { font-weight: 600; background: rgba(0, 0, 0, .35); border-radius: calc(var(--s) * 1.5px); padding: 0 calc(var(--s) * 1.5px); }

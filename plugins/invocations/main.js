@@ -13,6 +13,7 @@
  */
 (function () {
   'use strict';
+  const ORB_ICON = 'plugins/invocations/img/orb.png'; // icône des orbes (chemin dans le projet)
   const ID = 'invocations';
   const pct = v => (Math.round(v * 100) / 100).toLocaleString('fr-FR') + ' %';
   const plural = (n, word) => `${n} ${word}${n > 1 ? 's' : ''}`;
@@ -55,6 +56,7 @@
   // ------------------------------------------------------------------
   function game(api) {
     api.extend('currency', 'orbs', {
+      name: 'Orbes', icon: ORB_ICON, amount: (campaign) => campaign.orbs || 0, // orbe d'invocation de Heroes (img/orb.png)
       label: (campaign) => `Orbes : ${(campaign.orbs || 0).toLocaleString('fr-FR')}`,
       enabled: (meta, cfg) => altarOn(meta, cfg)
     });

@@ -1,0 +1,27 @@
+Tactical Emblem : fiche de personnage façon Radiant Dawn
+Base : origin/main af7df04 (« Merge pull request #1 from Noctoa/ugo » : altérations d'ugo comprises)
+
+Ce zip contient aussi la livraison précédente, pas encore sur GitHub (icônes de monnaie : pièce d'or et orbe
+d'invocation, plugin Invocations 1.2.0). Il remplace donc TacticalEmblem-monnaies.zip.
+
+Installation : dézipper à la racine du dépôt en écrasant les fichiers, puis npm test.
+
+Fiche de personnage (src/renderer/unit-sheet.js)
+- Fond : l'interface des statuts de FE Radiant Dawn (tools/ui-radiant/statut.png → src/renderer/img/ui/radiant/,
+  via tools/build_ui_radiant.py ; une version sans traits pour les pages Objets et Compétences).
+- À gauche : portrait dans le cadre, nom sur le parchemin, classe / niveau / EXP / PV (avec jauge) sur le bois,
+  sprite de map animé dans le petit encadré.
+- À droite, trois pages :
+  Stats : For, Mag, Tec, Vit, Cha, Déf, Rés (jauge jusqu'au maximum de la classe, verte au maximum), Dép ;
+          Attaque, Précision, Esquive, Critique ; encadré : arme équipée.
+  Objets : inventaire (arme équipée marquée E) ; encadré : puissance, précision, critique, poids de l'arme.
+  Compétences : personnelle (P) et équipées avec leurs icônes ; encadré : affinités et rangs.
+  La page Stats affiche aussi les altérations en cours d'ugo (poison, sommeil, silence) avec les phases restantes.
+- Sur la map : touche R sur une unité, ou bouton « Fiche » de la fenêtre d'unité. ← → : page, ↑ ↓ : unité
+  suivante du même camp, X / Échap / clic droit / R : fermer.
+- Au camp : la fiche remplace l'en-tête de l'Équipe (les onglets Compétences / Inventaire / Évolution restent dessous).
+
+Correctif de test : snapshot-skills cliquait le nouveau bouton « exemples d'altérations » au lieu de celui des
+compétences (il échouait déjà sur origin/main) ; il vise maintenant le bon bouton.
+
+Tests : npm test (216 OK) + nouveau scénario Electron test/snapshot-unit-sheet.js ; tous les scénarios Electron passent.

@@ -253,5 +253,15 @@
 
   function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 
-  root.UI = { h, getPath, setPath, modal, prompt, confirm, alert, choose, toast, form, debounce };
+  /**
+   * Montant d'une monnaie avec son icône : UI.money(1200, 'img/ui/gold.png', 'Or').
+   * icon : URL (relative à la page ou absolue) ; sans icône, le nom précède le montant.
+   */
+  function money(amount, icon, name) {
+    const n = Number(amount || 0).toLocaleString('fr-FR');
+    return h('span', { class: 'money', title: name ? `${name} : ${n}` : n, 'data-money': name || '' },
+      icon ? h('img', { class: 'money-icon', src: icon, alt: name || '' }) : (name ? name + ' : ' : ''), h('b', {}, n));
+  }
+  const GOLD_ICON = 'img/ui/gold.png'; // pièce d'or (monnaie du jeu)
+  root.UI = { money, GOLD_ICON, h, getPath, setPath, modal, prompt, confirm, alert, choose, toast, form, debounce };
 })(self);

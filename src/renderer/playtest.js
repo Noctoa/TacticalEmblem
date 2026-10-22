@@ -759,8 +759,24 @@
         onmousedown: e => e.stopPropagation(), onclick: e => { e.stopPropagation(); showUnitSkills(u); } },
         `Compétences (${(u.personalSkill ? 1 : 0) + (u.equippedSkills || []).length})`) : null,
       h('button', { class: 'u-evolution-button', disabled: G.busy || G.over, onmousedown: e => e.stopPropagation(),
-        onclick: e => { e.stopPropagation(); showEvolution(u); } }, 'Évolution')),
+        onclick: e => { e.stopPropagation(); showEvolution(u); } }, 'Évolution'),
+      h('button', { class: 'u-sheet-button', 'data-unit-sheet-open': true, title: 'Fiche du personnage (R)', disabled: G.busy || G.over, onmousedown: e => e.stopPropagation(),
+        onclick: e => { e.stopPropagation(); openUnitSheet(u); } }, 'Fiche')),
     h('div', { class: 'u-stats' }, stats));
+  }
+
+  /** Contexte de la fiche de personnage (unit-sheet.js, façon Radiant Dawn). */
+  function sheetCtx() {
+    return { G, R, baseUrl: G.baseUrl, mapSpriteOf, paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'map', false),
+      supportsOf: (u) => u.team === 'enemy' ? [] : R.partnersOf(u, G.sup).filter(p => p.entry.rank > 0)
+        .map(p => ({ name: (R.byId(G.db.units, p.id) || {}).name || p.id, rank: R.SUPPORT_RANKS[p.entry.rank] })) };
+  }
+  /** Fiche plein écran d'une unité de la map ; ↑ ↓ passent aux autres unités de son camp. */
+  async function openUnitSheet(u) {
+    if (!u || G.busy || G.over || G.sheetOpen) return;
+    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === u.team).sort((a, b) => (a.team === 'enemy' ? 0 : (a.order || 0) - (b.order || 0)) || a.y - b.y || a.x - b.x);
+    G.sheetOpen = true;
+    try { await UnitSheet.open(u, sheetCtx(), { list }); } finally { G.sheetOpen = false; lastInfoKey = ''; }
   }
 
   async function showUnitSkills(unit) {
@@ -819,7 +835,7 @@
     if (G.chapter.lossLimit) $('#objective').append(h('div', { class: 'turn' }, 'Défaite à ' + G.chapter.lossLimit + ' perte(s)'));
     if (G.chapter.defendZone && G.chapter.defendZone.enabled) $('#objective').append(h('div', { class: 'turn' }, 'Protéger la zone rouge'));
     if (scenarioRunner && scenarioRunner.pending()) $('#objective').append(h('div', { class: 'turn' }, 'Événement en attente : libérer la place nécessaire'));
-    if (G.lobbyOn) $('#objective').append(h('div', { class: 'turn' }, `Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}`));
+    if (G.lobbyOn) $('#objective').append(h('div', { class: 'turn' }, UI.money(G.campaign.gold, UI.GOLD_ICON, 'Or')));
   }
 
   // =====================================================================
@@ -2092,6 +2108,8 @@
     if (['z', 'Z', 'Enter', ' '].includes(k)) { e.preventDefault(); return confirm(); }
     if (['x', 'X', 'Escape', 'Backspace'].includes(k)) { e.preventDefault(); return cancel(); }
     if ((k === 'd' || k === 'D') && !G.busy && !G.dialogue && G.mode !== 'lobby') return toggleDanger();
+    // R : fiche du personnage sous le curseur (comme le bouton R des Fire Emblem)
+    if ((k === 'r' || k === 'R') && !G.busy && !G.dialogue && !G.menu && G.mode !== 'lobby' && ['idle', 'moving'].includes(G.ui)) { const u = unitAt(G.cursor.x, G.cursor.y); if (u) { e.preventDefault(); return openUnitSheet(u); } }
     if (k === 'm' || k === 'M') return Music.toggleMute();
     if (k === 'Shift') G.fast = true;
     const dirs = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
@@ -2128,7 +2146,7 @@
   const lobby = LobbyScene.create({
     G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
     hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
-    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl
+    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl, sheetCtx
   });
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length }; // scénarios de test automatisés
