@@ -505,11 +505,38 @@
     drawFloats(t);
   }
 
+  // flèche de déplacement façon Fire Emblem (img/ui/arrow.png, cases de 16 px ; tools/build_ui_popups.py)
+  const arrowImg = new Image(); arrowImg.src = 'img/ui/arrow.png';
+  const DIRS4 = { '1,0': 'r', '0,1': 'd', '-1,0': 'l', '0,-1': 'u' };
+  const ARROW = { start: { r: 0, d: 1, l: 2, u: 3 }, head: { r: 8, d: 9, l: 10, u: 11 } };
+  const OPP = { r: 'l', l: 'r', u: 'd', d: 'u' };
+  /** Case de la flèche pour le pas i du chemin. */
+  function arrowTile(path, i) {
+    const dir = (a, b) => DIRS4[`${Math.sign(b.x - a.x)},${Math.sign(b.y - a.y)}`];
+    if (i === 0) return ARROW.start[dir(path[0], path[1])];
+    const into = dir(path[i - 1], path[i]);
+    if (i === path.length - 1) return ARROW.head[into];
+    const out = dir(path[i], path[i + 1]), back = OPP[into];
+    if ((back === 'l' && out === 'r') || (back === 'r' && out === 'l')) return 14;
+    if ((back === 'u' && out === 'd') || (back === 'd' && out === 'u')) return 12;
+    const pair = [back, out].sort((a, b) => 'rdlu'.indexOf(a) - 'rdlu'.indexOf(b)).join('');
+    return { rd: 4, dl: 5, ru: 6, lu: 7 }[pair];
+  }
   function drawPath() {
     const n = G.reach.get(key(G.cursor.x, G.cursor.y));
     if (!n) return;
     const path = R.pathTo(G.reach, n.x, n.y);
     if (path.length < 2) return;
+    if (arrowImg.complete && arrowImg.naturalWidth) {
+      const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+      path.forEach((p, i) => {
+        const t = arrowTile(path, i); if (t === undefined) return;
+        const [px, py, w, hh] = tileRect(p.x, p.y);
+        ctx.drawImage(arrowImg, t * 16, 0, 16, 16, Math.round(px), Math.round(py), Math.round(w), Math.round(hh));
+      });
+      ctx.imageSmoothingEnabled = sm;
+      return;
+    }
     ctx.strokeStyle = 'rgba(255,240,200,.9)'; ctx.lineWidth = Math.max(3, TW() * 0.14); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.beginPath();
     path.forEach((p, i) => { const [px, py, w, hh] = tileRect(p.x, p.y); const cx = px + w / 2, cy = py + hh / 2; if (i) ctx.lineTo(cx, cy); else ctx.moveTo(cx, cy); });
@@ -1638,10 +1665,12 @@
   // =====================================================================
   // Tours et phases
   // =====================================================================
-  function banner(text, cls) {
+  /** Annonce au centre de l'écran ; image : annonce de phase dessinée (img/ui/phase-*.png, Lukiroh), le texte sert de repli. */
+  function banner(text, cls, image) {
     const el = $('#banner');
-    el.className = cls || '';
-    el.innerHTML = ''; el.append(h('span', {}, text));
+    el.className = (cls || '') + (image ? ' phase' : '');
+    el.innerHTML = '';
+    el.append(image ? h('span', { class: 'phase-pop' }, h('img', { src: image, alt: text, onerror: (e) => { e.target.replaceWith(text); } })) : h('span', {}, text));
     return sleep(1150).then(() => el.classList.add('hidden'));
   }
 
@@ -1662,7 +1691,7 @@
     updateObjective();
     TacticalEmblem.emit('turn:start', { phase: 'player', turn: G.turn });
     Music.bgm('playerPhase');
-    await banner('Phase joueur', '');
+    await banner('Phase joueur', '', 'img/ui/phase-player.png');
     for (const u of players()) { u.done = false; u.tradeLocked = false; }
     await statusPhase(team('player'));
     await skillRecovery(team('player'));
@@ -1685,7 +1714,7 @@
     G.phase = 'ally'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
-    await banner('Phase alliée', 'ally');
+    await banner('Phase alliée', 'ally', 'img/ui/phase-ally.png');
     for (const u of allies) u.done = false;
     await statusPhase(allies);
     await skillRecovery(allies);
@@ -1773,7 +1802,7 @@
     G.phase = 'enemy'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'enemy', turn: G.turn });
     Music.bgm('enemyPhase');
-    await banner('Phase ennemie', 'enemy');
+    await banner('Phase ennemie', 'enemy', 'img/ui/phase-enemy.png');
     // renforts
     const arriving = G.pending.filter(u => !u.eventOnly && u.appearTurn <= G.turn);
     for (const u of arriving) {
@@ -2189,7 +2218,7 @@
     float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl, sheetCtx
   });
   window.PlaytestLobby = lobby;
-  window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length }; // scénarios de test automatisés
+  window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length, arrowTiles: (path) => path.map((p, i) => arrowTile(path, i)) }; // scénarios de test automatisés
 
   const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
   window.PlaytestPreparation = preparation;
