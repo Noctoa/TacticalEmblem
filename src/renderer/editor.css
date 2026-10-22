@@ -345,3 +345,15 @@
 .anim-picker-scroll { overflow: auto; max-height: calc(100vh - 230px); border-radius: var(--radius-lg); border: 1px solid var(--line); }
 .anim-picker { display: block; cursor: pointer; }
 @media (max-width: 1100px) { .anim-work { grid-template-columns: 1fr; } }
+
+/* affinités dans la fiche d'unité (db.js › unitSupportsField) */
+.unit-supports { display: flex; flex-direction: column; gap: 6px; }
+.unit-supports > select { align-self: flex-start; width: auto; min-width: 240px; }
+.sup-pair { background: var(--inset); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 6px 10px; }
+.sup-pair > summary { cursor: pointer; padding: 2px 0; }
+.sup-pair > summary b { color: var(--text); }
+.sup-pair-sub { color: var(--muted); font-size: 12px; }
+.sup-pair[open] > summary { margin-bottom: 8px; }
+.sup-pair-body .form { gap: 10px; }
+.armory-icon { width: 16px; height: 16px; flex: none; background: url("img/ui/weapon-icons.png") no-repeat; image-rendering: pixelated; }
+.sup-pair-body > .field { margin-bottom: 10px; }

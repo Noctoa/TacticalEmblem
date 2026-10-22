@@ -468,11 +468,7 @@
           { key: 'gender', label: 'Genre', type: 'select', empty: '—', options: [{ value: 'homme', label: 'Homme' }, { value: 'femme', label: 'Femme' }, { value: 'autre', label: 'Autre' }] },
           { key: 'protagonist', label: "Personnage principal (choisit son partenaire à l'épilogue)", type: 'checkbox' }] },
         { key: 'ending', label: 'Fin en solo (épilogue)', type: 'textarea', rows: 2, placeholder: 'Ce que devient le personnage s\'il finit seul.' },
-        { type: 'custom', render: (u) => {
-          const pairs = db().supports.filter(p => p.a === u.id || p.b === u.id);
-          return h('p', { class: 'form-info' }, pairs.length ? '♥ Affinités : ' + pairs.map(p => p.name).join(', ') + ' — ' : '♥ Aucune affinité. ',
-            h('a', { href: '#', onclick: (e) => { e.preventDefault(); open('supports'); } }, 'Onglet Affinités'));
-        } },
+        { type: 'custom', render: unitSupportsField },
         { type: 'heading', label: 'Stats de base' },
         { key: 'stats', type: 'stats', max: 99 },
         { type: 'custom', render: (u) => h('div', { class: 'insp-actions' }, h('button', { class: 'small ghost', onclick: () => {
@@ -649,7 +645,7 @@
             : !here ? { type: 'info', text: `⚠ ${uName(t.unitId)} n'est pas placé au camp (map de camp, mode Unités) : impossible de lui parler.` } : null,
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
           { type: 'row', fields: [
-            { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (onglet Affinités), si elle existe.' },
+            { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (fiche de l\'unité › Affinités), si elle existe.' },
             { key: 'once', label: 'Une seule fois', type: 'checkbox' }] },
           t.points > 0 && !linked ? { type: 'info', text: `Aucune affinité entre ${hero ? hero.name : 'le héros'} et ${uName(t.unitId)} : les points ne seront pas comptés.` } : null,
           { key: 'script', label: 'Dialogue', type: 'textarea', rows: 8, placeholder: 'Lyn: Bonsoir, Eliwood.\nEliwood: Tu ne dors pas ?' },
@@ -678,7 +674,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['animations', 'Animations'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -711,6 +707,11 @@
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
+    if (t === 'supports') { // les affinités se règlent dans la fiche des unités
+      const pair = id ? byId(db().supports || [], id) : (db().supports || [])[0];
+      if (pair) { openPairs.add(pair.id); id = pair.a; } else id = null;
+      t = 'units';
+    }
     if (t) tab = t;
     if (!tabDef(tab) && !order().some(([k]) => k === tab) && !['chapters', 'terrains'].includes(tab)) tab = 'units'; // onglet d'un plugin retiré
     if (id) selected[tab] = id;
@@ -727,7 +728,7 @@
 
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains') || (k === 'weapons' && tab === 'items')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
   }
 
   function renderBody() {
@@ -735,6 +736,7 @@
     animToken++;
     body.classList.toggle('single', tab === 'system');
     if (tab === 'terrains') { renderListTab(body, TABS.terrains); return mergeTerrainList(body); }
+    if (tab === 'weapons' || tab === 'items') { renderListTab(body, TABS[tab]); return mergeArmoryList(body); }
     if (tab === 'tilesets') { renderTilesets(body); return mergeTerrainList(body); }
     if (tabDef(tab)) return renderListTab(body, tabDef(tab));
     if (tab === 'chapters') return renderChapters(body);
@@ -762,6 +764,96 @@
     const actions = body.querySelector('.db-list-actions');
     if (actions) actions.prepend(h('span', { class: 'db-actions-kind' }, tab === 'tilesets' ? 'Tileset' : 'Terrain'));
     const cur = box.querySelector('.db-item.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+
+  /**
+   * Onglet « Armes et objets » : une seule liste, armes puis objets. Cliquer un élément ouvre sa fiche ;
+   * les boutons du bas (Nouveau, Dupliquer, Supprimer) agissent sur le type affiché.
+   */
+  const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
+  function weaponIcon(type) {
+    const i = WICONS.indexOf(type);
+    return i < 0 ? h('span', { class: 'n' }, '⚔') : h('span', { class: 'armory-icon', style: { backgroundPosition: `${-i * 16}px 0` } });
+  }
+  function mergeArmoryList(body) {
+    const box = body.querySelector('.db-list-items'); if (!box) return;
+    box.replaceChildren();
+    const group = (kind, title, list, sub) => {
+      box.append(h('div', { class: 'db-group' }, title, h('span', {}, String(list.length))));
+      list.forEach(it => box.append(h('div', { class: 'db-item' + (tab === kind && selected[kind] === it.id ? ' on' : ''), 'data-id': it.id, 'data-kind': kind,
+        onclick: () => { tab = kind; selected[kind] = it.id; renderTabs(); renderBody(); } },
+        kind === 'weapons' ? weaponIcon(it.type) : h('span', { class: 'n' }, '✚'), h('span', {}, it.name), h('span', { class: 'sub' }, sub(it)))));
+    };
+    group('weapons', 'Armes', db().weapons, TABS.weapons.sub);
+    group('items', 'Objets', db().items, TABS.items.sub);
+    const actions = body.querySelector('.db-list-actions');
+    if (actions) {
+      actions.prepend(h('span', { class: 'db-actions-kind' }, tab === 'items' ? 'Objet' : 'Arme'));
+      // « Nouveau » de l'autre type, sans changer de fiche d'abord
+      const other = tab === 'items' ? 'weapons' : 'items';
+      actions.append(h('button', { class: 'small', 'data-armory-add': other, title: other === 'items' ? 'Nouvel objet' : 'Nouvelle arme', html: Icons.icon('plus'), onclick: () => {
+        const def = TABS[other], list = def.list(), e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create());
+        list.push(e); tab = other; selected[other] = e.id; change(); renderTabs(); renderBody();
+      } }, other === 'items' ? 'Objet' : 'Arme'));
+    }
+    const cur = box.querySelector('.db-item.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+
+  // ------------------------------------------------------------------
+  // Affinités, dans la fiche de chaque unité (paires de db.supports)
+  // ------------------------------------------------------------------
+  const openPairs = new Set(); // paires dépliées (gardées d'un affichage à l'autre)
+  function unitSupportsField(u) {
+    const wrap = h('div', { class: 'unit-supports', 'data-unit-supports': u.id });
+    const draw = () => {
+      const all = db().supports || (db().supports = []);
+      const pairs = all.filter(p => p.a === u.id || p.b === u.id);
+      const cfg = Object.assign({}, Rules.DEFAULT_SUPPORT, Editor.project().meta.supports || {});
+      const partnerOf = (p) => (p.a === u.id ? p.b : p.a);
+      const taken = new Set(pairs.map(partnerOf));
+      const others = db().units.filter(o => o.id !== u.id && !taken.has(o.id));
+      const addSel = h('select', { 'data-support-add': true }, h('option', { value: '' }, '＋ Nouvelle affinité avec…'), others.map(o => h('option', { value: o.id }, o.name)));
+      addSel.onchange = () => {
+        if (!addSel.value) return;
+        const p = Object.assign({ id: Editor.uid(TABS.supports.prefix, all) }, TABS.supports.create(), { a: u.id, b: addSel.value });
+        p.name = `${uName(p.a)} ♥ ${uName(p.b)}`;
+        all.push(p); openPairs.add(p.id); change(); draw();
+      };
+      wrap.replaceChildren(h('div', { class: 'form-heading' }, 'Affinités'),
+        h('p', { class: 'form-info' }, `Seuils C/B/A/S : ${cfg.thresholds.join(' / ')} points. Gains, portée et bonus communs : Système › Affinités.`),
+        pairs.length ? null : h('p', { class: 'form-info' }, 'Aucune affinité pour ce personnage.'),
+        ...pairs.map(p => pairBlock(p, partnerOf(p), draw)),
+        others.length ? addSel : null);
+    };
+    draw();
+    return wrap;
+  }
+  function pairBlock(p, partner, redraw) {
+    const cfg = Object.assign({}, Rules.DEFAULT_SUPPORT, Editor.project().meta.supports || {});
+    const start = Rules.SUPPORT_RANKS[Rules.rankForPoints(Number(p.startPoints) || 0, cfg, p.maxRank)] || 'aucun';
+    const box = h('details', { class: 'sup-pair', 'data-support': p.id, open: openPairs.has(p.id) });
+    box.addEventListener('toggle', () => { if (box.open) openPairs.add(p.id); else openPairs.delete(p.id); });
+    const fill = () => {
+      const body = h('div', { class: 'sup-pair-body' });
+      const partnerSel = h('select', { 'data-support-partner': true }, db().units.filter(o => o.id !== (p.a === partner ? p.b : p.a)).map(o => h('option', { value: o.id }, o.name)));
+      partnerSel.value = partner;
+      partnerSel.onchange = () => { if (p.a === partner) p.a = partnerSel.value; else p.b = partnerSel.value; p.name = `${uName(p.a)} ♥ ${uName(p.b)}`; change(); redraw(); };
+      // mêmes champs que l'ancien onglet Affinités, sans le choix des deux personnages
+      const fields = TABS.supports.fields(p).slice(1);
+      body.append(h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Partenaire'), partnerSel),
+        UI.form(fields, p, { baseUrl: Editor.baseUrl(), onChange: (k) => {
+          change();
+          if (TABS.supports.onField) TABS.supports.onField(k, p);
+          if ((TABS.supports.rerenderOn || []).includes(k)) { box.replaceChildren(); fill(); }
+        } }),
+        h('div', { class: 'insp-actions' }, h('button', { class: 'small danger', 'data-support-delete': true, onclick: async () => {
+          if (!(await UI.confirm(`Supprimer l’affinité « ${p.name} » ?`, { danger: true, ok: 'Supprimer' }))) return;
+          const all = db().supports; all.splice(all.indexOf(p), 1); openPairs.delete(p.id); change(); redraw();
+        } }, 'Supprimer cette affinité')));
+      box.append(h('summary', {}, h('b', {}, '♥ ' + uName(partner)), h('span', { class: 'sup-pair-sub' }, ` · ${Number(p.startPoints) || 0} pts au départ (rang ${start}) · rang max ${p.maxRank || 'A'}`)), body);
+    };
+    fill();
+    return box;
   }
 
   function listPanel(items, cur, opts) {
