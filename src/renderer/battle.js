@@ -117,6 +117,7 @@
       }
       if (mate) await Promise.all([strike(sc, atk, def, s), assist(sc, mate, def, s)]);
       else await strike(sc, atk, def, s);
+      if (s.statuses && s.statuses.length) { showBanner(sc, s.statuses.map(status => `${status.name} · ${status.turns} phases`).join(' · ')); await wait(450, sc); }
       if (atk.helper) await fadeOut(sc, atk);
       if (mate) await fadeOut(sc, mate);
       await wait(180, sc);

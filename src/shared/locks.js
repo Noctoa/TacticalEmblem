@@ -1,9 +1,9 @@
 /* Coffres et portes : clés, crochetage, récompenses et terrain des passages. */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./skills.js') : root.Skills, common ? require('./villages.js') : root.Villages);
+  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./skills.js') : root.Skills, common ? require('./villages.js') : root.Villages, common ? require('./statuses.js') : root.Statuses);
   if (common) module.exports = api; else root.Locks = api;
-})(typeof self !== 'undefined' ? self : this, function (R, Skills, Villages) {
+})(typeof self !== 'undefined' ? self : this, function (R, Skills, Villages, Statuses) {
   'use strict';
   const lists = ['chests', 'doors'];
   const list = (ch, kind) => ch && ch[kind] || [];
@@ -41,7 +41,7 @@
   function offer(ch, kind, object, unit, state, db) {
     const no = error => ({ ok: false, error });
     if (!object || !lists.includes(kind) || !list(ch, kind).includes(object)) return no('Interaction introuvable.');
-    if (!unit || unit.team !== 'player' || unit.dead || unit.hp <= 0 || unit.done) return no('Une unité du joueur disponible est nécessaire.');
+    if (!unit || unit.team !== 'player' || unit.dead || unit.hp <= 0 || unit.done || !Statuses.canAct(unit)) return no('Une unité du joueur disponible est nécessaire.');
     const distance = R.dist(unit, object);
     if (distance !== (kind === 'doors' ? 1 : 0)) return no(kind === 'doors' ? 'Place le personnage à côté de la porte.' : 'Place le personnage sur le coffre.');
     if (opened(ch, kind, object, state)) return no('Déjà ouvert.');

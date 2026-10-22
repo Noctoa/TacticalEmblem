@@ -5,6 +5,13 @@
     const no = error => ({ ok: false, error });
     async function action(a, data) {
       switch (a.type) {
+        case 'status': {
+          const unit = G.units.find(u => !u.dead && u.hp > 0 && (a.target.startsWith('unit:') ? u.team !== 'enemy' && u.sourceId === a.target.slice(5) : u.team === 'enemy' && u.sourceId === a.target));
+          if (!unit) break;
+          if (a.remove) { const removed = Statuses.cure(unit, a.statusId); if (removed.length) api.float(unit.x, unit.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8'); }
+          else { const applied = Statuses.apply(unit, a.statusId, a.turns); if (applied) api.float(unit.x, unit.y, `${applied.name} · ${applied.turns} phases`, applied.color); }
+          break;
+        }
         case 'dialogue': await api.playDialogue(a.text); break;
         case 'gold': G.campaign.gold = (G.campaign.gold || 0) + a.amount; UI.toast(`+${a.amount} or`); break;
         case 'flag': Scenario.setFlag(G.campaign, a.key, a.value); break;

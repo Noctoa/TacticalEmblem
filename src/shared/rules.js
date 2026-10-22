@@ -5,10 +5,11 @@
  */
 (function (root, factory) {
   const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
-    typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions);
+    typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions,
+    typeof module !== 'undefined' && module.exports ? require('./statuses.js') : root.Statuses);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Rules = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses) {
   'use strict';
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
@@ -124,7 +125,7 @@
 
   function canWield(unit, weapon, db) {
     const cls = byId(db.classes, unit.classId);
-    return !!(cls && weapon && (cls.weapons || []).includes(weapon.type));
+    return !!(cls && weapon && !Statuses.blockedWeapon(unit, weapon) && (cls.weapons || []).includes(weapon.type));
   }
 
   /** Armes offensives utilisables (pas les bâtons), dans l'ordre de l'inventaire. */
@@ -147,6 +148,12 @@
   function equipped(unit, db) {
     const list = attackWeapons(unit, db);
     return list.length ? list[0] : null;
+  }
+  function staffCanTarget(unit, target, weapon) {
+    if (!target || target === unit || target.dead || target.hp <= 0 || !sameSide(unit, target) || Statuses.blockedWeapon(unit, weapon)) return false;
+    const distance = dist(unit, target);
+    return distance >= (weapon.minRange || 1) && distance <= (weapon.maxRange || 1) &&
+      (weapon.restore ? Statuses.canCure(target, weapon.restore) : target.hp < target.stats.hp);
   }
   /** Met une arme en tête d'inventaire (= équipée), comme dans FE. */
   function equip(unit, index) {
@@ -231,6 +238,7 @@
     const res = new Map();
     const start = { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true };
     res.set(key(unit.x, unit.y), start);
+    if (!Statuses.canAct(unit)) return res;
     const open = [start];
     while (open.length) {
       let bi = 0;
@@ -319,6 +327,12 @@
   const skillTotal = (state, effect) => state.own.filter(s => s.effect === effect).reduce((sum, s) => sum + s.amount, 0);
   const skillInfo = (skill, unit) => ({ id: skill.id, name: skill.name, icon: skill.icon, image: skill.image || '', effect: skill.effect,
     chance: skill.activation === undefined ? skill.chance : Skills.chance(skill, unit), amount: skill.amount });
+  function statusOffers(unit, weapon, target, initiator, db, units) {
+    const offers = weapon.inflict ? [{ ...weapon.inflict }] : [];
+    for (const skill of skillState(unit, weapon, initiator, db, units).own.filter(s => s.effect === 'inflictStatus'))
+      offers.push({ id: skill.statusId, turns: skill.statusTurns, chance: Skills.chance(skill, unit), skill });
+    return offers.filter(o => Statuses.canApply(target, o.id, o.turns));
+  }
 
   function strikeStats(att, aw, def, dw, defTerrain, settings, db, aBonus, dBonus, context = {}) {
     const ab = aBonus || NO_BONUS, dbn = dBonus || NO_BONUS;
@@ -411,6 +425,7 @@
         remaining *= 1 - skill.chance / 100;
       }
       st.expectedDmg = (expected + remaining * damage(st.rawDmg)) * st.hit / 100;
+      st.statusInflict = statusOffers(unit, weapon, other, att, db, context.units).map(o => ({ id: o.id, name: Statuses.get(o.id).name, turns: o.turns, chance: o.chance }));
       addOutcomes(st.rawDmg, remaining);
       st.expectedHeal = healing * st.hit / 100;
       st.killChance = (lethal + remaining * lethalRate(st.rawDmg)) * st.hit / 100;
@@ -497,7 +512,8 @@
       const context = { units, initiator };
       const stats = luna => strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { ...context, luna });
       let st = stats(), special = null;
-      const skills = [], offensive = skillState(src, weapon, initiator, opts.db, units).own;
+      const statuses = [], skills = [], offensive = skillState(src, weapon, initiator, opts.db, units).own;
+      const statusCandidates = statusOffers(src, weapon, tgt, initiator, opts.db, units);
       const defensive = skillState(tgt, targetWeapon, initiator, opts.db, units).own;
       const note = (skill, unit) => skills.push({ ...skillInfo(skill, unit), by: unit.uid });
       if (extra.vantage) note(extra.vantage, src);
@@ -534,9 +550,16 @@
           src.hp += more; heal += more;
         }
       }
+      if (hit && tgt.hp > 0 && !(opts.protect && opts.protect(tgt))) {
+        for (const offer of statusCandidates) {
+          if (offer.chance < 100 && !(offer.chance > 0 && rng() * 100 < offer.chance)) continue;
+          const applied = Statuses.apply(tgt, offer.id, offer.turns);
+          if (applied) { statuses.push(applied); if (offer.skill) note(offer.skill, src); }
+        }
+      }
       const broke = useWeapon(src, index);
       const strike = { by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, srcHpAfter: src.hp, heal, broke,
-        weapon: weapon.name, special, skills, dual: extra.dual || null,
+        weapon: weapon.name, special, skills, statuses, dual: extra.dual || null,
         partner: special && extra.special.partnerUid ? extra.special.partnerUid : null }; // allié qui participe à l'attaque spéciale
       if (extra.excess) strike.overkill = extra.excess;
       strikes.push(strike);
@@ -582,6 +605,7 @@
       }
       if (att.hp <= 0 || def.hp <= 0) break;
       if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
+      if (!canWield(src, st.weapon, opts.db)) continue;
       const strike = perform(src, who === 'a' ? aIdx : dIdx, tgt, st.weapon, targetWeapon, att,
         { special: specials[who], vantage: strikes.length === 0 && who === 'd' ? fc.vantage : null });
       if (strike.dmg > 0) dealt[who] = true;
@@ -674,6 +698,7 @@
       const f = friends.find(u => u.sourceId === p.id && u.hp > 0 && u !== unit);
       if (!f || dist(f, unit) > c.range) continue;
       const chance = Number(sp.chance) || 0;
+      if (!Statuses.canAct(f)) continue;
       if (!best || chance > best.chance) best = { name: sp.name, chance, dmg: Number(sp.dmg) || 0, hit: Number(sp.hit) || 0, crit: Number(sp.crit) || 0, partner: f.name, partnerUid: f.uid };
     }
     return best;
@@ -760,6 +785,7 @@
    * Renvoie { moveTo:{x,y}, path, target, weaponIndex } (target null = juste se déplacer).
    */
   function planEnemy(unit, foes, opts) {
+    if (!Statuses.canAct(unit)) return null;
     const { db, ctx } = opts;
     const stationary = unit.ai === 'stationary' || unit.ai === 'boss';
     const reach = stationary ? new Map([[key(unit.x, unit.y), { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true }]]) : reachable(unit, ctx);
@@ -779,6 +805,7 @@
           const t = ctx.terrainAt(stop.x, stop.y);
           let score = estimate.damage * 2 + 40 * estimate.killChance - estimate.counter - 40 * estimate.deathChance + estimate.healing + (foe.isLord ? 4 : 0)
             + ((t && Number(t.avoid)) || 0) / 10 - stop.cost * 0.05;
+          score += (fc.att.statusInflict || []).reduce((sum, o) => sum + ({ sleep: 15, silence: 8, poison: 4 }[o.id] || 0) * o.chance / 100 * fc.att.hit / 100, 0);
           if (!best || score > best.score) best = { score, stop, foe, index: w.index };
         }
       }
@@ -809,7 +836,7 @@
   return {
     STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
-    attackWeapons, staves, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
+    attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
     moveCost, reachable, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
     forecast, resolveCombat, estimateCombat, phaseRecovery, combatExp, staffExp, gainExp, planEnemy,
     SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,

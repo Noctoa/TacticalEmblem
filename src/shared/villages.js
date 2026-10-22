@@ -1,9 +1,9 @@
 /* Villages d'un acte : accès, récompenses et visites conservées dans la campagne. */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./team.js') : root.Team);
+  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./team.js') : root.Team, common ? require('./statuses.js') : root.Statuses);
   if (common) module.exports = api; else root.Villages = api;
-})(typeof self !== 'undefined' ? self : this, function (R, Team) {
+})(typeof self !== 'undefined' ? self : this, function (R, Team, Statuses) {
   'use strict';
   const list = ch => ch.villages || [];
   const at = (ch, x, y) => list(ch).find(v => v.x === x && v.y === y);
@@ -39,7 +39,7 @@
   function offer(ch, v, unit, state, db) {
     const no = error => ({ ok: false, error });
     if (!v || !list(ch).includes(v)) return no('Village introuvable.');
-    if (!unit || unit.team !== 'player' || unit.dead || unit.hp <= 0 || unit.done || unit.x !== v.x || unit.y !== v.y) return no('Une unité du joueur disponible doit se trouver sur le village.');
+    if (!unit || unit.team !== 'player' || unit.dead || unit.hp <= 0 || unit.done || !Statuses.canAct(unit) || unit.x !== v.x || unit.y !== v.y) return no('Une unité du joueur disponible doit se trouver sur le village.');
     if (closed(ch, v, state)) return no('Ce village a déjà été visité.');
     if ((v.allowedUnits || []).length && !v.allowedUnits.includes(unit.sourceId)) return no('Ce personnage ne peut pas visiter ce village.');
     const reward = rewardOffer(v.reward || {}, unit.inventory, state, db);

@@ -23,6 +23,7 @@ const Deployment = require('../shared/deployment.js');
 const Villages = require('../shared/villages.js');
 const Locks = require('../shared/locks.js');
 const Scenario = require('../shared/scenario.js');
+const Statuses = require('../shared/statuses.js');
 const Animations = require('../shared/animations.js');
 const Layout = require('./resources-layout.js');
 
@@ -99,7 +100,18 @@ function loadProject(dir, assetsDir) {
 }
 
 function saveProject(dir, project) {
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta), ...Locks.validateKeys(project.db), ...Animations.validateAll(project.db.animations), ...Animations.validateLinks(project.db, project.meta)];
+  const statusErrors = Statuses.validateDefinitions(project.db);
+  if (statusErrors.length) throw new Error(statusErrors.join('\n'));
+  const errors = [
+    ...Skills.validateAll(project.db.skills || []),
+    ...Skills.validateAssignments(project.db),
+    ...Skills.validateLearning(project.db),
+    ...Promotions.validate(project.db),
+    ...Team.validate(project.db, project.meta),
+    ...Locks.validateKeys(project.db),
+    ...Animations.validateAll(project.db.animations),
+    ...Animations.validateLinks(project.db, project.meta)
+  ];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) if (ch.villages !== undefined) {
