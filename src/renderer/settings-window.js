@@ -1,7 +1,7 @@
 /*
  * Fenêtre « Paramètres » du playtest (Échap), en chapitre comme au camp :
  *
- *   Sauvegarder   5 emplacements ; au camp on sauvegarde le camp, en chapitre le début du chapitre
+ *   Sauvegarder   5 emplacements (barres façon Fire Emblem GBA, save-slots.js) ; au camp on sauvegarde le camp, en chapitre le début du chapitre
  *   Charger       reprend un emplacement (la partie en cours non sauvegardée est perdue)
  *   Son           volumes musique / jingles / effets sonores, son coupé
  *   Debug         actions de test (désactivable : Système › Playtest)
@@ -72,21 +72,10 @@
     // ------------------------------------------------------------------
     // Sauvegarde / chargement
     // ------------------------------------------------------------------
-    const fmtDate = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); };
-    function describe(s) {
-      if (!s.exists) return { title: 'Vide', sub: '' };
-      if (s.error) return { title: 'Sauvegarde illisible', sub: s.error };
-      const info = s.info || {};
-      const place = info.place || (s.chapterId === Lobby.LOBBY_SAVE ? 'Camp' : ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId));
-      const kind = s.chapterId === Lobby.LOBBY_SAVE ? place : (info.kind === 'preparation' ? `Préparatifs de « ${place} »` : `Début de « ${place} »`);
-      return { title: kind, sub: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn || s.gold ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', fmtDate(info.savedAt)].filter(Boolean).join(' · ') };
-    }
-    function slotRow(s, button) {
-      const d = describe(s);
-      return h('div', { class: 'st-slot' + (s.exists ? '' : ' empty') },
-        h('span', { class: 'st-num' }, String(s.slot)),
-        h('div', { class: 'st-main' }, h('div', { class: 'st-name' }, d.title), d.sub ? h('div', { class: 'st-sub' }, d.sub) : null),
-        button);
+    // emplacements façon Fire Emblem GBA : save-slots.js (barres vertes, main-curseur, PLAYTIME)
+    const describe = (s) => SaveSlots.describe(s, { G, R, lobbyName: api.lobbyName && api.lobbyName() });
+    function slotRow(s, onClick, extra, disabled) {
+      return h('div', { class: 'sv-row st-slot' + (s.exists ? '' : ' empty') }, SaveSlots.element(s, describe(s), { onClick, disabled, cls: 'st-focus st-go' }), extra || null);
     }
     function renderSave(body) {
       const can = api.canSave();
@@ -94,9 +83,7 @@
         ? 'Sauvegarde du camp : or, objets, chapitres terminés, conversations vues.'
         : G.mode === 'preparation' ? 'Sauvegarde des préparatifs : personnages sélectionnés et positions de départ. La bataille n’a pas encore commencé.'
         : `En chapitre, la sauvegarde enregistre le début de « ${G.chapter.name} » (comme les Fire Emblem) : la partie reprendra au début de ce chapitre.`));
-      for (const s of S.saves || []) {
-        body.append(slotRow(s, h('button', { class: 'st-go st-focus', disabled: !can.ok, onclick: () => save(s) }, s.exists ? 'Écraser' : 'Sauvegarder')));
-      }
+      body.append(h('div', { class: 'sv-list' }, (S.saves || []).map(s => slotRow(s, () => save(s), null, !can.ok))));
     }
     async function save(s) {
       if (S.busy) return;
@@ -113,11 +100,9 @@
     }
     function renderLoad(body) {
       body.append(h('p', { class: 'st-info' }, 'Reprendre une sauvegarde. Ce qui n\'a pas été sauvegardé depuis sera perdu.'));
-      for (const s of S.saves || []) {
-        body.append(slotRow(s, h('span', { class: 'st-actions' },
-          h('button', { class: 'st-go st-focus', disabled: !s.exists || !!s.error, onclick: () => load(s) }, 'Charger'),
-          s.exists ? h('button', { class: 'st-del st-focus', title: 'Effacer cet emplacement', onclick: () => remove(s) }, '🗑') : null)));
-      }
+      body.append(h('div', { class: 'sv-list' }, (S.saves || []).map(s => slotRow(s, () => load(s),
+        s.exists ? h('button', { class: 'st-del st-focus', title: 'Effacer cet emplacement', onclick: () => remove(s) }, 'Effacer') : h('span', { class: 'st-del-space' }),
+        !s.exists || !!s.error))));
     }
     async function load(s) {
       if (S.busy) return;
@@ -231,7 +216,7 @@
         e.preventDefault();
         const a = document.activeElement;
         if (a && a.type === 'checkbox') { a.checked = !a.checked; a.dispatchEvent(new Event('change')); }
-        else if (a && a.tagName === 'BUTTON') a.click();
+        else if (a && a.tagName === 'BUTTON') a.click(); // emplacements compris (barres)
       }
       else if (k === 'q' || k === 'e') { // onglet précédent / suivant
         const t = TABS(); const j = t.findIndex(x => x[0] === S.tab);

@@ -73,7 +73,7 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `document.querySelector('[data-deploy-save]').click()`); await until(wc, `document.querySelectorAll('#settings .st-slot').length === 5`);
       assert.equal(await js(wc, `document.querySelector('#settings').textContent.includes('Debug')`), false);
       await js(wc, `document.querySelector('#settings .st-go').click()`);
-      await until(wc, `document.querySelector('#settings .st-name').textContent.includes('Préparatifs')`);
+      await until(wc, `document.querySelector('#settings .sv-title').textContent.includes('Préparatifs')`);
       const saved = await js(wc, `tf.loadCampaign(new URLSearchParams(location.search).get('dir'), 1)`);
       assert.deepEqual(saved.deployment, plan); assert.equal(saved.info.kind, 'preparation');
       await js(wc, 'PlaytestSettings.close()');
@@ -102,7 +102,7 @@ module.exports = (editor, openPlaytest) => {
       // Une reprise pendant les préparatifs remplace proprement l'ancien écran, sans démarrer deux batailles.
       await js(rwc, `PlaytestSettings.open('load')`);
       await until(rwc, `document.querySelectorAll('#settings .st-slot').length === 5`);
-      await click(rwc, '#settings .st-slot .st-go', 'Charger'); await until(rwc, `!!document.querySelector('.modal-back')`);
+      await click(rwc, '#settings .st-slot:not(.empty) .st-go', ''); // barre du 1er emplacement utilisé (cliquer = charger) await until(rwc, `!!document.querySelector('.modal-back')`);
       await click(rwc, '.modal-actions button', 'Charger'); await until(rwc, `PlaytestState.mode === 'preparation'`);
       assert.deepEqual(await js(rwc, 'PlaytestPreparation.plan()'), plan);
       await js(rwc, `document.querySelector('[data-deploy-start]').click()`); await until(rwc, `!!PlaytestState.dialogue`); await js(rwc, 'PlaytestState.dialogue.skip()');

@@ -91,10 +91,10 @@
         const menu = h('div', { class: 'ts-window ts-menu' + (sub ? ' sub' : '') },
           sub ? h('div', { class: 'ts-menu-title' }, m.title) : null,
           list.map((it, i) => h('button', {
-            class: 'ts-item' + (i === m.index ? ' on' : '') + (it.dev ? ' dev' : '') + (it.back ? ' back' : ''), 'data-title': it.id || it.value,
+            class: 'ts-item' + (i === m.index ? ' on' : '') + (it.dev ? ' dev' : '') + (it.back ? ' back' : '') + (it.cls ? ' ' + it.cls : ''), 'data-title': it.id || it.value,
             onmouseenter: () => { if (m.index !== i) { m.index = i; play('cursor'); render(); } },
             onclick: () => pick(i)
-          }, it.label, it.items ? h('span', { class: 'ts-more' }, '…') : null)),
+          }, typeof it.render === 'function' ? it.render() : [it.label, it.items ? h('span', { class: 'ts-more' }, '…') : null])),
           sub ? h('div', { class: 'ts-desc' }, desc || '') : null);
         screen.append(
           h('div', { class: 'ts-head' + (sub ? ' small' : '') },

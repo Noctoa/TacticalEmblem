@@ -78,7 +78,9 @@
       catch (e) { await UI.alert('Sauvegarde non chargée', e.message); }
       const atLobby = (s) => s && s.chapterId === Lobby.LOBBY_SAVE;
       const camp = lobbyCfg.name || 'le camp';
-      const slotOptions = () => slots.map(s => ({ value: s.slot, label: `Emplacement ${s.slot} — ` + (atLobby(s) ? (s.info && s.info.place) || camp : 'Début de « ' + ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId) + ' »'),
+      // écran titre : chaque emplacement est une barre façon Fire Emblem GBA (save-slots.js)
+      const slotBar = (s) => () => SaveSlots.content(s, SaveSlots.describe(s, { G, R, lobbyName: camp }));
+      const slotOptions = () => slots.map(s => ({ value: s.slot, cls: 'ts-slot', render: slotBar(s), label: `Emplacement ${s.slot} — ` + (atLobby(s) ? (s.info && s.info.place) || camp : 'Début de « ' + ((R.byId(G.db.chapters, s.chapterId) || {}).name || s.chapterId) + ' »'),
         desc: [s.mode === 'casual' ? 'Détente' : 'Classique', G.lobbyOn ? `${(s.gold || 0).toLocaleString('fr-FR')} or` : '', s.info && s.info.savedAt ? new Date(s.info.savedAt).toLocaleString('fr-FR') : ''].filter(Boolean).join(' · ') }));
       // avec un lobby : la partie commence au camp ; « Tester » un chapitre depuis l'éditeur peut aussi le lancer directement
       const direct = G.lobbyOn && chId && chId !== Lobby.LOBBY_SAVE && R.byId(G.db.chapters, chId);
@@ -127,6 +129,7 @@
         return startFromSave(saved);
       } else {
         G.campaign = Campaign.create(choice === 'direct' ? 'classic' : choice, lobbyCfg.startGold);
+        startClock(0);
         TacticalEmblem.emit('campaign:new', { campaign: G.campaign }); // plugins : monnaies de départ…
         if (choice === 'direct') { toLobby = false; first = direct; }
       }
@@ -211,6 +214,7 @@
   /** Reprend une sauvegarde : camp (si le lobby est actif) ou début du chapitre sauvegardé. */
   async function startFromSave(save) {
     ++chapterLoad; preparation.close();
+    startClock(save && save.info && save.info.playTime); // temps de jeu (cadre PLAYTIME des sauvegardes)
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
     if (save.chapterId === Lobby.LOBBY_SAVE) {
@@ -224,14 +228,17 @@
     return loadChapter(ch, save.deployment);
   }
   /** Point de reprise à écrire : le camp tel qu'il est, ou le début du chapitre en cours. */
+  /** Temps de jeu total (ms) : celui de la sauvegarde reprise, plus cette session. */
+  const playTime = () => Math.round((G.playBase || 0) + (performance.now() - (G.playStart || performance.now())));
+  function startClock(base) { G.playBase = Number(base) || 0; G.playStart = performance.now(); }
   function makeSave() {
-    if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation' } });
+    if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation', playTime: playTime() } });
     if (G.mode === 'lobby') {
       lobby.commit();
       G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
-      return Object.assign({}, G.checkpoint, { info: { place: Lobby.defaults(G.project.meta.lobby).name, kind: 'camp' } });
+      return Object.assign({}, G.checkpoint, { info: { place: Lobby.defaults(G.project.meta.lobby).name, kind: 'camp', playTime: playTime() } });
     }
-    return Object.assign({}, G.checkpoint, { info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'acte' } });
+    return Object.assign({}, G.checkpoint, { info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'acte', playTime: playTime() } });
   }
 
   function buildBase() {

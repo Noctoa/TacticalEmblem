@@ -561,3 +561,62 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 .team-sheet { margin: 0 0 12px; overflow-x: auto; }
 .rd-status-list { display: inline-flex; gap: calc(var(--s) * 2px); }
 .rd-st { font-weight: 600; background: rgba(0, 0, 0, .35); border-radius: calc(var(--s) * 1.5px); padding: 0 calc(var(--s) * 1.5px); }
+
+/* emplacements de sauvegarde et menus façon Fire Emblem GBA (save-slots.js ; pièces img/ui/save/, tools/build_ui_save.py) :
+   les barres vertes sont en 5 morceaux (bouts et centre orné fixes, milieux étirés), à l'échelle --px */
+:root { --px: 2px; }
+.sv-list { display: flex; flex-direction: column; gap: 6px; padding: 2px 4px 2px calc(var(--px) * 30); }
+.sv-row { display: flex; align-items: center; gap: 10px; }
+#settings .sv-row.st-slot { background: none; padding: 0; border-radius: 0; }
+.sv-slot, #settings button.sv-slot, #title-screen .ts-item.ts-slot {
+  position: relative; box-sizing: border-box; flex: 1; min-width: 0; height: calc(var(--px) * 32); display: flex; align-items: center; gap: 12px;
+  padding: 0 calc(var(--px) * 12) 0 calc(var(--px) * 18); cursor: pointer; text-align: left; color: #f4f8ec; font-family: inherit; border: 0; border-radius: 0; outline: none;
+  image-rendering: pixelated; text-shadow: 1px 1px 0 #102010, -1px 0 0 rgba(0,0,0,.35);
+  background: url('img/ui/save/slot-off-l.png') left top / calc(var(--px) * 14) 100% no-repeat, url('img/ui/save/slot-off-r.png') right top / calc(var(--px) * 14) 100% no-repeat,
+    url('img/ui/save/slot-off-c.png') center top / calc(var(--px) * 34) 100% no-repeat,
+    url('img/ui/save/slot-off-ml.png') calc(var(--px) * 14) top / calc(50% - var(--px) * 31 + 1px) 100% no-repeat,
+    url('img/ui/save/slot-off-mr.png') right calc(var(--px) * 14) top / calc(50% - var(--px) * 31 + 1px) 100% no-repeat;
+}
+.sv-slot:hover:not([disabled]), .sv-slot:focus-visible, #settings button.sv-slot:hover:not([disabled]), #settings button.sv-slot:focus, #title-screen .ts-item.ts-slot.on {
+  outline: none;
+  background: url('img/ui/save/slot-on-l.png') left top / calc(var(--px) * 14) 100% no-repeat, url('img/ui/save/slot-on-r.png') right top / calc(var(--px) * 14) 100% no-repeat,
+    url('img/ui/save/slot-on-c.png') center top / calc(var(--px) * 34) 100% no-repeat,
+    url('img/ui/save/slot-on-ml.png') calc(var(--px) * 14) top / calc(50% - var(--px) * 31 + 1px) 100% no-repeat,
+    url('img/ui/save/slot-on-mr.png') right calc(var(--px) * 14) top / calc(50% - var(--px) * 31 + 1px) 100% no-repeat;
+}
+/* main-curseur à gauche de l'emplacement choisi */
+.sv-slot::before, #title-screen .ts-item.ts-slot::before { content: ''; position: absolute; left: calc(var(--px) * -40); top: 50%; width: calc(var(--px) * 32); height: calc(var(--px) * 23);
+  transform: translateY(-50%); background: url('img/ui/save/hand.png') 0 0 / 100% 100% no-repeat; image-rendering: pixelated; opacity: 0; pointer-events: none; animation: none; font-size: 0; }
+.sv-slot:hover:not([disabled])::before, .sv-slot:focus::before, #title-screen .ts-item.ts-slot.on::before { opacity: 1; animation: sv-hand .5s ease-in-out infinite alternate; }
+@keyframes sv-hand { from { margin-left: calc(var(--px) * -2); } to { margin-left: calc(var(--px) * 2); } }
+.sv-slot[disabled] { cursor: default; opacity: .8; }
+.sv-slot.empty .sv-title { color: #b9c8b0; font-weight: 500; }
+.sv-num { flex: none; width: calc(var(--px) * 12); height: calc(var(--px) * 12); display: grid; place-items: center; font-weight: 800; font-size: 15px; color: #fff4c8;
+  background: rgba(10, 30, 12, .55); border: 1px solid rgba(240, 230, 190, .55); border-radius: 3px; }
+.sv-main { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.sv-title { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sv-sub { display: flex; align-items: center; gap: 12px; font-size: 12px; color: #dbe8d2; white-space: nowrap; overflow: hidden; }
+.sv-sub .money-icon { width: 15px; height: 15px; }
+.sv-date { color: #b8ccb0; }
+.sv-playtime { flex: none; position: relative; width: calc(var(--px) * 80); height: calc(var(--px) * 25);
+  background: url('img/ui/save/playtime.png') 0 0 / 100% 100% no-repeat; image-rendering: pixelated; display: flex; align-items: flex-end; justify-content: center; padding-bottom: calc(var(--px) * 5); box-sizing: border-box; }
+.sv-digits { display: inline-flex; }
+.sv-digits i { display: block; width: calc(var(--px) * 8); height: calc(var(--px) * 10); background: url('img/ui/save/digits.png') 0 0 / calc(var(--px) * 88) calc(var(--px) * 10) no-repeat; image-rendering: pixelated; }
+.sv-digits b { width: calc(var(--px) * 8); text-align: center; color: #fff; font-size: 14px; }
+#settings { width: min(780px, 96vw); }
+#settings .st-del { font-size: 12px; flex: none; }
+#settings .st-del-space { width: 62px; flex: none; }
+#title-screen .ts-menu.sub:has(.ts-slot) { width: min(760px, 94vw); }
+#title-screen .ts-item.ts-slot { margin: 3px 0 3px calc(var(--px) * 22); font-size: 15px; }
+
+/* menus de l'écran titre : barres bleues, la barre verte ornée sur l'entrée choisie, main-curseur */
+#title-screen .ts-menu { gap: 6px; }
+#title-screen .ts-item:not(.ts-slot) { box-sizing: border-box; min-height: calc(var(--px) * 26); display: flex; align-items: center; border: solid transparent; border-width: calc(var(--px) * 3);
+  border-image: url('img/ui/save/menu-off.png') 3 fill / calc(var(--px) * 3) stretch; image-rendering: pixelated; margin-left: calc(var(--px) * 22); padding: 4px 22px; text-shadow: 2px 2px 0 #182034; }
+#title-screen .ts-item.on:not(.ts-slot) { border: 0; padding: calc(4px + var(--px) * 3) calc(22px + var(--px) * 3); text-shadow: 2px 2px 0 #10301a; border-image: none;
+  background: url('img/ui/save/menu-on-l.png') left top / calc(var(--px) * 4) 100% no-repeat, url('img/ui/save/menu-on-r.png') right top / calc(var(--px) * 4) 100% no-repeat,
+    url('img/ui/save/menu-on-c.png') center top / calc(var(--px) * 32) 100% no-repeat,
+    url('img/ui/save/menu-on-ml.png') calc(var(--px) * 4) top / calc(50% - var(--px) * 20 + 1px) 100% no-repeat,
+    url('img/ui/save/menu-on-mr.png') right calc(var(--px) * 4) top / calc(50% - var(--px) * 20 + 1px) 100% no-repeat; }
+#title-screen .ts-item.on:not(.ts-slot)::before { content: ''; left: calc(var(--px) * -38); width: calc(var(--px) * 32); height: calc(var(--px) * 23); font-size: 0;
+  background: url('img/ui/save/hand-green.png') 0 0 / 100% 100% no-repeat; image-rendering: pixelated; animation: sv-hand .5s ease-in-out infinite alternate; }
