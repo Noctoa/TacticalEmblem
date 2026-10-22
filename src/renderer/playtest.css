@@ -620,3 +620,17 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
     url('img/ui/save/menu-on-mr.png') right calc(var(--px) * 4) top / calc(50% - var(--px) * 20 + 1px) 100% no-repeat; }
 #title-screen .ts-item.on:not(.ts-slot)::before { content: ''; left: calc(var(--px) * -38); width: calc(var(--px) * 32); height: calc(var(--px) * 23); font-size: 0;
   background: url('img/ui/save/hand-green.png') 0 0 / 100% 100% no-repeat; image-rendering: pixelated; animation: sv-hand .5s ease-in-out infinite alternate; }
+
+/* annonces de phase dessinées (img/ui/phase-*.png, Lukiroh) : bande sombre, le texte glisse de droite à gauche */
+#banner.phase span.phase-pop { padding: 18px 0; width: 100%; display: flex; justify-content: center; background: linear-gradient(90deg, transparent, rgba(8, 10, 20, .55) 18%, rgba(8, 10, 20, .55) 82%, transparent); overflow: hidden; }
+#banner.phase.enemy span.phase-pop { background: linear-gradient(90deg, transparent, rgba(60, 8, 12, .55) 18%, rgba(60, 8, 12, .55) 82%, transparent); }
+#banner.phase.ally span.phase-pop { background: linear-gradient(90deg, transparent, rgba(8, 44, 20, .55) 18%, rgba(8, 44, 20, .55) 82%, transparent); }
+#banner.phase .phase-pop img { height: clamp(48px, 9vh, 96px); width: auto; image-rendering: pixelated; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .45)); animation: phase-slide 1.15s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes phase-slide { 0% { transform: translateX(60vw); opacity: 0; } 22% { transform: translateX(0); opacity: 1; } 78% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-60vw); opacity: 0; } }
+
+/* fond des écrans sans décor (img/ui/background.png) : écran titre sans fond choisi, préparatifs, épilogue */
+#title-screen:not(.has-bg) { background: #0b0a10; }
+#title-screen:not(.has-bg)::before { content: ''; position: absolute; inset: 0; background: url('img/ui/background.png') center / cover no-repeat; image-rendering: pixelated; filter: brightness(.55) saturate(.9); }
+#title-screen:not(.has-bg) .ts-sky { opacity: .3; }
+#preparation { background: linear-gradient(rgba(10, 14, 28, .86), rgba(10, 14, 28, .9)), url('img/ui/background.png') center / cover no-repeat; }
+#epilogue { background: linear-gradient(rgba(6, 7, 12, .72), rgba(6, 7, 12, .86)), url('img/ui/background.png') center / cover no-repeat; }

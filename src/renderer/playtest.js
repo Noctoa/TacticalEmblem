@@ -217,6 +217,7 @@
     startClock(save && save.info && save.info.playTime); // temps de jeu (cadre PLAYTIME des sauvegardes)
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
+    G.settings.aiDifficulty = R.normalizeAiDifficulty(save.aiDifficulty === undefined ? (G.project.meta.settings || {}).aiDifficulty : save.aiDifficulty);
     if (save.chapterId === Lobby.LOBBY_SAVE) {
       if (G.lobbyOn) return lobby.enter();
       const start = R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
@@ -232,6 +233,9 @@
   const playTime = () => Math.round((G.playBase || 0) + (performance.now() - (G.playStart || performance.now())));
   function startClock(base) { G.playBase = Number(base) || 0; G.playStart = performance.now(); }
   function makeSave() {
+    return Object.assign({}, makeCheckpointSave(), { aiDifficulty: R.normalizeAiDifficulty(G.settings.aiDifficulty) });
+  }
+  function makeCheckpointSave() {
     if (G.mode === 'preparation') return Object.assign({}, G.checkpoint, { deployment: preparation.plan(), info: { place: Lobby.actLabel(G.db, G.chapter.id), kind: 'preparation', playTime: playTime() } });
     if (G.mode === 'lobby') {
       lobby.commit();
@@ -494,11 +498,38 @@
     drawFloats(t);
   }
 
+  // flèche de déplacement façon Fire Emblem (img/ui/arrow.png, cases de 16 px ; tools/build_ui_popups.py)
+  const arrowImg = new Image(); arrowImg.src = 'img/ui/arrow.png';
+  const DIRS4 = { '1,0': 'r', '0,1': 'd', '-1,0': 'l', '0,-1': 'u' };
+  const ARROW = { start: { r: 0, d: 1, l: 2, u: 3 }, head: { r: 8, d: 9, l: 10, u: 11 } };
+  const OPP = { r: 'l', l: 'r', u: 'd', d: 'u' };
+  /** Case de la flèche pour le pas i du chemin. */
+  function arrowTile(path, i) {
+    const dir = (a, b) => DIRS4[`${Math.sign(b.x - a.x)},${Math.sign(b.y - a.y)}`];
+    if (i === 0) return ARROW.start[dir(path[0], path[1])];
+    const into = dir(path[i - 1], path[i]);
+    if (i === path.length - 1) return ARROW.head[into];
+    const out = dir(path[i], path[i + 1]), back = OPP[into];
+    if ((back === 'l' && out === 'r') || (back === 'r' && out === 'l')) return 14;
+    if ((back === 'u' && out === 'd') || (back === 'd' && out === 'u')) return 12;
+    const pair = [back, out].sort((a, b) => 'rdlu'.indexOf(a) - 'rdlu'.indexOf(b)).join('');
+    return { rd: 4, dl: 5, ru: 6, lu: 7 }[pair];
+  }
   function drawPath() {
     const n = G.reach.get(key(G.cursor.x, G.cursor.y));
     if (!n) return;
     const path = R.pathTo(G.reach, n.x, n.y);
     if (path.length < 2) return;
+    if (arrowImg.complete && arrowImg.naturalWidth) {
+      const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = false;
+      path.forEach((p, i) => {
+        const t = arrowTile(path, i); if (t === undefined) return;
+        const [px, py, w, hh] = tileRect(p.x, p.y);
+        ctx.drawImage(arrowImg, t * 16, 0, 16, 16, Math.round(px), Math.round(py), Math.round(w), Math.round(hh));
+      });
+      ctx.imageSmoothingEnabled = sm;
+      return;
+    }
     ctx.strokeStyle = 'rgba(255,240,200,.9)'; ctx.lineWidth = Math.max(3, TW() * 0.14); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     ctx.beginPath();
     path.forEach((p, i) => { const [px, py, w, hh] = tileRect(p.x, p.y); const cx = px + w / 2, cy = py + hh / 2; if (i) ctx.lineTo(cx, cy); else ctx.moveTo(cx, cy); });
@@ -1248,9 +1279,16 @@
     showMenu(choices.map(s => ({ label: s.weapon.name, sub: s.weapon.restore ? 'Soigne les altérations' : `Soin : ${s.weapon.heal || 10} + Mag`, action: () => { hideMenu(); heal(u, t, s.index); } })), u, 'items');
   }
   async function heal(u, t, staffIndex) {
-    const st = R.staves(u, G.db).find(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon));
-    if (!st) return;
+    if (!R.staves(u, G.db).some(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon))) return;
     G.busy = true; G.ui = 'busy';
+    await performStaff(u, t, staffIndex);
+    G.busy = false;
+    await finishAction(u);
+  }
+  // Exécution commune au joueur et à l'IA ; la phase reste pilotée par l'appelant.
+  async function performStaff(u, t, staffIndex) {
+    const st = R.staves(u, G.db).find(s => s.index === staffIndex && R.staffCanTarget(u, t, s.weapon));
+    if (!st || u.dead || u.hp <= 0) return false;
     const amount = (st.weapon.heal || 10) + u.stats.mag;
     const before = t.hp;
     await lunge(u, t);
@@ -1278,14 +1316,19 @@
     await sleep(500);
     if (healRun) await healRun.done;
     if (u.team !== 'enemy') await grantExp(u, R.staffExp(u, G.db));
-    G.busy = false;
-    await finishAction(u);
+    return true;
   }
 
   async function useItem(u, index) {
-    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !Statuses.canAct(u) || !['heal', 'boost', 'restore'].includes(it.effect)) return;
-    if (it.effect === 'restore' && !Statuses.canCure(u, it.cure)) return;
     G.busy = true;
+    const used = await performItem(u, index);
+    G.busy = false;
+    if (used) await finishAction(u);
+  }
+  async function performItem(u, index) {
+    const slot = u.inventory[index]; const it = iOf(slot); if (!it || !Statuses.canAct(u) || !['heal', 'boost', 'restore'].includes(it.effect)) return;
+    if (u.dead || u.hp <= 0 || slot.uses <= 0 || (it.effect === 'heal' && u.hp >= u.stats.hp)) return false;
+    if (it.effect === 'restore' && !Statuses.canCure(u, it.cure)) return;
     if (it.effect === 'heal') {
       const before = u.hp; u.hp = Math.min(u.stats.hp, u.hp + (it.amount || 10));
       float(u.x, u.y, '+' + (u.hp - before), '#7dffa8');
@@ -1297,8 +1340,7 @@
     }
     slot.uses--; if (slot.uses <= 0) u.inventory.splice(index, 1);
     await sleep(600);
-    G.busy = false;
-    await finishAction(u);
+    return true;
   }
 
   async function seize(u) {
@@ -1615,10 +1657,12 @@
   // =====================================================================
   // Tours et phases
   // =====================================================================
-  function banner(text, cls) {
+  /** Annonce au centre de l'écran ; image : annonce de phase dessinée (img/ui/phase-*.png, Lukiroh), le texte sert de repli. */
+  function banner(text, cls, image) {
     const el = $('#banner');
-    el.className = cls || '';
-    el.innerHTML = ''; el.append(h('span', {}, text));
+    el.className = (cls || '') + (image ? ' phase' : '');
+    el.innerHTML = '';
+    el.append(image ? h('span', { class: 'phase-pop' }, h('img', { src: image, alt: text, onerror: (e) => { e.target.replaceWith(text); } })) : h('span', {}, text));
     return sleep(1150).then(() => el.classList.add('hidden'));
   }
 
@@ -1639,7 +1683,7 @@
     updateObjective();
     TacticalEmblem.emit('turn:start', { phase: 'player', turn: G.turn });
     Music.bgm('playerPhase');
-    await banner('Phase joueur', '');
+    await banner('Phase joueur', '', 'img/ui/phase-player.png');
     for (const u of players()) { u.done = false; u.tradeLocked = false; }
     await statusPhase(team('player'));
     await skillRecovery(team('player'));
@@ -1662,7 +1706,7 @@
     G.phase = 'ally'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
-    await banner('Phase alliée', 'ally');
+    await banner('Phase alliée', 'ally', 'img/ui/phase-ally.png');
     for (const u of allies) u.done = false;
     await statusPhase(allies);
     await skillRecovery(allies);
@@ -1678,9 +1722,13 @@
   /** Fait jouer une liste d'unités par l'IA. Renvoie true si la partie est terminée. */
   async function aiTurn(list, foesFn) {
     if (G.debug.passive && list.some(u => u.team === 'enemy')) { for (const e of list) e.done = true; return false; } // debug
-    for (const e of list) {
+    const acted = new Set();
+    // Une unité endormie attend : si Rétablissement la réveille, elle peut encore jouer.
+    while (true) {
       if (G.over) return true;
-      if (e.done || e.dead) continue;
+      const e = list.find(u => !acted.has(u) && !u.done && !u.dead && u.hp > 0 && Statuses.canAct(u));
+      if (!e) break;
+      acted.add(e);
       const plan = R.planEnemy(e, foesFn(), ropts());
       e.done = true;
       if (!plan) continue;
@@ -1690,13 +1738,19 @@
       if (plan.path && plan.path.length > 1) await animateMove(e, plan.path);
       await areaEvents(e);
       if (await checkEnd()) return true;
-      if (plan.target && !plan.target.dead) {
+      if (e.dead || !Statuses.canAct(e)) continue;
+      if (plan.action === 'staff') {
+        await performStaff(e, plan.target, plan.weaponIndex);
+      } else if (plan.action === 'item') {
+        await performItem(e, plan.itemIndex);
+      } else if (plan.target && !plan.target.dead) {
         R.equip(e, plan.weaponIndex);
         await sleep(160);
         await runCombat(e, 0, plan.target);
-        refreshDanger();
-        if (await checkEnd()) return true;
       }
+      lastInfoKey = '';
+      refreshDanger();
+      if (await checkEnd()) return true;
       await sleep(80);
     }
     return false;
@@ -1740,7 +1794,7 @@
     G.phase = 'enemy'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'enemy', turn: G.turn });
     Music.bgm('enemyPhase');
-    await banner('Phase ennemie', 'enemy');
+    await banner('Phase ennemie', 'enemy', 'img/ui/phase-enemy.png');
     // renforts
     const arriving = G.pending.filter(u => !u.eventOnly && u.appearTurn <= G.turn);
     for (const u of arriving) {
@@ -2156,7 +2210,7 @@
     float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl, sheetCtx
   });
   window.PlaytestLobby = lobby;
-  window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length }; // scénarios de test automatisés
+  window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length, arrowTiles: (path) => path.map((p, i) => arrowTile(path, i)) }; // scénarios de test automatisés
 
   const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
   window.PlaytestPreparation = preparation;

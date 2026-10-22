@@ -74,7 +74,9 @@
       ];
       // pile des menus : [{ title, items, index }] ; le premier est le menu principal
       const stack = [{ title: '', items: top, index: 0 }];
-      let view = 'menu';
+      let view = 'menu', mouseMoved = false;
+      const onMove = (e) => { if (e.movementX || e.movementY) mouseMoved = true; };
+      window.addEventListener('mousemove', onMove);
       const cur = () => stack[stack.length - 1];
 
       function render() {
@@ -92,7 +94,7 @@
           sub ? h('div', { class: 'ts-menu-title' }, m.title) : null,
           list.map((it, i) => h('button', {
             class: 'ts-item' + (i === m.index ? ' on' : '') + (it.dev ? ' dev' : '') + (it.back ? ' back' : '') + (it.cls ? ' ' + it.cls : ''), 'data-title': it.id || it.value,
-            onmouseenter: () => { if (m.index !== i) { m.index = i; play('cursor'); render(); } },
+            onmouseenter: () => { if (mouseMoved && m.index !== i) { m.index = i; play('cursor'); render(); } }, // souris réellement bougée (pas un simple réaffichage sous le pointeur)
             onclick: () => pick(i)
           }, typeof it.render === 'function' ? it.render() : [it.label, it.items ? h('span', { class: 'ts-more' }, '…') : null])),
           sub ? h('div', { class: 'ts-desc' }, desc || '') : null);
@@ -125,6 +127,7 @@
       }
       function done(value) {
         window.removeEventListener('keydown', onKey, true);
+        window.removeEventListener('mousemove', onMove);
         screen.classList.add('out');
         setTimeout(() => { screen.remove(); document.body.classList.remove('on-title'); }, 250);
         resolve(value);
