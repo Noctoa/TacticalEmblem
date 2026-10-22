@@ -40,7 +40,7 @@
     function skills(body, unit) {
       const catalogue = G.db.skills || [], find = id => R.byId(catalogue, id);
       const personal = find(unit.personalSkill), equipped = unit.equippedSkills || [];
-      body.append(h('div', { class: 'team-personal' }, h('b', {}, 'Personnelle fixe — ' + (personal ? `${personal.icon} ${personal.name}` : 'aucune')),
+      body.append(h('div', { class: 'team-personal' }, h('b', {}, 'Personnelle fixe — ', ...(personal ? (self.SkillIcons ? [SkillIcons.element(personal, 18, 'inline'), ' ' + personal.name] : [`${personal.icon} ${personal.name}`]) : ['aucune'])),
         personal ? h('p', {}, Skills.describe(personal)) : null),
       h('p', { class: 'lp-sub' }, `${equipped.length}/5 compétences équipées. Retirer une compétence la conserve dans le répertoire.`));
       for (let i = 0; i < 5; i++) {

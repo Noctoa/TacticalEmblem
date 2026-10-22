@@ -570,6 +570,13 @@
     return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [] };
   }
 
+  // crédits du projet d'exemple (Système › Écran titre et crédits ; écran titre › Crédits)
+  const SAMPLE_CREDITS = ['Tactical Emblem :', 'EdnidCorp.', 'Xarrin', 'Noctoa', 'Reito', 'Ota', '',
+    'Assets d’exemple :', 'Lexou', 'LS', 'Grim', 'Bonzai', 'Lord Zymeth', 'Cynon', 'OurBoiRoy', 'TheNinjaGuy914', 'trainboy2019', 'Maelstrom210', '',
+    'Musiques :', 'Yuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)', '',
+    'Game Company :', 'Nintendo', 'Square-Enix'].join('\n');
+  // ancien texte d'exemple : remplacé par le nouveau à l'ouverture d'un projet qui l'a gardé tel quel
+  const OLD_SAMPLE_CREDITS = 'Histoire et cartes :\nProjet d’exemple de Tactical Emblem\n\nGraphismes :\nSprites de Fire Emblem 7 : Lexou, Grim & Bonzai\nCloud (édition FE) : Lord Zymeth\n\nMusiques :\nFire Emblem 6 (Enhanced Soundtrack) : Yuka Tsujiyoko\n\nDroits :\nFire Emblem : Nintendo / Intelligent Systems\nCloud (Final Fantasy VII) : Square Enix';
   function sampleProject(name) {
     const db = emptyDatabase();
     db.units = characters();
@@ -588,7 +595,7 @@
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         // écran titre : sous-titre, fond, musique, mode d'une nouvelle partie ; crédits (bouton Crédits)
         title: { subtitle: 'Les héros de Varenne', background: '', music: '', newGameMode: 'classic' },
-        credits: 'Histoire et cartes :\nProjet d’exemple de Tactical Emblem\n\nGraphismes :\nSprites de Fire Emblem 7 : Lexou, Grim & Bonzai\nCloud (édition FE) : Lord Zymeth\n\nMusiques :\nFire Emblem 6 (Enhanced Soundtrack) : Yuka Tsujiyoko\n\nDroits :\nFire Emblem : Nintendo / Intelligent Systems\nCloud (Final Fantasy VII) : Square Enix',
+        credits: SAMPLE_CREDITS,
         settings: {
           trueHit: true, doubleThreshold: 4, triangleDmg: 1, triangleHit: 15,
           effectiveMult: 3, critMult: 3, maxLevel: 20, battleAnims: true, overkill: true, overkillExp: 30,
@@ -613,5 +620,5 @@
     };
   }
 
-  return { terrains, battlebackOf, BATTLEBACKS, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
+  return { SAMPLE_CREDITS, OLD_SAMPLE_CREDITS, terrains, battlebackOf, BATTLEBACKS, weapons, items, classes: () => linkPromotions(classes()), characters, supports, talks, lobby, defaultSounds, lobbyMap, villageTileset, VILLAGE_TERRAIN, extraActs, arcs, PRICES, emptyDatabase, sampleProject, sampleMap, sampleChapter, SAMPLE_ASCII };
 });

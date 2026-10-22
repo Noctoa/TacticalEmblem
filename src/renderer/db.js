@@ -38,6 +38,44 @@
   const projectColors = () => Palettes.resolveMode((Editor.project().meta.settings || {}).colors);
   const modeLabel = (v) => (Palettes.MODES.find(m => m.value === v) || {}).label || v;
 
+  /** Icône d'une compétence : image façon Heroes (SkillIcons) ou son symbole. */
+  const skillIcon = (s, size) => SkillIcons.element(s, size);
+  /** Champ « Icône » d'une compétence : aperçu, choix dans les planches (img/skills), retour au symbole. */
+  function skillImageField(sk) {
+    const prev = h('span', { class: 'skill-image-prev' });
+    const show = () => prev.replaceChildren(SkillIcons.parse(sk.image) ? SkillIcons.element(sk, 44) : h('span', { class: 'muted' }, 'Aucune : le symbole est affiché'));
+    show();
+    const pick = async () => {
+      const id = await pickSkillImage(sk.image);
+      if (id === null) return;
+      sk.image = id; show(); change(); renderBody();
+    };
+    return h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Icône'),
+      h('div', { class: 'skill-image-row' }, prev,
+        h('button', { class: 'small', 'data-skill-image': true, onclick: pick }, 'Choisir une icône…'),
+        sk.image ? h('button', { class: 'small ghost', onclick: () => { sk.image = ''; show(); change(); renderBody(); } }, 'Retirer') : null));
+  }
+  /** Fenêtre de choix d'une icône de compétence : une planche par onglet, clic pour choisir. Renvoie l'id ou null. */
+  function pickSkillImage(current) {
+    const sheets = SkillIcons.sheets();
+    let sheet = (SkillIcons.parse(current) || {}).sheet || sheets[0];
+    return UI.modal((box, close) => {
+      const grid = h('div', { class: 'skill-image-grid' });
+      const tabs = h('div', { class: 'skill-image-tabs' });
+      const fill = () => {
+        tabs.replaceChildren(...sheets.map(n => h('button', { class: 'small' + (n === sheet ? ' primary' : ''), onclick: () => { sheet = n; fill(); } }, 'Planche ' + n)));
+        grid.replaceChildren(...SkillIcons.all().filter(i => i.sheet === sheet).map(i => {
+          const b = h('button', { class: 'skill-image-cell' + (i.id === current ? ' on' : ''), title: i.id, 'data-icon': i.id, onclick: () => close(i.id) });
+          b.append(SkillIcons.element(i.id, 44)); return b;
+        }));
+      };
+      fill();
+      box.append(h('h3', {}, 'Icône de la compétence'), tabs, grid,
+        h('p', { class: 'form-info' }, 'Icônes façon Fire Emblem Heroes, rangées par planches. Celles qui ne servent pas encore restent disponibles pour tes compétences.'),
+        h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Annuler')));
+    }, { wide: true });
+  }
+
   /** Champ portrait : choix parmi les images des dossiers personnages + import dans le dossier du personnage. */
   function faceField(u) {
     const prev = h('div', { class: 'img-prev' });
@@ -310,7 +348,7 @@
   const TABS = {
     skills: {
       label: 'Compétences', list: () => db().skills, prefix: 'skill_',
-      sub: s => (Skills.effectOf(s) || {}).name || 'Effet inconnu', icon: s => s.icon || '✦',
+      sub: s => (Skills.effectOf(s) || {}).name || 'Effet inconnu', icon: s => skillIcon(s, 22),
       create: () => Skills.create(),
       onField: (key, s) => { if (key === 'effect') Object.assign(s, Skills.parameters(s.effect)); },
       rerenderOn: ['effect', 'activation', 'hpCondition'],
@@ -319,7 +357,8 @@
         return [
           { type: 'row', fields: [
             { key: 'name', label: 'Nom', type: 'text', live: true },
-            { key: 'icon', label: 'Symbole (1 à 6 caractères)', type: 'text', placeholder: '✦' }] },
+            { key: 'icon', label: 'Symbole (1 à 6 caractères, si pas d’icône)', type: 'text', placeholder: '✦' }] },
+          { type: 'custom', render: (sk) => skillImageField(sk) },
           { key: 'description', label: 'Description du créateur (facultative)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de la compétence.' },
           { type: 'heading', label: 'Effet' },
           { key: 'effect', label: 'Type d’effet', type: 'select', options: Skills.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
@@ -900,7 +939,7 @@
     pane.append(h('h2', {}, cur.name, h('span', { class: 'id' }, cur.id)));
     if (tab === 'units') pane.append(unitPreview(cur));
     if (tab === 'skills') {
-      pane.append(h('div', { class: 'skill-overview' }, h('span', { class: 'skill-symbol big' }, cur.icon || '✦'),
+      pane.append(h('div', { class: 'skill-overview' }, h('span', { class: 'skill-symbol big' }, skillIcon(cur, 40)),
         h('div', {}, h('b', {}, 'Résumé des réglages'), h('p', { class: 'skill-summary' }, Skills.describe(cur)))));
       pane.append(h('div', { class: 'skill-validation', role: 'status' }));
     }
@@ -913,11 +952,11 @@
         if (def.onField) def.onField(k, cur);
         if (tab === 'skills') {
           pane.querySelector('.skill-summary').textContent = Skills.describe(cur);
-          pane.querySelector('.skill-symbol.big').textContent = cur.icon || '✦';
+          pane.querySelector('.skill-symbol.big').replaceChildren(skillIcon(cur, 40));
           renderSkillErrors(pane, cur);
           // Le symbole et le sous-titre reflètent aussi les changements de la fiche.
           body.querySelectorAll('.db-item').forEach((el, i) => {
-            el.querySelector('.skill-symbol').textContent = list[i].icon || '✦';
+            el.querySelector('.skill-symbol').replaceChildren(skillIcon(list[i], 22));
             el.querySelector('.sub').textContent = def.sub(list[i]);
           });
         }

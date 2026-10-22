@@ -1559,8 +1559,35 @@
     } catch (e) { console.error('[fonds de combat]', e); }
     if (linked) { markDirty(); UI.toast(`Fonds de combat de base ajoutés : ${linked} terrain(s) relié(s).`); }
   }
+  /** Plugins fournis avec l'application plus récents que la copie du projet : mis à jour (fiche, scripts, images). */
+  async function updateBundledPlugins() {
+    let bundled = [];
+    try { bundled = await tf.bundledPlugins(); } catch (e) { return; }
+    const newer = (a, b) => { const x = String(a).split('.').map(Number), y = String(b).split('.').map(Number); for (let i = 0; i < 3; i++) { if ((x[i] || 0) !== (y[i] || 0)) return (x[i] || 0) > (y[i] || 0); } return false; };
+    const updated = [];
+    for (const m of S.plugins || []) {
+      const b = bundled.find(p => p.id === m.id && !p.error);
+      if (!b || !newer(b.version, m.version)) continue;
+      try {
+        const r = await tf.installPlugin(S.dir, { bundled: m.id });
+        if (!r) continue;
+        const meta = S.project.meta;
+        meta.plugins = meta.plugins || {};
+        meta.plugins[m.id] = Object.assign({}, meta.plugins[m.id], { version: r.manifest.version, name: r.manifest.name });
+        updated.push(`${r.manifest.name} ${m.version} → ${r.manifest.version}`);
+      } catch (e) { console.error('[plugin] mise à jour ' + m.id, e); }
+    }
+    if (updated.length) { markDirty(); await reloadPlugins(); UI.toast('Plugin(s) mis à jour : ' + updated.join(', ')); }
+  }
   async function migrateToPlugins() {
+    await updateBundledPlugins();
+    // crédits d'exemple d'avant : remplacés par les crédits actuels du projet d'exemple (s'ils n'ont pas été modifiés)
+    if (S.project.meta.credits === Defaults.OLD_SAMPLE_CREDITS) { S.project.meta.credits = Defaults.SAMPLE_CREDITS; markDirty(); }
     await migrateBattlebacks();
+    // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
+    let icons = 0;
+    for (const sk of DB().skills || []) { if (sk.image === undefined && Skills.presetImage(sk.id)) { sk.image = Skills.presetImage(sk.id); icons++; } }
+    if (icons) markDirty();
     const meta = S.project.meta, done = meta.pluginMigrations || [];
     for (const mig of PLUGIN_MIGRATIONS) {
       if (done.includes(mig.id)) continue;

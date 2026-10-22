@@ -17,6 +17,15 @@
     const pct = (v) => (Math.round(v * 100) / 100).toLocaleString('fr-FR') + ' %';
     const session = () => G.campaign.summons && G.campaign.summons.session;
     const recruited = () => Team.sync(G.campaign, G.db, meta());
+    // icônes de types d'arme façon Heroes (img/weapons.png du plugin, tools/build_ui_feh.py) ; pastille de couleur sinon
+    const ICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff'];
+    const iconUrl = G.baseUrl + 'plugins/invocations/img/weapons.png';
+    function weaponIcon(u) {
+      const type = Roster.weaponTypesOf(u, G.db)[0], i = ICONS.indexOf(type), col = Summon.colorOf(u, G.db);
+      if (i < 0) return h('i', { class: 'sm-dot', title: col.name, style: { background: col.css } });
+      return h('i', { class: 'sm-wicon', title: (Rules.WEAPON_TYPES.find(w => w.id === type) || {}).name || type,
+        style: { backgroundImage: `url("${iconUrl}")`, backgroundPosition: `${i * 100 / (ICONS.length - 1)}% 0` } });
+    }
 
     function render(body) {
       Summon.ensure(G.campaign, meta());
@@ -43,7 +52,7 @@
         h('div', { class: 'sm-title' }, b.name),
         b.description ? h('div', { class: 'lp-sub' }, b.description) : null,
         focus.length ? h('div', { class: 'sm-focus' }, focus.map(u => h('div', { class: 'sm-hero' }, api.portrait(fakeUnit(u), 'bust'),
-          h('div', {}, h('b', {}, u.name), h('div', { class: 'sm-stars r' + Summon.rarityOf(u) }, stars(Summon.rarityOf(u))),
+          h('div', {}, h('b', {}, weaponIcon(u), ' ', u.name), h('div', { class: 'sm-stars r' + Summon.rarityOf(u) }, stars(Summon.rarityOf(u))),
             h('div', { class: 'lp-sub' }, team.includes(u.id) ? `Dans l'équipe${mergeTag(u.id)}` : 'Nouveau'))))) : null,
         h('div', { class: 'sm-rates' },
           rates.focus ? h('span', { class: 'r5' }, `5★ mis en avant ${pct(rates.focus)}`) : null,
@@ -61,9 +70,8 @@
       body.append(h('div', { class: 'lp-group' }, `Personnages (${entry.pool.length})`));
       const sorted = entry.pool.slice().sort((a, c) => Summon.rarityOf(c) - Summon.rarityOf(a) || a.name.localeCompare(c.name, 'fr'));
       for (const u of sorted) {
-        const col = Summon.colorOf(u, G.db);
         body.append(h('div', { class: 'lp-row sm-unit' },
-          h('i', { class: 'sm-dot', title: col.name, style: { background: col.css } }),
+          weaponIcon(u),
           h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, u.name, b.focus.includes(u.id) ? h('span', { class: 'lp-badge new' }, 'Mis en avant') : null),
             h('div', { class: 'lp-sub' }, [(G.db.classes.find(c => c.id === u.classId) || {}).name, u.series].filter(Boolean).join(' · '))),
           h('span', { class: 'sm-stars r' + Summon.rarityOf(u) }, stars(Summon.rarityOf(u))),
@@ -140,7 +148,7 @@
         h('div', { class: 'sm-rays' }),
         api.portrait(fakeUnit(u), 'bust'),
         h('div', { class: 'sm-stars big r' + r.rarity }, stars(r.rarity)),
-        h('h2', {}, u.name),
+        h('h2', {}, weaponIcon(u), ' ', u.name),
         h('div', { class: 'lp-sub' }, [cls && cls.name, u.series, r.focus ? 'mis en avant' : ''].filter(Boolean).join(' · ')),
         tag,
         r.isNew ? h('p', { class: 'lp-sub' }, `${u.name} rejoint l'équipe (menu Équipe du camp).`) : !r.maxed ? h('p', { class: 'lp-sub' }, 'Ses stats augmentent (+1 à deux stats).') : null,

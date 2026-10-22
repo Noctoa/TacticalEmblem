@@ -44,3 +44,5 @@
 #lobby-panel .sm-tag.max { background: #6b6b6b; color: #fff; }
 @keyframes sm-in { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes sm-spin { to { transform: rotate(360deg); } }
+#lobby-panel .sm-wicon { display: inline-block; width: 22px; height: 22px; flex: none; vertical-align: -5px; background: no-repeat 0 0 / 800% 100%; }
+#lobby-panel .sm-reveal h2 .sm-wicon { width: 30px; height: 30px; vertical-align: -6px; }

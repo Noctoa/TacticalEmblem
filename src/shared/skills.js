@@ -35,8 +35,13 @@
       ['luna', 'Luna', '☾', 'luna', {}], ['sol', 'Sol', '☀', 'sol', {}],
       ['vantage', 'Vantage', '↶', 'vantage', {}], ['miracle', 'Miracle', '☆', 'miracle', {}],
       ['lockpick', 'Crochetage', '⚿', 'lockpick', {}]
-    ].map(([id, name, icon, effect, values]) => Object.assign(create(effect), values, { id: 'skill_' + id, name, icon }));
+    ].map(([id, name, icon, effect, values]) => Object.assign(create(effect), values, { id: 'skill_' + id, name, icon, image: PRESET_IMAGES[id] || '' }));
   }
+  // icônes façon Heroes des compétences de base (img/skills, « feh:<planche>-<case> ») ; le symbole reste en secours
+  const PRESET_IMAGES = { precision: 'feh:1-92', esquive: 'feh:1-12', offensive: 'feh:1-9', garde: 'feh:1-56', presence: 'feh:1-68',
+    regeneration: 'feh:2-65', luna: 'feh:2-45', sol: 'feh:3-56', vantage: 'feh:1-83', miracle: 'feh:2-54', lockpick: 'feh:2-29' };
+  /** Icône par défaut d'une compétence de base (« skill_luna » → « feh:2-45 »), '' sinon. */
+  const presetImage = (id) => PRESET_IMAGES[String(id || '').replace(/^skill_/, '')] || '';
   function validate(s) {
     const errors = [], spec = s && effectOf(s);
     if (!s || typeof s !== 'object' || Array.isArray(s)) return ['La compétence doit être une fiche.'];
@@ -44,6 +49,7 @@
     if (typeof s.name !== 'string' || !s.name.trim()) errors.push('Le nom est obligatoire.');
     if (typeof s.icon !== 'string' || !s.icon.trim() || [...s.icon].length > 6) errors.push('Le symbole doit contenir un à six caractères.');
     if (typeof s.description !== 'string') errors.push('La description doit être du texte.');
+    if (s.image !== undefined && s.image !== '' && !/^feh:\d+-\d+$/.test(String(s.image))) errors.push('Icône inconnue.');
     if (!spec) errors.push('Effet inconnu.');
     if (spec && spec.utility && (s.phase !== 'any' || s.hpCondition !== 'any' || s.weaponType || s.adjacentAlly)) errors.push('Crochetage est disponible sans condition de combat, de PV ou d’adjacence.');
     if (spec && spec.amount && (!Number.isInteger(s.amount) || s.amount < 1 || s.amount > spec.max)) errors.push(`La valeur doit être un entier de 1 à ${spec.max}.`);
@@ -219,7 +225,7 @@
       return true;
     });
   }
-  return { EFFECTS, effectOf, parameters, create, presets, validate, validateAll, describe,
+  return { EFFECTS, effectOf, parameters, create, presets, presetImage, validate, validateAll, describe,
     EQUIPPED_SLOTS, validateAssignment, validateAssignments, loadout, assigned, usersOf,
     classUsersOf, validateLearning, availableLearning, combinedLearning, initialLoadout, learnThroughLevel, equipLearned, chance, active };
 });

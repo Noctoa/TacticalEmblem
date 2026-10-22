@@ -317,7 +317,7 @@
     return { own, aura };
   }
   const skillTotal = (state, effect) => state.own.filter(s => s.effect === effect).reduce((sum, s) => sum + s.amount, 0);
-  const skillInfo = (skill, unit) => ({ id: skill.id, name: skill.name, icon: skill.icon, effect: skill.effect,
+  const skillInfo = (skill, unit) => ({ id: skill.id, name: skill.name, icon: skill.icon, image: skill.image || '', effect: skill.effect,
     chance: skill.activation === undefined ? skill.chance : Skills.chance(skill, unit), amount: skill.amount });
 
   function strikeStats(att, aw, def, dw, defTerrain, settings, db, aBonus, dBonus, context = {}) {

@@ -299,3 +299,13 @@
 .plugin-facts { margin: 8px 0 12px 18px; padding: 0; line-height: 1.6; }
 .plugin-pane .insp-actions { align-items: center; gap: 10px; margin: 12px 0; }
 .plugin-pane .check { display: inline-flex; align-items: center; gap: 6px; }
+
+/* icônes de compétences (SkillIcons) */
+.skill-symbol .skill-icon.img { border-radius: 50%; }
+.skill-image-row { display: flex; align-items: center; gap: 10px; }
+.skill-image-prev { display: inline-flex; align-items: center; min-height: 44px; }
+.skill-image-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 10px; }
+.skill-image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 4px; max-height: 52vh; overflow: auto; padding: 4px; background: var(--inset); border-radius: var(--radius-lg); }
+.skill-image-cell { padding: 3px; justify-content: center; background: transparent; border-color: transparent; }
+.skill-image-cell:hover { background: var(--panel-2); }
+.skill-image-cell.on { border-color: var(--gold); background: var(--gold-dim); }

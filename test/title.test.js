@@ -28,6 +28,8 @@ test('réglages : valeurs par défaut, projet d’exemple avec sous-titre et cr�
   const p = D.sampleProject('Jeu');
   assert.equal(T.settings(p.meta).subtitle, 'Les héros de Varenne');
   const lines = T.parseCredits(p.meta.credits);
-  assert.ok(lines.some(l => l.kind === 'heading' && l.text === 'Graphismes'));
-  assert.ok(lines.some(l => l.kind === 'role' && l.name === 'Lexou, Grim & Bonzai'));
+  assert.deepEqual(j(lines.filter(l => l.kind === 'heading').map(l => l.text)), ['Tactical Emblem', 'Assets d’exemple', 'Musiques', 'Game Company']);
+  for (const n of ['EdnidCorp.', 'Xarrin', 'Noctoa', 'Reito', 'Ota', 'Cynon', 'Maelstrom210', 'Nintendo', 'Square-Enix']) assert.ok(lines.some(l => l.kind === 'text' && l.text === n), n);
+  assert.equal(lines.filter(l => l.text === 'OurBoiRoy').length, 1);
+  assert.notEqual(D.OLD_SAMPLE_CREDITS, p.meta.credits); // ancien texte d'exemple : remplacé à l'ouverture dans l'éditeur
 });

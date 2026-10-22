@@ -414,6 +414,11 @@
       $('#help').textContent = (what ? what + ' · ' : '') + 'Flèches / clic : se déplacer · X : menu du camp · Échap : paramètres · M : son';
     }
 
+    let bubbleImg = null;
+    function bubbleImage() {
+      if (!bubbleImg) { bubbleImg = new Image(); bubbleImg.src = new URL('img/feh/bubble.png', document.baseURI).href; }
+      return bubbleImg.complete && bubbleImg.naturalWidth ? bubbleImg : null;
+    }
     /** Repères dessinés par-dessus la map et les unités. */
     function drawOverlay(ctx, t) {
       const pulse = 0.55 + Math.sin(t / 280) * 0.35;
@@ -438,6 +443,15 @@
         if (!talking.has(u.sourceId)) continue;
         const [px, py, w] = api.tileRect(u.rx, u.ry);
         const r = Math.max(6, api.TW() * 0.17), cx = px + w / 2, cy = py - r * 0.6 + Math.sin(t / 220) * 2;
+        const bub = bubbleImage();
+        if (bub) { // bulle de dialogue façon Heroes (img/feh/bubble.png), pointe vers le personnage
+          const bw = Math.max(16, api.TW() * 0.5), bh = bw * bub.height / bub.width, top = py - bh * 0.78 + Math.sin(t / 220) * 2;
+          const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+          ctx.drawImage(bub, cx - bw / 2, top, bw, bh); ctx.imageSmoothingEnabled = sm;
+          ctx.fillStyle = '#7a3d12'; ctx.font = `900 ${Math.round(bw * 0.5)}px "Segoe UI", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('!', cx, top + bh * 0.42);
+          continue;
+        }
         ctx.fillStyle = '#f2c46a'; ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
         ctx.fillStyle = '#2a1d05'; ctx.font = `900 ${Math.round(r * 1.5)}px "Segoe UI", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';

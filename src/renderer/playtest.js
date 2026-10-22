@@ -64,6 +64,8 @@
         G.plugins = installed.filter(m => !m.error);
         await PluginRuntime.load(G.baseUrl, G.plugins, G.project.meta, 'game', { project: G.project, db: G.db, state: G, toast: (t, k) => UI.toast(t, k) });
       } catch (e) { console.error('[plugin] chargement', e); }
+      if (self.FehDigits) FehDigits.preload(); // chiffres des dégâts (img/feh)
+      if (self.SkillIcons) SkillIcons.preload(G.db && G.db.skills); // icônes des compétences (img/skills)
       TacticalEmblem.emit('game:start', {});
       const chId = params.get('chapter');
       let first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
@@ -656,7 +658,8 @@
     ctx.stroke();
   }
 
-  function float(x, y, text, color, big) { floats.push({ x, y, text, color: color || '#fff', t0: performance.now(), big }); }
+  /** digits : { num, style, label } — nombre dessiné avec les chiffres façon Heroes (feh-digits.js), libellé au-dessus. */
+  function float(x, y, text, color, big, digits) { floats.push(Object.assign({ x, y, text, color: color || '#fff', t0: performance.now(), big }, digits || {})); }
   function drawFloats(t) {
     const now = performance.now();
     for (let i = floats.length - 1; i >= 0; i--) {
@@ -667,6 +670,15 @@
       ctx.font = `900 ${Math.round(TW() * (f.big ? 0.62 : 0.46))}px "Segoe UI", system-ui, sans-serif`;
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       const yy = py - TH() * 0.1 - k * TH() * 0.7;
+      if (f.num !== undefined && self.FehDigits && FehDigits.draw(ctx, f.num, px + w / 2, yy, TH() * (f.style === 'crit' ? 0.8 : 0.6), f.style || 'dmg')) {
+        if (f.label) {
+          ctx.font = `900 ${Math.round(TW() * 0.26)}px "Segoe UI", system-ui, sans-serif`;
+          const ly = yy - TH() * (f.style === 'crit' ? 0.5 : 0.4);
+          ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,.8)'; ctx.strokeText(f.label, px + w / 2, ly);
+          ctx.fillStyle = f.color; ctx.fillText(f.label, px + w / 2, ly);
+        }
+        continue;
+      }
       ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(0,0,0,.8)'; ctx.strokeText(f.text, px + w / 2, yy);
       ctx.fillStyle = f.color; ctx.fillText(f.text, px + w / 2, yy);
     }
@@ -751,7 +763,7 @@
         const set = Skills.loadout(unit, catalogue);
         const card = (id, label) => {
           const skill = R.byId(catalogue, id);
-          return h('div', { class: 'game-skill-card' }, h('b', {}, label + ' — ' + (skill ? `${skill.icon} ${skill.name}` : 'Libre')),
+          return h('div', { class: 'game-skill-card' }, h('b', {}, label + ' — ', ...(skill ? skillLabel(skill) : ['Libre'])),
             skill ? h('p', {}, Skills.describe(skill)) : null);
         };
         box.append(h('h3', {}, 'Compétences de ' + unit.name),
@@ -1146,16 +1158,16 @@
     const skillExtras = (unit, st, skills, aura) => {
       const passive = skills.filter(skill => ['hit', 'avoid', 'damage', 'guard'].includes(skill.effect));
       if (aura) passive.push(aura);
-      if (passive.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} : ` + passive.map(skill => `${skill.icon} ${skill.name}`).join(' · ')));
+      if (passive.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} : `, ...joinSkills(passive.map(skill => skillLabel(skill)))));
       const procs = skills.filter(skill => ['luna', 'sol', 'miracle'].includes(skill.effect));
-      if (procs.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} — ` + procs.map(skill => {
+      if (procs.length) extra.push(h('div', { class: 'fc-skills' }, `${unit.name} — `, ...joinSkills(procs.map(skill => {
         const variant = st && st.procs.find(p => p.id === skill.id);
-        return `${skill.icon} ${skill.name} ${skill.chance} %` + (skill.effect === 'luna' && variant ? ` → ${variant.dmg} DGT` : '');
-      }).join(' · ')));
+        return skillLabel(skill, ` ${skill.chance} %` + (skill.effect === 'luna' && variant ? ` → ${variant.dmg} DGT` : ''));
+      }))));
     };
     skillExtras(u, fc.att, fc.att.skills, fc.att.aura);
     skillExtras(t, fc.def, fc.defSkills, fc.defAura);
-    if (fc.vantage) extra.push(h('div', { class: 'fc-skills' }, `${fc.vantage.icon} ${fc.vantage.name} : ${t.name} riposte en premier`));
+    if (fc.vantage) extra.push(h('div', { class: 'fc-skills' }, ...skillLabel(fc.vantage, ` : ${t.name} riposte en premier`)));
     if ([...fc.att.skills, ...fc.defSkills].some(skill => ['luna', 'sol', 'miracle'].includes(skill.effect)))
       extra.push(h('div', { class: 'fc-skill-note' }, 'DGT hors déclenchements. Un seul effet offensif par coup : affinité, puis Luna, puis Sol.'));
     el.innerHTML = '';
@@ -1199,7 +1211,7 @@
     const before = t.hp;
     await lunge(u, t);
     t.hp = Math.min(t.stats.hp, t.hp + amount);
-    float(t.x, t.y, '+' + (t.hp - before), '#7dffa8');
+    float(t.x, t.y, '+' + (t.hp - before), '#7dffa8', false, t.hp > before ? { num: t.hp - before, style: 'heal' } : null);
     const slot = u.inventory[st.index];
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
@@ -1388,8 +1400,8 @@
         if (s.hit) {
           tgt.flash = performance.now() + 120;
           tgt.dispHp = s.hpAfter;
-          if (s.crit) { V.shake = 14; float(tgt.x, tgt.y, `Critique ! ${s.dmg}`, '#ffd24a', true); }
-          else float(tgt.x, tgt.y, s.dmg ? String(s.dmg) : 'Aucun dégât', s.dmg ? '#ffffff' : '#bbbbbb');
+          if (s.crit) { V.shake = 14; float(tgt.x, tgt.y, `Critique ! ${s.dmg}`, '#ffd24a', true, { num: s.dmg, style: 'crit', label: 'Critique !' }); }
+          else float(tgt.x, tgt.y, s.dmg ? String(s.dmg) : 'Aucun dégât', s.dmg ? '#ffffff' : '#bbbbbb', false, s.dmg ? { num: s.dmg, style: 'dmg' } : null);
         } else float(tgt.x, tgt.y, 'Raté', '#9ad0ff');
         if (s.overkill) float(tgt.x, tgt.y - 0.45, `Overkill +${s.overkill}`, '#ff8a5c', true);
         if (s.heal) { src.dispHp = s.srcHpAfter; float(src.x, src.y, '+' + s.heal, '#7dffa8'); }
@@ -1446,6 +1458,12 @@
       for (const id of up.learnedSkills) await announceLearning(u, id);
     }
   }
+
+  /** Icône (img/skills ou symbole) + nom d'une compétence, pour un affichage HTML. */
+  function skillLabel(skill, suffix = '') {
+    return self.SkillIcons ? [SkillIcons.element(skill, 18, 'inline'), ' ' + skill.name + suffix] : [`${skill.icon} ${skill.name}${suffix}`];
+  }
+  const joinSkills = (labels) => labels.flatMap((l, i) => i ? [' · ', ...l] : l);
 
   async function announceLearning(unit, id) {
     const skill = R.byId(G.db.skills || [], id);

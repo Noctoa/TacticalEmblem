@@ -41,7 +41,7 @@ module.exports = (win, openPlaytest) => {
       // 2. crédits au clavier : flèche bas puis Entrée ; Échap revient au menu
       await key(s.js, 'ArrowDown'); await key(s.js, 'Enter'); await wait(300);
       result.credits = await s.js(`document.querySelector('.ts-credits-roll').textContent`);
-      assert(/Lexou/.test(result.credits) && /Luca/.test(result.credits), 'crédits du projet');
+      assert(/EdnidCorp\./.test(result.credits) && /Lexou/.test(result.credits) && /Square-Enix/.test(result.credits) && /Luca/.test(result.credits), 'crédits du projet');
       await shot(s.wc, 'b_credits');
       await key(s.js, 'Escape'); await wait(200);
       assert(await s.js(`!!document.querySelector('.ts-menu')`), 'retour au menu');

@@ -111,7 +111,7 @@
         if (mate) { setSide(mate, atk.side); await fadeIn(sc, mate); }
       }
       if (s.skills && s.skills.length) {
-        showBanner(sc, s.skills.map(skill => `${skill.icon} ${skill.name}`).join(' · '));
+        showBanner(sc, s.skills.map(skill => `${skill.icon} ${skill.name}`).join(' · '), null, s.skills);
         await wait(350, sc);
       }
       if (mate) await Promise.all([strike(sc, atk, def, s), assist(sc, mate, def, s)]);
@@ -235,7 +235,7 @@
     return s;
   }
 
-  function showBanner(sc, text, kind) { sc.banner = { text, kind, t0: performance.now() }; }
+  function showBanner(sc, text, kind, skills) { sc.banner = { text, kind, skills, t0: performance.now() }; }
 
   // jauge de PV GBA : une colonne de 1 px par PV séparée d'un liseré, 40 PV par ligne au plus
   const BAR = { edge: '#000', sep: '#2878a0', fill: '#78f090', shine: '#e8f8d8', empty: '#808898', over: '#f87850', overShine: '#ffd0b8' };
@@ -338,6 +338,18 @@
       g.font = `600 ${Math.round((f.big ? 15 : 11) * L.S)}px "Pixelify Sans", "Segoe UI", system-ui, sans-serif`;
       g.textAlign = 'center'; g.textBaseline = 'middle';
       const y = L.ground - (52 + (f.dy || 0)) * L.S - k * 18 * L.S;
+      // dégâts et soins : chiffres façon Fire Emblem Heroes (img/feh), petit libellé au-dessus (« CRITIQUE ») ;
+      // texte simple tant que les images ne sont pas chargées
+      const pop = k < 0.12 ? 0.7 + k / 0.12 * 0.4 : k < 0.2 ? 1.1 - (k - 0.12) / 0.08 * 0.1 : 1; // petit rebond à l'apparition
+      if (f.num !== undefined && self.FehDigits && FehDigits.draw(g, f.num, x, y, (f.style === 'crit' ? 30 : 22) * L.S * 0.55 * pop, f.style || 'dmg')) {
+        if (f.label) {
+          g.font = `600 ${Math.round(8 * L.S)}px "Pixelify Sans", "Segoe UI", system-ui, sans-serif`;
+          const ly = y - (f.style === 'crit' ? 30 : 22) * L.S * 0.38;
+          g.lineWidth = 2 * L.S; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(f.label, x, ly);
+          g.fillStyle = f.color; g.fillText(f.label, x, ly);
+        }
+        continue;
+      }
       g.lineWidth = 2 * L.S; g.strokeStyle = 'rgba(0,0,0,.85)'; g.strokeText(f.text, x, y);
       g.fillStyle = f.color; g.fillText(f.text, x, y);
     }
@@ -348,19 +360,56 @@
       if (k > 1) sc.banner = null;
       else {
         g.globalAlpha = sc.fade * (k < 0.15 ? k / 0.15 : k > 0.8 ? (1 - k) / 0.2 : 1);
-        const bw = Math.min(w * 0.7, 520), bh = 46, bx = (w - bw) / 2, by = hh * 0.12;
-        const gr = g.createLinearGradient(bx, 0, bx + bw, 0);
-        const ok = sc.banner.kind === 'overkill', c0 = ok ? 'rgba(255,120,60,0)' : 'rgba(255,90,160,0)', c1 = ok ? 'rgba(200,52,24,.92)' : 'rgba(190,40,110,.9)';
-        gr.addColorStop(0, c0); gr.addColorStop(0.2, c1); gr.addColorStop(0.8, c1); gr.addColorStop(1, c0);
-        g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
-        g.font = '600 22px "Pixelify Sans", "Segoe UI", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
-        g.fillStyle = '#fff'; g.fillText((ok ? '✸ ' : '♥ ') + sc.banner.text, w / 2, by + bh / 2 + 1);
+        const ok = sc.banner.kind === 'overkill';
+        const bar = !ok ? bannerImage() : null; // bandeau turquoise façon Heroes (img/feh/banner.png) pour les compétences / duos
+        const bw = Math.min(w * (bar ? 0.8 : 0.7), bar ? 640 : 520), bh = bar ? Math.round(bw * bar.height / bar.width) : 46, bx = (w - bw) / 2, by = hh * 0.12;
+        if (bar) { const sm = g.imageSmoothingEnabled; g.imageSmoothingEnabled = true; g.drawImage(bar, bx, by, bw, bh); g.imageSmoothingEnabled = sm; }
+        else {
+          const gr = g.createLinearGradient(bx, 0, bx + bw, 0);
+          const c0 = ok ? 'rgba(255,120,60,0)' : 'rgba(255,90,160,0)', c1 = ok ? 'rgba(200,52,24,.92)' : 'rgba(190,40,110,.9)';
+          gr.addColorStop(0, c0); gr.addColorStop(0.2, c1); gr.addColorStop(0.8, c1); gr.addColorStop(1, c0);
+          g.fillStyle = gr; g.fillRect(bx, by, bw, bh);
+        }
+        g.font = `600 ${bar ? 28 : 22}px "Pixelify Sans", "Segoe UI", system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+        const label = (ok ? '✸ ' : bar ? '' : '♥ ') + sc.banner.text;
+        const parts = bar && sc.banner.skills && self.SkillIcons ? sc.banner.skills : null;
+        if (parts) drawSkillLine(g, parts, w / 2, by + bh / 2 + 1, Math.round(bh * 0.62));
+        else {
+          if (bar) { g.lineWidth = 4; g.strokeStyle = 'rgba(0, 20, 30, .8)'; g.strokeText(label, w / 2, by + bh / 2 + 1); }
+          g.fillStyle = bar ? '#e8fbff' : '#fff'; g.fillText(label, w / 2, by + bh / 2 + 1);
+        }
         g.globalAlpha = 1;
       }
     }
     // flash blanc des critiques
     if (sc.whiteout > 0.02) { g.globalAlpha = sc.whiteout * sc.fade; g.fillStyle = '#fff'; g.fillRect(0, 0, w, hh); sc.whiteout *= 0.86; }
     g.globalAlpha = 1;
+  }
+
+  /** Compétences du bandeau : icône (img/skills, sinon symbole) puis nom, centrées sur cx. */
+  function drawSkillLine(g, skills, cx, cy, size) {
+    const sep = '  ·  ', gap = 6;
+    const segs = skills.map(sk => {
+      const img = !!SkillIcons.parse(sk.image);
+      const text = img ? sk.name : `${sk.icon || '✦'} ${sk.name}`;
+      return { sk, img, text, w: (img ? size + gap : 0) + g.measureText(text).width };
+    });
+    const sepW = g.measureText(sep).width;
+    let x = cx - (segs.reduce((n, s) => n + s.w, 0) + sepW * (segs.length - 1)) / 2;
+    g.textAlign = 'left'; g.lineWidth = 4; g.strokeStyle = 'rgba(0, 20, 30, .8)'; g.fillStyle = '#e8fbff';
+    const text = (t, tx) => { g.strokeText(t, tx, cy); g.fillText(t, tx, cy); };
+    segs.forEach((s, i) => {
+      if (i) { text(sep, x); x += sepW; }
+      if (s.img) { SkillIcons.draw(g, s.sk.image, x, cy - size / 2, size); x += size + gap; }
+      text(s.text, x); x += g.measureText(s.text).width;
+    });
+    g.textAlign = 'center';
+  }
+
+  let bannerImg = null;
+  function bannerImage() {
+    if (!bannerImg) { bannerImg = new Image(); bannerImg.src = new URL('img/feh/banner.png', document.baseURI).href; }
+    return bannerImg.complete && bannerImg.naturalWidth ? bannerImg : null;
   }
 
   function drawActor(sc, g, a, L) {
@@ -499,7 +548,8 @@
     if (s.hit) {
       def.flash = performance.now() + 110;
       sc.shake = s.crit ? 18 : (s.dmg ? 7 : 2);
-      sc.floats.push({ actor: def, text: s.crit ? `CRITIQUE ${s.dmg}` : (s.dmg ? String(s.dmg) : 'Aucun dégât'), color: s.crit ? '#ffd24a' : '#fff', big: s.crit, t0: performance.now() });
+      sc.floats.push(Object.assign({ actor: def, text: s.crit ? `CRITIQUE ${s.dmg}` : (s.dmg ? String(s.dmg) : 'Aucun dégât'), color: s.crit ? '#ffd24a' : '#fff', big: s.crit, t0: performance.now() },
+        s.dmg ? { num: s.dmg, style: s.crit ? 'crit' : 'dmg', label: s.crit ? 'CRITIQUE' : '' } : {}));
       def.hp = s.hpAfter;
       tweenHp(sc, def);
       if (s.overkill) { // dégâts au-delà des PV restants
@@ -508,7 +558,7 @@
       }
       if (s.heal) {
         atk.hp = s.srcHpAfter;
-        sc.floats.push({ actor: atk, text: '+' + s.heal, color: '#7dffa8', t0: performance.now() });
+        sc.floats.push({ actor: atk, text: '+' + s.heal, color: '#7dffa8', num: s.heal, style: 'heal', t0: performance.now() });
         tweenHp(sc, atk);
       }
     } else {
