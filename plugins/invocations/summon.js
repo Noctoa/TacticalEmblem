@@ -1,13 +1,16 @@
 /*
+ * Plugin Invocations — logique (sans rendu).
  * Invocations façon Fire Emblem Heroes : bannières, cercle de 5 pierres de couleur, orbes, pitié,
  * recrutement du personnage invoqué ou fusion (+1, jusqu'à +10) s'il est déjà dans l'équipe.
  * La rareté (3★ / 4★ / 5★) est fixée sur la fiche du personnage : elle ne décide que de sa probabilité.
- * Indépendant du rendu (testé dans test/summon.test.js).
+ * Navigateur : global Summon (modules du noyau Rules, Lobby, Roster, Team déjà chargés).
+ * Node (tests du dépôt, test/summon.test.js) : modules du noyau lus dans src/shared.
  */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./rules.js') : root.Rules, common ? require('./lobby.js') : root.Lobby,
-    common ? require('./roster.js') : root.Roster, common ? require('./team.js') : root.Team);
+  const core = (name) => require('../../src/shared/' + name + '.js');
+  const api = factory(common ? core('rules') : root.Rules, common ? core('lobby') : root.Lobby,
+    common ? core('roster') : root.Roster, common ? core('team') : root.Team);
   if (common) module.exports = api; else root.Summon = api;
 })(typeof self !== 'undefined' ? self : this, function (Rules, Lobby, Roster, Team) {
   'use strict';
@@ -56,6 +59,8 @@
     campaign.merges = campaign.merges && typeof campaign.merges === 'object' ? campaign.merges : {};
     return campaign;
   }
+  /** Orbes gagnées à la première victoire d'un acte (champ « orbs » de l'acte). */
+  function orbsFor(ch, alreadyCleared) { return alreadyCleared ? 0 : Math.max(0, Math.floor(Number(ch && ch.orbs) || 0)); }
   function addOrbs(campaign, n) { campaign.orbs = Math.max(0, (Number(campaign.orbs) || 0) + Math.max(0, Math.floor(Number(n) || 0))); return campaign.orbs; }
 
   // ---------- bannières ----------
@@ -220,6 +225,6 @@
     return errors;
   }
 
-  return { RARITIES, MAX_MERGES, COLORS, DEFAULT_SETTINGS, DEFAULT_RATES, settings, rarityOf, colorOf, normalizeBanner, ensure, addOrbs,
+  return { RARITIES, MAX_MERGES, COLORS, DEFAULT_SETTINGS, DEFAULT_RATES, settings, rarityOf, colorOf, normalizeBanner, ensure, orbsFor, addOrbs,
     poolOf, banners, pityBonus, rates, roll, circle, nextCost, open, receive, mergeOrder, mergeBonus, applyMerges, validate };
 });

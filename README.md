@@ -89,7 +89,7 @@ Flèches pour parcourir les deux colonnes, Z / Entrée pour choisir, X / Échap 
 
 Déclencheurs : début d'acte, début de tour joueur, unité vaincue, fin d'action d'un joueur ou allié dans une zone, coffre ouvert, porte ouverte, village visité, conditions devenues vraies et victoire. Les conditions exigent tous les personnages choisis vivants et déployés, ainsi que les informations mémorisées demandées. Un réserviste ne compte pas comme présent. Par défaut, l'événement joue une fois par tentative ; **Une seule fois dans toute la campagne** évite aussi sa répétition après victoire et rejeu. Un événement conditionnel répétable attend que ses conditions deviennent fausses puis vraies avant de rejouer.
 
-Actions disponibles : dialogue, or, orbes d'invocation, arme ou objet avec ses utilisations et son destinataire, apparition d'un renfort, ouverture/fermeture de porte, remplacement de l'objectif, mémorisation d'une information vraie/fausse et choix entre deux réponses. Une information absente vaut faux. Son nom commence par une lettre et contient uniquement lettres, chiffres et `_` (64 caractères maximum). Par exemple, un choix mémorise `marche_accepte` ; un autre événement exige cette information vraie pour donner des orbes, et une branche peut exiger sa valeur fausse. Les choix et événements joués une fois par campagne sont conservés après victoire dans les sauvegardes, et peuvent servir dans les actes suivants.
+Actions disponibles : dialogue, or, arme ou objet avec ses utilisations et son destinataire, apparition d'un renfort, ouverture/fermeture de porte, remplacement de l'objectif, mémorisation d'une information vraie/fausse et choix entre deux réponses ; les plugins en ajoutent (« Donner des orbes » avec le plugin Invocations). Une information absente vaut faux. Son nom commence par une lettre et contient uniquement lettres, chiffres et `_` (64 caractères maximum). Par exemple, un choix mémorise `marche_accepte` ; un autre événement exige cette information vraie pour donner des orbes, et une branche peut exiger sa valeur fausse. Les choix et événements joués une fois par campagne sont conservés après victoire dans les sauvegardes, et peuvent servir dans les actes suivants.
 
 Pour un renfort, placer l'ennemi en **F3** et cocher **Arrivée uniquement par événement**, puis le choisir dans l'action. Le tour d'arrivée est alors ignoré. Il apparaît sur sa case ou une case accessible voisine et ne se duplique pas s'il est déjà apparu ou vaincu. Les renforts en attente restent inclus dans les objectifs qui les comptent. Une porte occupée attend avant de se fermer. Un objet va au personnage choisi, sinon au convoi si ce personnage est absent, vaincu ou plein ; sans destinataire, il va directement au convoi. Si aucune place n'est disponible, l'événement attend et reprend à cette action quand la place est libérée, sans redonner les récompenses précédentes. La victoire attend aussi la fin des événements en cours : libérer une place par un échange ou le convoi permet de récupérer une récompense de victoire bloquée.
 
@@ -133,13 +133,13 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 - X (ou clic droit) : menu du camp — équipe, chapitres, boutique, paramètres. En chapitre, le menu propose *Retour au camp* (abandon) ; après une défaite, on retourne au camp dans l'état d'avant le chapitre.
 
 **Personnages de la série Fire Emblem** — Base de données › Unités › **＋ Personnages de la série…** : on coche les jeux (Shadow Dragon / Mystery, Echoes, Genealogy, Thracia 776, Binding Blade, Blazing Blade, Sacred Stones, Path of Radiance, Radiant Dawn, Awakening, Fates, Three Houses, Engage) et leurs personnages principaux sont ajoutés, soit 171 fiches. Chaque fiche contient :
-- la classe, le niveau, l'inventaire, la rareté d'invocation, la série (« Fire Emblem 7 »…) et une bio ;
+- la classe, le niveau, l'inventaire, la rareté d'invocation (utilisée par le plugin Invocations), la série (« Fire Emblem 7 »…) et une bio ;
 - des croissances inspirées du jeu ;
 - des stats approximatives, calculées depuis la classe et le niveau, puis ajustées selon ses croissances.
 
 Images : Eliwood, Lyn et Hector (Blazing Blade) reçoivent les ressources de base du projet (portrait, animation de combat, sprite de map). Si leur dossier manque dans `ressources/personnages/`, il est recopié. S'ils sont déjà dans la base, seuls leurs champs d'image vides sont remplis. Le sprite de map reste celui de la classe quand elle en a un, pour que la promotion le change. Les autres personnages prennent les sprites de leur classe, ou un jeton, jusqu'à ce que tu leur donnes les tiens. Pour en équiper un autre, il suffit d'ajouter une ligne à `ART` dans `src/shared/fe-pack.js`. L'import ajoute aussi :
 - les classes qui manquent : Seigneur (épée / lance / hache / arc), Tacticien, Prêtresse guerrière, Myrmidon › Bretteur, Chevalier wyverne › Seigneur wyverne, Chevalier faucon, Danseuse, Troubadour › Valkyrie, Moine › Évêque, Shaman › Druide, Sage, Nomade › Sniper, Berserker, Chevalier noir ;
-- une bannière d'invocation par jeu, avec le ou les seigneurs mis en avant.
+- avec le plugin Invocations, une bannière d'invocation par jeu, avec le ou les seigneurs mis en avant.
 
 Les autres personnages reçoivent leurs images si un **plugin** de leur jeu est installé dans le projet (voir « Plugins » plus bas) : Roy, Eirika, Ephraim, Guy, Florina… et les classes Archer, Chevalier, Mage… qui n'avaient pas de sprite. Installer le plugin avant ou après l'import revient au même : à l'installation, il relie aussi les personnages déjà présents.
 
@@ -161,7 +161,9 @@ Trois propriétés d'arme ont été ajoutées pour l'occasion (fiche d'arme) :
 
 **Danser** — Une unité de classe Danseuse (case *Danse* de la classe) a l'action **Danser** : un allié adjacent qui a déjà joué peut rejouer ce tour (+10 EXP pour la danseuse).
 
-**Invocations** — Comme dans Fire Emblem Heroes, un autel au camp (le puits du camp d'exemple) permet d'invoquer des personnages avec des **orbes**. On en reçoit au début de la partie (20 par défaut), à la première victoire de chaque acte (champ *Orbes* de l'acte) et en parlant aux compagnons au camp (champ *Orbes gagnées* d'une conversation).
+**Invocations (plugin)** — Le gacha est un plugin fourni avec l'application, `invocations` : on l'ajoute dans **Base de données › Plugins › Invocations › Installer dans le projet** ; un projet neuf ne l'a pas. À l'installation, il prépare le projet s'il n'a encore jamais servi : réglages par défaut, autel au camp, une bannière (celles de l'exemple si ses personnages sont là), orbes sur les actes et les conversations. Désactivé ou désinstallé, il cache l'autel, les orbes, l'onglet Invocations et la rareté ; les bannières, réglages et orbes gagnées restent dans le projet et les sauvegardes. Un ancien projet qui se servait des invocations reçoit le plugin automatiquement à sa première ouverture.
+
+Comme dans Fire Emblem Heroes, un autel au camp (le puits du camp d'exemple) permet d'invoquer des personnages avec des **orbes**. On en reçoit au début de la partie (20 par défaut), à la première victoire de chaque acte (champ *Orbes* de l'acte) et en parlant aux compagnons au camp (champ *Orbes gagnées* d'une conversation).
 - **Bannières** (Base de données › Invocations) : nom, description, personnages possibles, personnages mis en avant, taux 5★ / 4★ / 3★ et part des 5★ réservée aux mis en avant, condition de déblocage et dates (une bannière dont la date de fin est passée disparaît). Les taux réels sont affichés : une rareté sans personnage rend son taux aux autres.
 - **Rareté** (fiche d'unité) : 3★, 4★ ou 5★. Elle ne décide que de la probabilité ; les stats ne changent pas.
 - **Séance** : un cercle de 5 pierres de couleur (rouge : épée / anima, bleu : lance / lumière, vert : hache / ténèbres, incolore : arc / bâton) ; on choisit lesquelles ouvrir. La 1re coûte 5 orbes, puis 4, 4, 4 et 3 (Système › Invocations). Il faut en ouvrir au moins une : refermer l'autel garde la séance, on ne peut pas relancer les couleurs gratuitement.
@@ -174,7 +176,7 @@ Trois propriétés d'arme ont été ajoutées pour l'occasion (fiche d'arme) :
 **Chapitres et actes** — Un *acte* est un niveau jouable (map, placements, objectif, dialogues ; placements en mode Unités). Un *chapitre* regroupe des actes dans l'ordre. Les deux se règlent dans le même onglet, **Base de données › Chapitres et actes**. À gauche, un arbre présente les sections Histoire et Évènements ; chaque chapitre se replie (▸ / ▾) et montre ses actes en sous-cases, avec « + Nouvel acte » en dessous. Les actes qui ne sont rangés dans aucun chapitre sont regroupés dans « Actes non rangés ». La recherche trouve un chapitre ou un acte par son nom. Cliquer un chapitre ouvre sa fiche (nom, section, description, conditions et dates de déblocage, ordre des actes avec ▲ ▼). Cliquer un acte ouvre la sienne (objectif, dialogues, or, préparatifs, villages, coffres et portes). En bas, on trouve « + Chapitre », « + Acte » (dans le chapitre sélectionné) et la suppression de l'élément sélectionné : supprimer un chapitre garde ses actes. Les actes rangés dans aucun chapitre (anciens projets) s'affichent chacun comme un chapitre d'un seul acte au tableau des quêtes. Les conditions « disponible après » acceptent un chapitre entier ou un acte précis. Fichier : `data/arcs.json`.
 
 **Maps de chapitre et maps de camp** — Le panneau Projet sépare les **Maps de chapitre** (avec leurs actes) et les **Maps de camp** ; chaque section a son bouton +. Le type d'une map se change dans son inspecteur. Le camp se règle directement sur sa map : ouvrir la map de camp en mode **Unités (F3)**.
-- **Palette (à gauche)** : les repères (départ du héros, tableau des quêtes, marchand, autel d'invocation) et les personnages présents. On choisit un repère, puis on clique sur la map pour le placer. « Ajouter » met un personnage au camp ; un clic droit sur lui le retire.
+- **Palette (à gauche)** : les repères (départ du héros, tableau des quêtes, marchand, lieux ajoutés par les plugins comme l'autel d'invocation) et les personnages présents. On choisit un repère, puis on clique sur la map pour le placer. « Ajouter » met un personnage au camp ; un clic droit sur lui le retire.
 - **Inspecteur (à droite)** : nom, héros, or de départ, musique, bouton *Tester le camp*. Pour le personnage sélectionné : le chapitre après lequel il arrive. Puis les **conversations** du camp (cliquer pour les modifier dans une fenêtre : personnage, chapitre à terminer avant, personnages vivants requis, affinité et orbes gagnées, une seule fois, dialogue « Nom: texte »), l'**équipe de départ**, la **boutique** et l'**autel**.
 
 Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Utiliser comme camp du jeu »). Tout cela est annulable (Ctrl+Z). Les chapitres et leurs actes se règlent dans Base de données › **Chapitres et actes** (section, conditions, **dates réelles**, or à la victoire, rejouable). Sans lobby (case décochée), les chapitres s'enchaînent comme avant.
@@ -191,7 +193,9 @@ Si le projet a plusieurs maps de camp, une seule est utilisée par le jeu (« Ut
 - **Relier à la base** : refait les liens ;
 - **Désinstaller** : retire la fiche et les scripts ; les images déjà copiées restent dans `ressources/`.
 
-Plugin fourni dans le dépôt : `exemple-annonce-tours`, un exemple de script qui annonce les tours et compte les ennemis vaincus.
+Plugins fournis dans le dépôt :
+- `invocations` : le gacha façon Fire Emblem Heroes (voir **Invocations (plugin)** plus haut) ; c'est aussi l'exemple complet d'un plugin qui ajoute un système au jeu ;
+- `exemple-annonce-tours` : un petit script qui annonce les tours et compte les ennemis vaincus.
 
 Les plugins de ressources Fire Emblem (`fe6-binding-blade`, `fe7-blazing-blade`, `fe8-sacred-stones`, `customs-style-gba`) ne sont plus dans le dépôt. Ce sont des rips (The Spriters Resource) de Nintendo / Intelligent Systems et de Square Enix, pour un usage personnel. Pour les refaire à partir des planches de `tools/sprite-sources/fe-gba/` :
 - `python3 tools/build_fe_gba_pack.py` découpe les planches (réglages dans `tools/fe_gba_overrides.py`, `--preview dossier` pour les aperçus numérotés) ;
@@ -211,23 +215,40 @@ On les installe ensuite avec **Installer depuis un dossier…**.
   "classes": { "archer": { "battler": "ressources/personnages/Archer/combat_FE7", "mapSprite": "ressources/personnages/Archer/map_FE7Male" } },
   "battlebacks": { "plain": "ressources/fonds-combat/ma-plaine.png" }
  },
- "scripts": ["main.js"]
+ "scripts": ["main.js"],
+ "styles": ["style.css"]
 }
 ```
 
 `kind` vaut `ressources`, `script` ou `mixte`. `ressources/` reprend l'arborescence d'un projet (`personnages/<Nom>/`, `fonds-combat/`, `tilesets/`, `musiques/`…). `links` est facultatif : `characters` utilise les clés « jeu:Nom » du pack de personnages de la série, `classes` les identifiants de classes, `battlebacks` les identifiants de terrains.
 
-**Scripts** — chargés dans l'éditeur à l'ouverture du projet et dans le jeu au lancement, seulement pour les plugins activés :
+**Scripts** — chargés (avec les feuilles de style de `styles`) dans l'éditeur à l'ouverture du projet ou dès l'installation, et dans le jeu au lancement, seulement pour les plugins activés :
 
 ```js
 TacticalEmblem.register('mon-plugin', {
-  editor(api) { /* une fois, dans l'éditeur */ },
+  setup(api) { /* éditeur et jeu : ajouts communs */ },
+  editor(api) { /* dans l'éditeur, à chaque ouverture du projet */ },
   game(api) { api.toast('Mon plugin est actif'); }
 });
 TacticalEmblem.on('turn:start', (e, api) => { if (e.phase === 'player') api.toast('Tour ' + e.turn); });
 ```
 
-Événements : `game:start`, `chapter:start` { chapter }, `turn:start` { phase, turn }, `combat:end` { attacker, defender, result }, `unit:defeated` { unit }, `chapter:victory` { chapter }. `api` donne `where` ('editor' ou 'game'), `project`, `db`, `state` (la partie en cours) et `toast(texte)`. Un script qui plante est signalé dans la console sans arrêter le jeu. Un script a les mêmes droits que l'éditeur : n'installe que des plugins de confiance.
+Événements : `game:start`, `campaign:new` { campaign }, `chapter:start` { chapter }, `turn:start` { phase, turn }, `combat:end` { attacker, defender, result }, `unit:defeated` { unit }, `chapter:victory` { chapter }, `lobby:enter` { campaign }, `lobby:talk` { talk, unit, campaign, float }. `api` donne `id`, `where` ('editor' ou 'game'), `project`, `meta`, `db`, `state` (la partie en cours), `toast(texte)`, `on(événement, fn)` (gestionnaire coupé quand le plugin est désactivé) et `extend(type, clé, définition)` pour ajouter au noyau :
+
+| type | ajoute | définition |
+|---|---|---|
+| `dbTab` | un onglet-liste dans la base de données | `{ key, label, after, list(), prefix, create(), fields(item), sub(item) }` |
+| `fields` | des champs à une fiche | `{ tab: 'units' \| 'talks' \| 'chapters', after: 'clé', fields(item) }` |
+| `system` | une section de Système | `{ label, prepare(meta), fields(meta) }` |
+| `action` | une action d'événement | `{ type, plugin, label, defaults, fields(a), validate(a, db), run(a, ctx) }` |
+| `lobbyPlace` | un lieu du camp (placé sur la map de camp) | `{ key, name, label, color, help, enabled(meta), open(ctx), menuSub(ctx) }` |
+| `currency` | une monnaie affichée au camp | `{ label(campaign), enabled(meta, cfg) }` |
+| `chapterReward` | une récompense de victoire | `{ amount(acte, déjàFini), grant(campaign, n), text(n) }` |
+| `unitModifier` | une retouche des unités chargées | `(unit, fiche, campaign) => {}` |
+| `debug` | un bouton du menu Debug | `{ label, run(ctx) }` |
+| `hook` | une réaction du noyau | `{ name: 'fePack:installed' \| 'db:deleted', fn(données) }` |
+
+Les données d'un plugin se rangent dans la base (`db.<clé>` est enregistré dans `data/<clé>.json`), dans `meta` ou dans la campagne ; elles restent quand le plugin est désactivé. `plugins/invocations/main.js` utilise presque tous ces points d'extension. Un script qui plante est signalé dans la console sans arrêter le jeu. Un script a les mêmes droits que l'éditeur : n'installe que des plugins de confiance.
 
 ## Affinités (soutiens) et épilogue
 
@@ -422,8 +443,9 @@ src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, ba
 src/shared/plugins.js      plugins : fiches plugin.json, liens vers la base — testé dans test/plugins.test.js
 src/main/plugins-io.js     plugins fournis (plugins/), installation / désinstallation dans un projet
 src/renderer/plugin-runtime.js  scripts des plugins (TacticalEmblem.register / on), chargés dans l'éditeur et le jeu
-src/shared/summon.js       invocations : bannières, taux, pitié, cercle de pierres, fusions — testé dans test/summon.test.js
-src/renderer/summon-panel.js  autel d'invocation du camp
+src/shared/extensions.js   points d'extension des plugins (onglets, champs, actions, lieux du camp, récompenses…)
+plugins/invocations/       plugin Invocations : summon.js (taux, pitié, cercle de pierres, fusions — test/summon.test.js),
+                           summon-panel.js (autel du camp), main.js (branchement sur le noyau), summon.css
 src/shared/roster.js       tri et recherche des personnages (nom, classe, arme, série) — testé dans test/roster.test.js
 src/shared/team.js         effectif recruté, équipement des compétences et transferts — testés dans test/team.test.js
 src/renderer/team-panel.js préparatifs de l'équipe au camp

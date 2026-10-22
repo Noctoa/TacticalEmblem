@@ -1,0 +1,11 @@
+{
+ "id": "invocations",
+ "name": "Invocations (gacha façon Fire Emblem Heroes)",
+ "version": "1.0.0",
+ "kind": "script",
+ "description": "Autel d'invocation au camp : bannières de personnages, cercle de 5 pierres de couleur, orbes (monnaie gagnée en finissant des actes, en parlant aux compagnons ou par événement), pitié sur les 5★, recrutement ou fusion (+1 à +10) du personnage obtenu. Ajoute l'onglet Base de données › Invocations, la rareté des unités et la section Système › Invocations.",
+ "author": "Tactical Emblem",
+ "notice": "Désactiver ou désinstaller le plugin cache l'autel, les orbes et l'onglet Invocations ; les bannières, réglages et orbes déjà gagnées restent dans le projet et les sauvegardes, et reviennent si tu le réinstalles.",
+ "scripts": ["summon.js", "summon-panel.js", "main.js"],
+ "styles": ["summon.css"]
+}

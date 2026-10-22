@@ -2,7 +2,7 @@
  * Scène du lobby (playtest) : une map explorable où le héros se déplace librement.
  *
  *   Flèches / clic      se déplacer (un clic sur un personnage ou un comptoir y va et interagit)
- *   Z / Entrée          parler au personnage en face, consulter la table des chapitres, la boutique
+ *   Z / Entrée          parler au personnage en face, consulter la table des chapitres, la boutique, les lieux des plugins
  *   X / Échap           menu du camp (chapitres, boutique, sauvegarde, musique, quitter)
  *
  * Le moteur du playtest fournit le rendu de la map et des unités (api.*) ; ce module ajoute les
@@ -49,6 +49,7 @@
       S.facing = 'down'; S.held = []; S.moving = false;
       G.cursor = { x: S.hero.x, y: S.hero.y };
       api.buildBase(); api.resize(); api.focus(S.hero.x, S.hero.y, true);
+      TacticalEmblem.emit('lobby:enter', { campaign: G.campaign }); // plugins : état de campagne à compléter (anciennes sauvegardes)
       G.checkpoint = Campaign.checkpoint(Lobby.LOBBY_SAVE, G.campaign, G.convoy, G.sup);
       api.Music.bgm('lobby');
       refreshHud();
@@ -69,21 +70,26 @@
     const npcAt = (x, y) => S.npcs.find(u => u.x === x && u.y === y) || null;
     const isBoard = (x, y) => S.cfg.board.x === x && S.cfg.board.y === y;
     const isShop = (x, y) => S.cfg.shop.enabled && S.cfg.shop.x === x && S.cfg.shop.y === y;
-    const summonOn = () => S.cfg.summon.enabled && Summon.settings(G.project.meta).enabled !== false;
-    const isSummon = (x, y) => summonOn() && S.cfg.summon.x === x && S.cfg.summon.y === y;
+    // lieux ajoutés par les plugins (Extensions « lobbyPlace ») : réglés sur la map de camp, ouverts comme la boutique
+    const placeOn = (p) => S.cfg[p.key] && S.cfg[p.key].enabled && (typeof p.enabled !== 'function' || p.enabled(G.project.meta, S.cfg) !== false);
+    const activePlaces = () => Lobby.places().filter(placeOn);
+    const placeAt = (x, y) => activePlaces().find(p => S.cfg[p.key].x === x && S.cfg[p.key].y === y) || null;
+    const placeName = (p) => S.cfg[p.key].name || p.name || p.key;
+    const currencies = () => Extensions.list('currency').filter(c => typeof c.enabled !== 'function' || c.enabled(G.project.meta, S.cfg) !== false);
     function walkable(x, y) {
       if (x < 0 || y < 0 || x >= G.map.width || y >= G.map.height) return false;
       if (npcAt(x, y)) return false;
       const cost = R.moveCost(api.terrainAt(x, y), S.hero.moveType);
       return Number.isFinite(cost) && cost < R.IMPASSABLE;
     }
-    /** Ce avec quoi on peut interagir sur une case : { kind: 'npc' | 'board' | 'shop', unit? }. */
+    /** Ce avec quoi on peut interagir sur une case : { kind: 'npc' | 'board' | 'shop' | 'place', unit?, place? }. */
     function thingAt(x, y) {
       const u = npcAt(x, y);
       if (u) return { kind: 'npc', unit: u };
       if (isBoard(x, y)) return { kind: 'board' };
       if (isShop(x, y)) return { kind: 'shop' };
-      if (isSummon(x, y)) return { kind: 'summon' };
+      const place = placeAt(x, y);
+      if (place) return { kind: 'place', place };
       return null;
     }
     function facingTile() {
@@ -163,7 +169,7 @@
       if (!thing) return;
       if (thing.kind === 'board') return openChapters();
       if (thing.kind === 'shop') return openShop();
-      if (thing.kind === 'summon') return openSummon();
+      if (thing.kind === 'place') return openPlace(thing.place);
       if (thing.kind === 'npc') return talkTo(thing.unit);
     }
 
@@ -173,8 +179,8 @@
       const t = list[0].talk;
       await api.playDialogue(t.script);
       Lobby.markTalk(G.campaign, t);
-      const orbs = Math.max(0, Math.floor(Number(t.orbs) || 0));
-      if (orbs) { Summon.addOrbs(G.campaign, orbs); api.float(S.hero.x, S.hero.y, `+${orbs} orbe${orbs > 1 ? 's' : ''}`, '#d6a8ff'); }
+      // plugins : récompenses de conversation (ex. orbes)
+      TacticalEmblem.emit('lobby:talk', { talk: t, unit: u, campaign: G.campaign, float: (text, color) => api.float(S.hero.x, S.hero.y, text, color) });
       const pts = Math.max(0, Math.floor(Number(t.points) || 0));
       const pair = [S.hero.sourceId, u.sourceId];
       const linked = Object.values(G.sup).some(e => pair.includes(e.def.a) && pair.includes(e.def.b));
@@ -189,9 +195,10 @@
     // ------------------------------------------------------------------
     // Panneaux (chapitres, boutique)
     // ------------------------------------------------------------------
-    function openPanel(title, build) {
+    /** cls : classe CSS ajoutée au panneau (ex. « summon-panel » pour un lieu de plugin). */
+    function openPanel(title, build, cls) {
       api.hideMenu();
-      S.panel = { title, build, tab: S.panel && S.panel.title === title ? S.panel.tab : null };
+      S.panel = { title, build, cls: cls || '', tab: S.panel && S.panel.title === title ? S.panel.tab : null };
       G.ui = 'lobbypanel';
       api.Music.se('confirm');
       renderPanel();
@@ -199,7 +206,9 @@
     function renderPanel(focusIndex) {
       const el = panelEl();
       el.classList.toggle('team-panel', S.panel.build === teamPanel.render);
-      el.classList.toggle('summon-panel', S.panel.build === summonPanel.render);
+      if (el.dataset.cls) el.classList.remove('plugin-panel', ...el.dataset.cls.split(' '));
+      el.dataset.cls = S.panel.cls;
+      if (S.panel.cls) el.classList.add('plugin-panel', ...S.panel.cls.split(' '));
       el.classList.remove('hidden');
       el.innerHTML = '';
       const body = h('div', { class: 'lp-body' });
@@ -220,7 +229,7 @@
       panelEl().classList.add('hidden'); panelEl().innerHTML = '';
       if (!silent) { G.ui = 'idle'; refreshHud(); }
     }
-    const goldLabel = () => `Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}` + (summonOn() ? ` · Orbes : ${(G.campaign.orbs || 0).toLocaleString('fr-FR')}` : '');
+    const goldLabel = () => [`Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}`, ...currencies().map(c => c.label(G.campaign, G.project.meta))].filter(Boolean).join(' · ');
     function tabs(list, cur, onPick) {
       return h('div', { class: 'lp-tabs' }, list.map(([v, label]) => h('button', { class: 'lp-tab lp-focus' + (v === cur ? ' on' : ''), onclick: () => onPick(v) }, label)));
     }
@@ -285,17 +294,20 @@
       changed: () => { commit(); refreshHud(); }, openPromotion: api.openPromotion, showEvolution: api.showEvolution,
       openSettings: api.openSettings });
     function openTeam() { members(); openPanel('Équipe', teamPanel.render); }
-    // --- autel d'invocation
-    const summonPanel = SummonPanel.create({ G, h, Music: api.Music, rerender, portrait: api.portrait,
-      changed: () => { commit(); refreshHud(); },
-      // personnage invoqué : nouvelle recrue, ou fusion appliquée tout de suite aux unités déjà chargées
-      received: (res) => {
-        const def = R.byId(G.db.units, res.unitId);
-        commit();
-        for (const u of [...S.members, ...G.units]) if (u.sourceId === res.unitId && def) Summon.applyMerges(u, def, (G.campaign.merges || {})[res.unitId] || 0);
-        refreshMembers(); commit();
-      } });
-    function openSummon() { Summon.ensure(G.campaign, G.project.meta); openPanel(S.cfg.summon.name || 'Invocation', summonPanel.render); }
+    // --- lieux des plugins
+    /** Contexte donné à un lieu de plugin pour construire son panneau. */
+    function placeContext(p) {
+      return { G, h, R, Music: api.Music, cfg: S.cfg[p.key], name: placeName(p), portrait: api.portrait, rerender,
+        openPanel: (title, build, cls) => openPanel(title, build, cls),
+        changed: () => { commit(); refreshHud(); },
+        // unités du camp (équipe et personnages présents) : pour appliquer tout de suite un changement de stats
+        units: () => [...S.members, ...G.units],
+        refreshUnits: () => { commit(); refreshMembers(); commit(); },
+        float: (text, color) => api.float(S.hero.x, S.hero.y, text, color) };
+    }
+    function openPlace(p) { if (typeof p.open === 'function') p.open(placeContext(p)); }
+    /** Ouvre le lieu d'un plugin par sa clé (ex. 'summon'). */
+    function openPlaceByKey(key) { const p = activePlaces().find(e => e.key === key); if (p) openPlace(p); return !!p; }
     function openShop() {
       const MAX = 5;
       S.dest = S.dest || 'convoy';
@@ -374,7 +386,7 @@
         { label: 'Équipe', sub: `${members().length} personnage(s) recruté(s)`, action: () => { api.hideMenu(); openTeam(); } },
         { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
-        summonOn() ? { label: S.cfg.summon.name || 'Invocation', sub: `${(G.campaign.orbs || 0).toLocaleString('fr-FR')} orbe(s)`, action: () => { api.hideMenu(); openSummon(); } } : null,
+        ...activePlaces().filter(p => p.menu !== false).map(p => ({ label: placeName(p), sub: typeof p.menuSub === 'function' ? p.menuSub(placeContext(p)) : '', action: () => { api.hideMenu(); openPlace(p); } })),
         { label: 'Paramètres', sub: 'sauvegarde, son… (Échap)', action: () => { api.hideMenu(); G.ui = 'idle'; api.openSettings(); } },
         { label: 'Quitter le test', action: () => window.close() }
       ].filter(Boolean), S.hero, 'lobbymenu');
@@ -388,7 +400,6 @@
       const fresh = all.filter(e => e.state === 'new');
       const talks = Lobby.talks(S.cfg, G.db, G.campaign);
       obj.innerHTML = '';
-      if (summonOn()) Summon.ensure(G.campaign, G.project.meta);
       obj.append(h('div', { class: 'lbl' }, S.cfg.name), h('div', { class: 'obj' }, goldLabel()),
         h('div', { class: 'turn' }, fresh.length ? `${fresh.length} acte(s) à jouer` : 'Aucun nouvel acte'),
         talks.length ? h('div', { class: 'turn' }, `${talks.length} conversation(s) — « ! »`) : null,
@@ -399,7 +410,7 @@
       if (G.mode !== 'lobby') return;
       const t = target();
       const what = !t ? '' : t.kind === 'npc' ? `Z : parler à ${t.unit.name}` : t.kind === 'board' ? `Z : ${S.cfg.board.label || 'tableau des quêtes'}`
-        : t.kind === 'summon' ? `Z : ${S.cfg.summon.name || 'invocation'}` : `Z : ${S.cfg.shop.name || 'boutique'}`;
+        : t.kind === 'place' ? `Z : ${placeName(t.place)}` : `Z : ${S.cfg.shop.name || 'boutique'}`;
       $('#help').textContent = (what ? what + ' · ' : '') + 'Flèches / clic : se déplacer · X : menu du camp · Échap : paramètres · M : son';
     }
 
@@ -421,7 +432,7 @@
       ring(S.cfg.board.x, S.cfg.board.y, '#f2d58a');
       label(S.cfg.board.x, S.cfg.board.y, (fresh ? '! ' : '') + (S.cfg.board.label || 'Tableau des quêtes'), '#f2d58a');
       if (S.cfg.shop.enabled) { ring(S.cfg.shop.x, S.cfg.shop.y, '#9fe0ff'); label(S.cfg.shop.x, S.cfg.shop.y, S.cfg.shop.name || 'Boutique', '#9fe0ff'); }
-      if (summonOn()) { ring(S.cfg.summon.x, S.cfg.summon.y, '#d6a8ff'); label(S.cfg.summon.x, S.cfg.summon.y, S.cfg.summon.name || 'Invocation', '#d6a8ff'); }
+      for (const p of activePlaces()) { const c = S.cfg[p.key], col = p.color || '#d6a8ff'; ring(c.x, c.y, col); label(c.x, c.y, placeName(p), col); }
       const talking = new Set(Lobby.talks(S.cfg, G.db, G.campaign).map(e => e.unit.id));
       for (const u of S.npcs) {
         if (!talking.has(u.sourceId)) continue;
@@ -474,7 +485,7 @@
       if (thing) { face(x, y); refreshHint(); await interact(thing); }
     }
 
-    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openSummon, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
+    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openPlace: openPlaceByKey, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
   }
 
   root.LobbyScene = { create };

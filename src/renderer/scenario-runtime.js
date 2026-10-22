@@ -7,7 +7,6 @@
       switch (a.type) {
         case 'dialogue': await api.playDialogue(a.text); break;
         case 'gold': G.campaign.gold = (G.campaign.gold || 0) + a.amount; UI.toast(`+${a.amount} or`); break;
-        case 'orbs': Summon.addOrbs(G.campaign, a.amount); UI.toast(`+${a.amount} orbes`); break;
         case 'flag': Scenario.setFlag(G.campaign, a.key, a.value); break;
         case 'choice': {
           let value = null;
@@ -49,6 +48,14 @@
           }
           G.chapter.objective = objective; G.chapter.extraObjectives = []; G.chapter.victoryMode = 'all'; G.seized = [];
           UI.toast('Nouvel objectif : ' + Mission.label(objective, G.chapter)); break;
+        }
+        default: {
+          // action ajoutée par un plugin ; plugin absent ou désactivé : l'action est sautée
+          const def = Scenario.pluginAction(a.type);
+          if (def && typeof def.run === 'function') {
+            const r = await def.run(a, { G, R, data, toast: (t, k) => UI.toast(t, k), float: api.float, refreshHud: api.refreshHud });
+            if (r && r.ok === false) return r;
+          } else console.warn('[événement] action sans plugin actif : ' + a.type);
         }
       }
       return { ok: true };

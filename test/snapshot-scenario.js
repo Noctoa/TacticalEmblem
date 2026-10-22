@@ -27,7 +27,8 @@ module.exports = (editor, openPlaytest) => {
       p.db.units.find(u => u.id === 'c_eliwood').inventory = Array.from({ length: 5 }, () => ({ id: 'i_vulnerary', uses: 2 }));
       p.db.units.find(u => u.id === 'c_lyn').inventory = [{ id: 'w_iron_sword', uses: 7 }];
       p.db.units.find(u => u.id === 'c_hector').inventory = [{ id: 'w_iron_axe', uses: 45 }];
-      io.saveProject(dir, p); await js(ew, `Editor.open(${JSON.stringify(dir)});`); await js(ew, `DBEditor.open('chapters', 'ch_1')`);
+      io.saveProject(dir, p); require('./fixtures/plugin-host').installBundled(dir, 'invocations'); // action « Donner des orbes » : plugin Invocations
+      await js(ew, `Editor.open(${JSON.stringify(dir)});`); await js(ew, `DBEditor.open('chapters', 'ch_1')`);
       const field = async (selector, label, value) => js(ew, `(() => { const box = document.querySelector(${JSON.stringify(selector)}), label = [...box.querySelectorAll('.field-label'), ...box.querySelectorAll('.checkbox')].find(el => el.textContent === ${JSON.stringify(label)} || el.textContent === ${JSON.stringify(label)} + '?'); if (!label) throw new Error('Champ absent : ' + ${JSON.stringify(label)}); const input = label.matches('.checkbox') ? label.querySelector('input') : label.parentElement.querySelector('input,textarea,select'); ${typeof value === 'boolean' ? `input.checked = ${value};` : `input.value = ${JSON.stringify(value)};`} input.dispatchEvent(new Event('change', { bubbles: true })); })()`);
       const add = async name => { await click(ew, '[data-event-add]'); const id = await js(ew, `Editor.db().chapters[0].events.at(-1).id`); await field(`[data-event-id="${id}"]`, 'Nom de l’événement', name); return id; };
       const trigger = (id, type) => field(`[data-event-id="${id}"]`, 'Déclenchement', type);

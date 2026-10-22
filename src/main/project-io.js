@@ -26,7 +26,13 @@ const Scenario = require('../shared/scenario.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
-const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs', 'banners'];
+const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs'];
+// données des plugins (ex. « banners » du plugin Invocations) : tout autre data/<clé>.json est lu et réécrit tel quel
+const EXTRA_KEY = /^[a-z][A-Za-z0-9_-]{0,63}$/;
+const extraKeysIn = (dir) => {
+  const d = path.join(dir, 'data');
+  return fs.existsSync(d) ? fs.readdirSync(d).filter(f => f.endsWith('.json')).map(f => f.slice(0, -5)).filter(k => EXTRA_KEY.test(k) && !DB_KEYS.includes(k)) : [];
+};
 const RESOURCE_DIRS = Layout.ALL_DIRS;
 
 function readJson(file, fallback) {
@@ -70,6 +76,9 @@ function loadProject(dir, assetsDir) {
   if (migration) Object.assign(meta, readJson(metaFile, meta));
   const db = {};
   for (const k of DB_KEYS) db[k] = readJson(path.join(dir, 'data', k + '.json'), []);
+  for (const k of extraKeysIn(dir)) { const v = readJson(path.join(dir, 'data', k + '.json'), null); if (v !== null) db[k] = v; }
+  // actions d'événement devenues des actions de plugin : on note leur plugin (gardées même plugin absent)
+  for (const ch of db.chapters || []) for (const ev of ch.events || []) for (const a of ev.actions || []) if (a && a.type === 'orbs' && !a.plugin) a.plugin = 'invocations';
   const skillFile = path.join(dir, 'data', 'skills.json');
   if (fs.existsSync(skillFile)) {
     try { db.skills = JSON.parse(fs.readFileSync(skillFile, 'utf8')); }
@@ -108,6 +117,7 @@ function saveProject(dir, project) {
   delete meta.migration;
   writeJson(path.join(dir, PROJECT_FILE), meta);
   for (const k of DB_KEYS) writeJson(path.join(dir, 'data', k + '.json'), project.db[k] || []);
+  for (const [k, v] of Object.entries(project.db)) if (!DB_KEYS.includes(k) && EXTRA_KEY.test(k) && v && typeof v === 'object') writeJson(path.join(dir, 'data', k + '.json'), v);
   const keep = new Set();
   for (const m of project.maps) {
     const name = m.id + '.json';

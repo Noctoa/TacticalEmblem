@@ -20,6 +20,7 @@ module.exports = (win, openPlaytest) => {
       win.setSize(1440, 900);
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-fepack-')), 'Jeu');
       io.createProject(dir, 'Pack', 'sample', path.join(__dirname, '..', 'assets'));
+      require('./fixtures/plugin-host').installBundled(dir, 'invocations'); // les invocations sont un plugin
       const ejs = c => win.webContents.executeJavaScript(c, true);
       const shot = async (n, wc = win.webContents) => { wc.invalidate(); await wc.executeJavaScript('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))', true); await wait(300); fs.writeFileSync(path.join(out, n + '.png'), (await wc.capturePage()).toPNG()); };
       const assert = (c, m) => { if (!c) throw new Error(m); };

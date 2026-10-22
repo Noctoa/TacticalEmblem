@@ -359,12 +359,10 @@
           inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '',
           personalSkill: '', learnedSkills: [], equippedSkills: [], skillLearning: [] };
       },
-      fields: () => [
+      fields: (u) => withPluginFields('units', u, [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
         { key: 'series', label: 'Série', type: 'text', placeholder: 'ex. Fire Emblem 7, Final Fantasy VII, Original…', suggestions: () => Roster.seriesList(db()),
           help: 'Jeu ou univers d’origine du personnage. Sert à trier la liste des unités (Trier par › Série).' },
-        { key: 'rarity', label: 'Rareté (invocations)', type: 'select', numeric: true, empty: '★★★ (3★, par défaut)', options: [{ value: 5, label: '★★★★★ (5★)' }, { value: 4, label: '★★★★ (4★)' }],
-          help: 'Décide seulement de la probabilité de l’obtenir à l’autel d’invocation (taux réglés dans l’onglet Invocations). Les stats ne changent pas.' },
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
@@ -398,7 +396,7 @@
         { type: 'heading', label: 'Inventaire' },
         { key: 'inventory', type: 'inventory', options: () => Editor.invOptions(), max: 5 },
         { type: 'info', text: "La première arme utilisable est équipée. « É » = emplacement équipé." }
-      ]
+      ])
     },
     classes: {
       label: 'Classes', list: () => db().classes, prefix: 'cls_',
@@ -543,46 +541,6 @@
         ];
       }
     },
-    banners: {
-      label: 'Invocations', list: () => db().banners || (db().banners = []), prefix: 'bn_',
-      sub: (b) => `${[...new Set([...(b.pool || []), ...(b.focus || [])])].length} perso.` + ((b.unlock && (b.unlock.after || b.unlock.from)) ? ' · conditions' : ''),
-      create: () => {
-        const hero = Lobby.heroOf(Lobby.defaults(Editor.project().meta.lobby), db());
-        return { name: 'Nouvelle bannière', description: '', pool: db().units.filter(u => !hero || u.id !== hero.id).map(u => u.id), focus: [],
-          rates: Object.assign({}, Summon.DEFAULT_RATES), focusShare: 50, unlock: { after: '', alive: [], from: '', to: '' } };
-      },
-      rerenderOn: ['pool', 'focus', 'rates.5', 'rates.4', 'rates.3', 'focusShare'],
-      fields: (b) => {
-        const nb = Summon.normalizeBanner(b); Object.assign(b, { rates: nb.rates, unlock: nb.unlock, pool: nb.pool, focus: nb.focus });
-        const cfg = Lobby.defaults(Editor.project().meta.lobby), set = Summon.settings(Editor.project().meta);
-        const units = () => db().units.map(u => ({ value: u.id, label: `${u.name} ${'★'.repeat(Summon.rarityOf(u))}` }));
-        const eff = Summon.rates(b, db(), { dead: [] }, Editor.project().meta);
-        const pct = v => (Math.round(v * 100) / 100).toLocaleString('fr-FR') + ' %';
-        const errors = Summon.validate({ units: db().units, banners: [b] });
-        return [
-          !cfg.enabled || !cfg.summon.enabled || set.enabled === false ? { type: 'info', text: '⚠ L’autel d’invocation n’est pas actif : coche « Autel d’invocation » sur la map de camp (mode Unités) et dans Système › Invocations.' } : null,
-          ...errors.map(e => ({ type: 'info', text: '⚠ ' + e })),
-          { key: 'name', label: 'Nom de la bannière', type: 'text' },
-          { key: 'description', label: 'Description (affichée à l’autel)', type: 'text' },
-          { type: 'heading', label: 'Personnages' },
-          { key: 'pool', label: 'Personnages possibles', type: 'multicheck', options: units },
-          { key: 'focus', label: 'Mis en avant (ils se partagent une partie du taux 5★)', type: 'multicheck', options: units },
-          { type: 'info', text: 'La rareté de chaque personnage se règle sur sa fiche (onglet Unités › Rareté). Un personnage déjà recruté qui sort à nouveau gagne une fusion (+1 à deux stats, jusqu’à +10). La couleur de sa pierre vient de son arme : rouge épée / anima, bleu lance / lumière, vert hache / ténèbres, incolore arc / bâton.' },
-          { type: 'heading', label: 'Taux d’apparition (%)' },
-          { type: 'row', fields: [
-            { key: 'rates.5', label: '5★', type: 'number', min: 0, max: 100 },
-            { key: 'rates.4', label: '4★', type: 'number', min: 0, max: 100 },
-            { key: 'rates.3', label: '3★', type: 'number', min: 0, max: 100 },
-            { key: 'focusShare', label: 'Part des 5★ pour les mis en avant (%)', type: 'number', min: 0, max: 100 }] },
-          { type: 'info', text: `Taux réels avec ces personnages : ${[eff.focus ? '5★ mis en avant ' + pct(eff.focus) : '', eff[5] ? '5★ ' + pct(eff[5]) : '', eff[4] ? '4★ ' + pct(eff[4]) : '', eff[3] ? '3★ ' + pct(eff[3]) : ''].filter(Boolean).join(' · ') || '—'}. Une rareté sans personnage rend son taux aux autres. Pitié : +${String(set.pityStep).replace('.', ',')} % de 5★ toutes les ${set.pityEvery} invocations sans 5★ (Système › Invocations).` },
-          { type: 'heading', label: 'Disponibilité' },
-          { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: '— dès le début —', options: () => doneOpts() },
-          { type: 'row', fields: [
-            { key: 'unlock.from', label: 'Du (date réelle)', type: 'date' },
-            { key: 'unlock.to', label: 'au (inclus) — ensuite la bannière disparaît', type: 'date' }] }
-        ].filter(Boolean);
-      }
-    },
     talks: {
       label: 'Conversations', list: () => db().talks || (db().talks = []), prefix: 't_',
       sub: (t) => uName(t.unitId),
@@ -593,7 +551,7 @@
         const hero = Lobby.heroOf(cfg, db());
         const here = cfg.spots.find(s => s.unitId === t.unitId);
         const linked = hero && (db().supports || []).some(p => [p.a, p.b].includes(hero.id) && [p.a, p.b].includes(t.unitId));
-        return [
+        return withPluginFields('talks', t, [
           { key: 'name', label: 'Titre (pour s\'y retrouver)', type: 'text' },
           { type: 'row', fields: [
             { key: 'unitId', label: 'Personnage à qui parler dans le lobby', type: 'select', options: db().units.map(u => ({ value: u.id, label: u.name })) },
@@ -603,12 +561,11 @@
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
           { type: 'row', fields: [
             { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (onglet Affinités), si elle existe.' },
-            { key: 'orbs', label: 'Orbes gagnées', type: 'number', min: 0, max: 99, help: 'Monnaie des invocations (autel du camp).' },
             { key: 'once', label: 'Une seule fois', type: 'checkbox' }] },
           t.points > 0 && !linked ? { type: 'info', text: `Aucune affinité entre ${hero ? hero.name : 'le héros'} et ${uName(t.unitId)} : les points ne seront pas comptés.` } : null,
           { key: 'script', label: 'Dialogue', type: 'textarea', rows: 8, placeholder: 'Lyn: Bonsoir, Eliwood.\nEliwood: Tu ne dors pas ?' },
           { type: 'info', text: 'Une ligne par réplique : « Nom: texte ». Dans le lobby, un « ! » apparaît au-dessus du personnage quand une conversation est disponible ; le héros lui parle avec Z (ou un clic).' }
-        ].filter(Boolean);
+        ].filter(Boolean)).filter(Boolean);
       }
     },
     terrains: {
@@ -632,11 +589,41 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['banners', 'Invocations'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+
+  /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
+  function order() {
+    const out = ORDER.slice();
+    for (const d of Extensions.list('dbTab')) {
+      if (!d || !d.key || out.some(([k]) => k === d.key)) continue;
+      const i = out.findIndex(([k]) => k === (d.after || 'arcs'));
+      out.splice(i >= 0 ? i + 1 : out.length - 2, 0, [d.key, d.label || d.key]);
+    }
+    return out;
+  }
+  /** Définition d'un onglet-liste : du noyau, ou d'un plugin. */
+  const tabDef = (k) => TABS[k] || Extensions.find('dbTab', 'key', k);
+  /**
+   * Champs ajoutés par les plugins à un formulaire (Extensions « fields » : { tab, after, fields(item, ctx) }),
+   * insérés après le champ (ou la ligne) dont la clé est « after », sinon à la fin.
+   */
+  function withPluginFields(tabKey, item, list) {
+    const out = list.slice();
+    for (const ext of Extensions.list('fields')) {
+      if (!ext || ext.tab !== tabKey || typeof ext.fields !== 'function') continue;
+      let add = [];
+      try { add = (ext.fields(item, { db: db(), project: Editor.project() }) || []).filter(Boolean); } catch (e) { console.error('[plugin] champs', e); }
+      const has = (f) => f && (f.key === ext.after || (f.fields || []).some(x => x && x.key === ext.after));
+      const i = ext.after ? out.findIndex(has) : -1;
+      if (i >= 0) out.splice(i + 1, 0, ...add); else out.push(...add);
+    }
+    return out;
+  }
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
     if (t) tab = t;
+    if (!tabDef(tab) && !order().some(([k]) => k === tab) && !['chapters', 'terrains'].includes(tab)) tab = 'units'; // onglet d'un plugin retiré
     if (id) selected[tab] = id;
     plug.installed = null; // relu à l'ouverture (le projet a pu changer)
     changed = false;
@@ -651,7 +638,7 @@
 
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of ORDER) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
   }
 
   function renderBody() {
@@ -660,7 +647,7 @@
     body.classList.toggle('single', tab === 'system');
     if (tab === 'terrains') { renderListTab(body, TABS.terrains); return mergeTerrainList(body); }
     if (tab === 'tilesets') { renderTilesets(body); return mergeTerrainList(body); }
-    if (TABS[tab]) return renderListTab(body, TABS[tab]);
+    if (tabDef(tab)) return renderListTab(body, tabDef(tab));
     if (tab === 'chapters') return renderChapters(body);
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
@@ -783,7 +770,7 @@
       }
       refresh();
       box.append(h('h3', {}, 'Personnages de la série Fire Emblem'),
-        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, rareté d’invocation, série et bio. Les personnages et les classes qui ont des images dans un plugin installé (onglet Plugins : Fire Emblem 6, 7, 8…) les reçoivent. Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
+        h('p', { class: 'form-info' }, 'Les personnages principaux de chaque jeu : classe, niveau, stats et croissances approximatives, inventaire, série et bio (et rareté d’invocation, utilisée par le plugin Invocations). Les personnages et les classes qui ont des images dans un plugin installé (onglet Plugins : Fire Emblem 6, 7, 8…) les reçoivent. Les autres prennent les sprites de leur classe (ou un jeton) jusqu’à ce que tu leur donnes les tiens. Les classes qui manquent (Myrmidon, Chevalier wyverne, Danseuse…) sont ajoutées, ainsi qu’une bannière d’invocation par jeu. Un personnage déjà présent (même nom, même série) n’est pas dupliqué.'),
         h('div', { class: 'insp-actions' },
           h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
           h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
@@ -796,8 +783,10 @@
     const r = await packArt(FEPack.artFolders([...picked]));
     const art = Plugins.mergeLinks(Plugins.enabled(Editor.project().meta, await installedPlugins()));
     const res = FEPack.install(db(), [...picked], { has: r.has, art });
+    // plugins : compléments (ex. une bannière d'invocation par jeu) → textes ajoutés au message
+    const extra = Extensions.hook('fePack:installed', { db: db(), games: res.games }).filter(t => typeof t === 'string' && t);
     change(); renderBody();
-    UI.toast(`${res.units} personnage(s), ${res.classes} classe(s) et ${res.banners} bannière(s) ajoutés` + (res.art ? ` · ${res.art} image(s) reliée(s)` : '') + (r.copied ? ` · ${r.copied} fichier(s) de ressources copié(s)` : ''));
+    UI.toast(`${res.units} personnage(s) et ${res.classes} classe(s) ajoutés` + extra.map(t => ' · ' + t).join('') + (res.art ? ` · ${res.art} image(s) reliée(s)` : '') + (r.copied ? ` · ${r.copied} fichier(s) de ressources copié(s)` : ''));
   }
 
   /** Ressources des personnages du pack : copie les dossiers de base qui manquent au projet, puis dit ce qui existe. */
@@ -868,7 +857,9 @@
         }
         const usage = usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;
-        list.splice(list.indexOf(cur), 1); change(); renderBody();
+        list.splice(list.indexOf(cur), 1);
+        Extensions.hook('db:deleted', { db: db(), tab, id: cur.id }); // plugins : retirer leurs références (ex. bannières)
+        change(); renderBody();
       }
     }));
     const pane = h('div', { class: 'db-form' });
@@ -1090,7 +1081,7 @@
           const sel = h('select', {}, (db().arcs || []).map(a => h('option', { value: a.id }, a.name || a.id)));
           return h('span', { class: 'arc-add' }, sel, h('button', { class: 'small', onclick: () => { const a = byId(db().arcs, sel.value); a.acts = (a.acts || []).concat(ch.id); change(); renderBody(); } }, 'Ranger dans ce chapitre'));
         })() : h('a', { href: '#', onclick: (e) => { e.preventDefault(); addArc('story'); } }, 'Créer un chapitre')));
-    pane.append(UI.form([
+    pane.append(UI.form(withPluginFields('chapters', ch, [
       { type: 'row', fields: [
         { key: 'name', label: 'Nom', type: 'text' },
         { key: 'mapId', label: 'Map', type: 'select', options: maps.filter(m => m.kind !== 'lobby' || m.id === ch.mapId).map(m => ({ value: m.id, label: m.name })) }] },
@@ -1107,8 +1098,7 @@
       { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
         inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
-        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 },
-        { key: 'orbs', label: 'Orbes (1re victoire)', type: 'number', min: 0, max: 999, help: 'Monnaie des invocations, donnée à la première victoire seulement.' }].filter(Boolean) },
+        { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 }].filter(Boolean) },
       { type: 'row', fields: [
         { key: 'goldEachClear', label: "Or à chaque victoire (sinon : la première fois)", type: 'checkbox' },
         { key: 'replay', label: 'Rejouable une fois terminé', type: 'checkbox' }] },
@@ -1121,7 +1111,7 @@
       { type: 'info', text: (c) => (Lobby.defaults(Editor.project().meta.lobby).enabled ? '' : '⚠ Le camp est désactivé (map de camp, mode Unités) : ces réglages ne servent pas encore. ') +
         (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
-    ], ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
+    ]), ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
     renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
     renderVillages(pane, ch);
@@ -1319,6 +1309,10 @@
     try { plug.bundled = await tf.bundledPlugins(); } catch (e) { plug.bundled = []; }
   }
   const pluginConf = (id) => ((Editor.project().meta.plugins || {})[id]) || null;
+  /** Recharge les scripts des plugins actifs dans l'éditeur (après une installation ou une activation). */
+  async function reloadPluginScripts() {
+    try { await Editor.reloadPlugins(); } catch (e) { console.error('[plugin] rechargement', e); }
+  }
   const linkPlugin = (m) => Plugins.applyLinks(db(), m.links, { has: Plugins.hasIn(res()), findUnit: (k) => FEPack.findUnit(db(), k) });
 
   async function installPlugin(from) {
@@ -1331,12 +1325,13 @@
     meta.plugins = meta.plugins || {};
     meta.plugins[m.id] = { enabled: true, version: m.version, name: m.name };
     const n = linkPlugin(m);
-    change(); await refreshPlugins(); plug.sel = 'i:' + m.id; renderBody();
+    if ((m.scripts || []).length || (m.styles || []).length) await reloadPluginScripts();
+    change(); await refreshPlugins(); plug.sel = 'i:' + m.id; renderTabs(); renderBody();
     UI.alert('Plugin installé : ' + m.name, [
       `${r.added} fichier(s) copié(s) dans ressources/ (rien n’est écrasé)`,
       `Reliés : ${n.classes} sprite(s) de classe, ${n.terrains} fond(s) de combat, ${n.units} image(s) de personnage`,
       Object.keys(m.links.characters).length ? 'Les personnages de la série importés ensuite (Unités › Personnages de la série) recevront aussi leurs images.' : '',
-      (m.scripts || []).length ? 'Scripts : actifs au prochain lancement du jeu, et dans l’éditeur à la réouverture du projet.' : ''].filter(Boolean));
+      (m.scripts || []).length ? 'Scripts : déjà actifs dans l’éditeur (nouveaux onglets ou réglages éventuels) et au prochain lancement du jeu.' : ''].filter(Boolean));
   }
 
   async function uninstallPlugin(m) {
@@ -1344,7 +1339,8 @@
     await tf.uninstallPlugin(Editor.dir(), m.id);
     const meta = Editor.project().meta;
     if (meta.plugins) delete meta.plugins[m.id];
-    change(); await refreshPlugins(); plug.sel = null; renderBody();
+    Extensions.removePlugin(m.id); // ses onglets, champs et réglages disparaissent (les données restent dans le projet)
+    change(); await refreshPlugins(); plug.sel = null; renderTabs(); renderBody();
     UI.toast('Plugin désinstallé');
   }
 
@@ -1386,9 +1382,11 @@
       h('p', { class: 'plugin-kind' }, Plugins.KIND_LABELS[m.kind] || m.kind, m.author ? h('span', { class: 'muted' }, ' · ' + m.author) : null),
       m.description ? h('p', {}, m.description) : null,
       h('ul', { class: 'plugin-facts' },
-        h('li', {}, cur.installed ? 'Ressources copiées dans ressources/ du projet' : `${m.files || 0} fichier(s) de ressources`),
-        h('li', {}, `${Object.keys(L.characters).length} personnage(s) de la série, ${Object.keys(L.classes).length} classe(s), ${Object.keys(L.battlebacks).length} fond(s) de combat reliés`),
-        (m.scripts || []).length ? h('li', {}, 'Scripts : ' + m.scripts.join(', ')) : null),
+        // un plugin de script seul n'a ni ressources ni liens : on n'affiche pas de lignes à zéro
+        m.files || m.kind !== 'script' ? h('li', {}, cur.installed ? 'Ressources copiées dans ressources/ du projet' : `${m.files || 0} fichier(s) de ressources`) : null,
+        Object.keys(L.characters).length + Object.keys(L.classes).length + Object.keys(L.battlebacks).length || m.kind !== 'script'
+          ? h('li', {}, `${Object.keys(L.characters).length} personnage(s) de la série, ${Object.keys(L.classes).length} classe(s), ${Object.keys(L.battlebacks).length} fond(s) de combat reliés`) : null,
+        (m.scripts || []).length ? h('li', {}, 'Scripts : ' + m.scripts.join(', ') + ((m.styles || []).length ? ' · styles : ' + m.styles.join(', ') : '')) : null),
       m.notice ? h('p', { class: 'form-info' }, m.notice) : null,
       (m.scripts || []).length ? h('p', { class: 'form-info warn' }, 'Un script s’exécute dans l’éditeur et dans le jeu, avec les mêmes droits qu’eux : n’installe que des plugins de confiance.') : null].filter(Boolean));
     const actions = h('div', { class: 'insp-actions' });
@@ -1396,7 +1394,13 @@
       const conf = pluginConf(m.id) || {};
       const box = h('input', { type: 'checkbox', 'data-plugin-enabled': m.id });
       box.checked = conf.enabled !== false;
-      box.addEventListener('change', () => { const meta = Editor.project().meta; meta.plugins = meta.plugins || {}; meta.plugins[m.id] = Object.assign({ version: m.version, name: m.name }, meta.plugins[m.id], { enabled: box.checked }); change(); renderBody(); UI.toast(box.checked ? 'Plugin activé' : 'Plugin désactivé (scripts et liens futurs)'); });
+      box.addEventListener('change', async () => {
+        const meta = Editor.project().meta; meta.plugins = meta.plugins || {};
+        meta.plugins[m.id] = Object.assign({ version: m.version, name: m.name }, meta.plugins[m.id], { enabled: box.checked });
+        await reloadPluginScripts(); // ajouts du plugin montrés ou cachés tout de suite
+        change(); renderTabs(); renderBody();
+        UI.toast(box.checked ? 'Plugin activé' : 'Plugin désactivé (ses ajouts sont cachés, ses données restent dans le projet)');
+      });
       actions.append(h('label', { class: 'check' }, box, ' Activé'),
         h('button', { class: 'small', 'data-plugin-link': m.id, title: 'Relie de nouveau les images du plugin aux classes, terrains et personnages qui n’en ont pas', onclick: async () => { await Editor.rescanResources(); const n = linkPlugin(m); change(); renderBody(); UI.toast(`${n.classes + n.terrains + n.units} lien(s) posé(s)`); } }, 'Relier à la base'),
         h('button', { class: 'small danger', 'data-plugin-remove': m.id, onclick: () => uninstallPlugin(m) }, 'Désinstaller'));
@@ -1831,7 +1835,11 @@
     // réglages ajoutés après la création du projet : valeurs par défaut affichées
     const st = Editor.project().meta.settings || (Editor.project().meta.settings = {});
     for (const k of ['overkill', 'overkillExp']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
-    Editor.project().meta.summon = Summon.settings(Editor.project().meta);
+    // sections des plugins (Extensions « system » : { label, prepare(meta), fields(meta) })
+    const pluginSections = Extensions.list('system').flatMap(sec => {
+      try { if (typeof sec.prepare === 'function') sec.prepare(Editor.project().meta); return [{ type: 'heading', label: sec.label }, ...(sec.fields(Editor.project().meta) || [])]; }
+      catch (e) { console.error('[plugin] Système', e); return []; }
+    });
     pane.append(UI.form([
       { type: 'row', fields: [{ key: 'name', label: 'Nom du jeu', type: 'text' }, { key: 'author', label: 'Auteur', type: 'text' }] },
       { type: 'row', fields: [
@@ -1856,15 +1864,7 @@
         { key: 'settings.overkill', label: 'Overkill : après le coup fatal, l’attaquant finit ses coups et les dégâts en trop s’affichent', type: 'checkbox' },
         { key: 'settings.overkillExp', label: 'Bonus d’EXP (overkill ×2)', type: 'number', min: 0, max: 100, compact: true,
           help: 'Versé quand les dégâts en trop atteignent une 2e fois les PV max de l’ennemi. 0 = pas de bonus. L’EXP d’un combat reste plafonnée à 100.' }] },
-      { type: 'heading', label: 'Invocations' },
-      { type: 'row', fields: [
-        { key: 'summon.enabled', label: 'Invocations (autel du camp)', type: 'checkbox' },
-        { key: 'summon.startOrbs', label: 'Orbes au début de la partie', type: 'number', min: 0, max: 9999 }] },
-      { type: 'row', fields: [0, 1, 2, 3, 4].map(i => ({ key: 'summon.costs.' + i, label: `Pierre ${i + 1} (orbes)`, type: 'number', min: 0, max: 99 })) },
-      { type: 'row', fields: [
-        { key: 'summon.pityEvery', label: 'Pitié : toutes les N invocations sans 5★', type: 'number', min: 0, max: 100 },
-        { key: 'summon.pityStep', label: '… taux 5★ augmenté de (%)', type: 'number', min: 0, max: 10, step: 0.5 }] },
-      { type: 'info', text: 'Une séance d’invocation ouvre un cercle de 5 pierres : la 1re coûte le plus cher, il faut en ouvrir au moins une. Les bannières se règlent dans l’onglet Invocations, l’autel sur la map de camp (mode Unités), les orbes gagnées sur les actes et les conversations.' },
+      ...pluginSections,
       { type: 'heading', label: 'Convoi (cargaison de départ)' },
       { key: 'convoy.capacity', label: 'Capacité', type: 'number', min: 1, max: 999 },
       { type: 'custom', render: (meta) => {

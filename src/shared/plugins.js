@@ -5,7 +5,8 @@
  *   plugin.json   { id, name, version, kind ('ressources' | 'script' | 'mixte'), description, author, notice,
  *                   ressources: 'ressources',           dossier copié dans ressources/ du projet (sans rien écraser)
  *                   links: { characters, classes, battlebacks },   images reliées à la base (champs vides seulement)
- *                   scripts: ['main.js'] }               fichiers chargés dans l'éditeur et dans le jeu
+ *                   scripts: ['main.js'],                fichiers chargés dans l'éditeur et dans le jeu
+ *                   styles: ['style.css'] }              feuilles de style chargées avec les scripts
  *
  * Liens :
  *   characters  { 'fe6:Roy': { folder, portrait, battler, mapSprite } }  personnages du pack de personnages FE
@@ -34,6 +35,8 @@
     if (m.kind && !KINDS.includes(m.kind)) err.push('« kind » inconnu : ' + m.kind);
     if (m.scripts && (!Array.isArray(m.scripts) || m.scripts.some(s => typeof s !== 'string' || /(^|[\\/])\.\.([\\/]|$)/.test(s) || !/\.js$/i.test(s))))
       err.push('« scripts » : liste de fichiers .js du dossier du plugin');
+    if (m.styles && (!Array.isArray(m.styles) || m.styles.some(s => typeof s !== 'string' || /(^|[\\/])\.\.([\\/]|$)/.test(s) || !/\.css$/i.test(s))))
+      err.push('« styles » : liste de fichiers .css du dossier du plugin');
     return err;
   }
 
@@ -41,7 +44,7 @@
   function normalize(m) {
     const links = (m && m.links) || {};
     return Object.assign({ version: '1.0.0', kind: (m && m.scripts && m.scripts.length) ? 'script' : 'ressources', description: '', author: '', notice: '',
-      ressources: 'ressources', scripts: [] }, m, {
+      ressources: 'ressources', scripts: [], styles: [] }, m, {
       links: { characters: links.characters || {}, classes: links.classes || {}, battlebacks: links.battlebacks || {} }
     });
   }

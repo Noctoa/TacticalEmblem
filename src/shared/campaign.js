@@ -5,15 +5,17 @@
  */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./scenario.js') : root.Scenario);
+  const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./scenario.js') : root.Scenario,
+    common ? require('./extensions.js') : root.Extensions);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Campaign = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
-  const FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel', 'merges'];
-  // invocations : fusions (+1 à +10) ajoutées aux stats ; module chargé à la demande (navigateur : global Summon)
-  const summonApi = () => (typeof Summon !== 'undefined' ? Summon : (typeof require === 'function' ? require('./summon.js') : null));
+  const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
+  // champs d'unité gardés d'un acte à l'autre : ceux du noyau + ceux des plugins (Extensions « unitField » : 'nom')
+  // « merges » (fusions du plugin Invocations) est gardé même plugin désactivé : les fusions ne sont jamais appliquées deux fois
+  const fields = () => CORE_FIELDS.concat(['merges'], Extensions ? Extensions.list('unitField').filter(f => typeof f === 'string') : []);
   const create = (mode, gold) => ({ mode: mode === 'casual' ? 'casual' : 'classic', dead: [], units: {}, gold: Math.max(0, Math.floor(Number(gold) || 0)), cleared: [], talks: [] });
   /** Champs ajoutés avec le lobby : absents des anciennes sauvegardes. */
   function normalize(campaign) {
@@ -32,13 +34,13 @@
         continue;
       }
       const saved = {};
-      for (const k of FIELDS) if (u[k] !== undefined) saved[k] = clone(u[k]);
+      for (const k of fields()) if (u[k] !== undefined) saved[k] = clone(u[k]);
       campaign.units[u.sourceId] = saved;
     }
   }
   function apply(campaign, unit, db) {
     const saved = campaign.units[unit.sourceId];
-    if (saved) for (const k of FIELDS) if (saved[k] !== undefined) unit[k] = clone(saved[k]);
+    if (saved) for (const k of fields()) if (saved[k] !== undefined) unit[k] = clone(saved[k]);
     const cls = db.classes.find(c => c.id === unit.classId);
     const character = db.units.find(c => c.id === unit.sourceId) || {};
     unit.mapSprite = character.mapSprite || (cls && cls.mapSprite) || '';
@@ -47,8 +49,10 @@
     unit.deathPolicy = character.deathPolicy || 'mode';
     Object.assign(unit, Skills.loadout(unit, db.skills));
     Skills.learnThroughLevel(unit, cls, db.skills || [], character);
-    const merges = campaign.merges && campaign.merges[unit.sourceId];
-    if (merges && summonApi()) summonApi().applyMerges(unit, character, merges);
+    // retouches des plugins (ex. fusions des invocations) : (unit, character, campaign)
+    if (Extensions) for (const fn of Extensions.list('unitModifier')) if (typeof fn === 'function') {
+      try { fn(unit, character, campaign, db); } catch (e) { if (typeof console !== 'undefined') console.error('[plugin] unitModifier', e); }
+    }
     unit.hp = unit.stats.hp;
     return unit;
   }

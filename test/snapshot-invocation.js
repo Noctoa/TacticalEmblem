@@ -17,6 +17,7 @@ module.exports = (win, openPlaytest) => {
     try {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-summon-')), 'Jeu');
       io.createProject(dir, 'Invocations', 'sample', path.join(__dirname, '..', 'assets'));
+      require('./fixtures/plugin-host').installBundled(dir, 'invocations'); // les invocations sont un plugin
       const pw = openPlaytest(dir, ''); const wc = pw.webContents;
       wc.setBackgroundThrottling(false);
       wc.on('console-message', (e, l, m) => { if (l >= 2) errs.push('playtest: ' + m); });
@@ -43,7 +44,7 @@ module.exports = (win, openPlaytest) => {
       await shot('c_cercle');
       // refermer sans ouvrir : la séance est gardée
       await js(`PlaytestLobby.closePanel()`); await wait(200);
-      await js(`PlaytestLobby.openSummon()`); await wait(300);
+      await js(`PlaytestLobby.openPlace('summon')`); await wait(300);
       result.memeCercle = JSON.stringify(await js(`[...document.querySelectorAll('#lobby-panel .sm-stone')].map(b => b.dataset.color)`)) === JSON.stringify(stones);
       assert(result.memeCercle, 'séance gardée');
       // ouvrir les 5 pierres
@@ -73,7 +74,7 @@ module.exports = (win, openPlaytest) => {
       // une séance forcée sur le 5★ mis en avant (Rebecca) : révélation dorée
       await js(`PlaytestLobby.closePanel()`); await wait(200);
       await js(`(() => { const G = PlaytestState; G.campaign.orbs += 10; G.campaign.summons.session = Summon.circle(G.db.banners[0], G.db, G.campaign, G.project.meta, () => 0.01); })()`);
-      await js(`PlaytestLobby.openSummon()`); await wait(300);
+      await js(`PlaytestLobby.openPlace('summon')`); await wait(300);
       await js(`document.querySelector('#lobby-panel button.sm-stone').click()`); await wait(700);
       result.cinqEtoiles = await js(`document.querySelector('#lobby-panel .sm-reveal').className + ' ' + document.querySelector('#lobby-panel .sm-reveal h2').textContent`);
       assert(/r5/.test(result.cinqEtoiles) && /Rebecca/.test(result.cinqEtoiles), '5★ Rebecca');

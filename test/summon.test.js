@@ -1,12 +1,19 @@
 'use strict';
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const S = require('../src/shared/summon');
 const C = require('../src/shared/campaign');
 const R = require('../src/shared/rules');
 const D = require('../src/shared/defaults');
+const { loadPlugin } = require('./fixtures/plugin-host');
 
-const fresh = () => { const p = D.sampleProject('Invocations'); const c = C.create('classic', 0); S.ensure(c, p.meta); return { p, db: p.db, meta: p.meta, c }; };
+// les invocations sont un plugin (plugins/invocations) : chargé comme dans l'éditeur, qui le prépare sur le projet d'exemple
+const S = require('../plugins/invocations/summon.js');
+const fresh = () => {
+  const p = D.sampleProject('Invocations');
+  loadPlugin('invocations', { where: 'editor', project: p }); // premier ajout : réglages, autel, bannières, orbes des actes
+  const c = C.create('classic', 0); S.ensure(c, p.meta);
+  return { p, db: p.db, meta: p.meta, c };
+};
 const seq = (...values) => { let i = 0; return () => values[i++ % values.length]; };
 const lycia = (db) => db.banners.find(b => b.id === 'bn_lycia');
 

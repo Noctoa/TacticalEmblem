@@ -1,6 +1,6 @@
 /*
  * Édition d'une map de camp (lobby) directement dans l'éditeur de maps, en mode Unités (F3) :
- *   - palette : départ du héros, tableau des quêtes, marchand, autel d'invocation, personnages présents ;
+ *   - palette : départ du héros, tableau des quêtes, marchand, lieux des plugins (autel d'invocation…), personnages présents ;
  *     on choisit un repère puis on clique sur la map pour le placer (clic droit sur un personnage : le retirer) ;
  *   - inspecteur : réglages du camp (héros, or, musique, équipe de départ, boutique, autel) et conversations.
  * Les réglages restent dans game.tfproj (meta.lobby) et les conversations dans data/talks.json.
@@ -34,9 +34,10 @@
       const c = cfg(), hero = Lobby.heroOf(c, DB());
       return [['start', `Départ de ${hero ? hero.name : 'héros'}`, '#ffffff'], ['board', c.board.label || 'Tableau des quêtes', '#f2d58a']]
         .concat(c.shop.enabled ? [['shop', c.shop.name || 'Marchand', '#9fe0ff']] : [])
-        .concat(c.summon.enabled ? [['summon', c.summon.name || 'Autel', '#d6a8ff']] : []);
+        // lieux ajoutés par les plugins (ex. autel d'invocation)
+        .concat(Lobby.places().filter(p => c[p.key].enabled).map(p => [p.key, c[p.key].name || p.name || p.key, p.color || '#d6a8ff']));
     }
-    function point(key) { const c = cfg(); return key === 'start' ? c.start : key === 'board' ? c.board : key === 'shop' ? c.shop : key === 'summon' ? c.summon : null; }
+    function point(key) { const c = cfg(); return ['start', 'board', 'shop'].includes(key) || Lobby.places().some(p => p.key === key) ? c[key] || null : null; }
 
     function palette(box, m) {
       const c = cfg();
@@ -98,7 +99,7 @@
       const c = cfg();
       c.mapId = m.id; c.enabled = true;
       const inside = p => p.x >= 0 && p.y >= 0 && p.x < m.width && p.y < m.height;
-      for (const key of ['start', 'board', 'shop', 'summon']) if (!inside(c[key])) Object.assign(c[key], { x: 0, y: 0 });
+      for (const key of ['start', 'board', 'shop', ...Lobby.places().map(p => p.key)]) if (c[key] && !inside(c[key])) Object.assign(c[key], { x: 0, y: 0 });
       c.spots = c.spots.filter(inside);
       changed(); api.renderAll();
     }
@@ -155,7 +156,8 @@
           h('div', { class: 'insp-actions' }, h('button', { class: 'small primary', onclick: () => useAsCamp(m) }, 'Utiliser comme camp du jeu'))));
         return;
       }
-      const rerender = (k) => { changed(); if (['enabled', 'heroId', 'shop.enabled', 'summon.enabled', 'shop.name', 'summon.name', 'board.label'].includes(k)) api.renderAll(); else api.draw(); };
+      const placeKeys = Lobby.places().flatMap(p => [p.key + '.enabled', p.key + '.name']);
+      const rerender = (k) => { changed(); if (['enabled', 'heroId', 'shop.enabled', 'shop.name', 'board.label', ...placeKeys].includes(k)) api.renderAll(); else api.draw(); };
       box.append(api.section('Camp',
         errors.length ? h('div', {}, errors.map(e => h('p', { class: 'note' }, '⚠ ' + e))) : null,
         UI.form([
@@ -204,18 +206,22 @@
       const hero = Lobby.heroOf(c, DB());
       rosterForm.querySelectorAll('.chip').forEach((b, i) => { if (hero && DB().units[i].id === hero.id) { b.disabled = true; b.title = 'Le héros du camp fait toujours partie de l’effectif.'; } });
       box.append(api.section('Équipe de départ', rosterForm, h('p', { class: 'muted' }, 'Indépendant des personnages placés au camp. Les autres recrutements se règlent dans les fiches Unités.')));
-      box.append(api.section('Boutique et autel', UI.form([
+      const places = Lobby.places();
+      box.append(api.section(places.length ? 'Boutique et lieux' : 'Boutique', UI.form([
         { type: 'row', fields: [{ key: 'shop.enabled', label: 'Boutique', type: 'checkbox' }, { key: 'shop.name', label: 'Nom du marchand', type: 'text' }] },
         { key: 'shop.stock', label: 'Articles en vente', type: 'multicheck', options: () => H.goods(), when: x => x.shop.enabled },
-        { type: 'row', fields: [{ key: 'summon.enabled', label: 'Autel d’invocation', type: 'checkbox' }, { key: 'summon.name', label: 'Nom de l’autel', type: 'text' }] },
-        { type: 'info', text: 'Prix : onglets Armes et Objets. Bannières d’invocation : Base de données › Invocations.' }
+        { type: 'info', text: 'Prix : onglets Armes et Objets.' },
+        // lieux des plugins : une case à cocher et un nom chacun (+ texte d'aide du plugin)
+        ...places.flatMap(p => [
+          { type: 'row', fields: [{ key: p.key + '.enabled', label: p.label || p.name || p.key, type: 'checkbox' }, { key: p.key + '.name', label: 'Nom affiché', type: 'text' }] },
+          p.help ? { type: 'info', text: p.help } : null]).filter(Boolean)
       ], c, { onChange: rerender })));
     }
 
     function newTalk(unitId) {
       const talks = DB().talks || (DB().talks = []);
       let n = talks.length + 1; while (talks.some(t => t.id === 't_' + n)) n++;
-      const t = { id: 't_' + n, name: 'Nouvelle conversation', unitId: unitId || (DB().units[1] || DB().units[0] || {}).id || '', after: '', alive: [], points: 0, orbs: 0, once: true, script: '' };
+      const t = { id: 't_' + n, name: 'Nouvelle conversation', unitId: unitId || (DB().units[1] || DB().units[0] || {}).id || '', after: '', alive: [], points: 0, once: true, script: '' };
       talks.push(t); changed();
       editTalk(t, true);
     }

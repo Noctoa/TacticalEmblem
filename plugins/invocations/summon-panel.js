@@ -1,6 +1,6 @@
 /*
- * Autel d'invocation du camp (playtest) : bannières, cercle de 5 pierres de couleur, révélation.
- * La logique (taux, pitié, coûts, recrutement / fusion) est dans shared/summon.js.
+ * Plugin Invocations — autel du camp (jeu) : bannières, cercle de 5 pierres de couleur, révélation.
+ * La logique (taux, pitié, coûts, recrutement / fusion) est dans summon.js.
  * Une séance commencée sans pierre ouverte est gardée dans la campagne : refermer l'autel ne relance pas les couleurs.
  */
 (function (root) {

@@ -14,13 +14,18 @@
     const interactions = type => options(ch[{ chest: 'chests', door: 'doors', village: 'villages' }[type]]);
     const flagHelp = 'Nom interne : commence par une lettre ; lettres, chiffres et _ uniquement. Absent = faux. Conservé entre les actes après victoire.';
     function defaults(type) {
-      return { dialogue: { text: '' }, gold: { amount: 100 }, orbs: { amount: 1 }, item: { itemId: '', uses: 0, unitId: '' },
+      const plug = Scenario.pluginAction(type);
+      if (plug) return Object.assign({ plugin: plug.plugin || '' }, JSON.parse(JSON.stringify(plug.defaults || {})));
+      return { dialogue: { text: '' }, gold: { amount: 100 }, item: { itemId: '', uses: 0, unitId: '' },
         reinforcement: { target: '' }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
         flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' } }[type];
     }
     function actionFields(a) {
       if (a.type === 'dialogue') return [{ key: 'text', label: 'Dialogue', type: 'textarea', rows: 4 }];
-      if (['gold', 'orbs'].includes(a.type)) return [{ key: 'amount', label: a.type === 'gold' ? 'Or donné' : 'Orbes donnés', type: 'number', min: 1, max: 999999 }];
+      if (a.type === 'gold') return [{ key: 'amount', label: 'Or donné', type: 'number', min: 1, max: 999999 }];
+      const plug = Scenario.pluginAction(a.type);
+      if (plug) return typeof plug.fields === 'function' ? plug.fields(a, { db, ch, map }) : [];
+      if (!Scenario.ACTIONS.some(t => t.value === a.type)) return [{ type: 'info', text: `Action « ${a.type} » d’un plugin absent ou désactivé${a.plugin ? ' (' + a.plugin + ')' : ''} : elle est gardée mais ne fait rien en jeu.` }];
       if (a.type === 'item') return [
         { key: 'itemId', label: 'Arme ou objet', type: 'select', empty: '— choisir —', options: options(db.weapons.concat(db.items)) },
         { key: 'uses', label: 'Utilisations (0 = toutes)', type: 'number', min: 0, max: 999 },
@@ -73,7 +78,7 @@
           fields([{ key: 'script', label: 'Dialogue initial (facultatif)', type: 'textarea', rows: 3 }], ev), h('p', { class: 'form-info' }, 'Une réplique par ligne : Nom: texte. Les actions suivantes sont exécutées dans l’ordre.'));
         for (const [i, a] of (ev.actions || []).entries()) {
           const action = h('div', { 'data-event-action': String(i), style: { borderTop: '1px solid var(--line-2)', paddingTop: '10px', marginTop: '10px' } });
-          const selector = h('select', { 'data-action-type': true }, Scenario.ACTIONS.map(o => h('option', { value: o.value }, o.label))); selector.value = a.type;
+          const selector = h('select', { 'data-action-type': true }, Scenario.actionTypes().concat(Scenario.actionTypes().some(o => o.value === a.type) ? [] : [{ value: a.type, label: a.type + ' (plugin absent)' }]).map(o => h('option', { value: o.value }, o.label))); selector.value = a.type;
           selector.addEventListener('change', () => { ev.actions[i] = { type: selector.value, ...defaults(selector.value) }; changed(); });
           action.append(h('b', {}, `Action ${i + 1} `), selector, fields(actionFields(a), a, ['objective.type']),
             h('div', { class: 'insp-actions' }, h('button', { class: 'small', disabled: i === 0, onclick: () => { [ev.actions[i - 1], ev.actions[i]] = [a, ev.actions[i - 1]]; changed(); } }, 'Monter'),

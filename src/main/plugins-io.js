@@ -76,6 +76,7 @@ function install(projectDir, src) {
     if (e.isDirectory()) copyTree(s, d, true); else fs.copyFileSync(s, d);
   }
   for (const s of m.scripts || []) if (!fs.existsSync(path.join(dest, s))) throw new Error('Script introuvable dans le plugin : ' + s);
+  for (const s of m.styles || []) if (!fs.existsSync(path.join(dest, s))) throw new Error('Feuille de style introuvable dans le plugin : ' + s);
   return { manifest: Object.assign({}, m, { dir: undefined }), added };
 }
 

@@ -1,17 +1,22 @@
 /* Événements : conditions, validation et séquencement sans dépendance au rendu. */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./mission.js') : root.Mission);
-  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Scenario = api;
-})(typeof self !== 'undefined' ? self : this, function (Mission) {
+  const common = typeof module !== 'undefined' && module.exports;
+  const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./extensions.js') : root.Extensions);
+  if (common) module.exports = api; else root.Scenario = api;
+})(typeof self !== 'undefined' ? self : this, function (Mission, Extensions) {
   'use strict';
   const TRIGGERS = [
     ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
     ['area', 'Un joueur ou allié termine son action dans une zone'], ['chest', 'Coffre ouvert'], ['door', 'Porte ouverte'],
     ['village', 'Village visité'], ['condition', 'Dès que les conditions sont remplies'], ['victory', 'Victoire']
   ].map(([value, label]) => ({ value, label }));
-  const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'], ['orbs', 'Donner des orbes'],
+  // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
+  const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'],
     ['item', 'Donner une arme ou un objet'], ['reinforcement', 'Faire apparaître un renfort'], ['door', 'Ouvrir / fermer une porte'],
     ['objective', 'Changer l’objectif'], ['flag', 'Mémoriser une information'], ['choice', 'Proposer un choix']].map(([value, label]) => ({ value, label }));
+  const pluginAction = type => (Extensions ? Extensions.find('action', 'type', type) : null);
+  /** Actions proposées : celles du noyau puis celles des plugins actifs. */
+  function actionTypes() { return ACTIONS.concat(Extensions ? Extensions.list('action').map(d => ({ value: d.type, label: d.label || d.type, plugin: true })) : []); }
   const validFlag = key => typeof key === 'string' && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(key);
   const list = ch => ch.events || [];
   const keyOf = (ch, ev) => JSON.stringify([ch.id, ev.id]);
@@ -62,9 +67,15 @@
       }
       if (e.actions !== undefined && (!Array.isArray(e.actions) || e.actions.length > 200)) { bad('liste d’actions invalide (200 maximum).'); continue; }
       for (const a of e.actions || []) {
+        if (a && !ACTIONS.some(t => t.value === a.type)) {
+          // action d'un plugin : vérifiée par le plugin s'il est chargé ; sinon gardée telle quelle (plugin absent ou désactivé)
+          const def = pluginAction(a.type);
+          if (def) { for (const e of (typeof def.validate === 'function' ? def.validate(a, db) || [] : [])) bad(e); continue; }
+          if (typeof a.plugin === 'string' && a.plugin) continue;
+        }
         if (!a || !ACTIONS.some(t => t.value === a.type)) { bad('action inconnue.'); continue; }
         if (a.type === 'dialogue' && typeof a.text !== 'string') bad('texte de dialogue invalide.');
-        if (['gold', 'orbs'].includes(a.type) && (!Number.isInteger(a.amount) || a.amount < 1 || a.amount > 999999)) bad('montant de récompense invalide.');
+        if (a.type === 'gold' && (!Number.isInteger(a.amount) || a.amount < 1 || a.amount > 999999)) bad('montant de récompense invalide.');
         if (a.type === 'item') {
           if (![...(db.items || []), ...(db.weapons || [])].some(i => i.id === a.itemId)) bad('récompense introuvable.');
           if (!Number.isInteger(a.uses) || a.uses < 0 || a.uses > 999) bad('utilisations de récompense invalides.');
@@ -127,5 +138,5 @@
     }
     return { run, pending: () => progress.size > 0 };
   }
-  return { TRIGGERS, ACTIONS, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
+  return { TRIGGERS, ACTIONS, actionTypes, pluginAction, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
 });

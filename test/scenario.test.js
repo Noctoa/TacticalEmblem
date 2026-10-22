@@ -2,7 +2,9 @@
 const { test } = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path'), os = require('node:os'), vm = require('node:vm');
 const S = require('../src/shared/scenario'), D = require('../src/shared/defaults'), C = require('../src/shared/campaign'), R = require('../src/shared/rules');
-const L = require('../src/shared/locks'), V = require('../src/shared/villages'), M = require('../src/shared/mission'), Summon = require('../src/shared/summon'), io = require('../src/main/project-io');
+const L = require('../src/shared/locks'), V = require('../src/shared/villages'), M = require('../src/shared/mission'), io = require('../src/main/project-io');
+// action « Donner des orbes » : ajoutée par le plugin Invocations
+require('./fixtures/plugin-host').loadPlugin('invocations', { where: 'game' });
 function fixture() {
   const p = D.sampleProject('Événements'), db = p.db, ch = db.chapters[0], map = p.maps.find(m => m.id === ch.mapId); ch.events = [];
   ch.doors = [{ id: 'door', name: 'Sortie', x: 1, y: 1, openTerrainId: 'plain' }];
@@ -11,7 +13,7 @@ function fixture() {
   const unit = R.makeUnitFromCharacter(db.units[0], db, { x: 0, y: 0 }), pending = R.makeEnemyFromPlacement(ch.enemies.at(-1), db);
   const state = { campaign: C.create('classic', 50), units: [unit], pending: [pending], fired: new Set(), convoy: [], convoyCap: 1, openedDoors: new Set(['door']), chapter: JSON.parse(JSON.stringify(ch)), db, turn: 4, seized: [] };
   state.chapter.requiredUnits = [unit.sourceId];
-  const notices = [], context = { self: {}, Scenario: S, R, Mission: M, Summon, Villages: V, UI: { toast: text => notices.push(text), modal: async () => false } };
+  const notices = [], context = { self: {}, Scenario: S, R, Mission: M, Villages: V, UI: { toast: text => notices.push(text), modal: async () => false } };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../src/renderer/scenario-runtime.js'), 'utf8'), context);
   let spot = { x: 3, y: 3 };
   const runtime = context.self.ScenarioRuntime.create({ G: state, R, playDialogue: async text => notices.push(text), freeSpotNear: () => spot, float: () => {} });

@@ -18,6 +18,7 @@ module.exports = (win) => {
       win.setSize(1440, 900);
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-inv-ed-')), 'Jeu');
       io.createProject(dir, 'Invocations', 'sample', path.join(__dirname, '..', 'assets'));
+      require('./fixtures/plugin-host').installBundled(dir, 'invocations'); // les invocations sont un plugin
       const ejs = c => win.webContents.executeJavaScript(c, true);
       const shot = async n => { win.show(); win.webContents.invalidate(); await ejs('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))'); await wait(300); fs.writeFileSync(path.join(out, n + '.png'), (await win.webContents.capturePage()).toPNG()); };
       const field = (label) => `[...document.querySelectorAll('#db-body .field-label')].find(l => l.textContent.startsWith(${JSON.stringify(label)})).parentElement`;

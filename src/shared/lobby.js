@@ -31,10 +31,11 @@
  *   once (défaut) : ne se joue qu'une fois.
  */
 (function (root, factory) {
-  const api = factory();
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  const common = typeof module !== 'undefined' && module.exports;
+  const api = factory(common ? require('./extensions.js') : root.Extensions);
+  if (common) module.exports = api;
   else root.Lobby = api;
-})(typeof self !== 'undefined' ? self : this, function () {
+})(typeof self !== 'undefined' ? self : this, function (Extensions) {
   'use strict';
   const byId = (list, id) => (list || []).find(e => e && e.id === id);
   const LOBBY_SAVE = '@lobby'; // « chapitre » d'une sauvegarde faite dans le lobby
@@ -45,10 +46,14 @@
     c.board = Object.assign({ x: 0, y: 0, label: 'Tableau des quêtes' }, c.board || {});
     c.shop = Object.assign({ enabled: true, x: 0, y: 0, name: 'Marchand' }, c.shop || {});
     c.shop.stock = Array.isArray(c.shop.stock) ? c.shop.stock : [];
-    c.summon = Object.assign({ enabled: false, x: 0, y: 0, name: 'Autel d\'invocation' }, c.summon || {}); // invocations (orbes)
+    // lieux ajoutés par les plugins (Extensions « lobbyPlace ») : rangés sous leur clé, comme la boutique
+    for (const p of places()) c[p.key] = Object.assign({ enabled: false, x: 0, y: 0, name: p.name || p.key }, c[p.key] || {});
     c.spots = Array.isArray(c.spots) ? c.spots : [];
     return c;
   }
+
+  /** Lieux du camp ajoutés par les plugins actifs : [{ key, name, color, … }]. */
+  function places() { return Extensions ? Extensions.list('lobbyPlace').filter(p => p && p.key && !['start', 'board', 'shop', 'spots'].includes(p.key)) : []; }
 
   /** Personnage que l'on déplace dans le lobby. */
   function heroOf(cfg, db) {
@@ -206,18 +211,30 @@
     return alreadyCleared && !(ch && ch.goldEachClear) ? 0 : g;
   }
 
-  /** Orbes (invocations) gagnées à la première victoire d'un acte. */
-  function orbsFor(ch, alreadyCleared) { return alreadyCleared ? 0 : Math.max(0, Math.floor(Number(ch && ch.orbs) || 0)); }
+  /**
+   * Récompenses des plugins pour une victoire (Extensions « chapterReward » : { amount(ch, already), grant(campaign, n, ch), text(n) }) :
+   * [{ def, amount, text }] (montants nuls exclus).
+   */
+  function extraRewards(ch, alreadyCleared) {
+    if (!Extensions) return [];
+    return Extensions.list('chapterReward').map(def => {
+      const amount = Math.max(0, Math.floor(Number(def.amount(ch, alreadyCleared)) || 0));
+      return { def, amount, text: amount ? (def.text ? def.text(amount) : '+' + amount) : '' };
+    }).filter(r => r.amount > 0);
+  }
+  /** Texte des récompenses : « +600 or · +3 orbes ». */
+  function rewardText(gold, extras) { return [gold ? `+${gold} or` : ''].concat((extras || []).map(r => r.text)).filter(Boolean).join(' · '); }
 
-  /** Victoire : chapitre noté terminé, or et orbes ajoutés. Renvoie l'or gagné (campaign.lastOrbs : les orbes). */
+  /** Victoire : chapitre noté terminé, or et récompenses des plugins ajoutés. Renvoie l'or gagné (campaign.lastRewards : texte des autres). */
   function completeChapter(campaign, ch) {
     campaign.cleared = campaign.cleared || [];
     const already = campaign.cleared.includes(ch.id);
-    const gold = goldFor(ch, already), orbs = orbsFor(ch, already);
+    const gold = goldFor(ch, already), extras = extraRewards(ch, already);
     if (!already) campaign.cleared.push(ch.id);
     campaign.gold = (campaign.gold || 0) + gold;
-    campaign.orbs = (Number(campaign.orbs) || 0) + orbs;
-    campaign.lastOrbs = orbs;
+    for (const r of extras) { try { r.def.grant(campaign, r.amount, ch); } catch (e) { if (typeof console !== 'undefined') console.error('[plugin] chapterReward', e); } }
+    campaign.lastRewards = extras.map(r => r.text);
+    delete campaign.lastOrbs;
     return gold;
   }
 
@@ -318,7 +335,7 @@
     if (!inside(c.start)) errors.push('Lobby : la case de départ est hors de la map.');
     if (!inside(c.board)) errors.push('Lobby : la table des chapitres est hors de la map.');
     if (c.shop.enabled && !inside(c.shop)) errors.push('Lobby : la boutique est hors de la map.');
-    if (c.summon.enabled && !inside(c.summon)) errors.push('Lobby : l\'autel d\'invocation est hors de la map.');
+    for (const p of places()) if (c[p.key] && c[p.key].enabled && !inside(c[p.key])) errors.push(`Lobby : « ${c[p.key].name || p.name || p.key} » est hors de la map.`);
     const taken = new Set([c.start.x + ',' + c.start.y]);
     for (const s of c.spots) {
       const u = byId(db.units, s.unitId);
@@ -331,5 +348,5 @@
     return errors;
   }
 
-  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, orbsFor, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
+  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, extraRewards, rewardText, places, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
 });

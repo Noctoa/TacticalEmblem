@@ -348,17 +348,18 @@
   }
 
   /**
-   * Installe les jeux choisis : classes manquantes, personnages absents, une bannière par jeu.
+   * Installe les jeux choisis : classes manquantes, personnages absents.
    * opts.has(champ, clé) : la ressource existe-t-elle dans le projet ? (sans has : supposée présente)
    * opts.art : liens des plugins installés { characters, classes } (Plugins.mergeLinks)
-   * Renvoie { units, classes, banners, art } (nombres ajoutés ; art = images reliées).
+   * Renvoie { units, classes, art, games } (nombres ajoutés ; art = images reliées ;
+   * games : [{ id, title, focus, unitIds }] par jeu, pour les plugins — ex. une bannière d'invocation par jeu).
    */
   function install(db, gameIds, opts) {
     const has = opts && opts.has;
     const extra = (opts && opts.art && opts.art.characters) || {};
-    const out = { units: 0, classes: 0, banners: 0, art: 0 };
+    const out = { units: 0, classes: 0, art: 0, games: [] };
     const catalogue = classCatalogue();
-    db.classes = db.classes || []; db.units = db.units || []; db.banners = db.banners || [];
+    db.classes = db.classes || []; db.units = db.units || [];
     const ensureClass = (id) => {
       let c = db.classes.find(x => x.id === id);
       if (c) return c;
@@ -381,13 +382,7 @@
         out.art += applyArt(unit, artOf(game, row[0], extra), has, cls);
         db.units.push(unit); ids.push(unit.id); out.units++;
       }
-      const bannerId = 'bn_' + game.id;
-      if (!db.banners.some(b => b.id === bannerId)) {
-        db.banners.push({ id: bannerId, name: game.title, description: `Personnages de ${game.title}.`,
-          pool: ids.slice(), focus: ids.slice(0, game.focus || 1), rates: { 5: 6, 4: 58, 3: 36 }, focusShare: 50,
-          unlock: { after: '', alive: [], from: '', to: '' } });
-        out.banners++;
-      }
+      out.games.push({ id: game.id, title: game.title, focus: game.focus || 1, unitIds: ids });
     }
     out.art += applyClassArt(db, has, opts && opts.art && opts.art.classes);
     // promotions entre classes du pack (si les deux classes sont dans la base)

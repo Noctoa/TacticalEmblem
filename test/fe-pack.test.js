@@ -4,7 +4,9 @@ const assert = require('node:assert/strict');
 const P = require('../src/shared/fe-pack');
 const D = require('../src/shared/defaults');
 const R = require('../src/shared/rules');
-const S = require('../src/shared/summon');
+const S = require('../plugins/invocations/summon.js');
+const { loadPlugin, Extensions } = require('./fixtures/plugin-host');
+loadPlugin('invocations', { where: 'editor' }); // bannière par jeu : ajoutée par le plugin Invocations (hook fePack:installed)
 const Pr = require('../src/shared/promotions');
 const Team = require('../src/shared/team');
 
@@ -25,12 +27,14 @@ test('chaque jeu : 10 à 17 personnages, noms uniques, classes et armes connues'
   assert.ok(P.total() > 150);
 });
 
-test('installation dans le projet d’exemple : classes, personnages, bannières ; base valide', () => {
+test('installation dans le projet d’exemple : classes, personnages, bannières (plugin) ; base valide', () => {
   const p = D.sampleProject('Pack'), before = p.db.units.length;
   const res = P.install(p.db, all());
   assert.equal(p.db.units.length, before + res.units);
   assert.equal(res.units, P.total() - 3); // Eliwood, Lyn et Hector sont déjà dans l'exemple
-  assert.equal(res.banners, P.GAMES.length);
+  assert.equal(p.db.banners, undefined); // le noyau ne crée pas de bannière
+  assert.deepEqual(Extensions.hook('fePack:installed', { db: p.db, games: res.games }), [P.GAMES.length + ' bannières d’invocation']);
+  assert.equal(p.db.banners.length, P.GAMES.length);
   assert.deepEqual(S.validate(p.db), []);
   assert.deepEqual(Pr.validate(p.db), []);
   assert.deepEqual(Team.validate(p.db, p.meta), []);
@@ -53,7 +57,8 @@ test('installation dans le projet d’exemple : classes, personnages, bannières
 test('réinstaller ne duplique rien ; un projet vide reçoit aussi les classes de base utilisées', () => {
   const p = D.sampleProject('Pack');
   P.install(p.db, ['fe9']);
-  assert.deepEqual(P.install(p.db, ['fe9']), { units: 0, classes: 0, banners: 0, art: 0 });
+  const again = P.install(p.db, ['fe9']);
+  assert.deepEqual([again.units, again.classes, again.art], [0, 0, 0]);
   const empty = D.emptyDatabase();
   empty.classes = empty.classes.filter(c => !['paladin', 'pegasus'].includes(c.id));
   const res = P.install(empty, ['fe1']);

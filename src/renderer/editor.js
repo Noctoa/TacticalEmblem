@@ -92,10 +92,7 @@
     renderAll();
     updateTitle();
     // scripts des plugins actifs du projet
-    try {
-      S.plugins = (await tf.installedPlugins(S.dir)).filter(m => !m.error);
-      await PluginRuntime.load(S.baseUrl, S.plugins, S.project.meta, 'editor', { project: S.project, db: DB(), toast: (t, k) => UI.toast(t, k) });
-    } catch (e) { console.error('[plugin] chargement', e); }
+    try { await reloadPlugins(); await migrateToPlugins(); } catch (e) { console.error('[plugin] chargement', e); }
     const mig = S.project.migration;
     if (mig) {
       delete S.project.migration;
@@ -1524,8 +1521,41 @@
     placeVillage: chapterId => { selectChapter(chapterId); setMode('units'); S.placeTool = { kind: 'villages' }; S.selected = null; renderAll(); UI.toast('Clique une case pour placer un village.'); },
     selectVillage: (chapterId, villageId) => { selectChapter(chapterId); setMode('units'); S.selected = { kind: 'villages', id: villageId }; S.placeTool = null; renderAll(); },
     refresh: async () => { await Render.preloadTilesets(S.baseUrl, DB().tilesets); renderAll(); },
-    selectChapter, playtest, open: cmdOpen, rescanResources, resources: () => S.project.resources
+    selectChapter, playtest, open: cmdOpen, rescanResources, resources: () => S.project.resources, reloadPlugins
   };
+
+  // ---------- plugins ----------
+  /** (Re)charge les scripts et styles des plugins actifs du projet ouvert. */
+  async function reloadPlugins() {
+    if (!S.dir) return;
+    S.plugins = (await tf.installedPlugins(S.dir)).filter(m => !m.error);
+    await PluginRuntime.load(S.baseUrl, S.plugins, S.project.meta, 'editor', { project: S.project, db: DB(), toast: (t, k) => UI.toast(t, k) });
+    renderAll();
+  }
+  /**
+   * Systèmes devenus des plugins : un ancien projet qui s'en servait reçoit le plugin fourni avec l'application,
+   * une seule fois (meta.pluginMigrations). Le désinstaller ensuite est respecté.
+   */
+  const PLUGIN_MIGRATIONS = [
+    { id: 'invocations', name: 'Invocations', uses: (p) => (p.db.banners || []).length > 0 || !!(p.meta.lobby && p.meta.lobby.summon && p.meta.lobby.summon.enabled) }
+  ];
+  async function migrateToPlugins() {
+    const meta = S.project.meta, done = meta.pluginMigrations || [];
+    for (const mig of PLUGIN_MIGRATIONS) {
+      if (done.includes(mig.id)) continue;
+      meta.pluginMigrations = [...(meta.pluginMigrations || []), mig.id]; // gardé à la prochaine sauvegarde
+      if (!mig.uses(S.project) || (S.plugins || []).some(m => m.id === mig.id)) continue;
+      markDirty();
+      try {
+        const r = await tf.installPlugin(S.dir, { bundled: mig.id });
+        if (!r) continue;
+        meta.plugins = meta.plugins || {};
+        meta.plugins[mig.id] = { enabled: true, version: r.manifest.version, name: r.manifest.name };
+        await reloadPlugins();
+        UI.toast(`« ${mig.name} » est maintenant un plugin : installé dans ce projet (Base de données › Plugins).`);
+      } catch (e) { console.error('[plugin] migration ' + mig.id, e); }
+    }
+  }
 
   // ---------- démarrage ----------
   Icons.hydrate();

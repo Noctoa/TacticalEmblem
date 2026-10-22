@@ -25,6 +25,7 @@ test('fiches : validation, valeurs par défaut', () => {
 test('plugins fournis : fiches valides, fichiers présents (dont l’exemple de script)', () => {
   const list = IO.listIn(BUNDLED);
   assert.ok(list.some(m => m.id === 'exemple-annonce-tours'));
+  assert.ok(list.some(m => m.id === 'invocations' && m.kind === 'script'));
   for (const m of list) {
     assert.ok(!m.error, m.id + ' : ' + m.error);
     for (const kind of ['characters', 'classes']) for (const e of Object.values(m.links[kind])) {
@@ -34,6 +35,7 @@ test('plugins fournis : fiches valides, fichiers présents (dont l’exemple de 
     }
     for (const f of Object.values(m.links.battlebacks)) assert.ok(fs.existsSync(path.join(m.dir, f)), f);
     for (const s of m.scripts) assert.ok(fs.existsSync(path.join(m.dir, s)), s);
+    for (const s of m.styles) assert.ok(fs.existsSync(path.join(m.dir, s)), s);
   }
 });
 

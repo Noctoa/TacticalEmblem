@@ -1,0 +1,46 @@
+/* Plugin Invocations : panneau de l'autel au camp (classe « summon-panel » ajoutée au panneau du camp). */
+#lobby-panel.summon-panel { width: min(720px, 94vw); }
+#lobby-panel .sm-banner { border: 1px solid rgba(214, 168, 255, .55); border-radius: 10px; padding: 12px 14px; background: linear-gradient(160deg, rgba(90, 50, 140, .35), rgba(0, 0, 0, .2)); display: flex; flex-direction: column; gap: 8px; }
+#lobby-panel .sm-title { font-size: 20px; font-weight: 800; color: #f1dcff; }
+#lobby-panel .sm-focus { display: flex; flex-wrap: wrap; gap: 14px; }
+#lobby-panel .sm-hero { display: flex; align-items: center; gap: 10px; }
+#lobby-panel .sm-hero .portrait { width: 72px; height: 72px; }
+#lobby-panel .portrait canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+#lobby-panel .sm-rates { display: flex; flex-wrap: wrap; gap: 6px; }
+#lobby-panel .sm-rates span { padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 700; background: rgba(0, 0, 0, .3); }
+.sm-stars { letter-spacing: 1px; font-weight: 900; white-space: nowrap; }
+.sm-stars.r5, .sm-rates .r5 { color: #ffd24a; }
+.sm-stars.r4, .sm-rates .r4 { color: #d9dde6; }
+.sm-stars.r3, .sm-rates .r3 { color: #d39a62; }
+#lobby-panel .sm-actions { display: flex; align-items: center; gap: 12px; justify-content: space-between; margin-top: 4px; }
+#lobby-panel .sm-orbs { font-weight: 700; color: #e6c8ff; }
+#lobby-panel .sm-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px rgba(0, 0, 0, .4); }
+#lobby-panel .sm-unit .sm-stars { font-size: 12px; }
+#lobby-panel .sm-circle { position: relative; width: min(420px, 80vw); aspect-ratio: 1; margin: 6px auto 4px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(214, 168, 255, .22) 0, rgba(60, 30, 100, .35) 45%, rgba(0, 0, 0, 0) 70%); }
+#lobby-panel .sm-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: #f1dcff; gap: 4px; pointer-events: none; }
+#lobby-panel .sm-center small { color: #b9a6d0; }
+#lobby-panel .sm-stone { position: absolute; width: 74px; height: 74px; border-radius: 50%; padding: 0; border: 2px solid rgba(255, 255, 255, .35); background: rgba(10, 6, 20, .65);
+  display: grid; place-items: center; cursor: pointer; transition: transform .15s; }
+#lobby-panel button.sm-stone:hover, #lobby-panel button.sm-stone:focus { transform: scale(1.12); outline: 2px solid #f1dcff; }
+#lobby-panel .sm-gem { width: 44px; height: 44px; border-radius: 50%; animation: sm-pulse 1.6s ease-in-out infinite; }
+#lobby-panel .sm-cost { position: absolute; bottom: -9px; font-size: 11px; font-weight: 800; color: #fff; background: #4b2a78; border-radius: 8px; padding: 0 6px; }
+#lobby-panel .sm-stone.opened { cursor: default; overflow: visible; background: rgba(0, 0, 0, .35); }
+#lobby-panel .sm-stone.opened .portrait { width: 62px; height: 62px; border-radius: 50%; }
+#lobby-panel .sm-stone.opened .sm-stars { position: absolute; top: -12px; font-size: 12px; text-shadow: 0 1px 2px #000; }
+#lobby-panel .sm-stone .sm-name { position: absolute; bottom: -16px; font-size: 11px; font-weight: 700; white-space: nowrap; text-shadow: 0 1px 2px #000; }
+@keyframes sm-pulse { 0%, 100% { transform: scale(.94); } 50% { transform: scale(1.04); } }
+#lobby-panel .sm-reveal { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 18px 10px 14px; overflow: hidden; border-radius: 10px;
+  background: radial-gradient(circle at 50% 35%, rgba(214, 168, 255, .35), rgba(0, 0, 0, .25) 65%); animation: sm-in .45s ease-out; }
+#lobby-panel .sm-reveal.r5 { background: radial-gradient(circle at 50% 35%, rgba(255, 210, 74, .45), rgba(0, 0, 0, .25) 65%); }
+#lobby-panel .sm-reveal .portrait { width: 150px; height: 150px; border: 2px solid #f1dcff; z-index: 1; }
+#lobby-panel .sm-reveal h2 { margin: 0; font-size: 24px; z-index: 1; }
+#lobby-panel .sm-reveal > * { z-index: 1; }
+#lobby-panel .sm-rays { position: absolute; inset: -50%; z-index: 0 !important; background: repeating-conic-gradient(rgba(255, 255, 255, .07) 0 8deg, transparent 8deg 22deg); animation: sm-spin 14s linear infinite; }
+#lobby-panel .sm-stars.big { font-size: 26px; text-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+#lobby-panel .sm-tag { padding: 3px 12px; border-radius: 12px; font-weight: 800; }
+#lobby-panel .sm-tag.new { background: #2f9e5a; color: #fff; }
+#lobby-panel .sm-tag.merge { background: #4b2a78; color: #f1dcff; }
+#lobby-panel .sm-tag.max { background: #6b6b6b; color: #fff; }
+@keyframes sm-in { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sm-spin { to { transform: rotate(360deg); } }
