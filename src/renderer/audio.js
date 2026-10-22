@@ -87,6 +87,13 @@
     const el = src.cloneNode(); el.volume = vol('se');
     safePlay(el);
   };
+  /** Joue un fichier son (chemin du projet, ex. une image d'animation d'attaque) sur le canal des effets. */
+  M.seFile = function (path) {
+    if (!path || M.muted || !M.volumes.se) return;
+    const src = seCache[path] || (seCache[path] = new Audio(url(path)));
+    const el = src.cloneNode(); el.volume = vol('se');
+    safePlay(el);
+  };
   /** Joue un son d'aperçu sur un canal (réglage du volume). */
   M.preview = function (channel) {
     if (channel === 'se') { lastSe.confirm = 0; return M.se('confirm'); }

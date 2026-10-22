@@ -33,6 +33,17 @@
   const doneOpts = (exclude) => (db().arcs || []).filter(a => a.id !== exclude).map(a => ({ value: a.id, label: 'Chapitre : ' + (a.name || a.id) }))
     .concat(db().chapters.filter(c => c.id !== exclude).map(c => ({ value: c.id, label: 'Acte : ' + Lobby.actLabel(db(), c.id) })));
   /** Prix en boutique (lobby) ; la revente rapporte la moitié, au prorata des utilisations. */
+  /** Animations d'attaque (Base de données › Animations) proposées dans un menu. */
+  const animOpts = () => (db().animations || []).map(a => ({ value: a.id, label: (a.kind === 'projectile' ? '➶ ' : '✦ ') + a.name }));
+  const typeName = (t) => (Rules.WEAPON_TYPES.find(x => x.id === t) || {}).name || t;
+  const animName = (id) => ((db().animations || []).find(a => a.id === id) || {}).name;
+  /** Champs « animation » d'une arme : la sienne, celle des critiques ; vide = celle du type d'arme. */
+  const weaponAnimFields = (w) => [{ type: 'row', fields: [
+    { key: 'animation', label: 'Animation d’attaque', type: 'select', options: () => {
+      const def = ((Editor.project().meta.animationDefaults || {})[w.type]);
+      return [{ value: '', label: 'Celle du type d’arme' + (def && animName(def) ? ` (${animName(def)})` : ' (aucune)') }, { value: 'none', label: '— aucune —' }].concat(animOpts());
+    }, help: 'Animation jouée quand cette arme frappe (combat animé et map). Les animations se créent dans l’onglet Animations.' },
+    { key: 'critAnimation', label: 'Animation des critiques', type: 'select', options: () => [{ value: '', label: 'La même' }].concat(animOpts()) }] }];
   const priceField = { key: 'price', label: 'Prix en boutique (0 = ne se vend pas)', type: 'number', min: 0, max: 999999,
     help: 'Acheté au marchand du lobby à ce prix ; revendu à la moitié, selon les utilisations restantes.' };
   const projectColors = () => Palettes.resolveMode((Editor.project().meta.settings || {}).colors);
@@ -372,7 +383,9 @@
             { key: 'activation', label: 'Probabilité de déclenchement', type: 'select', options: [
               { value: 'always', label: 'Toujours' }, { value: 'fixed', label: 'Pourcentage fixe' },
               { value: 'skl', label: 'Technique de l’unité (%)' }, { value: 'lck', label: 'Chance de l’unité (%)' }] },
-            ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : [])
+            ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : []),
+            { key: 'animation', label: 'Animation quand elle se déclenche', type: 'select', empty: '— celle de l’arme —', options: animOpts,
+              help: 'Remplace l’animation de l’arme pour le coup où la compétence se déclenche (onglet Animations).' }
           ] : []),
           ...(!effect.utility ? [{ type: 'heading', label: 'Conditions d’activation' }] : []),
           ...(effect.combat ? [
@@ -387,6 +400,42 @@
           { key: 'adjacentAlly', label: 'Nécessite au moins un allié adjacent au porteur', type: 'checkbox' }] : [])
         ];
       }
+    },
+    animations: {
+      label: 'Animations', list: () => db().animations || (db().animations = []), prefix: 'anim_',
+      sub: a => `${a.kind === 'projectile' ? 'projectile' : 'normale'} · ${(a.frames || []).length} img`,
+      icon: a => h('span', { class: 'anim-kind' }, a.kind === 'projectile' ? '➶' : '✦'),
+      create: () => Animations.create('normal'),
+      onField: (key, a) => {
+        if (key === 'kind' && a.kind === 'projectile') { a.travel = a.travel || 300; a.arc = a.arc || 0; if (a.rotate === undefined) a.rotate = true; a.hitFrame = 0; }
+        if (key === 'kind' && a.kind === 'normal') { delete a.travel; delete a.arc; delete a.rotate; if (!a.hitFrame) a.hitFrame = Math.min(3, (a.frames || []).length); }
+      },
+      rerenderOn: ['kind', 'position', 'on'],
+      fields: a => [
+        { type: 'row', fields: [
+          { key: 'name', label: 'Nom', type: 'text', live: true },
+          { key: 'kind', label: 'Type', type: 'select', options: Animations.KINDS }] },
+        a.kind === 'projectile'
+          ? { type: 'row', fields: [
+            { key: 'travel', label: 'Durée du trajet (ms)', type: 'number', min: 30, max: 5000 },
+            { key: 'arc', label: 'Courbe (hauteur)', type: 'number', min: -500, max: 500, help: '0 = trajet droit ; une boule de feu lancée en cloche : 20 à 40.' },
+            { key: 'speed', label: 'Durée d’une image (ms)', type: 'number', min: 16, max: 1000 }] }
+          : { type: 'row', fields: [
+            { key: 'on', label: 'Jouée sur', type: 'select', options: Animations.TARGETS },
+            { key: 'position', label: 'Position', type: 'select', options: Animations.POSITIONS },
+            { key: 'speed', label: 'Durée d’une image (ms)', type: 'number', min: 16, max: 1000, help: '50 ms ≈ 20 images par seconde (RPG Maker : vitesse 3).' }] },
+        a.kind === 'projectile' ? { key: 'rotate', label: 'Orienté selon son trajet (une flèche) ; sinon simplement retourné vers la cible (une boule de feu)', type: 'checkbox' } : null,
+        { key: 'next', label: a.kind === 'projectile' ? 'Animation à l’arrivée (sur la cible)' : 'Animation enchaînée ensuite', type: 'select', empty: '— aucune —',
+          options: () => animOpts().filter(o => o.value !== a.id),
+          help: a.kind === 'projectile' ? 'Ex. Feu → Explosion de feu. Les dégâts tombent à l’image d’impact de cette animation, sinon à l’arrivée.' : 'Ex. une aura sur l’attaquant, puis un projectile.' },
+        { type: 'custom', render: (an) => AnimationEditor.render(an, {
+          baseUrl: Editor.baseUrl(), list: () => db().animations, sheets: res().animations || [], sounds: res().se || [],
+          onChange: () => {
+            change();
+            for (const el of document.querySelectorAll('#db-body .db-item')) { const it = byId(db().animations, el.dataset.id), sub = el.querySelector('.sub'); if (it && sub) sub.textContent = TABS.animations.sub(it); }
+          }
+        }) }
+      ].filter(Boolean)
     },
     units: {
       label: 'Unités', list: () => db().units, prefix: 'c_',
@@ -503,6 +552,7 @@
           { key: 'brave', label: 'Brave : chaque attaque frappe deux fois', type: 'checkbox' },
           { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
           { key: 'drain', label: 'Drain : soigne des dégâts infligés', type: 'checkbox' }] },
+        ...weaponAnimFields(w),
         priceField,
         { type: 'info', text: (w) => w.type === 'staff' ? 'Soigne un allié : PV rendus = Soin + Magie.' :
           Rules.MAGIC_TYPES.includes(w.type) || w.magic ? 'Arme magique : utilise la Magie et cible la Résistance.' :
@@ -628,7 +678,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['animations', 'Animations'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -894,9 +944,10 @@
             (classes.length ? 'Classes : ' + classes.map(c => c.name).join(', ') + '. ' : '') +
             'Retire d’abord cette compétence de leurs fiches.');
         }
-        const usage = usageOf(tab, cur.id);
+        const usage = tab === 'animations' ? (Animations.usersOf(db(), Editor.project().meta, cur.id).length ? 'Utilisée par : ' + Animations.usersOf(db(), Editor.project().meta, cur.id).join(', ') + ' (ils n’auront plus d’animation).' : '') : usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(cur), 1);
+        if (tab === 'animations') Animations.forget(db(), Editor.project().meta, cur.id);
         Extensions.hook('db:deleted', { db: db(), tab, id: cur.id }); // plugins : retirer leurs références (ex. bannières)
         change(); renderBody();
       }
@@ -935,6 +986,7 @@
         list.push(...missing); selected.skills = missing[0].id; change(); renderBody();
       } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     }
+    if (tab === 'animations') pane.append(animationDefaultsPanel(list));
     if (!cur) { pane.append(h('div', { class: 'db-empty' }, 'Aucun élément.')); body.append(pane); return; }
     pane.append(h('h2', {}, cur.name, h('span', { class: 'id' }, cur.id)));
     if (tab === 'units') pane.append(unitPreview(cur));
@@ -967,6 +1019,29 @@
     body.append(pane);
     if (tab === 'skills') renderSkillErrors(pane, cur);
   }
+  /** Onglet Animations : animation par défaut de chaque type d'arme, exemples manquants, planches absentes. */
+  function animationDefaultsPanel(list) {
+    const meta = Editor.project().meta;
+    const defs = meta.animationDefaults || (meta.animationDefaults = {});
+    const missing = Animations.samples().filter(a => !list.some(x => x.id === a.id));
+    const box = h('details', { class: 'anim-defaults', open: store('tf.animDefaultsOpen') === '1' },
+      h('summary', {}, 'Animation par défaut de chaque type d’arme'),
+      h('p', { class: 'form-info' }, 'Jouée par les armes dont le champ « Animation d’attaque » est laissé sur « Celle du type d’arme ». Une arme ou une compétence qui se déclenche peut choisir la sienne (onglets Armes et Compétences).'),
+      h('div', { class: 'anim-defaults-grid' }, Rules.WEAPON_TYPES.map(t => {
+        const sel = h('select', { 'data-anim-default': t.id }, h('option', { value: '' }, '— aucune —'), animOpts().map(o => h('option', { value: o.value }, o.label)));
+        sel.value = defs[t.id] || '';
+        sel.onchange = () => { defs[t.id] = sel.value; change(); };
+        return h('label', { class: 'field' }, h('span', { class: 'field-label' }, t.name), sel);
+      })));
+    box.addEventListener('toggle', () => { try { localStorage.setItem('tf.animDefaultsOpen', box.open ? '1' : '0'); } catch (e) { /* sans stockage */ } });
+    const wrap = h('div', {}, box);
+    if (!(res().animations || []).length) wrap.append(h('p', { class: 'note' }, 'Aucune planche dans ressources/animations : Ressources › « Ajouter les ressources par défaut » copie les planches d’effets de base.'));
+    if (missing.length) wrap.append(h('button', { class: 'small', style: { margin: '8px 0' }, 'data-anim-samples': true, onclick: () => {
+      list.push(...JSON.parse(JSON.stringify(missing))); selected.animations = missing[0].id; change(); renderBody();
+    } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
+    return wrap;
+  }
+  function store(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function renderSkillErrors(pane, skill) {
     const box = pane.querySelector('.skill-validation');
     box.replaceChildren(...Skills.validate(skill).map(message => h('p', { class: 'note' }, '⚠ ' + message)));
