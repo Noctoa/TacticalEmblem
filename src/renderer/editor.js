@@ -1559,6 +1559,26 @@
     } catch (e) { console.error('[fonds de combat]', e); }
     if (linked) { markDirty(); UI.toast(`Fonds de combat de base ajoutés : ${linked} terrain(s) relié(s).`); }
   }
+  /**
+   * Animations d'attaque (Base de données › Animations) : un ancien projet reçoit, une seule fois, les planches de
+   * ressources/animations, les animations d'exemple, l'animation par défaut de chaque type d'arme et celles de Luna / Sol.
+   */
+  async function migrateAnimations() {
+    const meta = S.project.meta, db = DB();
+    if ((meta.pluginMigrations || []).includes('animations')) return;
+    meta.pluginMigrations = [...(meta.pluginMigrations || []), 'animations'];
+    markDirty();
+    try {
+      const r = await tf.installDefaultResources(S.dir, ['dir:animations']);
+      if (r && r.resources) S.project.resources = r.resources;
+    } catch (e) { console.error('[animations]', e); }
+    db.animations = Array.isArray(db.animations) ? db.animations : [];
+    const added = Animations.samples().filter(a => !db.animations.some(x => x.id === a.id));
+    db.animations.push(...added);
+    if (!meta.animationDefaults) meta.animationDefaults = Object.assign({}, Animations.SAMPLE_DEFAULTS);
+    for (const sk of db.skills || []) if (sk.animation === undefined && Animations.SAMPLE_SKILLS[sk.id]) sk.animation = Animations.SAMPLE_SKILLS[sk.id];
+    if (added.length) UI.toast(`Animations d'attaque : ${added.length} animation(s) d'exemple ajoutée(s) (Base de données › Animations).`);
+  }
   /** Plugins fournis avec l'application plus récents que la copie du projet : mis à jour (fiche, scripts, images). */
   async function updateBundledPlugins() {
     let bundled = [];
@@ -1584,6 +1604,7 @@
     // crédits d'exemple d'avant : remplacés par les crédits actuels du projet d'exemple (s'ils n'ont pas été modifiés)
     if (S.project.meta.credits === Defaults.OLD_SAMPLE_CREDITS) { S.project.meta.credits = Defaults.SAMPLE_CREDITS; markDirty(); }
     await migrateBattlebacks();
+    await migrateAnimations();
     // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
     let icons = 0;
     for (const sk of DB().skills || []) { if (sk.image === undefined && Skills.presetImage(sk.id)) { sk.image = Skills.presetImage(sk.id); icons++; } }

@@ -9,6 +9,7 @@
  *       combat_arrow.png                   projectile de l'animation (flèche…)
  *       portrait.png                       portrait / face set
  *   tilesets/           images de tilesets
+ *   animations/         planches des animations d'attaque (Base de données › Animations)
  *   interface/          curseur, fenêtres…
  *   musiques/           musiques de phase (bgm)
  *   jingles/            montée de niveau, victoire, game over (me)
@@ -31,6 +32,7 @@ const DIRS = {
   characters: ROOT + '/personnages',
   tilesets: ROOT + '/tilesets',
   battlebacks: ROOT + '/fonds-combat',
+  animations: ROOT + '/animations',
   system: ROOT + '/interface',
   bgm: ROOT + '/musiques',
   me: ROOT + '/jingles',
@@ -52,6 +54,7 @@ personnages/   un dossier par personnage (ou ennemi générique), avec dedans :
                Les noms de fichiers sont libres, les sous-dossiers aussi.
 tilesets/      images de tilesets (maps)
 fonds-combat/  décors des animations de combat (un par terrain, réglé dans Terrains et tilesets)
+animations/    planches des animations d'attaque (effets, projectiles), utilisées dans Base de données › Animations
 interface/     curseur, fenêtres…
 musiques/      musiques de phase
 jingles/       montée de niveau, victoire, game over
@@ -106,7 +109,7 @@ function ownerOf(rel) {
 
 /** Inventaire des ressources. Clés des sprites : chemin sans extension. */
 function scanResources(dir) {
-  const res = { characters: {}, battlers: {}, faces: [], tilesets: [], battlebacks: [], system: [], bgm: [], me: [], se: [], owners: [] };
+  const res = { characters: {}, battlers: {}, faces: [], tilesets: [], battlebacks: [], animations: [], system: [], bgm: [], me: [], se: [], owners: [] };
   const files = walk(dir, ROOT);
   const set = new Set(files);
   const used = new Set();
@@ -135,6 +138,7 @@ function scanResources(dir) {
   for (const f of under(DIRS.characters)) if (IMAGE_EXT.test(f) && !used.has(f)) res.faces.push(f);
   for (const f of under(DIRS.tilesets)) if (IMAGE_EXT.test(f)) res.tilesets.push(f);
   for (const f of under(DIRS.battlebacks)) if (IMAGE_EXT.test(f)) res.battlebacks.push(f);
+  for (const f of under(DIRS.animations)) if (IMAGE_EXT.test(f)) res.animations.push(f);
   for (const f of under(DIRS.system)) if (IMAGE_EXT.test(f)) res.system.push(f);
   for (const k of ['bgm', 'me', 'se']) for (const f of under(DIRS[k])) if (AUDIO_EXT.test(f)) res[k].push(f);
   const pDir = path.join(dir, DIRS.characters);

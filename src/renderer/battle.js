@@ -57,13 +57,14 @@
    * opts : { baseUrl, battlerOf(u), att, def, hp0: {[uid]: hp}, strikes, forecast, distance,
    *          weaponOf(u) -> arme, terrainOf(u) -> terrain, background (canvas), battleback (image du décor), projectileImg(meta, name),
    *          paletteOf(u) -> 'original' | 'blue' | 'red' | 'green',
-   *          partner (attaque duo), helpers: [unité] (partenaires des attaques spéciales), mapSpriteOf(u) -> { meta, img } }
+   *          partner (attaque duo), helpers: [unité] (partenaires des attaques spéciales), mapSpriteOf(u) -> { meta, img },
+ *          animations (Base de données › Animations), animationFor(u, coup) -> id de l'animation de ce coup ('' = aucune) }
    */
   async function play(opts) {
     const left = opts.att.team === 'enemy' ? opts.att : opts.def;
     const right = left === opts.att ? opts.def : opts.att;
     const sc = {
-      opts, speed: 1, skip: false, floats: [], shake: 0, whiteout: 0, projectile: null, fade: 0,
+      opts, speed: 1, skip: false, floats: [], shake: 0, whiteout: 0, projectile: null, fade: 0, runs: [],
       L: makeActor(opts, left, 'L'), R: makeActor(opts, right, 'R'), ranged: opts.distance >= 2
     };
     sc.L.hp = sc.L.hpShown = opts.hp0[left.uid];
@@ -328,6 +329,8 @@
     const order = sc.front && sc.front.helper ? [...sc.helpers.filter(a => a !== sc.front), ...main, sc.front] : [...sc.helpers, ...main];
     for (const a of order) drawActor(sc, g, a, L);
     if (sc.projectile) drawProjectile(sc, g, L);
+    // animations d'attaque (Base de données › Animations)
+    for (let i = sc.runs.length - 1; i >= 0; i--) { const r = sc.runs[i]; r.draw(g); if (!r.active && !r.flashes.length) sc.runs.splice(i, 1); }
     // textes flottants
     const now = performance.now();
     for (let i = sc.floats.length - 1; i >= 0; i--) {
@@ -382,6 +385,7 @@
         g.globalAlpha = 1;
       }
     }
+    for (const r of sc.runs) r.drawScreenFlash(g, w, hh);
     // flash blanc des critiques
     if (sc.whiteout > 0.02) { g.globalAlpha = sc.whiteout * sc.fade; g.fillStyle = '#fff'; g.fillRect(0, 0, w, hh); sc.whiteout *= 0.86; }
     g.globalAlpha = 1;
@@ -487,15 +491,22 @@
     const name = chooseAnim(atk.meta, s.crit, sc.opts.distance, weapon && weapon.type);
     const A = atk.meta && atk.meta.anims[name];
     if (!A) { // pas d'animation de combat (partenaire affiché avec son sprite de map) : un bond vers l'adversaire
-      atk.travelTarget = 0.85; await wait(240, sc); outcome(sc, atk, def, s); await wait(160, sc);
+      const id = sc.opts.animationFor ? sc.opts.animationFor(atk.unit, s) : '';
+      atk.travelTarget = 0.85; await wait(240, sc);
+      if (id) await playAnimation(sc, id, atk, def, () => outcome(sc, atk, def, s)); else outcome(sc, atk, def, s);
+      await wait(160, sc);
       atk.travelTarget = 0; await wait(240, sc); return;
     }
     const n = A.frames.length;
     const useTravel = !sc.ranged && A.approach;
-    const projKind = A.projectile && (sc.ranged || weapon && weapon.type === 'bow') ? A.projectile : null;
+    // animation d'attaque de l'arme ou de la compétence (Base de données › Animations) : remplace le projectile intégré
+    const animId = sc.opts.animationFor ? sc.opts.animationFor(atk.unit, s) : '';
+    const builtIn = A.projectile && (sc.ranged || weapon && weapon.type === 'bow') ? A.projectile : null;
+    const projKind = animId ? null : builtIn;
     let resolved = false;
     const resolve = () => { if (!resolved) { resolved = true; outcome(sc, atk, def, s); } };
     let projDone = Promise.resolve();
+    const trigger = animId ? (builtIn && A.release !== undefined ? A.release : (A.hit !== undefined ? A.hit : Math.floor(n / 2))) : -1;
     if (s.crit) { sc.whiteout = 0.9; await wait(120, sc); }
     for (let i = 0; i < n; i++) {
       atk.frame = A.frames[i];
@@ -511,7 +522,8 @@
         }
       }
       if (projKind && i === A.release) projDone = throwProjectile(sc, atk, def, projKind, A.catch !== undefined, resolve);
-      if (!projKind && i === (A.hit !== undefined ? A.hit : Math.floor(n / 2))) resolve();
+      if (i === trigger) projDone = playAnimation(sc, animId, atk, def, resolve);
+      if (!projKind && !animId && i === (A.hit !== undefined ? A.hit : Math.floor(n / 2))) resolve();
       if (projKind && A.catch !== undefined && i === A.catch) await projDone;
       await wait((A.durations && A.durations[i]) || 55, sc);
     }
@@ -520,6 +532,28 @@
     atk.travelTarget = 0;
     atk.frame = atk.stance;
     await wait(120, sc);
+  }
+
+  /** Joue une animation d'attaque de atk vers def ; onHit au moment des dégâts. Se termine avec l'animation. */
+  async function playAnimation(sc, id, atk, def, onHit) {
+    const pt = (a) => () => {
+      const L = layout(sc), x = actorX(sc, a, L);
+      return { x, y: L.ground - 24 * L.S, feet: L.ground, head: L.ground - 44 * L.S };
+    };
+    const r = AnimPlayer.run({
+      list: sc.opts.animations || [], id, baseUrl: sc.opts.baseUrl,
+      unit: () => layout(sc).S / 3, source: pt(atk), target: pt(def),
+      screen: () => { const L = layout(sc); return { x: L.w / 2, y: L.hudTop / 2 }; },
+      speed: () => sc.speed, skipped: () => sc.skip,
+      onEvent: (ev) => {
+        if (ev.type === 'se') Music.seFile(ev.path);
+        else if (ev.type === 'shake') sc.shake = Math.max(sc.shake, ev.amount);
+        else if (ev.type === 'flash' && ev.scope === 'target') def.flash = performance.now() + ev.duration / sc.speed;
+      }
+    });
+    sc.runs.push(r);
+    r.hit.then(onHit);
+    await r.done;
   }
 
   async function throwProjectile(sc, atk, def, kind, returns, onHit) {
@@ -595,6 +629,6 @@
   }
 
   /** État de la scène en cours (tests automatisés). */
-  function debugState() { return active ? { helpers: active.helpers.map(a => ({ name: a.unit.name, alpha: a.alpha, travel: a.travel, side: a.side, mapSprite: !!a.mapSp })) } : null; }
+  function debugState() { return active ? { anims: active.runs.filter(r => r.active).length, helpers: active.helpers.map(a => ({ name: a.unit.name, alpha: a.alpha, travel: a.travel, side: a.side, mapSprite: !!a.mapSp })) } : null; }
   root.BattleScene = { play, skip, setFast, isActive, chooseAnim, debugState };
 })(self);

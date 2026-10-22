@@ -21,6 +21,7 @@
   window.PlaytestState = G;
   const V = { s: 2, camX: 0, camY: 0, w: 0, h: 0, dpr: 1, shake: 0 };
   const floats = [];
+  const mapAnims = []; // animations d'attaque jouées sur la map (combat sans animation, bâtons)
 
   const defaultHelp = $('#help').textContent;
   const canvas = $('#game');
@@ -66,6 +67,7 @@
       } catch (e) { console.error('[plugin] chargement', e); }
       if (self.FehDigits) FehDigits.preload(); // chiffres des dégâts (img/feh)
       if (self.SkillIcons) SkillIcons.preload(G.db && G.db.skills); // icônes des compétences (img/skills)
+      if (self.AnimPlayer) AnimPlayer.preload(G.baseUrl, G.db.animations || []); // planches des animations d'attaque
       TacticalEmblem.emit('game:start', {});
       const chId = params.get('chapter');
       let first = R.byId(G.db.chapters, chId) || R.byId(G.db.chapters, G.project.meta.startChapter) || G.db.chapters[0];
@@ -480,6 +482,8 @@
     if (G.mode === 'chapter') drawVillages();
     if (G.mode === 'lobby') lobby.drawOverlay(ctx, t);
     if (!G.busy && ['player', 'ally'].includes(G.phase) && !G.over && !G.dialogue) drawCursor(t);
+    for (let i = mapAnims.length - 1; i >= 0; i--) { const r = mapAnims[i]; r.draw(ctx); if (!r.active && !r.flashes.length) mapAnims.splice(i, 1); }
+    for (const r of mapAnims) r.drawScreenFlash(ctx, V.w, V.h);
     drawFloats(t);
   }
 
@@ -1227,15 +1231,29 @@
     const amount = (st.weapon.heal || 10) + u.stats.mag;
     const before = t.hp;
     await lunge(u, t);
+    const healAnim = attackAnimation(u, st.weapon, null);
+    let healRun = null;
+    if (healAnim) {
+      healRun = playMapAnimation(healAnim, u, t);
+      await healRun.hit;
+    }
     if (st.weapon.restore) {
-      const removed = Statuses.cure(t, st.weapon.restore); float(t.x, t.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8');
+      const removed = Statuses.cure(t, st.weapon.restore);
+      float(t.x, t.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8');
     } else {
       t.hp = Math.min(t.stats.hp, t.hp + amount);
-      float(t.x, t.y, '+' + (t.hp - before), '#7dffa8', false, t.hp > before ? { num: t.hp - before, style: 'heal' } : null);
+      float(
+        t.x, t.y,
+        '+' + (t.hp - before),
+        '#7dffa8',
+        false,
+        t.hp > before ? { num: t.hp - before, style: 'heal' } : null
+      );
     }
     const slot = u.inventory[st.index];
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
+    if (healRun) await healRun.done;
     if (u.team !== 'enemy') await grantExp(u, R.staffExp(u, G.db));
     G.busy = false;
     await finishAction(u);
@@ -1352,6 +1370,27 @@
   // =====================================================================
   // Combat
   // =====================================================================
+  /** Animation d'une attaque (arme, critique, compétence ou type d'arme) ; '' si aucune. */
+  function attackAnimation(u, weapon, s) {
+    if (!self.Animations || !G.db.animations || !G.db.animations.length) return '';
+    return Animations.forAttack(G.db, G.project.meta, weapon, { crit: !!(s && s.crit), skills: s && s.skills ? s.skills.filter(sk => !sk.by || sk.by === u.uid) : [] });
+  }
+  /** Joue une animation d'attaque sur la map, de src vers tgt ; renvoie { hit, done }. */
+  function playMapAnimation(id, src, tgt) {
+    const pt = (u) => () => { const [px, py, w, hh] = tileRect(u.x + (u.ox || 0), u.y + (u.oy || 0)); return { x: px + w / 2, y: py + hh / 2, feet: py + hh * 0.92, head: py + hh * 0.08 }; };
+    const r = AnimPlayer.run({
+      list: G.db.animations, id, baseUrl: G.baseUrl, unit: () => TH() / 96, source: pt(src), target: pt(tgt),
+      screen: () => ({ x: V.w / 2, y: V.h / 2 }),
+      onEvent: (ev) => {
+        if (ev.type === 'se') Music.seFile(ev.path);
+        else if (ev.type === 'shake') V.shake = Math.max(V.shake || 0, ev.amount);
+        else if (ev.type === 'flash' && ev.scope === 'target') tgt.flash = performance.now() + ev.duration;
+      }
+    });
+    mapAnims.push(r);
+    return r;
+  }
+
   async function lunge(a, b) {
     const dx = Math.sign(b.x - a.x) * 0.28, dy = Math.sign(b.y - a.y) * 0.28;
     for (let i = 1; i <= 5; i++) { a.ox = dx * i / 5; a.oy = dy * i / 5; await sleep(14); }
@@ -1390,7 +1429,9 @@
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
         battleback: battlebackOf(def) || battlebackOf(att),
         hudTheme: G.settings.battleHud || 'gba', // interface de combat (Système › Règles de combat)
-        projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null
+        projectileImg: (meta, name) => meta.projectiles && meta.projectiles[name] ? Render.readyImage(G.baseUrl, meta.projectiles[name]) : null,
+        animations: G.db.animations || [],
+        animationFor: (u, s) => attackAnimation(u, u === att ? wAtt : u === def ? wDef : (R.equipped(u, G.db) || {}).weapon, s)
       });
       document.body.classList.remove('in-battle');
       lastInfoKey = '';
@@ -1420,6 +1461,9 @@
         if (s.skills.length) await sleep(350);
         if (mate) await Promise.all([lunge(src, tgt), lunge(mate, tgt)]); // le partenaire s'élance aussi
         else await lunge(src, tgt);
+        // animation d'attaque (Base de données › Animations) : les dégâts tombent à son image d'impact
+        const animId = attackAnimation(src, src === att ? wAtt : src === def ? wDef : (R.equipped(src, G.db) || {}).weapon, s);
+        if (animId) await playMapAnimation(animId, src, tgt).hit;
         Music.se(s.hit ? (s.crit ? 'crit' : 'hit') : 'miss');
         if (s.hit) {
           tgt.flash = performance.now() + 120;
@@ -2087,7 +2131,7 @@
     float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl
   });
   window.PlaytestLobby = lobby;
-  window.PlaytestDebug = { checkEnd, killUnit }; // scénarios de test automatisés
+  window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length }; // scénarios de test automatisés
 
   const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
   window.PlaytestPreparation = preparation;

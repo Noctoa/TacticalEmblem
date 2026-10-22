@@ -2,11 +2,12 @@
  * Base de données par défaut + projet d'exemple ("Prologue — L'embuscade").
  */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
-    typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions);
+  const node = typeof module !== 'undefined' && module.exports;
+  const api = factory(node ? require('./skills.js') : root.Skills, node ? require('./promotions.js') : root.Promotions,
+    node ? require('./animations.js') : root.Animations);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Defaults = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Animations) {
   'use strict';
 
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
@@ -585,13 +586,18 @@
     db.arcs = arcs();
     db.supports = supports();
     db.talks = talks();
+    // animations d'attaque (Base de données › Animations) : exemples sur les planches de ressources/animations
+    db.animations = Animations.samples();
+    for (const sk of db.skills) if (Animations.SAMPLE_SKILLS[sk.id]) sk.animation = Animations.SAMPLE_SKILLS[sk.id];
     return {
       meta: {
         format: 'tactics-forge', version: 1, name: name || 'Mon Tactical RPG',
         // lobby : le jeu commence au camp, on y choisit les chapitres, on achète, on parle aux alliés
         lobby: lobby(),
         // systèmes devenus des plugins : un projet neuf ne les reçoit pas automatiquement (Base de données › Plugins)
-        pluginMigrations: ['invocations', 'fonds-combat'],
+        pluginMigrations: ['invocations', 'fonds-combat', 'animations'],
+        // animation jouée par défaut pour chaque type d'arme (une arme peut choisir la sienne)
+        animationDefaults: Object.assign({}, Animations.SAMPLE_DEFAULTS),
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',
         // écran titre : sous-titre, fond, musique, mode d'une nouvelle partie ; crédits (bouton Crédits)
         title: { subtitle: 'Les héros de Varenne', background: '', music: '', newGameMode: 'classic' },

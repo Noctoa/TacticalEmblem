@@ -4,7 +4,7 @@
  * MonJeu/
  *   game.tfproj              métadonnées (nom, réglages, chapitre de départ, ordre des maps)
  *   data/                    base de données
- *     units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json
+ *     units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json animations.json
  *     maps/map_1.json        une map par fichier
  *   ressources/              images et sons, détail dans resources-layout.js
  *     personnages/<Nom>/     sprites de map, animation de combat, portrait d'un personnage
@@ -24,10 +24,11 @@ const Villages = require('../shared/villages.js');
 const Locks = require('../shared/locks.js');
 const Scenario = require('../shared/scenario.js');
 const Statuses = require('../shared/statuses.js');
+const Animations = require('../shared/animations.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
-const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs'];
+const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs', 'animations'];
 // données des plugins (ex. « banners » du plugin Invocations) : tout autre data/<clé>.json est lu et réécrit tel quel
 const EXTRA_KEY = /^[a-z][A-Za-z0-9_-]{0,63}$/;
 const extraKeysIn = (dir) => {
@@ -101,7 +102,16 @@ function loadProject(dir, assetsDir) {
 function saveProject(dir, project) {
   const statusErrors = Statuses.validateDefinitions(project.db);
   if (statusErrors.length) throw new Error(statusErrors.join('\n'));
-  const errors = [...Skills.validateAll(project.db.skills || []), ...Skills.validateAssignments(project.db), ...Skills.validateLearning(project.db), ...Promotions.validate(project.db), ...Team.validate(project.db, project.meta), ...Locks.validateKeys(project.db)];
+  const errors = [
+    ...Skills.validateAll(project.db.skills || []),
+    ...Skills.validateAssignments(project.db),
+    ...Skills.validateLearning(project.db),
+    ...Promotions.validate(project.db),
+    ...Team.validate(project.db, project.meta),
+    ...Locks.validateKeys(project.db),
+    ...Animations.validateAll(project.db.animations),
+    ...Animations.validateLinks(project.db, project.meta)
+  ];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) if (ch.villages !== undefined) {

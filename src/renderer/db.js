@@ -33,6 +33,17 @@
   const doneOpts = (exclude) => (db().arcs || []).filter(a => a.id !== exclude).map(a => ({ value: a.id, label: 'Chapitre : ' + (a.name || a.id) }))
     .concat(db().chapters.filter(c => c.id !== exclude).map(c => ({ value: c.id, label: 'Acte : ' + Lobby.actLabel(db(), c.id) })));
   /** Prix en boutique (lobby) ; la revente rapporte la moitié, au prorata des utilisations. */
+  /** Animations d'attaque (Base de données › Animations) proposées dans un menu. */
+  const animOpts = () => (db().animations || []).map(a => ({ value: a.id, label: (a.kind === 'projectile' ? '➶ ' : '✦ ') + a.name }));
+  const typeName = (t) => (Rules.WEAPON_TYPES.find(x => x.id === t) || {}).name || t;
+  const animName = (id) => ((db().animations || []).find(a => a.id === id) || {}).name;
+  /** Champs « animation » d'une arme : la sienne, celle des critiques ; vide = celle du type d'arme. */
+  const weaponAnimFields = (w) => [{ type: 'row', fields: [
+    { key: 'animation', label: 'Animation d’attaque', type: 'select', options: () => {
+      const def = ((Editor.project().meta.animationDefaults || {})[w.type]);
+      return [{ value: '', label: 'Celle du type d’arme' + (def && animName(def) ? ` (${animName(def)})` : ' (aucune)') }, { value: 'none', label: '— aucune —' }].concat(animOpts());
+    }, help: 'Animation jouée quand cette arme frappe (combat animé et map). Les animations se créent dans l’onglet Animations.' },
+    { key: 'critAnimation', label: 'Animation des critiques', type: 'select', options: () => [{ value: '', label: 'La même' }].concat(animOpts()) }] }];
   const priceField = { key: 'price', label: 'Prix en boutique (0 = ne se vend pas)', type: 'number', min: 0, max: 999999,
     help: 'Acheté au marchand du lobby à ce prix ; revendu à la moitié, selon les utilisations restantes.' };
   const projectColors = () => Palettes.resolveMode((Editor.project().meta.settings || {}).colors);
@@ -375,7 +386,9 @@
             { key: 'activation', label: 'Probabilité de déclenchement', type: 'select', options: [
               { value: 'always', label: 'Toujours' }, { value: 'fixed', label: 'Pourcentage fixe' },
               { value: 'skl', label: 'Technique de l’unité (%)' }, { value: 'lck', label: 'Chance de l’unité (%)' }] },
-            ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : [])
+            ...(s.activation === 'fixed' ? [{ key: 'chance', label: 'Chance de déclenchement (%)', type: 'number', min: 0, max: 100 }] : []),
+            { key: 'animation', label: 'Animation quand elle se déclenche', type: 'select', empty: '— celle de l’arme —', options: animOpts,
+              help: 'Remplace l’animation de l’arme pour le coup où la compétence se déclenche (onglet Animations).' }
           ] : []),
           ...(!effect.utility ? [{ type: 'heading', label: 'Conditions d’activation' }] : []),
           ...(effect.combat ? [
@@ -390,6 +403,42 @@
           { key: 'adjacentAlly', label: 'Nécessite au moins un allié adjacent au porteur', type: 'checkbox' }] : [])
         ];
       }
+    },
+    animations: {
+      label: 'Animations', list: () => db().animations || (db().animations = []), prefix: 'anim_',
+      sub: a => `${a.kind === 'projectile' ? 'projectile' : 'normale'} · ${(a.frames || []).length} img`,
+      icon: a => h('span', { class: 'anim-kind' }, a.kind === 'projectile' ? '➶' : '✦'),
+      create: () => Animations.create('normal'),
+      onField: (key, a) => {
+        if (key === 'kind' && a.kind === 'projectile') { a.travel = a.travel || 300; a.arc = a.arc || 0; if (a.rotate === undefined) a.rotate = true; a.hitFrame = 0; }
+        if (key === 'kind' && a.kind === 'normal') { delete a.travel; delete a.arc; delete a.rotate; if (!a.hitFrame) a.hitFrame = Math.min(3, (a.frames || []).length); }
+      },
+      rerenderOn: ['kind', 'position', 'on'],
+      fields: a => [
+        { type: 'row', fields: [
+          { key: 'name', label: 'Nom', type: 'text', live: true },
+          { key: 'kind', label: 'Type', type: 'select', options: Animations.KINDS }] },
+        a.kind === 'projectile'
+          ? { type: 'row', fields: [
+            { key: 'travel', label: 'Durée du trajet (ms)', type: 'number', min: 30, max: 5000 },
+            { key: 'arc', label: 'Courbe (hauteur)', type: 'number', min: -500, max: 500, help: '0 = trajet droit ; une boule de feu lancée en cloche : 20 à 40.' },
+            { key: 'speed', label: 'Durée d’une image (ms)', type: 'number', min: 16, max: 1000 }] }
+          : { type: 'row', fields: [
+            { key: 'on', label: 'Jouée sur', type: 'select', options: Animations.TARGETS },
+            { key: 'position', label: 'Position', type: 'select', options: Animations.POSITIONS },
+            { key: 'speed', label: 'Durée d’une image (ms)', type: 'number', min: 16, max: 1000, help: '50 ms ≈ 20 images par seconde (RPG Maker : vitesse 3).' }] },
+        a.kind === 'projectile' ? { key: 'rotate', label: 'Orienté selon son trajet (une flèche) ; sinon simplement retourné vers la cible (une boule de feu)', type: 'checkbox' } : null,
+        { key: 'next', label: a.kind === 'projectile' ? 'Animation à l’arrivée (sur la cible)' : 'Animation enchaînée ensuite', type: 'select', empty: '— aucune —',
+          options: () => animOpts().filter(o => o.value !== a.id),
+          help: a.kind === 'projectile' ? 'Ex. Feu → Explosion de feu. Les dégâts tombent à l’image d’impact de cette animation, sinon à l’arrivée.' : 'Ex. une aura sur l’attaquant, puis un projectile.' },
+        { type: 'custom', render: (an) => AnimationEditor.render(an, {
+          baseUrl: Editor.baseUrl(), list: () => db().animations, sheets: res().animations || [], sounds: res().se || [],
+          onChange: () => {
+            change();
+            for (const el of document.querySelectorAll('#db-body .db-item')) { const it = byId(db().animations, el.dataset.id), sub = el.querySelector('.sub'); if (it && sub) sub.textContent = TABS.animations.sub(it); }
+          }
+        }) }
+      ].filter(Boolean)
     },
     units: {
       label: 'Unités', list: () => db().units, prefix: 'c_',
@@ -422,11 +471,7 @@
           { key: 'gender', label: 'Genre', type: 'select', empty: '—', options: [{ value: 'homme', label: 'Homme' }, { value: 'femme', label: 'Femme' }, { value: 'autre', label: 'Autre' }] },
           { key: 'protagonist', label: "Personnage principal (choisit son partenaire à l'épilogue)", type: 'checkbox' }] },
         { key: 'ending', label: 'Fin en solo (épilogue)', type: 'textarea', rows: 2, placeholder: 'Ce que devient le personnage s\'il finit seul.' },
-        { type: 'custom', render: (u) => {
-          const pairs = db().supports.filter(p => p.a === u.id || p.b === u.id);
-          return h('p', { class: 'form-info' }, pairs.length ? '♥ Affinités : ' + pairs.map(p => p.name).join(', ') + ' — ' : '♥ Aucune affinité. ',
-            h('a', { href: '#', onclick: (e) => { e.preventDefault(); open('supports'); } }, 'Onglet Affinités'));
-        } },
+        { type: 'custom', render: unitSupportsField },
         { type: 'heading', label: 'Stats de base' },
         { key: 'stats', type: 'stats', max: 99 },
         { type: 'custom', render: (u) => h('div', { class: 'insp-actions' }, h('button', { class: 'small ghost', onclick: () => {
@@ -508,6 +553,7 @@
           { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
           { key: 'drain', label: 'Drain : soigne des dégâts infligés', type: 'checkbox' }] },
         { type: 'custom', render: () => StatusFields.weapon(w, change) },
+        ...weaponAnimFields(w),
         priceField,
         { type: 'info', text: (w) => w.type === 'staff' ? (w.restore ? 'Soigne les altérations choisies d’un allié, sans rendre de PV.' : 'Soigne un allié : PV rendus = Soin + Magie.') :
           Rules.MAGIC_TYPES.includes(w.type) || w.magic ? 'Arme magique : utilise la Magie et cible la Résistance.' :
@@ -605,7 +651,7 @@
             : !here ? { type: 'info', text: `⚠ ${uName(t.unitId)} n'est pas placé au camp (map de camp, mode Unités) : impossible de lui parler.` } : null,
           { key: 'alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
           { type: 'row', fields: [
-            { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (onglet Affinités), si elle existe.' },
+            { key: 'points', label: `Affinité gagnée avec ${hero ? hero.name : 'le héros'}`, type: 'number', min: 0, max: 200, help: 'Ajoutée à leur paire d\'affinité (fiche de l\'unité › Affinités), si elle existe.' },
             { key: 'once', label: 'Une seule fois', type: 'checkbox' }] },
           t.points > 0 && !linked ? { type: 'info', text: `Aucune affinité entre ${hero ? hero.name : 'le héros'} et ${uName(t.unitId)} : les points ne seront pas comptés.` } : null,
           { key: 'script', label: 'Dialogue', type: 'textarea', rows: 8, placeholder: 'Lyn: Bonsoir, Eliwood.\nEliwood: Tu ne dors pas ?' },
@@ -634,7 +680,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes'], ['items', 'Objets'], ['supports', 'Affinités'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -667,6 +713,11 @@
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
+    if (t === 'supports') { // les affinités se règlent dans la fiche des unités
+      const pair = id ? byId(db().supports || [], id) : (db().supports || [])[0];
+      if (pair) { openPairs.add(pair.id); id = pair.a; } else id = null;
+      t = 'units';
+    }
     if (t) tab = t;
     if (!tabDef(tab) && !order().some(([k]) => k === tab) && !['chapters', 'terrains'].includes(tab)) tab = 'units'; // onglet d'un plugin retiré
     if (id) selected[tab] = id;
@@ -683,7 +734,7 @@
 
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains') || (k === 'weapons' && tab === 'items')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
   }
 
   function renderBody() {
@@ -691,6 +742,7 @@
     animToken++;
     body.classList.toggle('single', tab === 'system');
     if (tab === 'terrains') { renderListTab(body, TABS.terrains); return mergeTerrainList(body); }
+    if (tab === 'weapons' || tab === 'items') { renderListTab(body, TABS[tab]); return mergeArmoryList(body); }
     if (tab === 'tilesets') { renderTilesets(body); return mergeTerrainList(body); }
     if (tabDef(tab)) return renderListTab(body, tabDef(tab));
     if (tab === 'chapters') return renderChapters(body);
@@ -718,6 +770,96 @@
     const actions = body.querySelector('.db-list-actions');
     if (actions) actions.prepend(h('span', { class: 'db-actions-kind' }, tab === 'tilesets' ? 'Tileset' : 'Terrain'));
     const cur = box.querySelector('.db-item.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+
+  /**
+   * Onglet « Armes et objets » : une seule liste, armes puis objets. Cliquer un élément ouvre sa fiche ;
+   * les boutons du bas (Nouveau, Dupliquer, Supprimer) agissent sur le type affiché.
+   */
+  const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
+  function weaponIcon(type) {
+    const i = WICONS.indexOf(type);
+    return i < 0 ? h('span', { class: 'n' }, '⚔') : h('span', { class: 'armory-icon', style: { backgroundPosition: `${-i * 16}px 0` } });
+  }
+  function mergeArmoryList(body) {
+    const box = body.querySelector('.db-list-items'); if (!box) return;
+    box.replaceChildren();
+    const group = (kind, title, list, sub) => {
+      box.append(h('div', { class: 'db-group' }, title, h('span', {}, String(list.length))));
+      list.forEach(it => box.append(h('div', { class: 'db-item' + (tab === kind && selected[kind] === it.id ? ' on' : ''), 'data-id': it.id, 'data-kind': kind,
+        onclick: () => { tab = kind; selected[kind] = it.id; renderTabs(); renderBody(); } },
+        kind === 'weapons' ? weaponIcon(it.type) : h('span', { class: 'n' }, '✚'), h('span', {}, it.name), h('span', { class: 'sub' }, sub(it)))));
+    };
+    group('weapons', 'Armes', db().weapons, TABS.weapons.sub);
+    group('items', 'Objets', db().items, TABS.items.sub);
+    const actions = body.querySelector('.db-list-actions');
+    if (actions) {
+      actions.prepend(h('span', { class: 'db-actions-kind' }, tab === 'items' ? 'Objet' : 'Arme'));
+      // « Nouveau » de l'autre type, sans changer de fiche d'abord
+      const other = tab === 'items' ? 'weapons' : 'items';
+      actions.append(h('button', { class: 'small', 'data-armory-add': other, title: other === 'items' ? 'Nouvel objet' : 'Nouvelle arme', html: Icons.icon('plus'), onclick: () => {
+        const def = TABS[other], list = def.list(), e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create());
+        list.push(e); tab = other; selected[other] = e.id; change(); renderTabs(); renderBody();
+      } }, other === 'items' ? 'Objet' : 'Arme'));
+    }
+    const cur = box.querySelector('.db-item.on'); if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+
+  // ------------------------------------------------------------------
+  // Affinités, dans la fiche de chaque unité (paires de db.supports)
+  // ------------------------------------------------------------------
+  const openPairs = new Set(); // paires dépliées (gardées d'un affichage à l'autre)
+  function unitSupportsField(u) {
+    const wrap = h('div', { class: 'unit-supports', 'data-unit-supports': u.id });
+    const draw = () => {
+      const all = db().supports || (db().supports = []);
+      const pairs = all.filter(p => p.a === u.id || p.b === u.id);
+      const cfg = Object.assign({}, Rules.DEFAULT_SUPPORT, Editor.project().meta.supports || {});
+      const partnerOf = (p) => (p.a === u.id ? p.b : p.a);
+      const taken = new Set(pairs.map(partnerOf));
+      const others = db().units.filter(o => o.id !== u.id && !taken.has(o.id));
+      const addSel = h('select', { 'data-support-add': true }, h('option', { value: '' }, '＋ Nouvelle affinité avec…'), others.map(o => h('option', { value: o.id }, o.name)));
+      addSel.onchange = () => {
+        if (!addSel.value) return;
+        const p = Object.assign({ id: Editor.uid(TABS.supports.prefix, all) }, TABS.supports.create(), { a: u.id, b: addSel.value });
+        p.name = `${uName(p.a)} ♥ ${uName(p.b)}`;
+        all.push(p); openPairs.add(p.id); change(); draw();
+      };
+      wrap.replaceChildren(h('div', { class: 'form-heading' }, 'Affinités'),
+        h('p', { class: 'form-info' }, `Seuils C/B/A/S : ${cfg.thresholds.join(' / ')} points. Gains, portée et bonus communs : Système › Affinités.`),
+        pairs.length ? null : h('p', { class: 'form-info' }, 'Aucune affinité pour ce personnage.'),
+        ...pairs.map(p => pairBlock(p, partnerOf(p), draw)),
+        others.length ? addSel : null);
+    };
+    draw();
+    return wrap;
+  }
+  function pairBlock(p, partner, redraw) {
+    const cfg = Object.assign({}, Rules.DEFAULT_SUPPORT, Editor.project().meta.supports || {});
+    const start = Rules.SUPPORT_RANKS[Rules.rankForPoints(Number(p.startPoints) || 0, cfg, p.maxRank)] || 'aucun';
+    const box = h('details', { class: 'sup-pair', 'data-support': p.id, open: openPairs.has(p.id) });
+    box.addEventListener('toggle', () => { if (box.open) openPairs.add(p.id); else openPairs.delete(p.id); });
+    const fill = () => {
+      const body = h('div', { class: 'sup-pair-body' });
+      const partnerSel = h('select', { 'data-support-partner': true }, db().units.filter(o => o.id !== (p.a === partner ? p.b : p.a)).map(o => h('option', { value: o.id }, o.name)));
+      partnerSel.value = partner;
+      partnerSel.onchange = () => { if (p.a === partner) p.a = partnerSel.value; else p.b = partnerSel.value; p.name = `${uName(p.a)} ♥ ${uName(p.b)}`; change(); redraw(); };
+      // mêmes champs que l'ancien onglet Affinités, sans le choix des deux personnages
+      const fields = TABS.supports.fields(p).slice(1);
+      body.append(h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Partenaire'), partnerSel),
+        UI.form(fields, p, { baseUrl: Editor.baseUrl(), onChange: (k) => {
+          change();
+          if (TABS.supports.onField) TABS.supports.onField(k, p);
+          if ((TABS.supports.rerenderOn || []).includes(k)) { box.replaceChildren(); fill(); }
+        } }),
+        h('div', { class: 'insp-actions' }, h('button', { class: 'small danger', 'data-support-delete': true, onclick: async () => {
+          if (!(await UI.confirm(`Supprimer l’affinité « ${p.name} » ?`, { danger: true, ok: 'Supprimer' }))) return;
+          const all = db().supports; all.splice(all.indexOf(p), 1); openPairs.delete(p.id); change(); redraw();
+        } }, 'Supprimer cette affinité')));
+      box.append(h('summary', {}, h('b', {}, '♥ ' + uName(partner)), h('span', { class: 'sup-pair-sub' }, ` · ${Number(p.startPoints) || 0} pts au départ (rang ${start}) · rang max ${p.maxRank || 'A'}`)), body);
+    };
+    fill();
+    return box;
   }
 
   function listPanel(items, cur, opts) {
@@ -900,9 +1042,10 @@
             (classes.length ? 'Classes : ' + classes.map(c => c.name).join(', ') + '. ' : '') +
             'Retire d’abord cette compétence de leurs fiches.');
         }
-        const usage = usageOf(tab, cur.id);
+        const usage = tab === 'animations' ? (Animations.usersOf(db(), Editor.project().meta, cur.id).length ? 'Utilisée par : ' + Animations.usersOf(db(), Editor.project().meta, cur.id).join(', ') + ' (ils n’auront plus d’animation).' : '') : usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(cur), 1);
+        if (tab === 'animations') Animations.forget(db(), Editor.project().meta, cur.id);
         Extensions.hook('db:deleted', { db: db(), tab, id: cur.id }); // plugins : retirer leurs références (ex. bannières)
         change(); renderBody();
       }
@@ -948,6 +1091,7 @@
         list.push(...missing); selected.skills = missing[0].id; change(); renderBody();
       } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     }
+    if (tab === 'animations') pane.append(animationDefaultsPanel(list));
     if (!cur) { pane.append(h('div', { class: 'db-empty' }, 'Aucun élément.')); body.append(pane); return; }
     pane.append(h('h2', {}, cur.name, h('span', { class: 'id' }, cur.id)));
     if (tab === 'units') pane.append(unitPreview(cur));
@@ -980,6 +1124,29 @@
     body.append(pane);
     if (tab === 'skills') renderSkillErrors(pane, cur);
   }
+  /** Onglet Animations : animation par défaut de chaque type d'arme, exemples manquants, planches absentes. */
+  function animationDefaultsPanel(list) {
+    const meta = Editor.project().meta;
+    const defs = meta.animationDefaults || (meta.animationDefaults = {});
+    const missing = Animations.samples().filter(a => !list.some(x => x.id === a.id));
+    const box = h('details', { class: 'anim-defaults', open: store('tf.animDefaultsOpen') === '1' },
+      h('summary', {}, 'Animation par défaut de chaque type d’arme'),
+      h('p', { class: 'form-info' }, 'Jouée par les armes dont le champ « Animation d’attaque » est laissé sur « Celle du type d’arme ». Une arme ou une compétence qui se déclenche peut choisir la sienne (onglets Armes et Compétences).'),
+      h('div', { class: 'anim-defaults-grid' }, Rules.WEAPON_TYPES.map(t => {
+        const sel = h('select', { 'data-anim-default': t.id }, h('option', { value: '' }, '— aucune —'), animOpts().map(o => h('option', { value: o.value }, o.label)));
+        sel.value = defs[t.id] || '';
+        sel.onchange = () => { defs[t.id] = sel.value; change(); };
+        return h('label', { class: 'field' }, h('span', { class: 'field-label' }, t.name), sel);
+      })));
+    box.addEventListener('toggle', () => { try { localStorage.setItem('tf.animDefaultsOpen', box.open ? '1' : '0'); } catch (e) { /* sans stockage */ } });
+    const wrap = h('div', {}, box);
+    if (!(res().animations || []).length) wrap.append(h('p', { class: 'note' }, 'Aucune planche dans ressources/animations : Ressources › « Ajouter les ressources par défaut » copie les planches d’effets de base.'));
+    if (missing.length) wrap.append(h('button', { class: 'small', style: { margin: '8px 0' }, 'data-anim-samples': true, onclick: () => {
+      list.push(...JSON.parse(JSON.stringify(missing))); selected.animations = missing[0].id; change(); renderBody();
+    } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
+    return wrap;
+  }
+  function store(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function renderSkillErrors(pane, skill) {
     const box = pane.querySelector('.skill-validation');
     box.replaceChildren(...Skills.validate(skill).map(message => h('p', { class: 'note' }, '⚠ ' + message)));
