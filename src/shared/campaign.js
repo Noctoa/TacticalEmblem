@@ -67,6 +67,7 @@
       !Array.isArray(save.campaign.dead) || !save.campaign.units || typeof save.campaign.units !== 'object' || Array.isArray(save.campaign.units) ||
       !Array.isArray(save.convoy) || !save.supports || typeof save.supports !== 'object') throw new Error('Sauvegarde de campagne invalide ou version non prise en charge.');
     if (!Scenario.validateMemory(save.campaign.scenario)) throw new Error('Mémoire des événements invalide dans la campagne.');
+    if (save.aiDifficulty !== undefined && !['easy', 'normal', 'hard'].includes(save.aiDifficulty)) throw new Error('Difficulté de l’IA invalide dans la sauvegarde.');
     for (const u of Object.values(save.campaign.units)) if (!u || !u.stats || !Number.isFinite(u.stats.hp) || !Array.isArray(u.inventory)) throw new Error('Une unité de la sauvegarde est illisible.');
     for (const u of Object.values(save.campaign.units)) {
       const errors = Skills.validateAssignment(u);

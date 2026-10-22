@@ -352,3 +352,13 @@ Les onglets Armes, Objets et Compétences proposent l'ajout des exemples manquan
 Les tests couvrent les durées, renouvellements, poison non létal, restrictions, interactions de combat et compétences, soins, événements, validation avant écriture et compatibilité des sauvegardes. Un scénario complet vérifie l'édition, les trois effets, objets de soin, choix de bâton, interruption de riposte, combats animés et sur la map, expiration et recommencement.
 
 Le recrutement par conversation est reporté : les invocations constituent le mode de recrutement principal souhaité. Les bonus supplémentaires de stats et de critique ne sont pas prioritaires ; ce lot enrichit les effets tactiques.
+
+## 24. Soigneurs IA et difficulté des décisions
+
+Les ennemis et alliés contrôlés par l’IA partagent les actions de bâton et d’objet du joueur : animation, effet, usure, casse et EXP alliée. Le planificateur distingue attaque, soin, objet et déplacement ; un soin ne termine jamais récursivement la phase. Les unités endormies attendent et peuvent être réévaluées si Rétablissement les réveille avant la fin de leur phase, sans accorder de seconde action à une unité ayant déjà joué.
+
+Le comportement **Soutien** se règle sur les placements ennemis et alliés (également importable depuis Tiled avec `support`, `soutien`, `healer` ou `soigneur`). Il privilégie les soins utiles et accompagne un allié hors de portée en respectant les chemins et les cases occupées. Les anciens comportements peuvent soigner à portée ; les immobiles ne se déplacent pas. Les alliés verts soignent aussi le joueur, jamais le camp adverse ; un bâton ne soigne pas son porteur. Sommeil bloque toute action ; Silence bloque les bâtons, mais permet un remède sur soi.
+
+Les priorités de Rétablissement prennent en compte le sommeil, le silence d’un utilisateur de magie/bâton et la durée du poison. Les potions sont envisagées à la moitié des PV ou moins, les antidotes/remèdes seulement contre une altération utile à retirer. L’IA ne consomme pas de boost permanent. Ces scores sont des heuristiques ; ils ne prédisent pas plusieurs tours complets.
+
+**Paramètres › Jeu** propose trois difficultés ennemies, sans bonus de statistiques ni manipulation des tirages : **Facile** cible les adversaires proches ; **Normal** évalue dégâts, coups fatals, ripostes et soins ; **Tactique** renforce les priorités de coup fatal et de survie et évite davantage les cases menacées. Les alliés utilisent toujours Normal. Le créateur règle la valeur initiale dans Système ; le joueur peut la changer entre deux actions. Le champ optionnel `aiDifficulty` de la sauvegarde conserve son choix ; sans ce champ, la valeur du projet s’applique. Recommencer conserve le réglage courant.

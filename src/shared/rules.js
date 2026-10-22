@@ -34,6 +34,12 @@
   // a bat b
   const TRIANGLE = { sword: 'axe', axe: 'lance', lance: 'sword', anima: 'light', light: 'dark', dark: 'anima' };
   const IMPASSABLE = 99;
+  const AI_DIFFICULTIES = [
+    { value: 'easy', label: 'Facile', description: 'Les ennemis privilégient les cibles proches et anticipent peu les ripostes.' },
+    { value: 'normal', label: 'Normal', description: 'Les ennemis évaluent dégâts, coups fatals, ripostes et soins.' },
+    { value: 'hard', label: 'Tactique', description: 'Les ennemis cherchent les coups décisifs et évitent davantage les positions dangereuses.' }
+  ];
+  const normalizeAiDifficulty = value => AI_DIFFICULTIES.some(d => d.value === value) ? value : 'normal';
 
   const DEFAULT_SETTINGS = {
     trueHit: true,
@@ -47,7 +53,8 @@
     debugMenu: true, // onglet Debug dans les paramètres du playtest
     overkill: true,  // après le coup fatal, l'attaquant finit ses coups : les dégâts en trop sont affichés
     overkillExp: 30, // EXP en plus quand l'overkill dépasse une 2e fois les PV max de la cible (0 = pas de bonus)
-    colors: 'map' // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
+    colors: 'map', // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
+    aiDifficulty: 'normal'
   };
 
   // ---------- utilitaires ----------
@@ -779,16 +786,105 @@
     return ups;
   }
 
-  // ---------- IA ennemie ----------
+  // ---------- IA ennemie / alliée ----------
+  /** Valeur d'un rétablissement : réveiller, libérer un soigneur/mage, puis ôter le poison. */
+  function cureValue(target, which, db) {
+    const cls = byId(db.classes, target.classId);
+    const types = (cls && cls.weapons) || [];
+    const magic = target.inventory.some(slot => {
+      const w = byId(db.weapons, slot.id);
+      return w && types.includes(w.type) && (w.magic || MAGIC_TYPES.includes(w.type) || w.type === 'staff');
+    });
+    return Statuses.list(target).filter(s => which === 'all' || s.id === which).reduce((score, s) => score +
+      (s.id === 'sleep' ? 70 + (target.done ? 0 : 15) : s.id === 'silence' ? (magic ? 60 : 0) :
+        12 + Math.ceil(target.stats.hp / 10) * Math.min(s.turns, 3)), 0);
+  }
+
+  function threatCounts(foes, ctx, db) {
+    const danger = new Map();
+    for (const foe of foes) for (const tile of threatTiles(foe, ctx, db, ['stationary', 'boss'].includes(foe.ai))) {
+      danger.set(tile, (danger.get(tile) || 0) + 1);
+    }
+    return danger;
+  }
+
+  function planSupport(unit, friends, foes, reach, opts, difficulty, danger) {
+    const { db, ctx } = opts;
+    const staffs = staves(unit, db);
+    const consumables = unit.inventory.map((slot, index) => ({ index, slot, item: byId(db.items, slot.id) }))
+      .filter(o => o.item && o.slot.uses > 0 && (o.item.effect === 'heal' || o.item.effect === 'restore'));
+    if (!staffs.length && !consumables.length && unit.ai !== 'support') return null;
+    danger = danger || (difficulty === 'easy' ? new Map() : threatCounts(foes, ctx, db));
+    const positionScore = stop => -(danger.get(key(stop.x, stop.y)) || 0) * (difficulty === 'hard' ? 24 : 12) - stop.cost * .05;
+    let best = null;
+    const offer = (stop, value, action, target, index) => {
+      if (value <= 0) return;
+      const score = (difficulty === 'easy' ? 20 - dist(unit, target) : value) + positionScore(stop);
+      if (!best || score > best.score) best = { score, stop, action, target, index };
+    };
+    for (const stop of reach.values()) {
+      if (!stop.canStop) continue;
+      // Copie de position : la planification ne modifie jamais l'unité réelle.
+      const from = { ...unit, x: stop.x, y: stop.y };
+      for (const friend of friends) {
+        if (friend === unit) continue;
+        for (const s of staffs) {
+          if (!staffCanTarget(from, friend, s.weapon)) continue;
+          const value = s.weapon.restore ? cureValue(friend, s.weapon.restore, db) :
+            Math.min(friend.stats.hp - friend.hp, (s.weapon.heal || 10) + unit.stats.mag) * 2 + (friend.hp <= friend.stats.hp / 2 ? 25 : 0);
+          offer(stop, value, 'staff', friend, s.index);
+        }
+      }
+      for (const c of consumables) {
+        const value = c.item.effect === 'restore' ? cureValue(unit, c.item.cure, db) :
+          unit.hp <= unit.stats.hp / 2 ? Math.min(unit.stats.hp - unit.hp, c.item.amount || 10) * 2 + 30 : 0;
+        offer(stop, value, 'item', unit, c.index);
+      }
+    }
+    if (best) return { score: best.score, action: best.action, moveTo: { x: best.stop.x, y: best.stop.y },
+      path: pathTo(reach, best.stop.x, best.stop.y), target: best.target, weaponIndex: best.index, itemIndex: best.index };
+
+    // Un soutien sans soin à donner accompagne son groupe ; aucun chemin à travers un mur ou un ennemi.
+    if (unit.ai !== 'support') return null;
+    const far = reachable(unit, ctx, 999);
+    let goal = null, goalScore = -Infinity;
+    for (const friend of friends) {
+      if (friend === unit) continue;
+      const need = Math.max(0, ...staffs.map(s => s.weapon.restore ? cureValue(friend, s.weapon.restore, db) :
+        (friend.stats.hp - friend.hp) * 2));
+      const ranges = staffs.length ? staffs.map(s => s.weapon) : [{ minRange: 1, maxRange: 2 }];
+      for (const w of ranges) for (const pos of tilesInRange(friend.x, friend.y, w.minRange || 1, w.maxRange || 1, ctx)) {
+        const node = far.get(key(pos.x, pos.y));
+        if (!node || !node.canStop) continue;
+        const score = need - node.cost;
+        if (score > goalScore) { goalScore = score; goal = node; }
+      }
+    }
+    if (!goal || goal.cost === 0) return null;
+    let dest = reach.get(key(unit.x, unit.y));
+    for (const pos of pathTo(far, goal.x, goal.y)) {
+      const node = reach.get(key(pos.x, pos.y));
+      if (node && node.canStop && positionScore(node) >= positionScore(dest) - 6) dest = node;
+    }
+    if (!dest.cost) return null;
+    return { action: 'move', moveTo: { x: dest.x, y: dest.y }, path: pathTo(reach, dest.x, dest.y), target: null };
+  }
+
   /**
-   * opts = { db, settings, ctx, terrainOf(u) }
-   * Renvoie { moveTo:{x,y}, path, target, weaponIndex } (target null = juste se déplacer).
+   * opts = { db, settings, ctx, terrainOf(u), units? }
+   * Renvoie { action: attack|staff|item|move, moveTo, path, target, weaponIndex?, itemIndex? }.
    */
   function planEnemy(unit, foes, opts) {
-    if (!Statuses.canAct(unit)) return null;
+    if (unit.dead || unit.hp <= 0 || !Statuses.canAct(unit)) return null;
     const { db, ctx } = opts;
+    const difficulty = unit.team === 'enemy' ? normalizeAiDifficulty(opts.settings && opts.settings.aiDifficulty) : 'normal';
+    foes = foes.filter(u => !u.dead && u.hp > 0 && !sameSide(unit, u));
+    const friends = (opts.units || []).filter(u => !u.dead && u.hp > 0 && sameSide(unit, u));
     const stationary = unit.ai === 'stationary' || unit.ai === 'boss';
     const reach = stationary ? new Map([[key(unit.x, unit.y), { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true }]]) : reachable(unit, ctx);
+    const danger = difficulty === 'hard' ? threatCounts(foes, ctx, db) : null;
+    const support = planSupport(unit, friends, foes, reach, opts, difficulty, danger);
+    if (support && support.action !== 'move' && unit.ai === 'support') return support;
     const weapons = attackWeapons(unit, db);
     let best = null;
     const ox = unit.x, oy = unit.y;
@@ -805,12 +901,19 @@
           const t = ctx.terrainAt(stop.x, stop.y);
           let score = estimate.damage * 2 + 40 * estimate.killChance - estimate.counter - 40 * estimate.deathChance + estimate.healing + (foe.isLord ? 4 : 0)
             + ((t && Number(t.avoid)) || 0) / 10 - stop.cost * 0.05;
-          score += (fc.att.statusInflict || []).reduce((sum, o) => sum + ({ sleep: 15, silence: 8, poison: 4 }[o.id] || 0) * o.chance / 100 * fc.att.hit / 100, 0);
+          if (difficulty === 'easy') score = 30 - dist({ x: ox, y: oy }, foe) * 2 - stop.cost * .05;
+          else {
+            score += (fc.att.statusInflict || []).reduce((sum, o) => sum + ({ sleep: 15, silence: 8, poison: 4 }[o.id] || 0) * o.chance / 100 * fc.att.hit / 100, 0);
+            if (difficulty === 'hard') score += 40 * estimate.killChance - estimate.counter * .5 - 60 * estimate.deathChance
+              - (danger.get(key(stop.x, stop.y)) || 0) * 12;
+          }
           if (!best || score > best.score) best = { score, stop, foe, index: w.index };
         }
       }
     }
-    if (best) return { moveTo: { x: best.stop.x, y: best.stop.y }, path: pathTo(reach, best.stop.x, best.stop.y), target: best.foe, weaponIndex: best.index };
+    if (support && support.action !== 'move' && (!best || support.score > best.score)) return support;
+    if (best) return { action: 'attack', moveTo: { x: best.stop.x, y: best.stop.y }, path: pathTo(reach, best.stop.x, best.stop.y), target: best.foe, weaponIndex: best.index };
+    if (support) return support;
     if (unit.ai !== 'aggressive' || !foes.length) return null;
 
     // Avancer vers l'adversaire le plus proche (distance réelle de déplacement)
@@ -830,11 +933,12 @@
       if (n && n.canStop) dest = n;
     }
     if (!dest || (dest.x === unit.x && dest.y === unit.y)) return null;
-    return { moveTo: { x: dest.x, y: dest.y }, path: pathTo(reach, dest.x, dest.y), target: null };
+    return { action: 'move', moveTo: { x: dest.x, y: dest.y }, path: pathTo(reach, dest.x, dest.y), target: null };
   }
 
   return {
     STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
+    AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
     attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
     moveCost, reachable, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,

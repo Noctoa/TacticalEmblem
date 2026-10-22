@@ -3,6 +3,7 @@
  *
  *   Sauvegarder   5 emplacements (barres façon Fire Emblem GBA, save-slots.js) ; au camp on sauvegarde le camp, en chapitre le début du chapitre
  *   Charger       reprend un emplacement (la partie en cours non sauvegardée est perdue)
+ *   Jeu          difficulté des décisions de l'IA ennemie
  *   Son           volumes musique / jingles / effets sonores, son coupé
  *   Debug         actions de test (désactivable : Système › Playtest)
  *
@@ -15,7 +16,7 @@
     const { G, h, $, R } = api;
     const S = { open: false, tab: 'save', saves: null, busy: false };
     const el = () => $('#settings');
-    const TABS = () => [['save', 'Sauvegarder'], ['load', 'Charger'], ['sound', 'Son']]
+    const TABS = () => [['save', 'Sauvegarder'], ['load', 'Charger'], ['game', 'Jeu'], ['sound', 'Son']]
       .concat(G.mode !== 'preparation' && G.settings && G.settings.debugMenu !== false ? [['debug', 'Debug']] : []);
 
     // ------------------------------------------------------------------
@@ -55,7 +56,7 @@
           h('button', { class: 'st-close st-focus', onclick: close }, 'Fermer ✕')),
         h('div', { class: 'st-tabs' }, TABS().map(([k, label]) => h('button', { class: 'st-tab st-focus' + (k === S.tab ? ' on' : ''), onclick: () => { S.tab = k; api.Music.se('cursor'); refresh(); } }, label))),
         body);
-      ({ save: renderSave, load: renderLoad, sound: renderSound, debug: renderDebug })[S.tab](body);
+      ({ save: renderSave, load: renderLoad, game: renderGame, sound: renderSound, debug: renderDebug })[S.tab](body);
       const items = focusables();
       const i = focusIndex !== undefined ? Math.min(focusIndex, items.length - 1) : items.findIndex(b => b.classList.contains('on'));
       if (items[Math.max(0, i)]) items[Math.max(0, i)].focus();
@@ -120,6 +121,24 @@
       if (!(await UI.confirm(`Effacer l'emplacement ${s.slot} (${describe(s).title}) ?`, { danger: true, ok: 'Effacer' }))) return rerender();
       try { await tf.removeSave(api.dir, s.slot); } catch (e) { UI.toast(e.message); }
       rerender();
+    }
+
+    // ------------------------------------------------------------------
+    // Jeu
+    // ------------------------------------------------------------------
+    function renderGame(body) {
+      const current = R.normalizeAiDifficulty(G.settings.aiDifficulty);
+      const select = h('select', { class: 'st-focus', 'data-ai-difficulty': '' },
+        R.AI_DIFFICULTIES.map(d => h('option', { value: d.value }, d.label)));
+      select.value = current;
+      const description = h('p', { class: 'st-info' }, R.AI_DIFFICULTIES.find(d => d.value === current).description);
+      select.addEventListener('change', () => {
+        G.settings.aiDifficulty = R.normalizeAiDifficulty(select.value);
+        description.textContent = R.AI_DIFFICULTIES.find(d => d.value === G.settings.aiDifficulty).description;
+        api.Music.se('confirm');
+      });
+      body.append(h('label', { class: 'st-check' }, h('span', {}, 'Difficulté de l’IA ennemie'), select), description,
+        h('p', { class: 'st-info' }, 'S’applique aux prochaines décisions ennemies, sans changer leurs statistiques ni leurs chances de réussite. Les alliés conservent une IA normale. Ce choix est conservé quand tu sauvegardes la partie.'));
     }
 
     // ------------------------------------------------------------------

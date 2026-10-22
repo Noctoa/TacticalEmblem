@@ -2053,7 +2053,7 @@
     pane.append(h('h2', {}, 'Système'));
     // réglages ajoutés après la création du projet : valeurs par défaut affichées
     const st = Editor.project().meta.settings || (Editor.project().meta.settings = {});
-    for (const k of ['overkill', 'overkillExp']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
+    for (const k of ['overkill', 'overkillExp', 'aiDifficulty']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
     Editor.project().meta.title = Object.assign({ subtitle: '', background: '', music: '', newGameMode: 'classic' }, Editor.project().meta.title || {});
     if (typeof Editor.project().meta.credits !== 'string') Editor.project().meta.credits = '';
     // sections des plugins (Extensions « system » : { label, prepare(meta), fields(meta) })
@@ -2082,6 +2082,8 @@
         { key: 'startChapter', label: 'Acte de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'defaultTerrain', label: 'Terrain par défaut', type: 'select', options: () => db().terrains.map(t => ({ value: t.id, label: t.name })), help: 'Utilisé pour les cases dont le tile n\'a pas de terrain.' }] },
       { type: 'heading', label: 'Règles de combat' },
+      { key: 'settings.aiDifficulty', label: 'Difficulté de l’IA par défaut', type: 'select', options: Rules.AI_DIFFICULTIES,
+        help: 'Change les décisions ennemies, sans bonus de statistiques. Modifiable en jeu dans Paramètres › Jeu ; les alliés gardent une IA normale.' },
       { key: 'settings.trueHit', label: 'Vrai hit (moyenne de 2 tirages, comme FE6–FE13)', type: 'checkbox' },
       { key: 'settings.battleAnims', label: 'Animations de combat (si les deux unités ont un battler)', type: 'checkbox' },
       { key: 'settings.battleHud', label: 'Interface des combats animés', type: 'select', empty: 'GBA (Fire Emblem, par défaut)', options: [{ value: 'ff9', label: 'FF9 (texture tissu, par Cynon)' }],
