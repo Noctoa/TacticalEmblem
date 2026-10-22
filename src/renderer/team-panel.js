@@ -27,9 +27,12 @@
       const roster = h('div', { class: 'team-roster' }, members.map(u => h('button', { class: 'lp-focus team-member' + (state.id === u.sourceId ? ' on' : ''), 'data-team-unit': u.sourceId,
         onclick: () => { state.id = u.sourceId; api.rerender(); } }, portrait(u),
         h('span', {}, h('b', {}, u.name), h('small', {}, `${(R.byId(G.db.classes, u.classId) || {}).name || '?'} · Nv ${u.level}`)))));
-      const main = h('div', { class: 'team-main' }, h('div', { class: 'team-heading' }, h('h4', {}, unit.name),
-        h('span', {}, `${cls ? cls.name : '?'} · Nv ${unit.level} · EXP ${unit.exp}`)),
-      h('div', { class: 'team-stats' }, R.STATS.map(key => h('span', {}, `${R.STAT_LABELS[key]} ${unit.stats[key]}`)), h('span', {}, `Dép ${unit.mov}`)),
+      // fiche façon Radiant Dawn (unit-sheet.js) ; sinon l'ancien résumé
+      const head = self.UnitSheet && api.sheetCtx
+        ? h('div', { class: 'team-sheet', onclick: (e) => { const b = e.target.closest('[data-sheet-page]'); if (b) state.sheetPage = b.dataset.sheetPage; } }, UnitSheet.element(unit, api.sheetCtx(), { scale: 2, page: state.sheetPage || 'stats' }))
+        : [h('div', { class: 'team-heading' }, h('h4', {}, unit.name), h('span', {}, `${cls ? cls.name : '?'} · Nv ${unit.level} · EXP ${unit.exp}`)),
+          h('div', { class: 'team-stats' }, R.STATS.map(key => h('span', {}, `${R.STAT_LABELS[key]} ${unit.stats[key]}`)), h('span', {}, `Dép ${unit.mov}`))];
+      const main = h('div', { class: 'team-main' }, head,
       h('div', { class: 'lp-tabs' }, [['skills', 'Compétences'], ['items', 'Inventaire'], ['promotions', 'Évolution']].map(([id, text]) =>
         h('button', { class: 'lp-focus lp-tab' + (state.tab === id ? ' on' : ''), 'data-team-tab': id, onclick: () => { state.tab = id; api.rerender(); } }, text))));
       if (state.tab === 'skills') skills(main, unit);

@@ -212,7 +212,7 @@
       el.classList.remove('hidden');
       el.innerHTML = '';
       const body = h('div', { class: 'lp-body' });
-      el.append(h('div', { class: 'lp-head' }, h('h3', {}, S.panel.title), h('span', { class: 'lp-gold' }, goldLabel()),
+      el.append(h('div', { class: 'lp-head' }, h('h3', {}, S.panel.title), h('span', { class: 'lp-gold' }, moneyEl()),
         h('button', { class: 'lp-close lp-focus', onclick: () => closePanel() }, 'Fermer ✕')), body);
       S.panel.build(body);
       const items = [...el.querySelectorAll('.lp-focus:not([disabled])')];
@@ -229,6 +229,11 @@
       panelEl().classList.add('hidden'); panelEl().innerHTML = '';
       if (!silent) { G.ui = 'idle'; refreshHud(); }
     }
+    /** Or et monnaies des plugins (orbes…), avec leur icône. */
+    const moneyEl = () => h('span', { class: 'money-row' }, UI.money(G.campaign.gold, UI.GOLD_ICON, 'Or'),
+      ...currencies().map(c => typeof c.amount === 'function'
+        ? UI.money(c.amount(G.campaign, G.project.meta), c.icon ? Render.imageUrl(G.baseUrl, c.icon) : '', c.name || '')
+        : h('span', { class: 'money' }, c.label(G.campaign, G.project.meta))));
     const goldLabel = () => [`Or : ${(G.campaign.gold || 0).toLocaleString('fr-FR')}`, ...currencies().map(c => c.label(G.campaign, G.project.meta))].filter(Boolean).join(' · ');
     function tabs(list, cur, onPick) {
       return h('div', { class: 'lp-tabs' }, list.map(([v, label]) => h('button', { class: 'lp-tab lp-focus' + (v === cur ? ' on' : ''), onclick: () => onPick(v) }, label)));
@@ -291,7 +296,7 @@
     function members() { return refreshMembers(); }
     function commit() { Campaign.commit(G.campaign, S.members); }
     const teamPanel = TeamPanel.create({ G, h, R, members, openPanel, rerender,
-      changed: () => { commit(); refreshHud(); }, openPromotion: api.openPromotion, showEvolution: api.showEvolution,
+      changed: () => { commit(); refreshHud(); }, openPromotion: api.openPromotion, showEvolution: api.showEvolution, sheetCtx: api.sheetCtx,
       openSettings: api.openSettings });
     function openTeam() { members(); openPanel('Équipe', teamPanel.render); }
     // --- lieux des plugins
@@ -331,7 +336,7 @@
             const can = (G.campaign.gold || 0) >= it.price && !full;
             body.append(h('div', { class: 'lp-row' + (can ? '' : ' off') },
               h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, it.def.name), h('div', { class: 'lp-sub' }, kindOf(it.def) + (it.def.uses ? ` · ${it.def.uses} utilisations` : ''))),
-              h('span', { class: 'lp-price' }, `${it.price} or`),
+              h('span', { class: 'lp-price' }, UI.money(it.price, UI.GOLD_ICON, 'Or')),
               h('button', { class: 'lp-go lp-focus', disabled: !can, onclick: () => buy(it.id) }, 'Acheter')));
           }
           if (full) body.append(h('p', { class: 'lp-why' }, 'Plus de place : choisis un autre rangement.'));
@@ -347,7 +352,7 @@
               const amount = d ? Lobby.sellPrice(d, slot.uses) : 0;
               body.append(h('div', { class: 'lp-row' + (amount ? '' : ' off') },
                 h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, label(slot)), h('div', { class: 'lp-sub' }, usesOf(slot))),
-                h('span', { class: 'lp-price' }, amount ? `${amount} or` : 'invendable'),
+                h('span', { class: 'lp-price' }, amount ? UI.money(amount, UI.GOLD_ICON, 'Or') : 'invendable'),
                 h('button', { class: 'lp-go lp-focus', disabled: !amount, onclick: () => sell(g, i) }, 'Vendre')));
             });
           }
@@ -400,7 +405,7 @@
       const fresh = all.filter(e => e.state === 'new');
       const talks = Lobby.talks(S.cfg, G.db, G.campaign);
       obj.innerHTML = '';
-      obj.append(h('div', { class: 'lbl' }, S.cfg.name), h('div', { class: 'obj' }, goldLabel()),
+      obj.append(h('div', { class: 'lbl' }, S.cfg.name), h('div', { class: 'obj' }, moneyEl()),
         h('div', { class: 'turn' }, fresh.length ? `${fresh.length} acte(s) à jouer` : 'Aucun nouvel acte'),
         talks.length ? h('div', { class: 'turn' }, `${talks.length} conversation(s) — « ! »`) : null,
         h('div', { class: 'turn' }, G.campaign.mode === 'classic' ? 'Classique' : 'Détente'));

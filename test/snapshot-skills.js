@@ -55,7 +55,7 @@ module.exports = (editor, openPlaytest) => {
       await js(`Editor.open(${JSON.stringify(dir)})`);
       await js(`DBEditor.open('skills')`);
       assert.equal(await js('Editor.db().skills.length'), 0);
-      await click('.db-form button', 'Ajouter les exemples');
+      await click('.db-form button', 'Ajouter les exemples manquants'); // pas « … d’altérations manquants » (compétences d’altération)
       assert.equal(await js('Editor.db().skills.length'), 11);
       await click('.db-list-actions button', 'Nouveau');
       await edit('Nom', 'Soleil du test');
