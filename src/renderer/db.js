@@ -66,6 +66,19 @@
         h('button', { class: 'small', 'data-skill-image': true, onclick: pick }, 'Choisir une icône…'),
         sk.image ? h('button', { class: 'small ghost', onclick: () => { sk.image = ''; show(); change(); renderBody(); } }, 'Retirer') : null));
   }
+  /** Icône d'un ultime : son image (icône d'ultime par défaut, ou une icône façon Heroes), sinon son symbole. */
+  const ultimateIcon = (u, size) => SkillIcons.element(Object.assign({}, u, { image: u.image || Ultimates.ICON }), size);
+  /** Champ « Icône » d'un ultime : icône d'ultime (img/ui/ultimate) ou une icône des planches de compétences. */
+  function ultimateImageField(u) {
+    const prev = h('span', { class: 'skill-image-prev' });
+    const show = () => prev.replaceChildren(ultimateIcon(u, 44));
+    show();
+    const set = (id) => { u.image = id; show(); change(); renderBody(); };
+    return h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Icône'),
+      h('div', { class: 'skill-image-row' }, prev,
+        h('button', { class: 'small', 'data-ultimate-image': true, onclick: async () => { const id = await pickSkillImage(u.image); if (id !== null) set(id); } }, 'Choisir une icône…'),
+        u.image && u.image !== Ultimates.ICON ? h('button', { class: 'small ghost', onclick: () => set(Ultimates.ICON) }, 'Icône d’ultime') : null));
+  }
   /** Fenêtre de choix d'une icône de compétence : une planche par onglet, clic pour choisir. Renvoie l'id ou null. */
   function pickSkillImage(current) {
     const sheets = SkillIcons.sheets();
@@ -404,6 +417,63 @@
         ];
       }
     },
+    ultimates: {
+      label: 'Ultimes', list: () => db().ultimates || (db().ultimates = []), prefix: 'ult_',
+      sub: u => `${(Ultimates.effectOf(u) || { name: 'Effet inconnu' }).name.split(' — ')[0]} · recharge ${u.cooldown} t.`,
+      icon: u => ultimateIcon(u, 22),
+      create: () => Ultimates.create(),
+      onField: (key, u) => { if (key === 'effect') Ultimates.setEffect(u, u.effect); },
+      rerenderOn: ['effect', 'area'],
+      fields: u => [
+        { type: 'row', fields: [
+          { key: 'name', label: 'Nom', type: 'text', live: true },
+          { key: 'icon', label: 'Symbole (si l’icône manque)', type: 'text', placeholder: '✹' }] },
+        { type: 'custom', render: ultimateImageField },
+        { key: 'description', label: 'Description (affichée en jeu)', type: 'textarea', rows: 2, placeholder: 'Ce que fait l’ultime, vu par le joueur.' },
+        { type: 'heading', label: 'Recharge' },
+        { type: 'row', fields: [
+          { key: 'cooldown', label: 'Tours de recharge après utilisation (1 à 9)', type: 'number', min: 1, max: 9 },
+          { key: 'ready', label: 'Prêt dès le premier tour (sinon il commence en recharge)', type: 'checkbox' }] },
+        { type: 'info', text: 'Utilisé par le personnage avec l’action « Ultime » ; il se recharge ensuite d’un tour au début de chaque phase de son camp. Sur la carte, le nombre de tours restants s’affiche au-dessus du personnage, puis l’icône d’ultime quand il est prêt.' },
+        { type: 'heading', label: 'Effet' },
+        { key: 'effect', label: 'Type d’effet', type: 'select', options: Ultimates.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
+        ...(u.effect === 'strike' ? [
+          { key: 'power', label: 'Dégâts du coup (% des dégâts normaux, 100 à 500)', type: 'number', min: 100, max: 500 },
+          { type: 'row', fields: [
+            { key: 'sureHit', label: 'Touche assurée', type: 'checkbox' },
+            { key: 'noCounter', label: 'La cible ne riposte pas', type: 'checkbox' }] },
+          { type: 'info', text: 'Le premier coup de l’attaque utilise l’ultime ; une double attaque éventuelle reste un coup normal.' }] : []),
+        ...(u.effect === 'heal' ? [
+          { type: 'row', fields: [
+            { key: 'amount', label: 'Soin (% des PV maximum)', type: 'number', min: 1, max: 100 },
+            { key: 'radius', label: 'Rayon autour du lanceur (cases)', type: 'number', min: 1, max: 6 }] },
+          { type: 'row', fields: [
+            { key: 'self', label: 'Soigne aussi le lanceur', type: 'checkbox' },
+            { key: 'cure', label: 'Dissipe les altérations', type: 'checkbox' }] }] : []),
+        ...(u.effect === 'blast' ? [
+          { type: 'row', fields: [
+            { key: 'area', label: 'Zone', type: 'select', options: Ultimates.AREAS },
+            ...(u.area === 'tile' ? [{ key: 'range', label: 'Portée de la case visée', type: 'number', min: 1, max: 9 }] : []),
+            { key: 'radius', label: 'Rayon (0 = une seule case)', type: 'number', min: u.area === 'tile' ? 0 : 1, max: 6 }] },
+          { type: 'row', fields: [
+            { key: 'stat', label: 'Statistique du lanceur', type: 'select', options: Ultimates.STATS },
+            { key: 'power', label: 'Puissance (% de la statistique)', type: 'number', min: 10, max: 500 }] },
+          { key: 'lethal', label: 'Peut vaincre (sinon laisse au moins 1 PV)', type: 'checkbox' },
+          { type: 'info', text: 'Dégâts = statistique × puissance − Défense (Force) ou Résistance (Magie) de chaque ennemi touché. Les alliés ne sont jamais touchés.' }] : []),
+        ...(u.effect === 'rally' ? [
+          { type: 'row', fields: [
+            { key: 'radius', label: 'Rayon autour du lanceur (cases)', type: 'number', min: 1, max: 6 },
+            { key: 'duration', label: 'Durée des bonus (tours)', type: 'number', min: 1, max: 9 }] },
+          { type: 'row', fields: [
+            { key: 'dmg', label: 'Dégâts +', type: 'number', min: 0, max: 99 },
+            { key: 'hit', label: 'Précision +', type: 'number', min: 0, max: 99 },
+            { key: 'avoid', label: 'Esquive +', type: 'number', min: 0, max: 99 }] },
+          { type: 'row', fields: [
+            { key: 'self', label: 'Le lanceur en profite aussi', type: 'checkbox' },
+            { key: 'refresh', label: 'Les alliés qui ont déjà agi rejouent', type: 'checkbox' }] }] : []),
+        { key: 'animation', label: u.effect === 'strike' ? 'Animation du coup' : 'Animation sur chaque unité touchée', type: 'select', empty: u.effect === 'strike' ? '— celle de l’arme —' : '— aucune —', options: animOpts }
+      ]
+    },
     animations: {
       label: 'Animations', list: () => db().animations || (db().animations = []), prefix: 'anim_',
       sub: a => `${a.kind === 'projectile' ? 'projectile' : 'normale'} · ${(a.frames || []).length} img`,
@@ -463,6 +533,9 @@
         { key: 'recruitAfter', label: 'Rejoint l’effectif après', type: 'select', empty: '— pas de recrutement automatique —', options: () => doneOpts() },
         { type: 'info', text: 'L’effectif de départ se règle sur la map de camp (mode Unités). Un personnage placé dans le camp ne rejoint pas automatiquement l’équipe. Les placements joueur d’un acte rejoignent l’effectif quand cet acte commence.' },
         { type: 'custom', render: unitSkillsField },
+        { key: 'ultimate', label: 'Ultime (action spéciale rechargée en tours)', type: 'select', empty: '— aucun ultime —',
+          options: () => (db().ultimates || []).map(x => ({ value: x.id, label: `${x.name} · recharge ${x.cooldown} t.` })),
+          help: 'Les ultimes se créent dans l’onglet Ultimes : frappe, soin de zone, dégâts de zone ou renfort d’alliés.' },
         { type: 'heading', label: 'Apparence' },
         { type: 'custom', render: appearanceField },
         { type: 'custom', render: faceField },
@@ -680,7 +753,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['ultimates', 'Ultimes'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -1046,10 +1119,11 @@
             (classes.length ? 'Classes : ' + classes.map(c => c.name).join(', ') + '. ' : '') +
             'Retire d’abord cette compétence de leurs fiches.');
         }
-        const usage = tab === 'animations' ? (Animations.usersOf(db(), Editor.project().meta, cur.id).length ? 'Utilisée par : ' + Animations.usersOf(db(), Editor.project().meta, cur.id).join(', ') + ' (ils n’auront plus d’animation).' : '') : usageOf(tab, cur.id);
+        const usage = tab === 'ultimates' ? (Ultimates.usersOf(db(), cur.id).length ? 'Utilisé par : ' + Ultimates.usersOf(db(), cur.id).join(', ') + ' (ils n’auront plus d’ultime).' : '') : tab === 'animations' ? (Animations.usersOf(db(), Editor.project().meta, cur.id).length ? 'Utilisée par : ' + Animations.usersOf(db(), Editor.project().meta, cur.id).join(', ') + ' (ils n’auront plus d’animation).' : '') : usageOf(tab, cur.id);
         if (!(await UI.confirm(`Supprimer « ${cur.name} » ?` + (usage ? '\n' + usage : ''), { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(cur), 1);
         if (tab === 'animations') Animations.forget(db(), Editor.project().meta, cur.id);
+        if (tab === 'ultimates') Ultimates.forget(db(), cur.id);
         Extensions.hook('db:deleted', { db: db(), tab, id: cur.id }); // plugins : retirer leurs références (ex. bannières)
         change(); renderBody();
       }
@@ -1096,9 +1170,22 @@
       } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     }
     if (tab === 'animations') pane.append(animationDefaultsPanel(list));
+    if (tab === 'ultimates') {
+      pane.append(h('p', { class: 'note' }, 'Un ultime par personnage, choisi dans sa fiche (Unités). Il s’utilise avec l’action « Ultime » puis se recharge pendant le nombre de tours réglé.'));
+      const missing = Ultimates.samples().filter(u => !list.some(x => x.id === u.id));
+      if (missing.length) pane.append(h('button', { class: 'small', style: { margin: '10px 0' }, 'data-ultimate-samples': true, onclick: () => {
+        list.push(...missing.map(u => (u.animation && !(db().animations || []).some(a => a.id === u.animation) ? Object.assign(u, { animation: '' }) : u)));
+        selected.ultimates = missing[0].id; change(); renderBody();
+      } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
+    }
     if (!cur) { pane.append(h('div', { class: 'db-empty' }, 'Aucun élément.')); body.append(pane); return; }
     pane.append(h('h2', {}, cur.name, h('span', { class: 'id' }, cur.id)));
     if (tab === 'units') pane.append(unitPreview(cur));
+    if (tab === 'ultimates') {
+      pane.append(h('div', { class: 'skill-overview' }, h('span', { class: 'skill-symbol big ult-symbol' }, ultimateIcon(cur, 40)),
+        h('div', {}, h('b', {}, 'Résumé des réglages'), h('p', { class: 'skill-summary', 'data-ultimate-summary': true }, Ultimates.describe(cur)))));
+      pane.append(h('div', { class: 'skill-validation ult-validation', role: 'status' }, Ultimates.validate(cur, list).map(e => h('p', {}, '⚠ ' + e))));
+    }
     if (tab === 'skills') {
       pane.append(h('div', { class: 'skill-overview' }, h('span', { class: 'skill-symbol big' }, skillIcon(cur, 40)),
         h('div', {}, h('b', {}, 'Résumé des réglages'), h('p', { class: 'skill-summary' }, Skills.describe(cur)))));
@@ -1120,6 +1207,11 @@
             el.querySelector('.skill-symbol').replaceChildren(skillIcon(list[i], 22));
             el.querySelector('.sub').textContent = def.sub(list[i]);
           });
+        }
+        if (tab === 'ultimates') {
+          pane.querySelector('[data-ultimate-summary]').textContent = Ultimates.describe(cur);
+          pane.querySelector('.ult-validation').replaceChildren(...Ultimates.validate(cur, list).map(e => h('p', {}, '⚠ ' + e)));
+          body.querySelectorAll('.db-item').forEach((el, i) => { const sub = el.querySelector('.sub'); if (sub && list[i]) sub.textContent = def.sub(list[i]); });
         }
         if (tab === 'units' && k === 'convoy' && cur.convoy) for (const o of list) if (o !== cur) o.convoy = false;
         if ((def.rerenderOn || []).includes(k) || (tab === 'units' && ['classId', 'level', 'stats', 'mapSprite', 'battler'].includes(k))) renderBody();

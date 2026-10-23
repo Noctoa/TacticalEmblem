@@ -4,7 +4,7 @@
  * MonJeu/
  *   game.tfproj              métadonnées (nom, réglages, chapitre de départ, ordre des maps)
  *   data/                    base de données
- *     units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json animations.json
+ *     units.json classes.json weapons.json items.json terrains.json tilesets.json chapters.json animations.json ultimates.json
  *     maps/map_1.json        une map par fichier
  *   ressources/              images et sons, détail dans resources-layout.js
  *     personnages/<Nom>/     sprites de map, animation de combat, portrait d'un personnage
@@ -25,12 +25,13 @@ const Locks = require('../shared/locks.js');
 const Scenario = require('../shared/scenario.js');
 const Statuses = require('../shared/statuses.js');
 const Animations = require('../shared/animations.js');
+const Ultimates = require('../shared/ultimates.js');
 const Weather = require('../shared/weather.js');
 const SideObjectives = require('../shared/side-objectives.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
-const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs', 'animations'];
+const DB_KEYS = ['terrains', 'weapons', 'items', 'classes', 'units', 'tilesets', 'chapters', 'supports', 'skills', 'talks', 'arcs', 'animations', 'ultimates'];
 // données des plugins (ex. « banners » du plugin Invocations) : tout autre data/<clé>.json est lu et réécrit tel quel
 const EXTRA_KEY = /^[a-z][A-Za-z0-9_-]{0,63}$/;
 const extraKeysIn = (dir) => {
@@ -115,7 +116,9 @@ function saveProject(dir, project) {
     ...Team.validate(project.db, project.meta),
     ...Locks.validateKeys(project.db),
     ...Animations.validateAll(project.db.animations),
-    ...Animations.validateLinks(project.db, project.meta)
+    ...Animations.validateLinks(project.db, project.meta),
+    ...Ultimates.validateAll(project.db.ultimates),
+    ...Ultimates.validateLinks(project.db)
   ];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));

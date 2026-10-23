@@ -204,10 +204,17 @@
       ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
       isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
+      ...ultimateOf(ch, db),
       mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',
       colors: ch.colors || (cls && cls.colors) || '', colorsOverride: pos.colors || '', // réglage du placement (prioritaire)
       x: pos.x, y: pos.y, done: false, ai: 'player'
     };
+  }
+
+  /** Ultime du personnage (Base de données › Ultimes) et sa recharge au début de la bataille (0 = prêt). */
+  function ultimateOf(ch, db) {
+    const ult = ch.ultimate ? byId(db.ultimates || [], ch.ultimate) : null;
+    return ult ? { ultimate: ult.id, ultCharge: ult.ready === false ? ult.cooldown : 0 } : { ultimate: '', ultCharge: 0 };
   }
 
   function makeEnemyFromPlacement(pl, db, team) {
@@ -537,7 +544,9 @@
       if (extra.vantage) note(extra.vantage, src);
       // Un seul effet offensif : affinité, puis Luna, puis Sol, dans l'ordre des emplacements.
       if (extra.special && rng() * 100 < extra.special.chance) special = extra.special.name;
-      const hit = roll(rng, clamp(st.hit + (special ? extra.special.hit || 0 : extra.hit || 0), 0, 100), s.trueHit);
+      const ult = extra.ultimate; // ultime « frappe » : premier coup de l'attaquant
+      if (ult) skills.push({ id: ult.id, name: ult.name, icon: ult.icon, image: ult.image, animation: ult.animation, effect: 'ultimate', ultimate: true, by: src.uid });
+      const hit = ult && ult.sureHit ? true : roll(rng, clamp(st.hit + (special ? extra.special.hit || 0 : extra.hit || 0), 0, 100), s.trueHit);
       let crit = false, dmg = 0, heal = 0, selected = null;
       if (hit) {
         crit = rng() * 100 < clamp(st.crit + (special ? extra.special.crit || 0 : 0), 0, 100);
@@ -549,7 +558,8 @@
           if (selected && selected.effect === 'luna') st = stats(selected);
         }
         const raw = Math.max(0, st.rawDmg + (special ? extra.special.dmg || 0 : extra.might || 0));
-        const damage = Math.max(0, raw * (crit ? s.critMult : 1) - st.guard);
+        const base = Math.max(0, raw * (crit ? s.critMult : 1) - st.guard);
+        const damage = ult ? Math.floor(base * (ult.power || 100) / 100) : base;
         const before = tgt.hp;
         let hpAfter = Math.max(0, before - damage);
         if (hpAfter === 0 && before > 1) {
@@ -577,7 +587,7 @@
       }
       const broke = useWeapon(src, index);
       const strike = { by: src.uid, target: tgt.uid, hit, crit, dmg, hpAfter: tgt.hp, srcHpAfter: src.hp, heal, broke,
-        weapon: weapon.name, special, skills, statuses, dual: extra.dual || null,
+        weapon: weapon.name, special, skills, statuses, dual: extra.dual || null, ultimate: ult ? ult.name : null,
         partner: special && extra.special.partnerUid ? extra.special.partnerUid : null }; // allié qui participe à l'attaque spéciale
       if (extra.excess) strike.overkill = extra.excess;
       strikes.push(strike);
@@ -613,7 +623,9 @@
         { dual: du.name || 'Attaque duo', might: du.might, hit: du.hit });
       duo = { partner: du.partner, hit: strike.hit, dmg: strike.dmg };
     };
+    let ultDone = false;
     for (const who of order) {
+      if (who === 'd' && opts.ultimate && opts.ultimate.noCounter) continue; // ultime sans riposte
       const st = who === 'a' ? fc.att : fc.def;
       const src = who === 'a' ? att : def, tgt = who === 'a' ? def : att;
       const targetWeapon = who === 'a' ? (dBroken ? null : defenderWeapon) : (aBroken ? null : fc.att.weapon);
@@ -624,8 +636,10 @@
       if (att.hp <= 0 || def.hp <= 0) break;
       if ((who === 'a' && aBroken) || (who === 'd' && dBroken)) continue;
       if (!canWield(src, st.weapon, opts.db)) continue;
+      const ultimate = who === 'a' && opts.ultimate && !ultDone ? opts.ultimate : null;
+      if (ultimate) ultDone = true;
       const strike = perform(src, who === 'a' ? aIdx : dIdx, tgt, st.weapon, targetWeapon, att,
-        { special: specials[who], vantage: strikes.length === 0 && who === 'd' ? fc.vantage : null });
+        { special: ultimate ? null : specials[who], ultimate, vantage: strikes.length === 0 && who === 'd' ? fc.vantage : null });
       if (strike.dmg > 0) dealt[who] = true;
       if (strike.broke) { if (who === 'a') aBroken = true; else dBroken = true; }
       if (tgt.hp <= 0) startOverkill(strike, src, tgt);

@@ -753,3 +753,20 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 .formation-win .tb-buttons button:hover:not([disabled]) { background: #0f6378; color: #ffe08a; }
 .formation-win button.tb-unit { border: 0; }
 .formation-win button:focus-visible { outline: 2px solid #f2d58a; outline-offset: 1px; }
+
+/* Ultimes : annonce, badge d'information, prévision */
+#banner.ultimate span.ult-pop { display: flex; align-items: center; justify-content: center; gap: 18px; width: 100%; padding: 16px 0; letter-spacing: 0; text-transform: none;
+  background: linear-gradient(90deg, transparent, rgba(120, 30, 120, .82) 18%, rgba(70, 20, 110, .88) 50%, rgba(120, 30, 120, .82) 82%, transparent);
+  animation: phase-slide 1.05s cubic-bezier(.2, .8, .2, 1) both; }
+#banner.ultimate span.ult-pop span { padding: 0; background: none; animation: none; }
+#banner.ultimate .ult-pop-icon { filter: drop-shadow(0 3px 0 rgba(0, 0, 0, .45)); }
+#banner.ultimate .ult-pop-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; }
+#banner.ultimate .ult-pop-text small { font-size: 18px; font-weight: 600; color: #ffd6f6; letter-spacing: .08em; }
+#banner.ultimate .ult-pop-text b { font-family: 'Pixelify Sans', 'Segoe UI', sans-serif; font-size: 44px; color: #fff; text-shadow: 0 3px 0 rgba(40, 0, 40, .7), 0 0 18px rgba(255, 140, 240, .6); }
+.tag.ultimate { display: inline-flex; align-items: center; gap: 4px; background: rgba(176, 108, 255, .16); border-color: rgba(200, 150, 255, .5); }
+.tag.ultimate.ready { background: rgba(255, 120, 230, .25); border-color: rgba(255, 170, 240, .8); color: #ffe6fb; }
+.fc-ultimate { color: #ffc8f4; }
+.rd-ult-name { display: flex; align-items: center; gap: calc(var(--s) * 2px); color: #ffd6f6; }
+.rd-ult-box { width: calc(var(--s) * 9px); height: calc(var(--s) * 9px); }
+.rd-ult-box > .skill-icon { transform: scale(calc(var(--s) * 0.28)); }
+.rd-ultimate .rd-sup b { color: #ffb3f0; }

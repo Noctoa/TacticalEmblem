@@ -148,6 +148,14 @@
     });
     if (!ids.length) list.append(h('div', { class: 'rd-empty' }, 'Aucune compétence'));
     panel.append(box(104, 26, 124, 90, '', list));
+    // ultime (Base de données › Ultimes) : prêt, ou tours de recharge restants en bataille
+    const ult = u.ultimate && self.Ultimates ? Ultimates.byId(G.db.ultimates, u.ultimate) : null;
+    const inBattle = G.mode === 'chapter';
+    panel.append(box(104, 120, 62, 33, 'rd-boxed rd-ultimate', h('div', { class: 'rd-boxed-title' }, h('span', {}, '✹ Ultime')),
+      ult ? [h('div', { class: 'rd-boxed-sub rd-ult-name', title: ult.description || Ultimates.describe(ult), 'data-sheet-ultimate': ult.id },
+        self.SkillIcons ? h('span', { class: 'rd-skillbox rd-ult-box' }, SkillIcons.element(Object.assign({}, ult, { image: ult.image || Ultimates.ICON }), 32, 'rd-skill')) : null, h('span', {}, ult.name)),
+      h('div', { class: 'rd-boxed-sub rd-sup' }, h('span', {}, inBattle ? (u.ultCharge > 0 ? 'Recharge' : 'Prêt !') : 'Recharge'),
+        h('b', {}, inBattle ? (u.ultCharge > 0 ? `${u.ultCharge} t.` : '✹') : `${ult.cooldown} t.`))] : h('div', { class: 'rd-boxed-sub' }, 'Aucun')));
     const sup = (ctx.supportsOf ? ctx.supportsOf(u) : []) || [];
     panel.append(box(169, 120, 61, 33, 'rd-boxed', h('div', { class: 'rd-boxed-title' }, h('span', {}, '♥ Affinités')),
       sup.length ? sup.slice(0, 3).map(p => h('div', { class: 'rd-boxed-sub rd-sup' }, h('span', {}, p.name), h('b', {}, p.rank))) : h('div', { class: 'rd-boxed-sub' }, 'Aucune')));
@@ -208,7 +216,7 @@
       const show = () => {
         sheet = element(list[i], ctx, { page, growths, onGrowths: (g) => { growths = g; page = 'stats'; } });
         const many = list.length > 1;
-        back.replaceChildren(
+        back.replaceChildren(...[ // replaceChildren écrirait « null » pour les éléments absents
           opts.title ? h('div', { class: 'rd-title' }, opts.title, many ? h('span', {}, ` ${i + 1} / ${list.length}`) : null) : null,
           h('div', { class: 'rd-stage' },
             many ? h('button', { class: 'rd-nav prev', 'data-sheet-nav': 'prev', title: 'Personnage précédent (←)', onclick: (e) => { e.stopPropagation(); go(-1); } }, '◀') : null,
@@ -216,7 +224,7 @@
             many ? h('button', { class: 'rd-nav next', 'data-sheet-nav': 'next', title: 'Personnage suivant (→)', onclick: (e) => { e.stopPropagation(); go(1); } }, '▶') : null),
           (opts.actions || []).length ? h('div', { class: 'rd-actions' }, opts.actions.map(a => h('button', { class: 'rd-action', 'data-sheet-action': a.id || a.label,
             onclick: (e) => { e.stopPropagation(); const target = list[i]; close(); a.onClick(target); } }, a.label))) : null,
-          h('div', { class: 'rd-help' }, (many ? '← → : personnage · ' : '') + '↑ ↓ : page · C : croissances · X / Échap : fermer'));
+          h('div', { class: 'rd-help' }, (many ? '← → : personnage · ' : '') + '↑ ↓ : page · C : croissances · X / Échap : fermer')].filter(Boolean));
       };
       const close = () => { window.removeEventListener('keydown', onKey, true); window.removeEventListener('resize', fit); back.remove(); resolve(); };
       const onKey = (e) => {

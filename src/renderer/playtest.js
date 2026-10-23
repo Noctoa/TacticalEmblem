@@ -334,7 +334,14 @@
   const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), weather: G.mode === 'lobby' ? undefined : G.weather, terrainOf, bonusOf, units: alive(),
     protect: (u) => G.debug.god && u.team !== 'enemy' });
   // ---------- affinités ----------
-  const bonusOf = (u) => R.supportBonus(u, players(), G.sup, G.supCfg);
+  /** Bonus d'affinité + bonus d'un renfort d'ultime encore actif. */
+  const bonusOf = (u) => {
+    const sup = R.supportBonus(u, players(), G.sup, G.supCfg), rally = self.Ultimates ? Ultimates.rallyBonus(u) : null;
+    if (!rally) return sup;
+    const b = Object.assign({ hit: 0, avoid: 0, crit: 0, critAvoid: 0, dmg: 0, partners: [] }, sup || {});
+    for (const k of ['dmg', 'hit', 'avoid']) b[k] = (b[k] || 0) + (rally[k] || 0);
+    return b;
+  };
   const specialOf = (u) => R.supportSpecial(u, players(), G.sup, G.supCfg);
   const unitById = (sourceId) => players().find(u => u.sourceId === sourceId) || null;
   /** Un personnage a déjà un rang S avec quelqu'un d'autre ? */
@@ -495,6 +502,12 @@
       const set = new Set(G.targets.map(u => key(u.x, u.y)));
       fillTiles(set, G.ui === 'staff' ? '#3ddc84' : '#ff3b30', pulse);
     }
+    if (G.ui === 'ultimate' && G.ultimate) {
+      const { range, ult } = G.ultimate;
+      if (range) fillTiles(range, '#b06cff', pulse - 0.12);
+      const zone = ultimateZone(G.sel, ult);
+      if (zone) fillTiles(zone, ult.effect === 'blast' ? '#ff5c3a' : ult.effect === 'heal' ? '#3ddc84' : '#ffcc33', pulse);
+    }
     // case objectif
     for (const ob of G.chapter ? Mission.objectives(G.chapter).filter(o => o.type === 'seize') : []) {
       const [px, py, w, hh] = tileRect(ob.x, ob.y);
@@ -519,6 +532,7 @@
       const [x, y, w, hh] = tileRect(u.rx, u.ry), size = Math.max(10, Math.min(15, hh * .35));
       statuses.forEach((s, i) => { const left = x + w - (statuses.length - i) * size; ctx.fillStyle = '#111827'; ctx.fillRect(left, y + hh - size, size, size); ctx.fillStyle = s.color; ctx.font = `bold ${size - 2}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.icon, left + size / 2, y + hh - size / 2); });
     }
+    if (G.mode === 'chapter') for (const u of list) drawUltimateBadge(u, t);
     if (G.mode === 'chapter') drawVillages();
     if (G.mode === 'lobby') lobby.drawOverlay(ctx, t);
     if (!G.busy && ['player', 'ally'].includes(G.phase) && !G.over && !G.dialogue) drawCursor(t);
@@ -709,7 +723,7 @@
     const bottom = (u.ry + u.oy + 1) * th - V.camY;
     let anim = 'idle';
     if (u.walkDir) anim = u.walkDir;
-    else if (G.sel === u && ['moving', 'menu', 'items', 'target', 'staff'].includes(G.ui)) anim = 'down';
+    else if (G.sel === u && ['moving', 'menu', 'items', 'target', 'staff', 'ultimate'].includes(G.ui)) anim = 'down';
     else if (controllable(u) && !G.busy && G.cursor.x === u.x && G.cursor.y === u.y && G.ui === 'idle') anim = 'focus';
     const done = u.done && G.phase === (u.team === 'ally' ? 'ally' : 'player') && u.team !== 'enemy';
     const palette = Palettes.paletteFor(u.team, colorMode(u), 'map', done);
@@ -910,6 +924,10 @@
       if (Number(t.def)) parts.push(`Déf ${t.def > 0 ? '+' : ''}${t.def}`);
       tags.push(h('span', { class: 'tag terrain' }, `${t.name} : ${parts.join(' · ')}`));
     }
+    const ult = ultimateOf(u);
+    if (ult) tags.push(h('span', { class: 'tag ultimate' + (u.ultCharge > 0 ? '' : ' ready'), 'data-unit-ultimate': ult.id, title: ult.description || Ultimates.describe(ult) },
+      ...skillLabel(ultimateSkill(ult), u.ultCharge > 0 ? ` · ${u.ultCharge} tour${u.ultCharge > 1 ? 's' : ''}` : ' · prêt')));
+    for (const r of u.rally || []) tags.push(h('span', { class: 'tag support', 'data-unit-rally': true }, `✹ ${r.name} : ${[r.dmg ? `DGT +${r.dmg}` : '', r.hit ? `PRÉC +${r.hit}` : '', r.avoid ? `ESQ +${r.avoid}` : ''].filter(Boolean).join(' · ')} (${r.turns} t.)`));
     for (const s of Statuses.list(u)) tags.push(h('span', { class: 'tag status', title: s.description, style: { color: s.color }, 'data-unit-status': s.id }, `${s.name} · ${s.turns} phase(s)`));
     const penalty = Weather.movePenalty(G.weather, u.moveType);
     if (penalty) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `${G.weather.type === 'sand' ? 'Sable' : 'Neige'} : coût par case +${penalty}`));
@@ -1049,6 +1067,8 @@
     if (targets.length) items.push({ label: 'Attaquer', action: () => openTargets(u, targets, 'target') });
     const heals = staffTargetsFrom(u);
     if (heals.length) items.push({ label: 'Bâton', action: () => openTargets(u, heals, 'staff') });
+    const ult = ultimateOf(u);
+    if (ult) items.push(ultimateItem(u, ult, targets));
     const usable = u.inventory.map((s, i) => ({ s, i, it: iOf(s) })).filter(x => x.it);
     if (usable.length) items.push({ label: 'Objet', action: () => openItems(u) });
     if (Promotions.branches(cls(u), G.db).length) items.push({ label: 'Promotion', action: () => openPromotion(u) });
@@ -1076,6 +1096,124 @@
     if (canUseConvoy(u)) items.push({ label: 'Convoi', sub: u.convoy ? '' : 'via ' + convoyLeader().name, action: () => openConvoy(u) });
     items.push({ label: 'Attendre', action: () => { hideMenu(); finishAction(u); } });
     showMenu(items, u, 'menu');
+  }
+
+  // ---------- ultimes (Base de données › Ultimes) ----------
+  /** Ultime de l'unité (fiche du personnage), null s'il n'en a pas. */
+  const ultimateOf = (u) => (u && u.ultimate && self.Ultimates ? Ultimates.byId(G.db.ultimates, u.ultimate) : null);
+  /** L'ultime présenté comme une compétence (icône + nom) pour les affichages communs. */
+  const ultimateSkill = (ult) => ({ id: ult.id, name: ult.name, icon: ult.icon || '✹', image: ult.image || Ultimates.ICON });
+  /** Entrée « Ultime » du menu d'action : prête, en recharge, ou sans cible. */
+  function ultimateItem(u, ult, targets) {
+    const label = 'Ultime';
+    if (u.ultCharge > 0) return { label, sub: `${ult.name} · recharge ${u.ultCharge} tour${u.ultCharge > 1 ? 's' : ''}`, disabled: true, ultimate: true };
+    let error = '';
+    if (ult.effect === 'strike' && !targets.length) error = 'aucune cible à portée';
+    if (ult.effect === 'heal' && !Ultimates.affected(ult, u, alive()).some(o => o.hp < o.stats.hp || (ult.cure && Statuses.list(o).length))) error = 'personne à soigner';
+    if (ult.effect === 'rally' && !Ultimates.affected(ult, u, alive()).length) error = 'aucun allié à portée';
+    if (ult.effect === 'blast' && ult.area === 'self' && !Ultimates.affected(ult, u, alive().filter(unitVisible)).length) error = 'aucun ennemi à portée';
+    return { label, sub: ult.name + (error ? ' · ' + error : ''), disabled: !!error, ultimate: true, action: () => startUltimate(u, ult, targets) };
+  }
+  function startUltimate(u, ult, targets) {
+    G.ultimate = { u, ult, range: null };
+    if (ult.effect === 'strike') return openTargets(u, targets, 'target');
+    hideMenu(); G.ui = 'ultimate';
+    if (ult.effect === 'blast' && ult.area === 'tile') {
+      G.ultimate.range = new Set(Ultimates.area(u, ult.range, G.map.width, G.map.height).map(p => key(p.x, p.y)));
+      const foe = enemies().filter(unitVisible).filter(e => G.ultimate.range.has(key(e.x, e.y))).sort((a, b) => R.dist(a, u) - R.dist(b, u))[0];
+      setCursor(foe ? foe.x : u.x, foe ? foe.y : u.y);
+    } else setCursor(u.x, u.y);
+    UI.toast(ult.effect === 'blast' && ult.area === 'tile' ? 'Choisis la case visée (violet : portée), puis valide.' : 'Valide pour lancer l’ultime (zone en surbrillance), X pour annuler.');
+  }
+  /** Cases de la zone de l'ultime en cours (autour du lanceur ou du curseur). */
+  function ultimateZone(u, ult) {
+    if (!u || !ult) return null;
+    const c = Ultimates.centerOf(ult, u, G.cursor);
+    if (G.ultimate && G.ultimate.range && !G.ultimate.range.has(key(c.x, c.y))) return null;
+    return new Set(Ultimates.area(c, ult.radius || 0, G.map.width, G.map.height).map(p => key(p.x, p.y)));
+  }
+  function confirmUltimateArea() {
+    const g = G.ultimate; if (!g) return;
+    if (g.range && !g.range.has(key(G.cursor.x, G.cursor.y))) return UI.toast('Case hors de portée de l’ultime.');
+    useUltimateArea(g.u, g.ult, { x: G.cursor.x, y: G.cursor.y });
+  }
+  /** Bandeau d'annonce de l'ultime (icône + nom + lanceur). */
+  function ultimateCutIn(u, ult) {
+    Music.se('crit');
+    const el = $('#banner');
+    el.className = 'ultimate'; el.innerHTML = '';
+    el.append(h('span', { class: 'ult-pop' }, SkillIcons.element(ultimateSkill(ult), 64, 'ult-pop-icon'),
+      h('span', { class: 'ult-pop-text' }, h('small', {}, u.name), h('b', {}, ult.name))));
+    return sleep(G.fast ? 500 : 1050).then(() => el.classList.add('hidden'));
+  }
+  /** Soin, dégâts ou renfort de zone ; la recharge démarre et l'action se termine. */
+  async function useUltimateArea(u, ult, tile) {
+    const targets = Ultimates.affected(ult, u, alive(), tile);
+    G.ultimate = null; G.busy = true; G.ui = 'busy';
+    u.ultCharge = ult.cooldown;
+    TacticalEmblem.emit('ultimate:used', { unit: u, ultimate: ult, targets });
+    await ultimateCutIn(u, ult);
+    const runs = [];
+    if (ult.animation) for (const t of targets) if (unitVisible(t) || unitVisible(u)) runs.push(playMapAnimation(ult.animation, u, t));
+    if (runs.length) await Promise.all(runs.map(r => r.hit));
+    let exp = 0;
+    const fallen = [];
+    for (const t of targets) {
+      if (ult.effect === 'heal') {
+        const amount = Ultimates.healAmount(ult, t);
+        if (amount > 0) { t.hp += amount; float(t.x, t.y, '+' + amount, '#7dffa8', false, { num: amount, style: 'heal' }); }
+        if (ult.cure) { const removed = Statuses.cure(t, 'all'); if (removed.length) float(t.x, t.y - 0.4, removed.map(x => x.name).join(', ') + ' soigné', '#a8e3b1'); }
+      } else if (ult.effect === 'blast') {
+        const dmg = G.debug.god && t.team !== 'enemy' ? 0 : Ultimates.blastDamage(ult, u, t);
+        t.hp -= dmg; t.flash = performance.now() + 140;
+        float(t.x, t.y, dmg ? String(dmg) : 'Aucun dégât', dmg ? '#ffffff' : '#bbbbbb', false, dmg ? { num: dmg, style: 'dmg' } : null);
+        if (u.team !== 'enemy' && t.team === 'enemy') exp += R.combatExp(u, t, dmg > 0, t.hp <= 0, G.db, 0);
+        if (t.hp <= 0) fallen.push(t);
+      } else if (ult.effect === 'rally') {
+        if (ult.dmg || ult.hit || ult.avoid) t.rally = (t.rally || []).filter(r => r.id !== ult.id).concat([{ id: ult.id, name: ult.name, dmg: ult.dmg, hit: ult.hit, avoid: ult.avoid, turns: ult.duration }]);
+        const again = ult.refresh && t !== u && t.done;
+        if (again) { t.done = false; t.tradeLocked = false; t.fogMoved = false; }
+        if (ult.dmg || ult.hit || ult.avoid) float(t.x, t.y - 0.3, '✹ Renfort', '#ffe08a');
+        if (again) float(t.x, t.y + 0.1, '♪ Nouveau tour', '#9fe0ff');
+      }
+    }
+    if (!targets.length) float(u.x, u.y - 0.4, 'Personne n’est touché', '#bbbbbb');
+    if (ult.effect === 'blast' && targets.length) V.shake = 10;
+    lastInfoKey = '';
+    await sleep(650);
+    if (runs.length) await Promise.all(runs.map(r => r.done));
+    for (const t of fallen) await killUnit(t);
+    if (u.team !== 'enemy' && u.hp > 0) await grantExp(u, ult.effect === 'blast' ? Math.max(1, Math.min(100, exp)) : (targets.length ? 10 : 1));
+    G.busy = false;
+    await finishAction(u);
+  }
+  /** Début de phase : recharge des ultimes, fin des renforts. */
+  async function ultimatePhase(units) {
+    if (!self.Ultimates) return;
+    const ready = Ultimates.beginPhase(units);
+    for (const u of ready) if (unitVisible(u) && ultimateOf(u)) float(u.x, u.y - 0.5, '✹ Ultime prêt', '#ffb3f0', true);
+    lastInfoKey = '';
+    if (ready.some(unitVisible)) await sleep(400);
+  }
+  // icône d'ultime et chiffres de recharge (img/ui/ultimate, tools/build_ui_ultimate.py ; case i = chiffre i + 1)
+  const ULT_IMG = { icon: Object.assign(new Image(), { src: 'img/ui/ultimate/icon.png' }), digits: Object.assign(new Image(), { src: 'img/ui/ultimate/digits.png' }) };
+  const ULT_CELL = { w: 40, h: 52 };
+  /** Au-dessus du personnage : les tours de recharge restants, ou l'icône d'ultime (pulsée) quand il est prêt. */
+  function drawUltimateBadge(u, t) {
+    if (!u.ultimate || u.dead || u.alpha <= 0 || u.hp <= 0 || !ultimateOf(u)) return;
+    const [x, y, w, hh] = tileRect(u.rx, u.ry), size = Math.max(12, Math.min(26, hh * 0.46));
+    const left = x + w - size * 0.8, top = y - size * 0.25;
+    ctx.save(); ctx.globalAlpha = u.alpha; ctx.imageSmoothingEnabled = true;
+    if (u.ultCharge > 0) {
+      const im = ULT_IMG.digits, d = Math.min(9, u.ultCharge);
+      if (im.complete && im.naturalWidth) { const hgt = size * 0.95, wid = hgt * ULT_CELL.w / ULT_CELL.h; ctx.drawImage(im, (d - 1) * ULT_CELL.w, 0, ULT_CELL.w, ULT_CELL.h, left + (size - wid) / 2, top, wid, hgt); }
+      else { ctx.fillStyle = '#ffb3f0'; ctx.font = `bold ${size * 0.8}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(String(d), left + size / 2, top); }
+    } else {
+      const im = ULT_IMG.icon, k = 1 + Math.sin(t / 220) * 0.08, sz = size * k;
+      if (im.complete && im.naturalWidth) ctx.drawImage(im, left + (size - sz) / 2, top + (size - sz) / 2, sz, sz * im.naturalHeight / im.naturalWidth);
+      else { ctx.fillStyle = '#ffb3f0'; ctx.font = `bold ${size * 0.8}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText('✹', left + size / 2, top); }
+    }
+    ctx.restore();
   }
 
   async function dance(u, o) {
@@ -1337,7 +1475,11 @@
     if (!G.wList.length || G.wList.target !== t) { G.wList = ws; G.wList.target = t; G.wIndex = 0; }
     const w = G.wList[G.wIndex];
     if (!w) { el.classList.add('hidden'); return; }
-    const fc = R.forecast(u, w.index, t, ropts());
+    const fc0 = R.forecast(u, w.index, t, ropts());
+    // ultime « frappe » en attente : premier coup renforcé, touche assurée, riposte supprimée
+    const ultF = G.ultimate && G.ultimate.u === u ? G.ultimate.ult : null;
+    const fc = ultF ? Object.assign({}, fc0, { att: Object.assign({}, fc0.att, { dmg: Ultimates.strikeDamage(fc0.att.dmg, ultF), hit: ultF.sureHit ? 100 : fc0.att.hit }),
+      def: ultF.noCounter ? null : fc0.def }) : fc0;
     const tri = (v) => v > 0 ? h('span', { class: 'tri-up' }, ' ▲') : v < 0 ? h('span', { class: 'tri-down' }, ' ▼') : null;
     const side = (unit, s, weapon, cl) => h('div', { class: 'fc-side ' + cl },
       h('div', { class: 'fc-name' }, unit.name),
@@ -1352,6 +1494,8 @@
     const extra = [];
     if (fc.att.weatherAvoid) extra.push(h('div', { class: 'fc-skill-note', 'data-climate-avoid': true },
       `Brouillard : esquive +${fc.att.weatherAvoid} pour les deux camps (déjà incluse dans PRÉC).`));
+    if (ultF) extra.push(h('div', { class: 'fc-skills fc-ultimate', 'data-forecast-ultimate': ultF.id }, ...skillLabel(ultimateSkill(ultF),
+      ` : 1er coup ${fc.att.dmg} DGT${ultF.sureHit ? ', touche assurée' : ''}${ultF.noCounter ? ', sans riposte' : ''}${fc0.att.count > 1 ? ` (coup suivant : ${fc0.att.dmg})` : ''}`)));
     if (fc.att.bonus) extra.push(h('div', {}, '♥ Bonus d\'affinité actif'));
     if (sp) extra.push(h('div', {}, `★ ${sp.name} (${sp.chance} %)`));
     if (duo) extra.push(h('div', {}, `⚔ Attaque duo avec ${duo.partner.name} : ${duo.name} (${duo.chance} %)`));
@@ -1383,7 +1527,7 @@
       h('div', { class: 'fc-actions' },
         G.wList.length > 1 ? h('button', { onmousedown: (e) => { e.stopPropagation(); cycleWeapon(1); } }, '⇄ Arme') : null,
         h('button', { onmousedown: (e) => { e.stopPropagation(); cancel(); } }, 'Retour'),
-        h('button', { class: 'go', onmousedown: (e) => { e.stopPropagation(); confirm(); } }, 'Attaquer')));
+        h('button', { class: 'go', onmousedown: (e) => { e.stopPropagation(); confirm(); } }, ultF ? 'Ultime' : 'Attaquer')));
     el.classList.remove('hidden');
     const [px, py, tw] = tileRect(t.x, t.y);
     const right = px + tw + 16 + el.offsetWidth < V.w;
@@ -1403,7 +1547,9 @@
     hideForecast();
     R.equip(u, w.index);
     G.busy = true; G.ui = 'busy';
-    await runCombat(u, 0, t);
+    const ult = G.ultimate && G.ultimate.u === u ? G.ultimate.ult : null; G.ultimate = null;
+    if (ult) { u.ultCharge = ult.cooldown; await ultimateCutIn(u, ult); }
+    await runCombat(u, 0, t, ult ? Ultimates.strikeOpts(ult) : null);
     G.busy = false;
     await finishAction(u);
   }
@@ -1609,12 +1755,12 @@
     el.classList.remove('hidden');
   }
 
-  async function runCombat(att, aIndex, def) {
+  async function runCombat(att, aIndex, def, ultimate) {
     G.combatReveal = new Set([att.uid, def.uid]);
-    try { return await performCombat(att, aIndex, def); }
+    try { return await performCombat(att, aIndex, def, ultimate); }
     finally { G.combatReveal = null; lastInfoKey = ''; refreshDanger(); }
   }
-  async function performCombat(att, aIndex, def) {
+  async function performCombat(att, aIndex, def, ultimate) {
     const hp0 = { [att.uid]: att.hp, [def.uid]: def.hp };
     const wAtt = wOf(att.inventory[aIndex]);
     const eqDef = R.equipped(def, G.db); const wDef = eqDef ? eqDef.weapon : null;
@@ -1622,7 +1768,7 @@
     focus(def.x, def.y);
     const dual = att.team !== 'enemy' ? R.supportDual(att, players(), G.sup, G.db) : null;
     if (dual) hp0[dual.partner.uid] = dual.partner.hp;
-    const res = R.resolveCombat(att, aIndex, def, { ...ropts(), rng: Math.random, specialOf, dual });
+    const res = R.resolveCombat(att, aIndex, def, { ...ropts(), rng: Math.random, specialOf, dual, ultimate: ultimate || null });
     // partenaires des attaques spéciales (ils apparaissent pendant le coup)
     const helpers = [...new Set(res.strikes.map(s => s.partner).filter(Boolean))].map(uid => G.units.find(u => u.uid === uid)).filter(Boolean);
     for (const u of helpers) if (hp0[u.uid] === undefined) hp0[u.uid] = u.hp;
@@ -1835,6 +1981,7 @@
     await banner('Phase joueur', '', 'img/ui/phase-player.png');
     for (const u of players()) { u.done = false; u.tradeLocked = false; u.fogMoved = false; }
     await statusPhase(team('player'));
+    await ultimatePhase(team('player'));
     await skillRecovery(team('player'));
     await terrainHeal(team('player'));
     await runEvents('turn', { turn: G.turn });
@@ -1858,6 +2005,7 @@
     await banner('Phase alliée', 'ally', 'img/ui/phase-ally.png');
     for (const u of allies) { u.done = false; u.fogMoved = false; }
     await statusPhase(allies);
+    await ultimatePhase(allies);
     await skillRecovery(allies);
     await terrainHeal(allies);
     if (await aiTurn(allies.filter(u => u.control === 'ai'), () => team('enemy'))) return;
@@ -1969,6 +2117,7 @@
     updateObjective();
     for (const e of enemies()) if (!arriving.includes(e)) e.done = false;
     await statusPhase(enemies());
+    await ultimatePhase(enemies());
     await skillRecovery(enemies());
     await terrainHeal(enemies());
 
@@ -2272,6 +2421,7 @@
       }
       case 'target': { const t = currentTarget(); if (t) attack(G.sel, t); return; }
       case 'staff': { const t = currentTarget(); if (t) chooseStaff(G.sel, t); return; }
+      case 'ultimate': return confirmUltimateArea();
     }
   }
 
@@ -2295,7 +2445,8 @@
       case 'convoy': return closeConvoy();
       case 'trade': return trade.cancel();
       case 'mapmenu': case 'lobbymenu': hideMenu(); G.ui = 'idle'; return;
-      case 'target': case 'staff': hideForecast(); setCursor(G.sel.x, G.sel.y); return openActionMenu();
+      case 'target': case 'staff': G.ultimate = null; hideForecast(); setCursor(G.sel.x, G.sel.y); return openActionMenu();
+      case 'ultimate': G.ultimate = null; setCursor(G.sel.x, G.sel.y); return openActionMenu();
       default: G.enemyView = null;
     }
   }

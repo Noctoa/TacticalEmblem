@@ -4,10 +4,10 @@
 (function (root, factory) {
   const node = typeof module !== 'undefined' && module.exports;
   const api = factory(node ? require('./skills.js') : root.Skills, node ? require('./promotions.js') : root.Promotions,
-    node ? require('./animations.js') : root.Animations);
+    node ? require('./animations.js') : root.Animations, node ? require('./ultimates.js') : root.Ultimates);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Defaults = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Animations) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Animations, Ultimates) {
   'use strict';
 
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
@@ -568,7 +568,7 @@
   }
 
   function emptyDatabase() {
-    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [] };
+    return { terrains: terrains(), weapons: weapons(), items: items(), classes: linkPromotions(classes()), skills: Skills.presets(), units: [], tilesets: [], chapters: [], talks: [], arcs: [], ultimates: [] };
   }
 
   // crédits du projet d'exemple (Système › Écran titre et crédits ; écran titre › Crédits)
@@ -589,13 +589,16 @@
     // animations d'attaque (Base de données › Animations) : exemples sur les planches de ressources/animations
     db.animations = Animations.samples();
     for (const sk of db.skills) if (Animations.SAMPLE_SKILLS[sk.id]) sk.animation = Animations.SAMPLE_SKILLS[sk.id];
+    // ultimes (Base de données › Ultimes) : exemples, attribués aux héros de l'exemple
+    db.ultimates = Ultimates ? Ultimates.samples() : [];
+    if (Ultimates) for (const c of db.units) if (Ultimates.SAMPLE_UNITS[c.id]) c.ultimate = Ultimates.SAMPLE_UNITS[c.id];
     return {
       meta: {
         format: 'tactics-forge', version: 1, name: name || 'Mon Tactical RPG',
         // lobby : le jeu commence au camp, on y choisit les chapitres, on achète, on parle aux alliés
         lobby: lobby(),
         // systèmes devenus des plugins : un projet neuf ne les reçoit pas automatiquement (Base de données › Plugins)
-        pluginMigrations: ['invocations', 'fonds-combat', 'animations'],
+        pluginMigrations: ['invocations', 'fonds-combat', 'animations', 'ultimates'],
         // animation jouée par défaut pour chaque type d'arme (une arme peut choisir la sienne)
         animationDefaults: Object.assign({}, Animations.SAMPLE_DEFAULTS),
         author: '', startChapter: 'ch_1', defaultTerrain: 'plain',

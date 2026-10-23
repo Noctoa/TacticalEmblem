@@ -187,6 +187,7 @@
     const out = [];
     for (const w of (db && db.weapons) || []) if (w.animation === id || w.critAnimation === id) out.push('Arme « ' + w.name + ' »');
     for (const s of (db && db.skills) || []) if (s && s.animation === id) out.push('Compétence « ' + s.name + ' »');
+    for (const u of (db && db.ultimates) || []) if (u && u.animation === id) out.push('Ultime « ' + u.name + ' »');
     for (const a of (db && db.animations) || []) if (a.next === id && a.id !== id) out.push('Animation « ' + a.name + ' »');
     for (const [type, v] of Object.entries((meta && meta.animationDefaults) || {})) if (v === id) out.push('Type d’arme « ' + type + ' »');
     return out;
@@ -195,6 +196,7 @@
   function forget(db, meta, id) {
     for (const w of (db && db.weapons) || []) { if (w.animation === id) w.animation = ''; if (w.critAnimation === id) w.critAnimation = ''; }
     for (const s of (db && db.skills) || []) if (s && s.animation === id) s.animation = '';
+    for (const u of (db && db.ultimates) || []) if (u && u.animation === id) u.animation = '';
     for (const a of (db && db.animations) || []) if (a.next === id) a.next = '';
     const d = meta && meta.animationDefaults;
     if (d) for (const k of Object.keys(d)) if (d[k] === id) d[k] = '';

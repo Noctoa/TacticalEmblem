@@ -1602,6 +1602,21 @@
     for (const sk of db.skills || []) if (sk.animation === undefined && Animations.SAMPLE_SKILLS[sk.id]) sk.animation = Animations.SAMPLE_SKILLS[sk.id];
     if (added.length) UI.toast(`Animations d'attaque : ${added.length} animation(s) d'exemple ajoutée(s) (Base de données › Animations).`);
   }
+  /**
+   * Ultimes (Base de données › Ultimes) : un ancien projet reçoit, une seule fois, les ultimes d'exemple
+   * (sans les attribuer : chaque personnage garde « aucun ultime » tant qu'on ne lui en choisit pas).
+   */
+  function migrateUltimates() {
+    const meta = S.project.meta, db = DB();
+    if ((meta.pluginMigrations || []).includes('ultimates')) return;
+    meta.pluginMigrations = [...(meta.pluginMigrations || []), 'ultimates'];
+    markDirty();
+    db.ultimates = Array.isArray(db.ultimates) ? db.ultimates : [];
+    const added = Ultimates.samples().filter(u => !db.ultimates.some(x => x.id === u.id))
+      .map(u => (u.animation && !(db.animations || []).some(a => a.id === u.animation) ? Object.assign(u, { animation: '' }) : u));
+    db.ultimates.push(...added);
+    if (added.length) UI.toast(`Ultimes : ${added.length} ultime(s) d'exemple ajouté(s) (Base de données › Ultimes).`);
+  }
   /** Plugins fournis avec l'application plus récents que la copie du projet : mis à jour (fiche, scripts, images). */
   async function updateBundledPlugins() {
     let bundled = [];
@@ -1628,6 +1643,7 @@
     if (S.project.meta.credits === Defaults.OLD_SAMPLE_CREDITS) { S.project.meta.credits = Defaults.SAMPLE_CREDITS; markDirty(); }
     await migrateBattlebacks();
     await migrateAnimations();
+    migrateUltimates();
     // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
     let icons = 0;
     for (const sk of DB().skills || []) { if (sk.image === undefined && Skills.presetImage(sk.id)) { sk.image = Skills.presetImage(sk.id); icons++; } }
