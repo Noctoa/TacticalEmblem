@@ -1,6 +1,6 @@
 body { background: #07080b; }
 /* Échanges entre deux personnages adjacents. */
-#trade { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(760px, 94vw); max-height: 94vh; overflow: auto; padding: 18px; z-index: 35; background: #141c34; box-sizing: border-box; }
+#trade { left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(760px, 94vw); max-height: 94vh; overflow: auto; padding: 18px; z-index: 35; background: rgb(8, 64, 80) padding-box; box-sizing: border-box; }
 .trade-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .trade-head h3 { color: #f2d58a; }
 .trade-head button { padding: 6px 12px; cursor: pointer; }
@@ -24,9 +24,10 @@ body { background: #07080b; }
 #hud > #help { pointer-events: none; }
 
 .win {
-  /* fenêtre GBA : cadre brun (img/ui/window.png, 4 px de cadre affichés ×2) sur fond bleu */
-  position: absolute; background: linear-gradient(180deg, rgb(112, 128, 160), rgb(78, 92, 136)) padding-box;
-  border: 8px solid transparent; border-image: url('img/ui/window.png') 4 / 8px stretch; image-rendering: pixelated;
+  /* fenêtre façon Radiant Dawn : cadre sombre / beige / brun au coin haut droit coupé (img/ui/radiant/panel.png,
+     8 px de cadre affichés ×2) sur fond sarcelle */
+  position: absolute; background: rgb(8, 64, 80) padding-box;
+  border: 16px solid transparent; border-image: url('img/ui/radiant/panel.png') 8 / 16px stretch; image-rendering: pixelated;
   box-shadow: 0 8px 24px rgba(0, 0, 0, .45);
   color: #f8f8f8; padding: 6px 10px; text-shadow: 1px 1px 0 rgba(24, 20, 40, .85), 2px 2px 0 rgba(24, 20, 40, .35);
 }
@@ -61,7 +62,7 @@ body { background: #07080b; }
 #unit-win { left: 12px; bottom: 12px; display: none; min-width: 300px; }
 #unit-win.show { display: grid; grid-template-columns: 64px 1fr; gap: 10px; }
 #unit-win.right { left: auto; right: 12px; }
-#unit-win.enemy { background: linear-gradient(180deg, rgba(80, 26, 30, .95), rgba(44, 14, 18, .95)); }
+#unit-win.enemy { background: rgb(66, 22, 26) padding-box; border-image-source: url('img/ui/radiant/panel-enemy.png'); }
 .portrait { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; display: grid; place-items: center; font-size: 30px; font-weight: 800; color: #fff; border: 1px solid rgba(255, 255, 255, .3); }
 .portrait img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
 canvas.faceset { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
@@ -126,7 +127,7 @@ canvas.faceset { display: block; width: 100%; height: 100%; image-rendering: pix
 .dlg-portrait:empty { display: none; }
 .dlg-portrait .portrait { width: 140px; height: 140px; font-size: 64px; border: 2px solid #c9b27a; border-radius: 10px; }
 .dlg-box { position: relative; min-height: 120px; background: linear-gradient(180deg, rgba(250, 244, 226, .97), rgba(232, 222, 196, .97)); color: #2a2215; border: 2px solid #8a7444; border-radius: 10px; padding: 26px 22px 18px; font-size: 17px; line-height: 1.5; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); cursor: pointer; }
-.dlg-name { position: absolute; top: -14px; left: 18px; background: #2a3a6a; color: #fff; padding: 3px 14px; border-radius: 6px; border: 2px solid #c9b27a; font-weight: 700; font-size: 14px; }
+.dlg-name { position: absolute; top: -14px; left: 18px; background: linear-gradient(180deg, #0a4a5c, #063240); color: #f4ecd8; padding: 3px 14px; border-radius: 4px; border: 2px solid #d8c088; box-shadow: 0 0 0 1px #403020, 0 2px 4px rgba(0, 0, 0, .35); font-weight: 700; font-size: 14px; text-shadow: 1px 1px 0 #02161c; } /* sarcelle et liseré beige de Radiant Dawn */
 .dlg-name:empty { display: none; }
 .dlg-next { position: absolute; right: 16px; bottom: 8px; color: #8a7444; animation: blink 1s infinite; font-size: 12px; }
 .dlg-skip { position: absolute; right: 0; top: -36px; font-size: 12px; background: rgba(10, 12, 18, .8); }
@@ -159,7 +160,7 @@ body.talking #unit-win, body.talking #terrain-win, body.talking #menu, body.talk
 
 body.in-battle #hud { display: none; }
 
-#unit-win.ally { background: linear-gradient(180deg, rgba(26, 90, 50, .95), rgba(12, 48, 26, .95)); }
+#unit-win.ally { background: rgb(18, 70, 40) padding-box; border-image-source: url('img/ui/radiant/panel-ally.png'); }
 .u-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
 .tag { font-size: 11px; padding: 1px 6px; border-radius: 4px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .18); }
 .tag.ally { background: rgba(47, 211, 122, .25); border-color: rgba(47, 211, 122, .6); }
@@ -249,7 +250,7 @@ body.in-lobby #game { cursor: pointer; }
 #lobby-panel .lp-badge.soon { background: rgba(140, 170, 255, .3); color: #cfdcff; }
 #lobby-panel .lp-group { font-size: 12px; color: #c9b27a; text-transform: uppercase; letter-spacing: .08em; margin: 8px 0 2px; }
 #lobby-panel .lp-dest { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; font-size: 13px; white-space: nowrap; }
-#lobby-panel .lp-dest select { background: #101629; color: #f3efe2; border: 1px solid #c9b27a; border-radius: 4px; padding: 3px 6px; }
+#lobby-panel .lp-dest select { background: #042a35; color: #f3efe2; border: 1px solid #c9b27a; border-radius: 4px; padding: 3px 6px; }
 #lobby-panel .lp-empty { color: #8f96aa; font-size: 13px; padding: 6px 8px; }
 #end .end-reward { color: #f2d58a; font-weight: 700; font-size: 18px; }
 
@@ -288,7 +289,7 @@ body.in-lobby #game { cursor: pointer; }
 #settings .st-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 #settings .st-group .st-row:has(.st-check) { flex-direction: column; align-items: stretch; }
 #settings .st-inline { display: inline-flex; gap: 6px; align-items: center; }
-#settings select { background: #101629; color: #f3efe2; border: 1px solid #c9b27a; border-radius: 4px; padding: 4px 6px; max-width: 240px; }
+#settings select { background: #042a35; color: #f3efe2; border: 1px solid #c9b27a; border-radius: 4px; padding: 4px 6px; max-width: 240px; }
 body.in-settings #menu, body.in-settings #lobby-panel { display: none !important; }
 body.in-settings #unit-win, body.in-settings #terrain-win { display: none !important; }
 #settings button { white-space: nowrap; }
@@ -308,7 +309,7 @@ body.in-settings #unit-win, body.in-settings #terrain-win { display: none !impor
 #objective .act { font-size: 11px; color: #f2d58a; font-weight: 700; margin-bottom: 2px; }
 
 /* Préparatifs de l'effectif au camp. */
-#lobby-panel.team-panel { width: min(1000px, 95vw); background: rgba(16, 22, 41, .98); }
+#lobby-panel.team-panel { width: min(1000px, 95vw); background: rgb(8, 64, 80) padding-box; }
 #lobby-panel .team-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 #lobby-panel .team-toolbar p { flex: 1; }
 #lobby-panel .team-toolbar button { flex: none; }
@@ -331,7 +332,7 @@ body.in-settings #unit-win, body.in-settings #terrain-win { display: none !impor
 .team-personal p { margin: 6px 0 0; font-size: 12px; color: #c8cde0; }
 .team-skill-slot { margin-top: 12px; }
 .team-skill-slot label { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 8px; align-items: center; font-size: 12px; }
-#lobby-panel .team-skill-slot select { width: 100%; min-width: 0; background: #101629; color: #f3efe2; padding: 6px; border: 1px solid #62718a; border-radius: 4px; }
+#lobby-panel .team-skill-slot select { width: 100%; min-width: 0; background: #042a35; color: #f3efe2; padding: 6px; border: 1px solid #62718a; border-radius: 4px; }
 .team-skill-slot p { margin: 5px 0 0 118px; }
 .team-reserve { margin-top: 16px; padding-top: 12px; border-top: 1px solid #4c5260; }
 .team-inventory h5 { margin: 16px 0 8px; font-size: 13px; color: #f2d58a; }
@@ -468,8 +469,8 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
   color: #ffe08a; text-shadow: 0 4px 0 #7a3f12, 0 8px 0 rgba(0, 0, 0, .55), 0 0 30px rgba(255, 200, 90, .35); }
 #title-screen .ts-sub { margin-top: 10px; font-size: clamp(16px, 2.2vw, 26px); color: #d8def8; text-shadow: 2px 2px 0 #1a1530; }
 /* fenêtre GBA (cadre brun, img/ui/window.png) */
-#title-screen .ts-window { border: 8px solid transparent; border-image: url('img/ui/window.png') 4 / 8px stretch; image-rendering: pixelated;
-  background: linear-gradient(180deg, rgb(112, 128, 160), rgb(78, 92, 136)) padding-box; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+#title-screen .ts-window { border: 16px solid transparent; border-image: url('img/ui/radiant/panel.png') 8 / 16px stretch; image-rendering: pixelated;
+  background: rgb(8, 64, 80) padding-box; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
 #title-screen .ts-menu { display: flex; flex-direction: column; min-width: 260px; padding: 8px 6px; }
 #title-screen .ts-item { all: unset; position: relative; cursor: pointer; padding: 8px 18px 8px 40px; font-size: 24px; font-weight: 600;
   color: #f8f8f8; text-shadow: 2px 2px 0 #282030; border-radius: 3px; }
