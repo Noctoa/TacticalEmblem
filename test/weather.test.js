@@ -5,7 +5,7 @@ const W = require('../src/shared/weather'), D = require('../src/shared/defaults'
 const E = require('../src/shared/scenario'), C = require('../src/shared/campaign'), io = require('../src/main/project-io');
 
 test('météo : aucun effet dans les anciens actes, valeurs par défaut et libellés', () => {
-  assert.deepEqual(W.normalize(), { type: 'none', intensity: 2, direction: 'right' });
+  assert.deepEqual(W.normalize(), { type: 'none', intensity: 2, direction: 'right', tactical: false });
   assert.equal(W.normalize({ type: 'unknown', intensity: 99 }).type, 'none');
   assert.equal(W.normalize({ type: 'fog' }).intensity, 2);
   assert.equal(W.label({ type: 'snow', intensity: 3 }), 'Neige · forte');

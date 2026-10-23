@@ -306,12 +306,31 @@
     ((G.phase === 'player' && u.team === 'player') || (G.phase === 'ally' && u.team === 'ally' && u.control !== 'ai'));
   const enemies = () => alive().filter(u => u.team === 'enemy');
   const unitAt = (x, y) => alive().find(u => u.x === x && u.y === y) || null;
+  const visionCache = { key: '', sides: new Map() };
+  function visibility(side = 'player') {
+    if (!G.map || G.mode === 'lobby' || Weather.effects(G.weather).vision === null) return null;
+    const signature = JSON.stringify(G.weather) + G.map.width + ',' + G.map.height + ':' + G.units.map(u =>
+      [u.uid, u.team, u.x, u.y, !u.dead && u.hp > 0].join(',')).join(';');
+    if (signature !== visionCache.key) { visionCache.key = signature; visionCache.sides.clear(); }
+    if (!visionCache.sides.has(side)) visionCache.sides.set(side, Weather.visibleTiles(G.weather, G.units, side, G.map.width, G.map.height));
+    return visionCache.sides.get(side);
+  }
+  function tileVisible(x, y) {
+    const visible = visibility();
+    if (visible === null || visible.has(key(x, y))) return true;
+    return !!(G.combatReveal && G.units.some(u => G.combatReveal.has(u.uid) && u.x === x && u.y === y));
+  }
+  const unitVisible = u => !!u && (u.team !== 'enemy' || tileVisible(u.x, u.y));
+  const visibleUnitAt = (x, y) => { const u = unitAt(x, y); return unitVisible(u) ? u : null; };
   const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
   const terrainOf = (u) => terrainAt(u.x, u.y);
   /** Fond de combat du terrain d'une unité (image déjà chargée) ou null. */
   const battlebackOf = (u) => { const t = terrainOf(u); return t && t.battleback ? Render.readyImage(G.baseUrl, t.battleback) : null; };
-  const rctx = () => ({ width: G.map.width, height: G.map.height, terrainAt, unitAt });
-  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), terrainOf, bonusOf, units: alive(),
+  const rctx = (perceived = false) => {
+    const real = { width: G.map.width, height: G.map.height, terrainAt, unitAt, weather: G.mode === 'lobby' ? undefined : G.weather };
+    return perceived ? R.perceivedContext({ team: 'player' }, real, alive()) : real;
+  };
+  const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), weather: G.mode === 'lobby' ? undefined : G.weather, terrainOf, bonusOf, units: alive(),
     protect: (u) => G.debug.god && u.team !== 'enemy' });
   // ---------- affinités ----------
   const bonusOf = (u) => R.supportBonus(u, players(), G.sup, G.supCfg);
@@ -377,7 +396,7 @@
 
   function attackTargetsFrom(u) {
     const res = [];
-    for (const e of enemies()) {
+    for (const e of enemies().filter(unitVisible)) {
       const d = R.dist(u, e);
       if (R.attackWeapons(u, G.db).some(w => d >= (w.weapon.minRange || 1) && d <= (w.weapon.maxRange || 1))) res.push(e);
     }
@@ -462,6 +481,7 @@
 
     const pulse = 0.38 + Math.sin(t / 260) * 0.07;
     if (G.danger && G.dangerSet) fillTiles(G.dangerSet, '#ff6a2a', 0.22);
+    if (G.enemyView && !unitVisible(G.enemyView.unit)) G.enemyView = null;
     if (G.enemyView) { fillTiles(G.enemyView.move, '#4f8cff', 0.28); fillTiles(G.enemyView.atk, '#ff3b30', 0.32); }
     if (G.ui === 'moving' && G.reach) {
       const blue = new Set([...G.reach.values()].map(n => key(n.x, n.y)));
@@ -485,7 +505,8 @@
       ctx.strokeStyle = '#ff7777'; ctx.lineWidth = 3; ctx.strokeRect(px + 2, py + 2, w * z.w - 4, hh * z.h - 4);
     }
 
-    const list = G.units.filter(u => !u.dead || u.alpha > 0).sort((a, b) => a.ry - b.ry);
+    drawFog();
+    const list = G.units.filter(u => (!u.dead || u.alpha > 0) && unitVisible(u)).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
     if (G.mode !== 'lobby' && G.settings.weatherEffects !== false) {
       const x = Math.max(0, -V.camX), y = Math.max(0, -V.camY);
@@ -503,6 +524,18 @@
     for (let i = mapAnims.length - 1; i >= 0; i--) { const r = mapAnims[i]; r.draw(ctx); if (!r.active && !r.flashes.length) mapAnims.splice(i, 1); }
     for (const r of mapAnims) r.drawScreenFlash(ctx, V.w, V.h);
     drawFloats(t);
+  }
+
+  function drawFog() {
+    const visible = visibility();
+    if (visible === null) return;
+    const revealed = new Set(G.combatReveal ? G.units.filter(u => G.combatReveal.has(u.uid)).map(u => key(u.x, u.y)) : []);
+    const x0 = Math.max(0, Math.floor(V.camX / TW())), y0 = Math.max(0, Math.floor(V.camY / TH()));
+    const x1 = Math.min(G.map.width, Math.ceil((V.camX + V.w) / TW())), y1 = Math.min(G.map.height, Math.ceil((V.camY + V.h) / TH()));
+    ctx.fillStyle = 'rgba(10,18,30,.62)';
+    for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (!visible.has(key(x, y)) && !revealed.has(key(x, y))) {
+      const [px, py, w, hh] = tileRect(x, y); ctx.fillRect(px, py, w + .5, hh + .5);
+    }
   }
 
   // flèche de déplacement façon Fire Emblem (img/ui/arrow.png, cases de 16 px ; tools/build_ui_popups.py)
@@ -714,12 +747,16 @@
   }
 
   /** digits : { num, style, label } — nombre dessiné avec les chiffres façon Heroes (feh-digits.js), libellé au-dessus. */
-  function float(x, y, text, color, big, digits) { floats.push(Object.assign({ x, y, text, color: color || '#fff', t0: performance.now(), big }, digits || {})); }
+  function float(x, y, text, color, big, digits) {
+    if (!tileVisible(Math.round(x), Math.ceil(y))) return;
+    floats.push(Object.assign({ x, y, text, color: color || '#fff', t0: performance.now(), big }, digits || {}));
+  }
   function drawFloats(t) {
     const now = performance.now();
     for (let i = floats.length - 1; i >= 0; i--) {
       const f = floats[i]; const k = (now - f.t0) / 1000;
       if (k > 1) { floats.splice(i, 1); continue; }
+      if (!tileVisible(Math.round(f.x), Math.ceil(f.y))) continue;
       const [px, py, w] = tileRect(f.x, f.y);
       ctx.globalAlpha = k < 0.8 ? 1 : (1 - k) * 5;
       ctx.font = `900 ${Math.round(TW() * (f.big ? 0.62 : 0.46))}px "Segoe UI", system-ui, sans-serif`;
@@ -771,6 +808,7 @@
     const leftHalf = (c.x * TW() - V.camX) < V.w / 2;
     const topHalf = (c.y * TH() - V.camY) < V.h / 2;
     tw.classList.toggle('right', leftHalf && topHalf);
+    tw.style.top = leftHalf && topHalf ? Math.max(92, $('#objective').getBoundingClientRect().bottom + 8) + 'px' : '';
     tw.innerHTML = '';
     if (t) tw.append(...[h('div', { class: 't-name' }, t.name), h('div', { class: 't-row' }, h('span', {}, 'DÉF'), String(t.def)), h('div', { class: 't-row' }, h('span', {}, 'ESQ'), String(t.avoid)), t.heal ? h('div', { class: 't-row' }, h('span', {}, 'SOIN'), t.heal + '%') : null].filter(Boolean));
     const village = G.chapter && Villages.at(G.chapter, c.x, c.y);
@@ -780,10 +818,10 @@
       if (object) tw.append(h('div', { class: 't-name' }, object.name), h('div', { class: 't-row' }, Locks.opened(G.chapter, kind, object, lockState()) ? 'Ouvert' : kind === 'doors' ? 'Ouvrir depuis une case adjacente' : 'Action : Ouvrir le coffre'));
     }
 
-    const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : unitAt(c.x, c.y);
+    const u = (G.ui === 'menu' || G.ui === 'items') && G.sel ? G.sel : visibleUnitAt(c.x, c.y);
     const uw = $('#unit-win');
     const k = u ? [u.uid, u.hp, u.level, u.exp, u.x, u.y, u.inventory.map(s => s.id + s.uses).join(),
-      u.personalSkill, (u.learnedSkills || []).join(), (u.equippedSkills || []).join(), JSON.stringify(u.statuses || {}), G.busy, G.over, leftHalf, topHalf].join('|') : '';
+      u.personalSkill, (u.learnedSkills || []).join(), (u.equippedSkills || []).join(), JSON.stringify(u.statuses || {}), JSON.stringify(G.weather), G.busy, G.over, leftHalf, topHalf].join('|') : '';
     if (k === lastInfoKey) return;
     lastInfoKey = k;
     uw.innerHTML = '';
@@ -818,14 +856,14 @@
   }
   /** Fiche plein écran d'une unité de la map ; ↑ ↓ passent aux autres unités de son camp. */
   async function openUnitSheet(u) {
-    if (!u || G.busy || G.over || G.sheetOpen) return;
-    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === u.team).sort((a, b) => (a.team === 'enemy' ? 0 : (a.order || 0) - (b.order || 0)) || a.y - b.y || a.x - b.x);
+    if (!unitVisible(u) || G.busy || G.over || G.sheetOpen) return;
+    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === u.team && unitVisible(o)).sort((a, b) => (a.team === 'enemy' ? 0 : (a.order || 0) - (b.order || 0)) || a.y - b.y || a.x - b.x);
     G.sheetOpen = true;
     try { await UnitSheet.open(u, sheetCtx(), { list }); } finally { G.sheetOpen = false; lastInfoKey = ''; }
   }
 
   async function showUnitSkills(unit) {
-    if (G.busy || G.over) return;
+    if (!unitVisible(unit) || G.busy || G.over) return;
     G.busy = true;
     try {
       await UI.modal((box, close) => {
@@ -862,18 +900,24 @@
       tags.push(h('span', { class: 'tag terrain' }, `${t.name} : ${parts.join(' · ')}`));
     }
     for (const s of Statuses.list(u)) tags.push(h('span', { class: 'tag status', title: s.description, style: { color: s.color }, 'data-unit-status': s.id }, `${s.name} · ${s.turns} phase(s)`));
+    const penalty = Weather.movePenalty(G.weather, u.moveType);
+    if (penalty) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `${G.weather.type === 'sand' ? 'Sable' : 'Neige'} : coût par case +${penalty}`));
+    const avoid = Weather.effects(G.weather).avoid;
+    if (avoid) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `Brouillard : esquive +${avoid}`));
     return tags.length ? h('div', { class: 'u-tags' }, tags) : '';
   }
 
   function updateObjective() {
     const result = Mission.evaluate(G.chapter, G.db, G);
-    const left = enemies().length + G.pending.length;
+    const fog = visibility() !== null, left = fog ? enemies().filter(unitVisible).length : enemies().length + G.pending.length;
     $('#objective').innerHTML = '';
     const info = Lobby.actInfo(G.db, G.chapter.id);
     if (info && !info.arc.implicit) $('#objective').append(h('div', { class: 'act' }, `${info.arc.name} · Acte ${info.index + 1}/${info.arc.acts.length}`));
     $('#objective').append(h('div', { class: 'lbl' }, 'Victoire — ' + (G.chapter.victoryMode === 'any' ? 'au moins une condition' : 'toutes les conditions')),
       ...Mission.objectives(G.chapter).map((ob, i) => h('div', { class: 'obj' }, (result.progress[i] ? '✓ ' : '○ ') + Mission.label(ob, G.chapter))),
-      h('div', { class: 'turn' }, `Tour ${G.turn} · Ennemis ${left} · ${G.campaign.mode === 'classic' ? 'Classique' : 'Détente'}`));
+      h('div', { class: 'turn' }, `Tour ${G.turn} · Ennemis${fog ? ' repérés' : ''} ${left} · ${G.campaign.mode === 'classic' ? 'Classique' : 'Détente'}`));
+    if (G.weather && G.weather.tactical && G.weather.type !== 'none') $('#objective').append(
+      h('div', { class: 'turn', 'data-climate-summary': true, title: Weather.describe(G.weather) }, Weather.label(G.weather) + ' · ' + Weather.summary(G.weather)));
     const protectedNames = Mission.required(G.chapter, G.db).map(id => (R.byId(G.db.units, id) || {}).name || id);
     if (protectedNames.length) $('#objective').append(h('div', { class: 'turn' }, 'À protéger : ' + protectedNames.join(', ')));
     if (G.chapter.turnLimit) $('#objective').append(h('div', { class: 'turn' }, 'Limite : ' + G.chapter.turnLimit + ' tours complets'));
@@ -967,7 +1011,7 @@
 
   async function dance(u, o) {
     hideMenu();
-    o.done = false; o.tradeLocked = false;
+    o.done = false; o.tradeLocked = false; o.fogMoved = false;
     Music.se('confirm');
     float(o.x, o.y, '♪ Nouveau tour', '#9fe0ff', true);
     G.busy = true; await grantExp(u, 10); G.busy = false;
@@ -1134,7 +1178,8 @@
   function refreshDanger() {
     if (!G.danger) { G.dangerSet = null; return; }
     const set = new Set();
-    for (const e of enemies()) for (const k of R.threatTiles(e, rctx(), G.db, e.ai === 'stationary')) set.add(k);
+    const visible = visibility();
+    for (const e of enemies().filter(unitVisible)) for (const k of R.threatTiles(e, rctx(true), G.db, e.ai === 'stationary')) if (visible === null || visible.has(k)) set.add(k);
     G.dangerSet = set;
   }
 
@@ -1144,8 +1189,8 @@
   function select(u) {
     Music.se('confirm');
     G.sel = u; G.origin = { x: u.x, y: u.y };
-    if (u.tradeLocked) return openActionMenu();
-    G.reach = R.reachable(u, rctx());
+    if (u.tradeLocked || u.fogMoved) return openActionMenu();
+    G.reach = R.reachable(u, rctx(true));
     const stops = [...G.reach.values()].filter(n => n.canStop);
     const blue = new Set([...G.reach.values()].map(n => key(n.x, n.y)));
     const atk = new Set(), heal = new Set();
@@ -1165,8 +1210,11 @@
     const u = G.sel;
     const path = R.pathTo(G.reach, n.x, n.y);
     G.busy = true;
-    await animateMove(u, path);
+    const blocked = await animateMove(u, path);
+    if (visibility() !== null && path.length > 1) u.fogMoved = true;
     G.busy = false;
+    if (blocked) UI.toast('Un ennemi barre le passage. Le déplacement est validé ; choisis une action.');
+    refreshDanger(); updateObjective();
     openActionMenu();
   }
 
@@ -1174,17 +1222,22 @@
     if (!path || path.length < 2) return;
     for (let i = 1; i < path.length; i++) {
       const a = path[i - 1], b = path[i];
+      const occupant = unitAt(b.x, b.y);
+      if (occupant && occupant !== u && !R.sameSide(occupant, u)) { u.walkDir = null; return true; }
+      const shown = unitVisible(u) || tileVisible(b.x, b.y);
       u.walkDir = b.x > a.x ? 'right' : b.x < a.x ? 'left' : b.y > a.y ? 'down' : 'up';
-      const steps = 6;
+      const steps = shown ? 6 : 0;
       for (let s = 1; s <= steps; s++) {
         u.rx = a.x + (b.x - a.x) * s / steps; u.ry = a.y + (b.y - a.y) * s / steps;
         await sleep(13);
       }
-      focus(b.x, b.y);
+      u.x = u.rx = b.x; u.y = u.ry = b.y;
+      if (shown) focus(b.x, b.y);
     }
     const end = path[path.length - 1];
     u.x = end.x; u.y = end.y; u.rx = u.x; u.ry = u.y;
     u.walkDir = null;
+    return false;
   }
 
   function openTargets(u, list, mode) {
@@ -1195,7 +1248,7 @@
   }
 
   function currentTarget() {
-    const t = G.targets.find(x => x.x === G.cursor.x && x.y === G.cursor.y);
+    const t = G.targets.find(x => x.x === G.cursor.x && x.y === G.cursor.y && unitVisible(x));
     return t || null;
   }
 
@@ -1212,6 +1265,7 @@
     const ws = weaponsFor(u, t);
     if (!G.wList.length || G.wList.target !== t) { G.wList = ws; G.wList.target = t; G.wIndex = 0; }
     const w = G.wList[G.wIndex];
+    if (!w) { el.classList.add('hidden'); return; }
     const fc = R.forecast(u, w.index, t, ropts());
     const tri = (v) => v > 0 ? h('span', { class: 'tri-up' }, ' ▲') : v < 0 ? h('span', { class: 'tri-down' }, ' ▼') : null;
     const side = (unit, s, weapon, cl) => h('div', { class: 'fc-side ' + cl },
@@ -1225,6 +1279,8 @@
     const duo = R.supportDual(u, players(), G.sup, G.db);
     const sp = specialOf(u);
     const extra = [];
+    if (fc.att.weatherAvoid) extra.push(h('div', { class: 'fc-skill-note', 'data-climate-avoid': true },
+      `Brouillard : esquive +${fc.att.weatherAvoid} pour les deux camps (déjà incluse dans PRÉC).`));
     if (fc.att.bonus) extra.push(h('div', {}, '♥ Bonus d\'affinité actif'));
     if (sp) extra.push(h('div', {}, `★ ${sp.name} (${sp.chance} %)`));
     if (duo) extra.push(h('div', {}, `⚔ Attaque duo avec ${duo.partner.name} : ${duo.name} (${duo.chance} %)`));
@@ -1270,7 +1326,9 @@
   // Actions
   // =====================================================================
   async function attack(u, t) {
+    if (!unitVisible(t)) { hideForecast(); return openActionMenu(); }
     const w = G.wList[G.wIndex] || weaponsFor(u, t)[0];
+    if (!w) return;
     hideForecast();
     R.equip(u, w.index);
     G.busy = true; G.ui = 'busy';
@@ -1298,8 +1356,9 @@
     if (!st || u.dead || u.hp <= 0) return false;
     const amount = (st.weapon.heal || 10) + u.stats.mag;
     const before = t.hp;
-    await lunge(u, t);
-    const healAnim = attackAnimation(u, st.weapon, null);
+    const shown = unitVisible(u) || unitVisible(t);
+    if (shown) await lunge(u, t);
+    const healAnim = shown ? attackAnimation(u, st.weapon, null) : '';
     let healRun = null;
     if (healAnim) {
       healRun = playMapAnimation(healAnim, u, t);
@@ -1480,6 +1539,11 @@
   }
 
   async function runCombat(att, aIndex, def) {
+    G.combatReveal = new Set([att.uid, def.uid]);
+    try { return await performCombat(att, aIndex, def); }
+    finally { G.combatReveal = null; lastInfoKey = ''; refreshDanger(); }
+  }
+  async function performCombat(att, aIndex, def) {
     const hp0 = { [att.uid]: att.hp, [def.uid]: def.hp };
     const wAtt = wOf(att.inventory[aIndex]);
     const eqDef = R.equipped(def, G.db); const wDef = eqDef ? eqDef.weapon : null;
@@ -1692,7 +1756,7 @@
     TacticalEmblem.emit('turn:start', { phase: 'player', turn: G.turn });
     Music.bgm('playerPhase');
     await banner('Phase joueur', '', 'img/ui/phase-player.png');
-    for (const u of players()) { u.done = false; u.tradeLocked = false; }
+    for (const u of players()) { u.done = false; u.tradeLocked = false; u.fogMoved = false; }
     await statusPhase(team('player'));
     await skillRecovery(team('player'));
     await terrainHeal(team('player'));
@@ -1715,7 +1779,7 @@
     TacticalEmblem.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
     await banner('Phase alliée', 'ally', 'img/ui/phase-ally.png');
-    for (const u of allies) u.done = false;
+    for (const u of allies) { u.done = false; u.fogMoved = false; }
     await statusPhase(allies);
     await skillRecovery(allies);
     await terrainHeal(allies);
@@ -1737,16 +1801,21 @@
       const e = list.find(u => !acted.has(u) && !u.done && !u.dead && u.hp > 0 && Statuses.canAct(u));
       if (!e) break;
       acted.add(e);
-      const plan = R.planEnemy(e, foesFn(), ropts());
+      let plan = R.planEnemy(e, foesFn(), ropts());
       e.done = true;
       if (!plan) continue;
-      focus(e.x, e.y);
-      setCursor(e.x, e.y, true);
+      if (unitVisible(e)) { focus(e.x, e.y); setCursor(e.x, e.y, true); }
       await sleep(160);
-      if (plan.path && plan.path.length > 1) await animateMove(e, plan.path);
+      const blocked = plan.path && plan.path.length > 1 && await animateMove(e, plan.path);
       await areaEvents(e);
       if (await checkEnd()) return true;
       if (e.dead || !Statuses.canAct(e)) continue;
+      if (blocked) {
+        const previous = e.ai;
+        try { e.ai = 'stationary'; plan = R.planEnemy(e, foesFn(), ropts()); }
+        finally { e.ai = previous; }
+        if (!plan) continue;
+      }
       if (plan.action === 'staff') {
         await performStaff(e, plan.target, plan.weaponIndex);
       } else if (plan.action === 'item') {
@@ -1812,8 +1881,10 @@
       u.x = u.rx = spot.x; u.y = u.ry = spot.y; u.done = true; u.alpha = 0;
       G.units.push(u);
       if (await checkEnd()) return;
-      focus(u.x, u.y);
-      for (let i = 1; i <= 8; i++) { u.alpha = i / 8; await sleep(30); }
+      if (unitVisible(u)) {
+        focus(u.x, u.y);
+        for (let i = 1; i <= 8; i++) { u.alpha = i / 8; await sleep(30); }
+      } else u.alpha = 1;
       float(u.x, u.y, 'Renfort !', '#ff9a8a');
       await sleep(250);
     }
@@ -2088,12 +2159,13 @@
     const c = G.cursor;
     switch (G.ui) {
       case 'idle': {
-        const u = unitAt(c.x, c.y);
+        const u = visibleUnitAt(c.x, c.y);
         if (controllable(u)) return select(u);
         if (u && (u.team === 'enemy' || u.team === 'ally')) {
           if (G.enemyView && G.enemyView.unit === u) { G.enemyView = null; return; }
-          const reach = u.ai === 'stationary' ? new Map([[key(u.x, u.y), { x: u.x, y: u.y, canStop: true }]]) : R.reachable(u, rctx());
-          G.enemyView = { unit: u, move: new Set([...reach.keys()]), atk: R.threatTiles(u, rctx(), G.db, u.ai === 'stationary') };
+          const reach = u.ai === 'stationary' ? new Map([[key(u.x, u.y), { x: u.x, y: u.y, canStop: true }]]) : R.reachable(u, rctx(true));
+          const visibleKeys = set => new Set([...set].filter(k => tileVisible(...k.split(',').map(Number))));
+          G.enemyView = { unit: u, move: visibleKeys(reach.keys()), atk: visibleKeys(R.threatTiles(u, rctx(true), G.db, u.ai === 'stationary')) };
           return;
         }
         G.enemyView = null;
@@ -2124,6 +2196,7 @@
     switch (G.ui) {
       case 'moving': return deselect();
       case 'menu': {
+        if (G.sel.fogMoved) return UI.toast('Déplacement validé par l’exploration du brouillard. Choisis une action ou Attendre.');
         if (G.sel.tradeLocked) return UI.toast('Déplacement validé par l’échange. Choisis une action ou Attendre.');
         hideMenu();
         const u = G.sel;
@@ -2224,7 +2297,9 @@
   window.PlaytestPreparation = preparation;
   const trade = TradePanel.create({ G, h, R, portrait: u => portraitEl(u, 'mini'), hideMenu, returnToMenu: openActionMenu,
     changed: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateInfo(); } });
-  const scenarioRuntime = ScenarioRuntime.create({ G, R, playDialogue, freeSpotNear, float, refreshHud: () => { if (G.mode === 'lobby') lobby.refreshHud(); } });
+  const scenarioRuntime = ScenarioRuntime.create({ G, R, playDialogue, freeSpotNear, float,
+    weatherChanged: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateObjective(); },
+    refreshHud: () => { if (G.mode === 'lobby') lobby.refreshHud(); } });
 
   // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
   const playerSide = () => alive().filter(u => u.team !== 'enemy');
@@ -2243,7 +2318,7 @@
       lose: () => later(() => defeat('Défaite déclenchée depuis le menu Debug.')),
       killEnemies: () => later(async () => { for (const u of enemies()) await killUnit(u, true); G.pending = []; await checkEnd(); }),
       healAll: () => { for (const u of playerSide()) { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); } },
-      refresh: () => { for (const u of playerSide()) { u.done = false; u.tradeLocked = false; } G.ui = 'idle'; },
+      refresh: () => { for (const u of playerSide()) { u.done = false; u.tradeLocked = false; u.fogMoved = false; } G.ui = 'idle'; },
       endTurn: () => later(() => { G.ui = 'idle'; endCurrentPhase(); }),
       levelUp: (u, n) => later(async () => { G.busy = true; for (let i = 0; i < (n || 1); i++) await grantExp(u, 100); G.busy = false; }),
       heal: (u) => { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); },

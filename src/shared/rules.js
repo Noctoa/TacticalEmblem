@@ -6,10 +6,11 @@
 (function (root, factory) {
   const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
     typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions,
-    typeof module !== 'undefined' && module.exports ? require('./statuses.js') : root.Statuses);
+    typeof module !== 'undefined' && module.exports ? require('./statuses.js') : root.Statuses,
+    typeof module !== 'undefined' && module.exports ? require('./weather.js') : root.Weather);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Rules = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses, Weather) {
   'use strict';
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
@@ -230,10 +231,10 @@
   }
 
   // ---------- déplacement ----------
-  function moveCost(terrain, moveType) {
-    if (!terrain) return 1;
-    const c = terrain.cost && terrain.cost[moveType];
-    return (c === undefined || c === null || c === '') ? 1 : Number(c);
+  function moveCost(terrain, moveType, weather) {
+    const c = terrain && terrain.cost && terrain.cost[moveType];
+    const base = (c === undefined || c === null || c === '') ? 1 : Number(c);
+    return base >= IMPASSABLE ? base : Math.min(IMPASSABLE - 1, base + Weather.movePenalty(weather, moveType));
   }
 
   /**
@@ -254,7 +255,7 @@
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = cur.x + dx, ny = cur.y + dy;
         if (nx < 0 || ny < 0 || nx >= ctx.width || ny >= ctx.height) continue;
-        const c = moveCost(ctx.terrainAt(nx, ny), unit.moveType);
+        const c = moveCost(ctx.terrainAt(nx, ny), unit.moveType, ctx.weather);
         if (c >= IMPASSABLE) continue;
         const nc = cur.cost + c;
         if (nc > limit) continue;
@@ -274,6 +275,15 @@
   function sameSide(a, b) {
     const side = t => (t === 'enemy' ? 'enemy' : 'player'); // 'ally' joue avec le joueur
     return side(a.team) === side(b.team);
+  }
+
+  /** Occupation connue du camp : un ennemi caché ne doit pas découper une zone de déplacement. */
+  function perceivedContext(unit, ctx, units) {
+    const visible = Weather.visibleTiles(ctx.weather, units, unit.team, ctx.width, ctx.height);
+    return { ...ctx, visible, unitAt: (x, y) => {
+      const occupant = ctx.unitAt(x, y);
+      return occupant && (sameSide(unit, occupant) || Weather.canSee(visible, occupant)) ? occupant : null;
+    } };
   }
 
   function pathTo(reach, x, y) {
@@ -360,10 +370,11 @@
     const guard = skillTotal(dSkills, 'guard');
     const dmg = Math.max(0, rawDmg - guard);
     const hitRate = aw.hit + att.stats.skl * 2 + Math.floor(att.stats.lck / 2) + tri * s.triangleHit + (ab.hit || 0) + skillTotal(aSkills, 'hit');
-    const avoid = attackSpeed(def, dw) * 2 + def.stats.lck + tAvo + (dbn.avoid || 0) + skillTotal(dSkills, 'avoid') + (dSkills.aura ? dSkills.aura.amount : 0);
+    const weatherAvoid = Weather.effects(context.weather).avoid;
+    const avoid = attackSpeed(def, dw) * 2 + def.stats.lck + tAvo + (dbn.avoid || 0) + skillTotal(dSkills, 'avoid') + (dSkills.aura ? dSkills.aura.amount : 0) + weatherAvoid;
     const hit = clamp(hitRate - avoid, 0, 100);
     const crit = clamp((aw.crit || 0) + Math.floor(att.stats.skl / 2) + (ab.crit || 0) - def.stats.lck - (dbn.critAvoid || 0), 0, 100);
-    return { dmg, hit, crit, rawDmg, guard, protection, effective: eff > 1, tri, bonus: !!(ab.hit || ab.crit || ab.dmg || dbn.avoid),
+    return { dmg, hit, crit, rawDmg, guard, protection, weatherAvoid, effective: eff > 1, tri, bonus: !!(ab.hit || ab.crit || ab.dmg || dbn.avoid),
       skills: aSkills.own.filter(s => !['auraAvoid', 'renewal'].includes(s.effect)).map(skill => skillInfo(skill, att)),
       aura: aSkills.aura ? skillInfo(aSkills.aura, att) : null };
   }
@@ -384,7 +395,7 @@
     const dEq = equipped(def, db);
     const dw = dEq ? dEq.weapon : null;
     const canCounter = !!(dw && d >= (dw.minRange || 1) && d <= (dw.maxRange || 1));
-    const context = { initiator: att, units: opts.units || [att, def] };
+    const context = { initiator: att, units: opts.units || [att, def], weather: opts.weather || (opts.ctx && opts.ctx.weather) };
     const a = strikeStats(att, aw, def, dw, terrainOf(def), s, db, bA, bD, context);
     const asA = attackSpeed(att, aw);
     const asD = attackSpeed(def, dw);
@@ -516,7 +527,7 @@
       return chance >= 100 || (chance > 0 && rng() * 100 < chance);
     };
     const perform = (src, index, tgt, weapon, targetWeapon, initiator, extra = {}) => {
-      const context = { units, initiator };
+      const context = { units, initiator, weather: opts.weather || (opts.ctx && opts.ctx.weather) };
       const stats = luna => strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { ...context, luna });
       let st = stats(), special = null;
       const statuses = [], skills = [], offensive = skillState(src, weapon, initiator, opts.db, units).own;
@@ -581,7 +592,7 @@
       ok = { by: src.uid, target: tgt.uid, total: strike.overkill || 0, max: tgt.stats.hp, strikes: 0 };
     };
     const overkillStrike = (src, tgt, weapon, targetWeapon) => {
-      const st = strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { units, initiator: att });
+      const st = strikeStats(src, weapon, tgt, targetWeapon, opts.terrainOf(tgt), s, opts.db, bo(src), bo(tgt), { units, initiator: att, weather: opts.weather || (opts.ctx && opts.ctx.weather) });
       const hit = roll(rng, clamp(st.hit, 0, 100), s.trueHit);
       const crit = hit && rng() * 100 < clamp(st.crit, 0, 100);
       const damage = hit ? Math.max(0, st.rawDmg * (crit ? s.critMult : 1) - st.guard) : 0;
@@ -876,9 +887,11 @@
    */
   function planEnemy(unit, foes, opts) {
     if (unit.dead || unit.hp <= 0 || !Statuses.canAct(unit)) return null;
-    const { db, ctx } = opts;
+    const db = opts.db;
+    const ctx = perceivedContext(unit, { ...opts.ctx, weather: opts.weather || opts.ctx.weather }, opts.units || [unit, ...foes]);
+    opts = { ...opts, ctx };
     const difficulty = unit.team === 'enemy' ? normalizeAiDifficulty(opts.settings && opts.settings.aiDifficulty) : 'normal';
-    foes = foes.filter(u => !u.dead && u.hp > 0 && !sameSide(unit, u));
+    foes = foes.filter(u => !u.dead && u.hp > 0 && !sameSide(unit, u) && Weather.canSee(ctx.visible, u));
     const friends = (opts.units || []).filter(u => !u.dead && u.hp > 0 && sameSide(unit, u));
     const stationary = unit.ai === 'stationary' || unit.ai === 'boss';
     const reach = stationary ? new Map([[key(unit.x, unit.y), { x: unit.x, y: unit.y, cost: 0, prev: null, canStop: true }]]) : reachable(unit, ctx);
@@ -941,7 +954,7 @@
     AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
     attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
-    moveCost, reachable, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
+    moveCost, reachable, perceivedContext, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
     forecast, resolveCombat, estimateCombat, phaseRecovery, combatExp, staffExp, gainExp, planEnemy,
     SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,
     addSupportPoints, pendingRank

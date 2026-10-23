@@ -143,7 +143,7 @@
       weather.checked = G.settings.weatherEffects !== false;
       weather.addEventListener('change', () => { G.settings.weatherEffects = weather.checked; api.Music.se('confirm'); });
       body.append(h('label', { class: 'st-check' }, weather, h('span', {}, 'Afficher les effets météo')),
-        h('p', { class: 'st-info' }, 'Brouillard, sable et neige sur la carte et en combat. Le choix est conservé dans ta sauvegarde.'));
+        h('p', { class: 'st-info' }, 'Masque les animations météo sur la carte et en combat. Les effets tactiques du climat et le brouillard de guerre restent actifs. Le choix est conservé dans ta sauvegarde.'));
     }
 
     // ------------------------------------------------------------------

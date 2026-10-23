@@ -7,6 +7,7 @@
       switch (a.type) {
         case 'weather':
           G.weather = Weather.normalize(a.weather);
+          if (api.weatherChanged) api.weatherChanged();
           break;
         case 'status': {
           const unit = G.units.find(u => !u.dead && u.hp > 0 && (a.target.startsWith('unit:') ? u.team !== 'enemy' && u.sourceId === a.target.slice(5) : u.team === 'enemy' && u.sourceId === a.target));

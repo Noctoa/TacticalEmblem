@@ -20,13 +20,15 @@
       return { dialogue: { text: '' }, gold: { amount: 100 }, item: { itemId: '', uses: 0, unitId: '' },
         reinforcement: { target: '' }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
         flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' }, status: { target: '', statusId: 'poison', turns: 3, remove: false },
-        weather: { weather: { type: 'none', intensity: 2, direction: 'right' } } }[type];
+        weather: { weather: { type: 'none', intensity: 2, direction: 'right', tactical: false } } }[type];
     }
     function actionFields(a) {
       if (a.type === 'weather') return [
         { key: 'weather.type', label: 'Météo', type: 'select', options: Weather.TYPES },
         { key: 'weather.intensity', label: 'Intensité (1 légère, 2 modérée, 3 forte)', type: 'number', min: 1, max: 3 },
         { key: 'weather.direction', label: 'Direction du vent', type: 'select', options: [{ value: 'right', label: 'Vers la droite' }, { value: 'left', label: 'Vers la gauche' }] },
+        { key: 'weather.tactical', label: 'Activer les effets tactiques du climat', type: 'checkbox' },
+        { type: 'info', text: Weather.describe(a.weather) },
         { type: 'info', text: 'Aucune fait cesser l’effet. Le changement concerne cette tentative ; recommencer restaure la météo initiale de l’acte.' }
       ];
       if (a.type === 'status') return [{ key: 'target', label: 'Unité ciblée', type: 'select', empty: '— choisir —', options: targets },
@@ -93,7 +95,7 @@
           const action = h('div', { 'data-event-action': String(i), style: { borderTop: '1px solid var(--line-2)', paddingTop: '10px', marginTop: '10px' } });
           const selector = h('select', { 'data-action-type': true }, Scenario.actionTypes().concat(Scenario.actionTypes().some(o => o.value === a.type) ? [] : [{ value: a.type, label: a.type + ' (plugin absent)' }]).map(o => h('option', { value: o.value }, o.label))); selector.value = a.type;
           selector.addEventListener('change', () => { ev.actions[i] = { type: selector.value, ...defaults(selector.value) }; changed(); });
-          action.append(h('b', {}, `Action ${i + 1} `), selector, fields(actionFields(a), a, ['objective.type', 'remove']),
+          action.append(h('b', {}, `Action ${i + 1} `), selector, fields(actionFields(a), a, ['objective.type', 'remove', 'weather.type', 'weather.intensity', 'weather.tactical']),
             h('div', { class: 'insp-actions' }, h('button', { class: 'small', disabled: i === 0, onclick: () => { [ev.actions[i - 1], ev.actions[i]] = [a, ev.actions[i - 1]]; changed(); } }, 'Monter'),
               h('button', { class: 'small', disabled: i === ev.actions.length - 1, onclick: () => { [ev.actions[i + 1], ev.actions[i]] = [a, ev.actions[i + 1]]; changed(); } }, 'Descendre'),
               h('button', { class: 'small danger', onclick: () => { ev.actions.splice(i, 1); changed(); } }, 'Retirer l’action'))); card.append(action);

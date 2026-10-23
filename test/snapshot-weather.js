@@ -32,7 +32,7 @@ module.exports = (editor, openPlaytest) => {
       const field = (selector, label, value) => js(ew, `(() => { const box = document.querySelector(${JSON.stringify(selector)}); const l = [...box.querySelectorAll('.field-label')].find(el => el.textContent === ${JSON.stringify(label)}); if (!l) throw new Error('Champ absent : ' + ${JSON.stringify(label)}); const input = l.parentElement.querySelector('input,select'); input.value = ${JSON.stringify(value)}; input.dispatchEvent(new Event('change', { bubbles: true })); })()`);
       await field('[data-weather-fields]', 'Météo', 'fog');
       await field('[data-weather-fields]', 'Intensité', '3'); await field('[data-weather-fields]', 'Direction du vent', 'left');
-      assert.deepEqual(await js(ew, `Editor.db().chapters[0].weather`), { type: 'fog', intensity: 3, direction: 'left' });
+      assert.deepEqual(await js(ew, `Editor.db().chapters[0].weather`), { type: 'fog', intensity: 3, direction: 'left', tactical: false });
       await js(ew, `document.querySelector('[data-weather-fields]').scrollIntoView({ block: 'center' })`);
       await shot(ew, 'editor-fog');
       await js(ew, `DBEditor.open('chapters', ${JSON.stringify(ch.id)})`);
