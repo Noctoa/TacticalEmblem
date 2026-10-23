@@ -6,10 +6,10 @@
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
   const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./scenario.js') : root.Scenario,
-    common ? require('./extensions.js') : root.Extensions);
+    common ? require('./extensions.js') : root.Extensions, common ? require('./side-objectives.js') : root.SideObjectives);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Campaign = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions, SideObjectives) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
   const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
@@ -67,6 +67,7 @@
       !Array.isArray(save.campaign.dead) || !save.campaign.units || typeof save.campaign.units !== 'object' || Array.isArray(save.campaign.units) ||
       !Array.isArray(save.convoy) || !save.supports || typeof save.supports !== 'object') throw new Error('Sauvegarde de campagne invalide ou version non prise en charge.');
     if (!Scenario.validateMemory(save.campaign.scenario)) throw new Error('Mémoire des événements invalide dans la campagne.');
+    if (!SideObjectives.validateMemory(save.campaign.secondaryClaims)) throw new Error('Récompenses des objectifs secondaires invalides dans la campagne.');
     if (save.aiDifficulty !== undefined && !['easy', 'normal', 'hard'].includes(save.aiDifficulty)) throw new Error('Difficulté de l’IA invalide dans la sauvegarde.');
     if (save.weatherEffects !== undefined && typeof save.weatherEffects !== 'boolean') throw new Error('Réglage des effets météo invalide dans la sauvegarde.');
     for (const u of Object.values(save.campaign.units)) if (!u || !u.stats || !Number.isFinite(u.stats.hp) || !Array.isArray(u.inventory)) throw new Error('Une unité de la sauvegarde est illisible.');

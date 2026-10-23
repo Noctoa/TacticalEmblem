@@ -85,6 +85,12 @@
         (visible === null ? ` · ${ch.enemies.filter(e => !(e.appearTurn > 0)).length} ennemi(s), ${ch.enemies.filter(e => e.appearTurn > 0).length} renfort(s)` :
           ` · ${ch.enemies.filter(e => !e.eventOnly && !(e.appearTurn > 0) && Weather.canSee(visible, e)).length} ennemi(s) repéré(s)`)),
       Weather.normalize(ch.weather).type !== 'none' ? h('p', { class: 'prep-muted' }, 'Météo : ' + Weather.label(ch.weather) + ' · ' + Weather.describe(ch.weather)) : null,
+      SideObjectives.list(ch).length ? h('details', { class: 'prep-secondary', open: true }, h('summary', {}, 'Objectifs secondaires (facultatifs)'),
+        ...SideObjectives.list(ch).map(ob => h('p', { 'data-prep-secondary': ob.id },
+          h('b', {}, SideObjectives.label(ob, ch, G.db) + ' · '), SideObjectives.description(ob, ch, G.db),
+          SideObjectives.rewardText(ob, G.db) ? ' · ' + SideObjectives.rewardText(ob, G.db) : '',
+          !ob.repeatOnReplay && SideObjectives.claimed(G.campaign, ch, ob) ? ' · récompense déjà obtenue' : '',
+          ob.type === 'protect' && !S.plan.some(p => p.unitId === ob.target) && !(ch.allies || []).some(p => p.unitId === ob.target) ? ' · ⚠ absent des participants' : ''))) : null,
       h('div', { class: 'prep-errors', role: 'status' }, messages.map(text => h('p', {}, text))),
       h('footer', { class: 'prep-actions' },
         G.lobbyOn ? h('button', { 'data-deploy-cancel': true, onclick: () => { close(); S.onCancel(); } }, 'Retour au camp') : null,

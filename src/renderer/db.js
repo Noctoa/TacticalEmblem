@@ -1011,6 +1011,10 @@
       onDelete: async () => {
         if (!cur) return;
         if (['units', 'items', 'weapons'].includes(tab)) {
+          const refs = SideObjectives.references(db(), tab, cur.id);
+          if (refs.length) return UI.alert('Élément utilisé par un objectif secondaire', 'Modifie d’abord ces défis : ' + refs.join(', ') + '.');
+        }
+        if (['units', 'items', 'weapons'].includes(tab)) {
           const refs = Scenario.references(db(), tab, cur.id);
           if (refs.length) return UI.alert('Élément utilisé par un événement', 'Modifie d’abord ces événements : ' + refs.join(', ') + '.');
         }
@@ -1334,6 +1338,7 @@
     pane.append(h('div', { class: 'form-heading' }, 'Ambiance météo'), WeatherFields.form(ch, { change }));
     renderDeployment(pane, ch);
     renderMissionRules(pane, ch);
+    SideObjectiveFields.render(pane, ch, db(), { change, uid: Editor.uid });
     renderVillages(pane, ch);
     renderLocks(pane, ch);
     pane.append(h('div', { class: 'insp-actions', style: { margin: '10px 0 4px' } },
@@ -1418,7 +1423,7 @@
     ], model, { onChange: k => {
       const key = k.split('.')[0]; ch[key] = model[key]; change();
     } }));
-    pane.append(h('div', { class: 'form-heading' }, 'Objectifs supplémentaires'));
+    pane.append(h('div', { class: 'form-heading' }, 'Conditions de victoire supplémentaires (obligatoires)'));
     for (const [i, ob] of (ch.extraObjectives || []).entries()) {
       const card = h('div', { class: 'event-card', style: { padding: '12px', marginTop: '8px' } });
       card.append(UI.form([

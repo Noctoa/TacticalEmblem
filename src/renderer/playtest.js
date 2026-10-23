@@ -154,7 +154,7 @@
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     TacticalEmblem.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     errors.push(...Statuses.validateDefinitions(G.db));
     errors.push(...Weather.validate(ch.weather));
     if (errors.length) throw new Error(errors.join('\n'));
@@ -164,7 +164,8 @@
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { weather: Weather.normalize(ch.weather), turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
-      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set() });
+      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set(),
+      secondaryProgress: {}, secondaryFinal: null, secondaryTurn: null, secondaryPaid: new Set(), secondaryRewardPending: false, secondaryExpanded: true });
     scenarioRunner = Scenario.createRunner(ch, { state: () => G, action: scenarioRuntime.action, blocked: (ev, error) => UI.toast(`${ev.name || ev.id} : ${error}`, 'error') });
     hideMenu(); hideForecast();
     $('#convoy').classList.add('hidden');
@@ -908,6 +909,7 @@
   }
 
   function updateObjective() {
+    if (G.mode === 'chapter' && !G.over) G.secondaryProgress = G.secondaryFinal || SideObjectives.advance(G.chapter, G, G.secondaryProgress);
     const result = Mission.evaluate(G.chapter, G.db, G);
     const fog = visibility() !== null, left = fog ? enemies().filter(unitVisible).length : enemies().length + G.pending.length;
     $('#objective').innerHTML = '';
@@ -924,7 +926,64 @@
     if (G.chapter.lossLimit) $('#objective').append(h('div', { class: 'turn' }, 'Défaite à ' + G.chapter.lossLimit + ' perte(s)'));
     if (G.chapter.defendZone && G.chapter.defendZone.enabled) $('#objective').append(h('div', { class: 'turn' }, 'Protéger la zone rouge'));
     if (scenarioRunner && scenarioRunner.pending()) $('#objective').append(h('div', { class: 'turn' }, 'Événement en attente : libérer la place nécessaire'));
+    if (G.secondaryRewardPending) $('#objective').append(h('div', { class: 'turn' }, 'Récompense secondaire en attente : libérer une place'),
+      h('button', { 'data-secondary-collect': true, onclick: collectSecondaryRewards }, 'Récupérer les récompenses…'));
+    const secondary = SideObjectives.list(G.chapter);
+    if (secondary.length) {
+      const done = secondary.filter(o => G.secondaryProgress[o.id]?.status === 'success').length;
+      const detail = h('details', { class: 'secondary-objectives', open: G.secondaryExpanded, ontoggle: e => { G.secondaryExpanded = e.target.open; } },
+        h('summary', {}, `Objectifs secondaires · ${done}/${secondary.length}`), ...secondary.map(ob => secondaryRow(ob)));
+      $('#objective').append(detail);
+    }
     if (G.lobbyOn) $('#objective').append(h('div', { class: 'turn' }, UI.money(G.campaign.gold, UI.GOLD_ICON, 'Or')));
+  }
+
+  function secondaryRow(ob, final = false) {
+    const status = G.secondaryProgress[ob.id]?.status || 'pending';
+    const text = { pending: 'En cours', success: 'Réussi', failed: 'Échoué' }[status];
+    const reward = SideObjectives.rewardText(ob, G.db);
+    const already = !ob.repeatOnReplay && SideObjectives.claimed(G.campaign, G.chapter, ob) && !G.secondaryPaid.has(ob.id);
+    return h('div', { class: 'secondary-row ' + status, 'data-secondary-status': status, 'data-secondary-objective': ob.id,
+      title: SideObjectives.description(ob, G.chapter, G.db) },
+      h('div', {}, `${{ pending: '○', success: '✓', failed: '✗' }[status]} ${SideObjectives.label(ob, G.chapter, G.db)} — ${text}`),
+      h('div', { class: 'secondary-description' }, SideObjectives.description(ob, G.chapter, G.db)),
+      reward ? h('div', { class: 'secondary-reward' }, reward + (already ? ' · récompense déjà obtenue' : G.secondaryPaid.has(ob.id) ? ' · reçu' : final ? ' · non obtenu' : ' · à la victoire')) : null);
+  }
+
+  /** Gestion du convoi après victoire acquise, accessible même sans chef déployé. */
+  async function collectSecondaryRewards() {
+    if (G.busy || G.over || !G.secondaryRewardPending) return;
+    hideMenu(); hideForecast(); G.busy = true;
+    let recipientId = '';
+    try {
+      const receive = await UI.modal((box, close) => {
+        box.dataset.secondaryCollection = 'true';
+        const render = () => {
+          const recipients = team('player').filter(u => u.inventory.length < 5);
+          if (!recipients.some(u => u.uid === recipientId)) recipientId = recipients[0]?.uid || '';
+          const select = h('select', { 'data-secondary-recipient': true, onchange: e => { recipientId = e.target.value; } },
+            recipients.map(u => h('option', { value: u.uid }, `${u.name} · ${u.inventory.length}/5 objets`)));
+          select.value = recipientId;
+          box.replaceChildren(h('h3', {}, 'Récompenses de fin de mission'),
+            h('p', {}, 'Libère une place dans le convoi pour recevoir les objets restants. Les défis restent évalués au moment de la victoire.'),
+            h('h4', {}, `Convoi · ${G.convoy.length}/${G.convoyCap}`), recipients.length ? select : h('p', {}, 'Tous les inventaires des survivants sont pleins.'),
+            h('div', { class: 'secondary-storage' }, G.convoy.map((slot, i) => h('div', {},
+              h('span', {}, `${R.getEntry(G.db, slot.id)?.def.name || slot.id} · ${slot.uses} utilisations`),
+              h('button', { 'data-secondary-transfer': String(i), disabled: !recipients.length, onclick: () => {
+                const recipient = recipients.find(u => u.uid === recipientId);
+                if (recipient && recipient.inventory.length < 5) { recipient.inventory.push(G.convoy.splice(i, 1)[0]); render(); }
+              } }, 'Donner au personnage'),
+              h('button', { onclick: async () => {
+                if (await UI.confirm('Jeter cet objet du convoi ?', { danger: true, ok: 'Jeter' })) { G.convoy.splice(i, 1); render(); }
+              } }, 'Jeter')))),
+            h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(false) }, 'Plus tard'),
+              h('button', { class: 'primary', 'data-secondary-receive': true, onclick: () => close(true) }, 'Recevoir les récompenses')));
+        };
+        render();
+      }, { wide: true });
+      G.busy = false; G.ui = 'idle';
+      if (receive) await victory();
+    } finally { if (!G.over) G.busy = false; updateObjective(); }
   }
 
   // =====================================================================
@@ -1159,6 +1218,7 @@
   function openMapMenu() {
     const pending = alive().filter(controllable).length;
     showMenu([
+      G.secondaryRewardPending ? { label: 'Récupérer les récompenses', action: collectSecondaryRewards } : null,
       { label: G.phase === 'ally' ? 'Fin de la phase alliée' : 'Fin du tour', sub: pending ? `${pending} unité(s) libres` : '', action: () => { hideMenu(); G.ui = 'idle'; endCurrentPhase(); } },
       { label: 'Paramètres', sub: 'Échap', action: () => { hideMenu(); G.ui = 'idle'; settings.open(); } },
       { label: 'Zone de danger', sub: G.danger ? 'activée' : 'désactivée', action: () => { toggleDanger(); hideMenu(); G.ui = 'idle'; } },
@@ -1751,6 +1811,12 @@
     if (G.over) return;
     const before = Mission.evaluate(G.chapter, G.db, G);
     if (before.outcome === 'defeat') { await defeat(before.reason); return; }
+    // Une survie acquise après N tours complets appartient encore à la fin du tour N.
+    if (!first && before.outcome === 'victory') {
+      G.secondaryTurn = Math.max(1, G.turn - 1);
+      try { if (await checkEnd()) return; }
+      finally { G.secondaryTurn = null; }
+    }
     G.phase = 'player'; G.busy = true;
     updateObjective();
     TacticalEmblem.emit('turn:start', { phase: 'player', turn: G.turn });
@@ -1931,6 +1997,14 @@
     G.busy = true; deselect(); hideMenu(); hideForecast();
     if (!G.victoryStarted) { G.victoryStarted = true; await runEvents('victory', {}); }
     if (scenarioRunner.pending()) { G.busy = false; G.ui = 'idle'; UI.toast('Un événement attend : libère la place nécessaire pour terminer la mission.', 'error'); return; }
+    const result = Mission.evaluate(G.chapter, G.db, G);
+    if (result.outcome === 'defeat') { await defeat(result.reason); return; }
+    const secondary = G.secondaryFinal || SideObjectives.advance(G.chapter, G, G.secondaryProgress, true);
+    G.secondaryFinal = secondary;
+    const rewards = SideObjectives.grant(G.chapter, G.db, G, secondary);
+    G.secondaryRewardPending = !rewards.ok;
+    if (!rewards.ok) { G.busy = false; G.ui = 'idle'; UI.toast(rewards.error, 'error'); updateObjective(); return; }
+    G.secondaryProgress = secondary;
     G.over = true; Music.victory();
     TacticalEmblem.emit('chapter:victory', { chapter: G.chapter });
     showEnd(true);
@@ -1953,7 +2027,7 @@
   async function continueArc() {
     const next = Lobby.nextAct(G.db, G.chapter.id);
     const map = next && G.project.maps.find(m => m.id === next.mapId);
-    const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+    const errors = map ? [...Mission.validate(next, G.db, map), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
     if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
@@ -1981,6 +2055,8 @@
       h('h1', {}, win ? 'Victoire' : 'Défaite'),
       h('p', {}, why || `${Lobby.actLabel(G.db, G.chapter.id)} terminé en ${G.turn} tour(s).` + (G.lost.length ? ` Pertes : ${G.lost.join(', ')}.` : ' Aucune perte.')),
       reward || extraRewards.length ? h('p', { class: 'end-reward' }, `Récompense : ${Lobby.rewardText(reward, extraRewards).replace(/\+/g, '')}`) : null,
+      win && SideObjectives.list(G.chapter).length ? h('section', { class: 'end-secondary' }, h('h3', {}, 'Objectifs secondaires'),
+        ...SideObjectives.list(G.chapter).map(ob => secondaryRow(ob, true))) : null,
       h('div', { class: 'end-actions' },
         win && G.chapter.final ? h('button', { class: 'primary', onclick: () => { saveCampaign(); if (G.lobbyOn) Lobby.completeChapter(G.campaign, G.chapter); openEpilogue(); } }, 'Épilogue') : null,
         win && G.lobbyOn && nextInArc ? h('button', { class: G.chapter.final ? '' : 'primary', onclick: continueArc }, `Acte ${Lobby.actInfo(G.db, nextInArc.id).index + 1} →`) : null,
@@ -1989,7 +2065,7 @@
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? [...Mission.validate(next, G.db, map), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+          const errors = map ? [...Mission.validate(next, G.db, map), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign(); await loadChapter(next);
         } }, 'Acte suivant →') : null,

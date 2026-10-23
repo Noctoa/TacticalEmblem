@@ -1473,7 +1473,7 @@
     const ch = byId(DB().chapters, id);
     if (!ch.players.length) return UI.alert('Acte incomplet', "Place au moins une unité du joueur.");
     const map = S.project.maps.find(m => m.id === ch.mapId);
-    const errors = map ? Mission.validate(ch, DB(), map) : ['Map introuvable.'];
+    const errors = map ? [...Mission.validate(ch, DB(), map), ...SideObjectives.validate(ch, DB())] : ['Map introuvable.'];
     if (errors.length) return UI.alert("Conditions de l'acte à corriger", errors);
     await cmdSave();
     if (S.dirty) return;

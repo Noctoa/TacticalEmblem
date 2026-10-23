@@ -26,6 +26,7 @@ const Scenario = require('../shared/scenario.js');
 const Statuses = require('../shared/statuses.js');
 const Animations = require('../shared/animations.js');
 const Weather = require('../shared/weather.js');
+const SideObjectives = require('../shared/side-objectives.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -106,6 +107,7 @@ function saveProject(dir, project) {
   const statusErrors = Statuses.validateDefinitions(project.db);
   if (statusErrors.length) throw new Error(statusErrors.join('\n'));
   const errors = [
+    ...(project.db.chapters || []).flatMap(ch => SideObjectives.validate(ch, project.db)),
     ...Skills.validateAll(project.db.skills || []),
     ...Skills.validateAssignments(project.db),
     ...Skills.validateLearning(project.db),
