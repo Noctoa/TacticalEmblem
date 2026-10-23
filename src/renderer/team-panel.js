@@ -1,9 +1,56 @@
-/* Préparatifs au camp : tous les recrutés, y compris ceux absents de la map. */
+/* Équipe au camp (base façon Fire Emblem GBA) : tous les recrutés, y compris ceux absents de la map. */
 (function (root) {
   'use strict';
+  /** Éléments partagés par la base de l'équipe et la fenêtre de formation (preparation.js).
+   *  api : { G, h, R, sheetCtx } */
+  function parts(api) {
+    const { G, h, R } = api;
+    const label = slot => { const entry = R.getEntry(G.db, slot.id); return entry ? entry.def.name : slot.id; };
+    const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
+    function itemIcon(slot) {
+      const e = R.getEntry(G.db, slot.id), i = e && e.kind === 'weapon' ? WICONS.indexOf(e.def.type) : -1;
+      return i >= 0 ? h('span', { class: 'tb-wicon', style: { backgroundPosition: `${-i * 16}px 0` } }) : h('span', { class: 'tb-wicon txt' }, '✚');
+    }
+    function bust(unit) {
+      const def = R.byId(G.db.units, unit.sourceId) || {}, src = def.portrait;
+      const frame = h('span', { class: 'tb-bust' });
+      if (src) { const f = Faces.element(Render.readyImage(G.baseUrl, src), Render.imageUrl(G.baseUrl, src), 'bust'); if (f) frame.append(f); }
+      else frame.append(h('b', {}, unit.name.slice(0, 1)));
+      return frame;
+    }
+    /** Sprite de map animé (canvas), sinon l'initiale. */
+    function sprite(unit) {
+      const sp = api.sheetCtx && api.sheetCtx().mapSpriteOf(unit);
+      if (!sp) return h('span', { class: 'tb-sprite txt' }, unit.name.slice(0, 1));
+      const cv = h('canvas', { class: 'tb-sprite', width: 32, height: 32 });
+      cv.paint = (t) => {
+        const g = cv.getContext('2d'); g.clearRect(0, 0, 32, 32); g.imageSmoothingEnabled = false;
+        Sprites.drawMapSprite(g, sp.meta, sp.img, 16, 30, 32 / 16 * 16 / (sp.meta.base || 16) * 0.95, { anim: 'idle', t, palette: api.sheetCtx().paletteOf(unit) });
+      };
+      cv.paint(performance.now());
+      return cv;
+    }
+    function animate(root) {
+      const tick = (t) => { if (!root.isConnected) return; root.querySelectorAll('canvas.tb-sprite').forEach(c => c.paint && c.paint(t)); requestAnimationFrame(tick); };
+      requestAnimationFrame(tick);
+    }
+    /** Aperçu : buste, nom, Nv / E, classe, inventaire avec icônes d'arme. */
+    function card(unit) {
+      const cls = R.byId(G.db.classes, unit.classId), eq = R.equipped(unit, G.db);
+      return h('div', { class: 'tb-card' },
+        h('div', { class: 'tb-head' }, bust(unit), h('div', { class: 'tb-id' },
+          h('div', { class: 'tb-name' }, unit.name),
+          h('div', { class: 'tb-lv' }, h('i', {}, 'Nv'), h('b', {}, String(unit.level)), h('i', {}, 'E'), h('b', {}, String(unit.exp || 0))),
+          h('div', { class: 'tb-class' }, cls ? cls.name : '?'))),
+        h('div', { class: 'tb-items' }, (unit.inventory || []).length ? unit.inventory.map((slot, i) => h('div', { class: 'tb-item' + (eq && eq.index === i ? ' eq' : '') },
+          itemIcon(slot), h('span', {}, label(slot)), h('b', {}, slot.uses > 0 ? String(slot.uses) : '∞'))) : h('div', { class: 'tb-empty' }, 'Inventaire vide')));
+    }
+    return { label, itemIcon, bust, sprite, animate, card };
+  }
   function create(api) {
     const { G, h, R } = api;
-    const state = { id: '', tab: 'skills' };
+    const { itemIcon, bust, sprite, animate, card } = parts(api);
+    const state = { id: '', tab: 'skills', view: 'list' };
     const label = slot => { const entry = R.getEntry(G.db, slot.id); return entry ? entry.def.name : slot.id; };
     const apply = result => {
       if (G.mode !== 'lobby' || G.busy) return;
@@ -17,28 +64,59 @@
       else frame.textContent = unit.name.slice(0, 1);
       return frame;
     }
+    // ------------------------------------------------------------------
+    // Base de l'équipe façon Fire Emblem GBA : aperçu du personnage à gauche, tous les recrutés en grille à droite.
+    // Choisir un personnage (clic / Z) l'affiche ; le choisir à nouveau (ou « Fiche ») ouvre sa fiche (unit-sheet.js).
+    // Compétences, Inventaire et Évolution ouvrent la gestion du personnage (vue « gestion »).
+    // ------------------------------------------------------------------
+    function openSheet(unit) {
+      if (!self.UnitSheet || !api.sheetCtx) return;
+      const members = api.members();
+      // sous la fiche : la gestion du personnage affiché (compétences équipées, inventaire, évolution)
+      const manageTab = (tab) => (u) => { state.id = u.sourceId; state.view = tab; state.tab = tab; api.rerender(); };
+      UnitSheet.open(unit, api.sheetCtx(), { list: members, title: 'Équipe', actions: [
+        { id: 'skills', label: 'Compétences', onClick: manageTab('skills') },
+        { id: 'items', label: 'Inventaire', onClick: manageTab('items') },
+        { id: 'promotions', label: 'Évolution', onClick: manageTab('promotions') }] }).then(() => { if (state.view === 'list') api.rerender(); });
+    }
     function render(body) {
       const members = api.members();
       if (!members.some(u => u.sourceId === state.id)) state.id = members[0] && members[0].sourceId;
-      body.append(h('div', { class: 'team-toolbar' }, h('p', { class: 'lp-sub' }, `${members.length} personnage(s) recruté(s). Les préparatifs seront utilisés lors de leur prochain déploiement.`),
-        h('button', { class: 'lp-focus', 'data-team-save': true, onclick: () => api.openSettings('save') }, 'Sauvegarder')));
       if (!members.length) { body.append(h('p', { class: 'lp-empty' }, 'Aucun personnage disponible.')); return; }
       const unit = members.find(u => u.sourceId === state.id), cls = R.byId(G.db.classes, unit.classId);
-      const roster = h('div', { class: 'team-roster' }, members.map(u => h('button', { class: 'lp-focus team-member' + (state.id === u.sourceId ? ' on' : ''), 'data-team-unit': u.sourceId,
-        onclick: () => { state.id = u.sourceId; api.rerender(); } }, portrait(u),
-        h('span', {}, h('b', {}, u.name), h('small', {}, `${(R.byId(G.db.classes, u.classId) || {}).name || '?'} · Nv ${u.level}`)))));
-      // fiche façon Radiant Dawn (unit-sheet.js) ; sinon l'ancien résumé
-      const head = self.UnitSheet && api.sheetCtx
-        ? h('div', { class: 'team-sheet', onclick: (e) => { const b = e.target.closest('[data-sheet-page]'); if (b) state.sheetPage = b.dataset.sheetPage; } }, UnitSheet.element(unit, api.sheetCtx(), { scale: 2, page: state.sheetPage || 'stats' }))
-        : [h('div', { class: 'team-heading' }, h('h4', {}, unit.name), h('span', {}, `${cls ? cls.name : '?'} · Nv ${unit.level} · EXP ${unit.exp}`)),
-          h('div', { class: 'team-stats' }, R.STATS.map(key => h('span', {}, `${R.STAT_LABELS[key]} ${unit.stats[key]}`)), h('span', {}, `Dép ${unit.mov}`))];
-      const main = h('div', { class: 'team-main' }, head,
-      h('div', { class: 'lp-tabs' }, [['skills', 'Compétences'], ['items', 'Inventaire'], ['promotions', 'Évolution']].map(([id, text]) =>
-        h('button', { class: 'lp-focus lp-tab' + (state.tab === id ? ' on' : ''), 'data-team-tab': id, onclick: () => { state.tab = id; api.rerender(); } }, text))));
+      if (state.view && state.view !== 'list') return manage(body, unit, cls);
+      // aperçu (à gauche)
+      const preview = card(unit);
+      const actions = h('div', { class: 'tb-actions' },
+        h('div', { class: 'tb-actions-title' }, 'Préparatifs'),
+        h('div', { class: 'tb-buttons' },
+          h('button', { class: 'lp-focus', 'data-team-sheet': unit.sourceId, onclick: () => openSheet(unit) }, 'Info')),
+        h('p', { class: 'tb-hint' }, 'Info (ou choisir à nouveau le personnage) ouvre sa fiche : ← → personnage suivant, C croissances ; Compétences, Inventaire et Évolution sous la fiche.'));
+      // grille des recrutés (à droite)
+      const grid = h('div', { class: 'tb-grid' }, members.map(u => h('button', {
+        class: 'lp-focus tb-unit' + (state.id === u.sourceId ? ' on' : ''), 'data-team-unit': u.sourceId,
+        title: `${u.name} — ${(R.byId(G.db.classes, u.classId) || {}).name || '?'} · Nv ${u.level}`,
+        onclick: () => { if (state.id === u.sourceId) return openSheet(u); state.id = u.sourceId; api.rerender(); }
+      }, sprite(u), h('span', { class: 'tb-uname' }, u.name))));
+      const list = h('div', { class: 'tb-list' }, h('div', { class: 'tb-list-head' }, h('span', {}, 'Personnages'), h('b', {}, String(members.length))), grid);
+      const root = h('div', { class: 'tb-layout' }, h('div', { class: 'tb-left' }, preview, actions), list);
+      body.append(root);
+      animate(root);
+      const on = grid.querySelector('.tb-unit.on'); if (on) requestAnimationFrame(() => on.scrollIntoView({ block: 'nearest' }));
+    }
+    /** Gestion d'un personnage : compétences équipées, inventaire / convoi, évolution. */
+    function manage(body, unit, cls) {
+      const main = h('div', { class: 'team-main' },
+        h('div', { class: 'tb-manage-head' },
+          h('button', { class: 'lp-focus', 'data-team-back': true, onclick: () => { state.view = 'list'; api.rerender(); } }, '◀ Équipe'),
+          bust(unit), h('div', {}, h('h4', {}, unit.name), h('span', { class: 'lp-sub' }, `${cls ? cls.name : '?'} · Nv ${unit.level} · EXP ${unit.exp || 0}`)),
+          h('button', { class: 'lp-focus', 'data-team-sheet': unit.sourceId, onclick: () => openSheet(unit) }, 'Fiche')),
+        h('div', { class: 'lp-tabs' }, [['skills', 'Compétences'], ['items', 'Inventaire'], ['promotions', 'Évolution']].map(([id, text]) =>
+          h('button', { class: 'lp-focus lp-tab' + (state.tab === id ? ' on' : ''), 'data-team-tab': id, onclick: () => { state.view = id; state.tab = id; api.rerender(); } }, text))));
       if (state.tab === 'skills') skills(main, unit);
       else if (state.tab === 'items') inventory(main, unit);
       else promotions(main, unit, cls);
-      body.append(h('div', { class: 'team-layout' }, roster, main));
+      body.append(main);
     }
     function skills(body, unit) {
       const catalogue = G.db.skills || [], find = id => R.byId(catalogue, id);
@@ -120,7 +198,7 @@
         await api.openPromotion(unit); api.changed(); api.rerender();
       } }, 'Comparer les promotions'));
     }
-    return { render };
+    return { render, state };
   }
-  root.TeamPanel = { create };
+  root.TeamPanel = { create, parts };
 })(self);

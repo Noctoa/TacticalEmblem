@@ -99,7 +99,7 @@ module.exports = function (editorWin, openPlaytest) {
       await shot(ew, '07c_peinture');
 
       // import Tiled
-      global.__tiledOverride = [path.join(__dirname, '..', 'assets', 'sample', 'tiled', 'chapitre1_forteresse.tmx')];
+      global.__tiledOverride = [path.join(__dirname, 'fixtures', 'tiled', 'chapitre1_forteresse.tmx')];
       ew.send('menu', 'import-tiled'); await wait(1200);
       await shot(ew, '08_import_rapport');
       await key(ew, 'Enter'); await wait(500);

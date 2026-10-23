@@ -863,6 +863,16 @@
     try { await UnitSheet.open(u, sheetCtx(), { list }); } finally { G.sheetOpen = false; lastInfoKey = ''; }
   }
 
+  /** Écran « Unités » (menu de la carte) : fiches des personnages déployés, ← → pour passer de l'un à l'autre. */
+  async function openUnitsScreen() {
+    if (G.busy || G.over || G.sheetOpen) return;
+    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === 'player');
+    if (!list.length) return UI.toast('Aucun personnage déployé.');
+    const atCursor = unitAt(G.cursor.x, G.cursor.y);
+    G.sheetOpen = true;
+    try { await UnitSheet.open(list.includes(atCursor) ? atCursor : list[0], sheetCtx(), { list, title: 'Unités' }); } finally { G.sheetOpen = false; lastInfoKey = ''; }
+  }
+
   async function showUnitSkills(unit) {
     if (!unitVisible(unit) || G.busy || G.over) return;
     G.busy = true;
@@ -1220,6 +1230,7 @@
     showMenu([
       G.secondaryRewardPending ? { label: 'Récupérer les récompenses', action: collectSecondaryRewards } : null,
       { label: G.phase === 'ally' ? 'Fin de la phase alliée' : 'Fin du tour', sub: pending ? `${pending} unité(s) libres` : '', action: () => { hideMenu(); G.ui = 'idle'; endCurrentPhase(); } },
+      { label: 'Unités', sub: 'fiches des personnages', action: () => { hideMenu(); G.ui = 'idle'; openUnitsScreen(); } },
       { label: 'Paramètres', sub: 'Échap', action: () => { hideMenu(); G.ui = 'idle'; settings.open(); } },
       { label: 'Zone de danger', sub: G.danger ? 'activée' : 'désactivée', action: () => { toggleDanger(); hideMenu(); G.ui = 'idle'; } },
       { label: G.fast ? 'Vitesse normale' : 'Vitesse rapide', action: () => { G.fast = !G.fast; hideMenu(); G.ui = 'idle'; } },
@@ -2369,7 +2380,7 @@
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length, arrowTiles: (path) => path.map((p, i) => arrowTile(path, i)) }; // scénarios de test automatisés
 
-  const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab) });
+  const preparation = Preparation.create({ G, h, R, portrait: portraitEl, openSettings: tab => settings.open(tab), sheetCtx });
   window.PlaytestPreparation = preparation;
   const trade = TradePanel.create({ G, h, R, portrait: u => portraitEl(u, 'mini'), hideMenu, returnToMenu: openActionMenu,
     changed: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateInfo(); } });

@@ -21,7 +21,7 @@ const terrains = D.terrains();
 console.log('Import Tiled');
 test('TMX + TSX externe + base64 zlib + CSV + objets', () => {
   const proj = path.join(tmp, 'p1'); fs.mkdirSync(proj);
-  const r = importTiled(path.join(__dirname, '..', 'assets', 'sample', 'tiled', 'chapitre1_forteresse.tmx'), { projectDir: proj, terrains });
+  const r = importTiled(path.join(__dirname, 'fixtures', 'tiled', 'chapitre1_forteresse.tmx'), { projectDir: proj, terrains });
   assert.strictEqual(r.map.width, 24); assert.strictEqual(r.map.height, 16);
   assert.strictEqual(r.map.layers.length, 2);
   assert.strictEqual(r.map.layers[0].name, 'Sol');
@@ -37,7 +37,7 @@ test('TMX + TSX externe + base64 zlib + CSV + objets', () => {
   assert.strictEqual(boss.properties.class, "brigand");
   assert.deepStrictEqual(r.warnings, []);
   // ré-import : l'image identique est réutilisée
-  const r2 = importTiled(path.join(__dirname, '..', 'assets', 'sample', 'tiled', 'chapitre1_forteresse.tmx'), { projectDir: proj, terrains });
+  const r2 = importTiled(path.join(__dirname, 'fixtures', 'tiled', 'chapitre1_forteresse.tmx'), { projectDir: proj, terrains });
   assert.strictEqual(r2.tilesets[0].image, r.tilesets[0].image);
 });
 

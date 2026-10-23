@@ -58,8 +58,8 @@ module.exports = (editor, openPlaytest) => {
       const kill = (wc, id) => js(wc, `void (async () => { await PlaytestDebug.killUnit(PlaytestState.units.find(u => u.sourceId === ${JSON.stringify(id)}), true); await PlaytestDebug.checkEnd(); })()`);
       const first = await start('Détente'), wc = first.wc; await depart(wc);
       assert.equal(await js(wc, `document.querySelectorAll('[data-prep-secondary]').length`), 6);
-      await click(wc, '[data-deploy-toggle="c_lyn"]'); assert.match(await js(wc, `document.querySelector('[data-prep-secondary="${ids.protect}"]').textContent`), /absent des participants/);
-      assert.equal(await js(wc, `document.querySelector('[data-deploy-start]').disabled`), false); await click(wc, '[data-deploy-toggle="c_lyn"]');
+      await click(wc, '[data-deploy-formation]'); await click(wc, '[data-deploy-toggle="c_lyn"]'); assert.match(await js(wc, `document.querySelector('[data-prep-secondary="${ids.protect}"]').textContent`), /absent des participants/);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-start]').disabled`), false); await click(wc, '[data-deploy-toggle="c_lyn"]'); await click(wc, '[data-formation-close]');
       await shot(wc, 'preparation-secondary'); await begin(wc);
       const initialGold = await js(wc, 'PlaytestState.campaign.gold');
       await kill(wc, 'courier'); await until(wc, `PlaytestState.secondaryProgress['${ids.target}']?.status === 'success'`);

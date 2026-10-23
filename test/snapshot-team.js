@@ -76,6 +76,20 @@ module.exports = (editor, openPlaytest) => {
       await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Équipe').action()`);
       await until(wc, `!!document.querySelector('[data-team-unit="c_hector"]')`);
       assert.equal(await js(wc, `!!document.querySelector('[data-team-unit="c_lyn"]')`), false);
+      await shot(wc, 'team-base'); // base : aperçu + grille des recrutés
+      // choisir à nouveau le personnage affiché ouvre sa fiche ; ← → passent au suivant, C affiche les croissances
+      await js(wc, `document.querySelector('[data-team-unit].on').click()`); await until(wc, `!!document.querySelector('#unit-sheet .rd-sheet')`);
+      await js(wc, `window.dispatchEvent(new KeyboardEvent('keydown', { key: 'c', bubbles: true }))`);
+      assert.equal(await js(wc, `document.querySelector('#unit-sheet [data-sheet-growth]').dataset.sheetGrowth`), 'on');
+      assert.ok(await js(wc, `[...document.querySelectorAll('#unit-sheet .rd-growth')].some(r => /%$/.test(r.textContent))`));
+      await shot(wc, 'team-fiche-croissances');
+      await js(wc, `window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`); await until(wc, `!document.querySelector('#unit-sheet')`);
+      // Préparatifs : seulement « Info » ; Compétences / Inventaire / Évolution sont sous la fiche
+      assert.deepEqual(await js(wc, `[...document.querySelectorAll('.tb-actions button')].map(b => b.textContent)`), ['Info']);
+      await js(wc, `document.querySelector('[data-team-sheet]').click()`); await until(wc, `!!document.querySelector('#unit-sheet [data-sheet-action="skills"]')`);
+      await shot(wc, 'team-fiche-actions');
+      await js(wc, `document.querySelector('#unit-sheet [data-sheet-action="skills"]').click()`); await until(wc, `!!document.querySelector('[data-team-skill-slot]')`);
+      assert.equal(await js(wc, `!!document.querySelector('#unit-sheet')`), false);
       assert.equal(await js(wc, `document.querySelectorAll('[data-team-skill-slot] option[value="skill_precision"]').length`), 0);
       await set(wc, '[data-team-skill-slot="0"]', 'skill_miracle');
       assert.equal(await js(wc, `PlaytestLobby.state.members[0].equippedSkills[0]`), 'skill_miracle');
@@ -101,7 +115,11 @@ module.exports = (editor, openPlaytest) => {
       await click(wc, '.choice-list button', 'Hector'); await until(wc, `document.querySelector('.modal-back').textContent.includes('Échanger avec')`);
       await click(wc, '.choice-list button', 'Hache de fer'); await until(wc, '!PlaytestState.busy');
       await shot(wc, 'team-inventory');
-      await js(wc, `document.querySelector('[data-team-unit="c_hector"]').click(); document.querySelector('[data-team-tab="promotions"]').click(); document.querySelector('[data-team-promote]').click()`);
+      await js(wc, `document.querySelector('[data-team-back]').click()`); await until(wc, `!!document.querySelector('[data-team-unit="c_hector"]')`);
+      await js(wc, `document.querySelector('[data-team-unit="c_hector"]').click()`); await until(wc, `document.querySelector('[data-team-unit="c_hector"]').classList.contains('on')`);
+      await js(wc, `document.querySelector('[data-team-sheet]').click()`); await until(wc, `!!document.querySelector('#unit-sheet [data-sheet-action="promotions"]')`);
+      await js(wc, `document.querySelector('#unit-sheet [data-sheet-action="promotions"]').click()`); await until(wc, `!!document.querySelector('[data-team-promote]')`);
+      await js(wc, `document.querySelector('[data-team-promote]').click()`);
       await until(wc, `!!document.querySelector('[data-promote-to="great_lord"]')`); await shot(wc, 'team-promotion');
       assert.equal(await js(wc, `document.querySelector('.promotion-choices').textContent.includes('consomme l’action')`), false);
       await js(wc, `document.querySelector('[data-promote-to="great_lord"]').click()`);
@@ -112,7 +130,8 @@ module.exports = (editor, openPlaytest) => {
       assert.equal(await js(wc, `PlaytestLobby.state.members.find(u => u.sourceId === 'c_hector').classId`), 'great_lord');
       assert.equal(await js(wc, `PlaytestLobby.state.members.find(u => u.sourceId === 'c_hector').done`), false);
       assert.equal(await js(wc, 'PlaytestState.mode'), 'lobby');
-      await js(wc, `document.querySelector('[data-team-save]').click()`); await until(wc, `!!document.querySelector('#settings .st-slot button')`);
+      await js(wc, `document.querySelector('[data-team-back]').click()`); await until(wc, `!!document.querySelector('[data-team-sheet]')`);
+      await js(wc, `PlaytestSettings.open('save')`); await until(wc, `!!document.querySelector('#settings .st-slot button')`);
       await js(wc, `document.querySelector('#settings .st-slot button').click()`);
       await until(wc, `!!document.querySelector('#settings .st-slot:not(.empty)')`);
       const saved = JSON.parse(fs.readFileSync(path.join(dir, 'saves/slot-1.json'), 'utf8'));

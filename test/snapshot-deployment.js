@@ -48,14 +48,30 @@ module.exports = (editor, openPlaytest) => {
         await click(wc, '.modal-actions button', 'Partir'); await until(wc, `PlaytestState.mode === 'preparation'`);
       };
       const first = await start('Classique'), wc = first.wc; await depart(wc);
-      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_eliwood"]').disabled`), true);
+      assert.equal(await js(wc, `!!document.querySelector('[data-deploy-toggle]')`), false); // plus de liste : un bouton Formation
+      await js(wc, `document.querySelector('[data-deploy-formation]').click()`);
+      await until(wc, `!!document.querySelector('.formation-win [data-deploy-toggle="c_eliwood"]')`);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_eliwood"]').classList.contains('locked')`), true);
+      await js(wc, `document.querySelector('[data-deploy-toggle="c_eliwood"]').click()`); // imposé : reste déployé
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_eliwood"]').getAttribute('aria-pressed')`), 'true');
       assert.equal(await js(wc, `!!document.querySelector('[data-deploy-toggle="c_cloud"]')`), false);
       assert.equal(await js(wc, 'PlaytestState.fired.size'), 0); assert.equal(await js(wc, 'PlaytestState.turn'), 1);
       assert.equal(await js(wc, '!!PlaytestState.dialogue'), false);
       await js(wc, `document.querySelector('[data-deploy-toggle="c_hector"]').click()`);
-      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_hector"]').checked`), false);
+      assert.equal(await js(wc, `document.querySelector('[data-deploy-toggle="c_hector"]').getAttribute('aria-pressed')`), 'false');
+      assert.equal(await js(wc, `document.querySelector('.formation-win .tb-name').textContent`), 'Hector'); // aperçu du personnage choisi
       await js(wc, `document.querySelector('[data-deploy-toggle="c_lyn"]').click(); document.querySelector('[data-deploy-toggle="c_hector"]').click()`);
       assert.deepEqual(await js(wc, `PlaytestPreparation.plan().map(p => p.unitId)`), ['c_eliwood', 'c_hector']);
+      assert.equal(await js(wc, `document.querySelector('[data-formation-count]').textContent`), '2/2');
+      await shot(wc, 'formation');
+      await js(wc, `document.querySelector('[data-formation-info]').click()`); await until(wc, `!!document.querySelector('#unit-sheet .rd-sheet')`);
+      await shot(wc, 'formation-info');
+      await js(wc, `window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))`); await until(wc, `!document.querySelector('#unit-sheet')`);
+      assert.equal(await js(wc, `!!document.querySelector('.formation-win')`), true);
+      await js(wc, `document.querySelector('[data-formation-close]').click()`);
+      assert.equal(await js(wc, `!!document.querySelector('.formation-win')`), false);
+      assert.deepEqual(await js(wc, `[...document.querySelectorAll('[data-deploy-unit]')].map(b => b.dataset.deployUnit)`), ['c_eliwood', 'c_hector']);
+      assert.equal(await js(wc, `document.querySelector('#preparation').textContent.includes('null')`), false);
       await js(wc, `document.querySelector('[data-deploy-slot="0"]').click()`);
       assert.equal(await js(wc, `PlaytestPreparation.plan().find(p => p.unitId === 'c_hector').x`), 3);
       // Le clic sur la carte échange les deux personnages, puis on rétablit le choix voulu.

@@ -1,12 +1,14 @@
-/* Préparatifs : effectif, aperçu de la carte et échange des positions de départ. */
+/* Préparatifs : formation (fenêtre de choix des participants, façon base de l'équipe), aperçu de la carte
+ * et échange des positions de départ. */
 (function (root) {
   'use strict';
   function create(api) {
     const { G, h, R } = api;
-    const S = { members: [], plan: [], focus: '', onStart: null, onCancel: null };
+    const S = { members: [], plan: [], focus: '', onStart: null, onCancel: null, formation: null, sheet: false };
+    const parts = () => TeamPanel.parts(api);
     const panel = () => document.querySelector('#preparation');
     const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
-    function close() { panel().classList.add('hidden'); panel().innerHTML = ''; document.body.classList.remove('in-preparation'); }
+    function close() { closeFormation(); panel().classList.add('hidden'); panel().innerHTML = ''; document.body.classList.remove('in-preparation'); }
     function open(members, saved, onStart, onCancel) {
       Object.assign(S, { members, onStart, onCancel, plan: Deployment.initial(G.chapter, G.db, members, terrainAt, saved) });
       S.focus = S.plan[0] && S.plan[0].unitId || (Deployment.eligible(G.chapter, members)[0] || {}).sourceId || '';
@@ -19,32 +21,24 @@
       S.plan = result.plan; render();
     }
     function render() {
-      const active = document.activeElement, focusAttribute = ['data-deploy-toggle', 'data-deploy-unit', 'data-deploy-slot', 'data-deploy-reset'].find(key => active && active.hasAttribute(key));
+      const active = document.activeElement, focusAttribute = ['data-deploy-formation', 'data-deploy-unit', 'data-deploy-slot', 'data-deploy-reset'].find(key => active && active.hasAttribute(key));
       const focusValue = focusAttribute && active.getAttribute(focusAttribute);
       const box = panel(), ch = G.chapter, required = Deployment.forced(ch, G.db), messages = errors();
       const members = Deployment.eligible(ch, S.members), unit = S.members.find(u => u.sourceId === S.focus);
       box.innerHTML = '';
       box.append(h('header', { class: 'prep-header' }, h('div', {}, h('h2', {}, 'Préparatifs'), h('p', {}, Lobby.actLabel(G.db, ch.id))),
         h('b', { 'data-deploy-count': true }, `${S.plan.length}/${Deployment.limit(ch)} déployés`)),
-      h('p', { class: 'prep-intro' }, 'Choisis les participants puis sélectionne un personnage et une case de départ. Cliquer une case occupée échange les positions. Les alliés verts gardent leur placement.' ));
-      const roster = h('div', { class: 'prep-roster' }, members.map(u => {
-        const selected = S.plan.some(p => p.unitId === u.sourceId), imposed = required.includes(u.sourceId);
-        const checkbox = h('input', { type: 'checkbox', checked: selected, disabled: imposed, 'data-deploy-toggle': u.sourceId, 'aria-label': 'Déployer ' + u.name,
-          onchange: () => { S.focus = u.sourceId; change(Deployment.toggle(ch, G.db, members, S.plan, u.sourceId, terrainAt)); } });
-        const cls = R.byId(G.db.classes, u.classId);
-        return h('div', { class: 'prep-member' + (S.focus === u.sourceId ? ' on' : '') }, checkbox,
-          h('button', { 'data-deploy-unit': u.sourceId, onclick: () => { S.focus = u.sourceId; render(); } }, api.portrait(u, 'mini'),
-            h('span', {}, h('b', {}, u.name, imposed ? ' · Imposé' : ''), h('small', {}, `${cls ? cls.name : '?'} · Nv ${u.level}${selected ? ' · Déployé' : ' · Réserve'}`))));
-      }));
-      if (!members.length) roster.append(h('p', {}, 'Aucun personnage disponible.'));
-      const detail = h('div', { class: 'prep-detail' });
-      if (unit) {
-        const skills = [unit.personalSkill, ...(unit.equippedSkills || [])].filter(Boolean).map(id => (R.byId(G.db.skills, id) || {}).name || id);
-        detail.append(h('h3', {}, unit.name), h('p', {}, R.STATS.map(k => `${R.STAT_LABELS[k]} ${unit.stats[k]}`).join(' · ')),
-          h('p', {}, 'Équipement : ' + (unit.inventory.map(slot => { const e = R.getEntry(G.db, slot.id); return `${e ? e.def.name : slot.id} (${slot.uses || '∞'})`; }).join(', ') || 'aucun')),
-          h('p', {}, 'Compétences : ' + (skills.join(', ') || 'aucune')));
-        if (!S.plan.some(p => p.unitId === unit.sourceId)) detail.append(h('p', { class: 'prep-muted' }, 'En réserve. Coche ce personnage pour le déployer.'));
-      }
+      h('p', { class: 'prep-intro' }, 'Formation : choisis qui part au combat. Sélectionne ensuite un déployé puis une case de départ ; une case occupée échange les positions. Les alliés verts gardent leur placement.' ));
+      // formation : bouton vers la fenêtre de choix + les déployés (choisir l'un d'eux puis une case pour le placer)
+      const deployed = S.plan.map(p => members.find(u => u.sourceId === p.unitId)).filter(Boolean);
+      const formation = h('div', { class: 'prep-formation' },
+        h('button', { class: 'prep-formation-open', 'data-deploy-formation': true, onclick: openFormation },
+          h('b', {}, 'Formation'), h('small', {}, `${S.plan.length}/${Deployment.limit(ch)} participants · choisir qui part au combat`)),
+        h('div', { class: 'prep-lineup' }, deployed.map(u => h('button', { class: 'prep-chip' + (S.focus === u.sourceId ? ' on' : ''), 'data-deploy-unit': u.sourceId,
+          title: 'Choisir ' + u.name + ' puis une case de départ', onclick: () => { S.focus = u.sourceId; render(); } }, parts().sprite(u), h('span', {}, u.name),
+          required.includes(u.sourceId) ? h('i', { title: 'Imposé' }, '★') : null))),
+        !members.length ? h('p', { class: 'prep-muted' }, 'Aucun personnage disponible.') : null);
+      parts().animate(formation);
       const mapBox = h('div', { class: 'prep-map-box' }), canvas = h('canvas', { 'data-deploy-map': true, 'aria-label': 'Aperçu des cases de départ' });
       const map = G.map, previewHeight = Math.max(180, Math.min(370, window.innerHeight - 420));
       const scale = Math.min(2, 580 / (map.width * map.tileWidth), previewHeight / (map.height * map.tileHeight));
@@ -79,7 +73,7 @@
         return h('button', { 'data-deploy-slot': String(i), disabled: !S.plan.some(q => q.unitId === S.focus),
           onclick: () => change(Deployment.move(ch, members, S.plan, S.focus, p, terrainAt)) }, `${i + 1} · ${u ? u.name : 'Libre'} (${p.x}, ${p.y})`);
       }));
-      box.append(h('div', { class: 'prep-layout' }, h('section', {}, h('h3', {}, 'Participants'), roster, detail),
+      box.append(...[h('div', { class: 'prep-layout' }, h('section', {}, h('h3', {}, 'Formation'), formation),
         h('section', {}, h('h3', {}, 'Positions de départ'), mapBox, positions)),
       h('p', { class: 'prep-objective' }, Mission.objectives(ch).map(o => Mission.label(o, ch)).join(ch.victoryMode === 'any' ? ' OU ' : ' ET ') +
         (visible === null ? ` · ${ch.enemies.filter(e => !(e.appearTurn > 0)).length} ennemi(s), ${ch.enemies.filter(e => e.appearTurn > 0).length} renfort(s)` :
@@ -99,14 +93,92 @@
         h('button', { class: 'primary', 'data-deploy-start': true, disabled: messages.length > 0, onclick: () => {
           if (errors().length) return render();
           const plan = S.plan.map(p => ({ ...p })); close(); S.onStart(plan);
-        } }, 'Commencer la bataille')));
+        } }, 'Commencer la bataille'))].filter(Boolean)); // Element.append écrirait « null »
+      if (S.formation) drawFormation();
       if (focusAttribute) [...box.querySelectorAll('[' + focusAttribute + ']')].find(el => el.getAttribute(focusAttribute) === focusValue)?.focus({ preventScroll: true });
     }
+    // ------------------------------------------------------------------
+    // Fenêtre « Formation » (même présentation que la base de l'équipe) : aperçu à gauche avec « Info »,
+    // grille des personnages disponibles à droite. Choisir un personnage le fait partir au combat ou le laisse en réserve.
+    // ------------------------------------------------------------------
+    function openFormation() {
+      if (S.formation) return;
+      S.formation = { preview: S.focus || ((Deployment.eligible(G.chapter, S.members)[0] || {}).sourceId) };
+      S.formation.back = h('div', { class: 'formation-back', onmousedown: (e) => { if (e.target === S.formation.back) { e.preventDefault(); closeFormation(); } } });
+      document.body.append(S.formation.back); // hors du #hud (masqué pendant les préparatifs)
+      drawFormation(true);
+    }
+    function closeFormation() {
+      if (!S.formation) return;
+      S.formation.back.remove(); S.formation = null;
+      const b = document.querySelector('[data-deploy-formation]'); if (b) b.focus({ preventScroll: true });
+    }
+    function toggleUnit(u) {
+      const ch = G.chapter, members = Deployment.eligible(ch, S.members);
+      S.formation.preview = u.sourceId;
+      if (Deployment.forced(ch, G.db).includes(u.sourceId)) { UI.toast(u.name + ' est imposé pour cette bataille.'); return drawFormation(); }
+      S.focus = u.sourceId;
+      change(Deployment.toggle(ch, G.db, members, S.plan, u.sourceId, terrainAt));
+    }
+    function infoSheet() {
+      const members = Deployment.eligible(G.chapter, S.members), u = members.find(m => m.sourceId === S.formation.preview);
+      if (!u || !self.UnitSheet || !api.sheetCtx) return;
+      S.sheet = true;
+      UnitSheet.open(u, api.sheetCtx(), { list: members, title: 'Formation' }).then(() => { S.sheet = false; if (S.formation) drawFormation(true); });
+    }
+    function drawFormation(focus) {
+      const F = S.formation, ch = G.chapter, P = parts(), required = Deployment.forced(ch, G.db), limit = Deployment.limit(ch);
+      const members = Deployment.eligible(ch, S.members);
+      if (!members.some(u => u.sourceId === F.preview)) F.preview = members[0] && members[0].sourceId;
+      const active = document.activeElement && document.activeElement.getAttribute('data-deploy-toggle');
+      const preview = members.find(u => u.sourceId === F.preview);
+      const left = h('div', { class: 'tb-left' }, preview ? P.card(preview) : h('div', { class: 'tb-card tb-empty' }, 'Aucun personnage disponible.'),
+        h('div', { class: 'tb-actions' }, h('div', { class: 'tb-actions-title' }, 'Formation'),
+          h('div', { class: 'tb-buttons' },
+            h('button', { 'data-formation-info': true, disabled: !preview, onclick: infoSheet }, 'Info'),
+            h('button', { 'data-formation-close': true, onclick: closeFormation }, 'Terminer')),
+          h('p', { class: 'tb-hint' }, 'Choisir un personnage le fait partir au combat (nom vert) ou le remet en réserve. ★ : imposé.')));
+      const grid = h('div', { class: 'tb-grid' }, members.map(u => {
+        const on = S.plan.some(p => p.unitId === u.sourceId), imposed = required.includes(u.sourceId);
+        const cls = R.byId(G.db.classes, u.classId);
+        return h('button', { class: 'tb-unit' + (F.preview === u.sourceId ? ' on' : '') + (on ? ' deployed' : ' reserve') + (imposed ? ' locked' : ''),
+          'data-deploy-toggle': u.sourceId, 'aria-pressed': on ? 'true' : 'false', 'aria-label': (on ? 'Retirer ' : 'Déployer ') + u.name,
+          title: `${u.name} — ${cls ? cls.name : '?'} · Nv ${u.level}${imposed ? ' · imposé' : on ? ' · part au combat' : ' · réserve'}`,
+          onclick: () => toggleUnit(u),
+          onmouseenter: () => { if (F.preview !== u.sourceId) { F.preview = u.sourceId; drawFormation(); } },
+          onfocus: () => { if (F.preview !== u.sourceId) { F.preview = u.sourceId; drawFormation(); } }
+        }, P.sprite(u), h('span', { class: 'tb-uname' }, u.name), imposed ? h('i', { class: 'tb-lock' }, '★') : null);
+      }));
+      const remaining = Math.max(0, limit - S.plan.length);
+      const list = h('div', { class: 'tb-list' }, h('div', { class: 'tb-list-head' },
+        h('span', {}, 'Choisir', h('small', {}, ` · ${remaining} restant${remaining > 1 ? 's' : ''}`)),
+        h('b', { 'data-formation-count': true }, `${S.plan.length}/${limit}`)), grid);
+      const win = h('div', { class: 'formation-win' },
+        h('div', { class: 'formation-title' }, h('b', {}, 'Formation'), h('span', {}, Lobby.actLabel(G.db, ch.id))),
+        h('div', { class: 'tb-layout' }, left, list));
+      F.back.replaceChildren(win);
+      P.animate(win);
+      const target = grid.querySelector(`[data-deploy-toggle="${active || (focus ? F.preview : '')}"]`);
+      if (target) target.focus({ preventScroll: true });
+      const on = grid.querySelector('.tb-unit.on'); if (on) on.scrollIntoView({ block: 'nearest' });
+    }
+    function formationKey(e) {
+      const k = e.key;
+      if (['Escape', 'x', 'X', 'Backspace'].includes(k)) { e.preventDefault(); return closeFormation(); }
+      if (k === 'c' || k === 'C' || k === 'r' || k === 'R') { e.preventDefault(); return infoSheet(); }
+      const cells = [...document.querySelectorAll('.formation-win [data-deploy-toggle]')];
+      if (!cells.length) return;
+      const at = Math.max(0, cells.indexOf(document.activeElement)), step = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -2, ArrowDown: 2 }[k];
+      if (step) { e.preventDefault(); const next = cells[Math.min(cells.length - 1, Math.max(0, (cells.includes(document.activeElement) ? at + step : 0)))]; next.focus(); }
+      else if (k === 'z' || k === 'Z') { e.preventDefault(); (cells.includes(document.activeElement) ? document.activeElement : cells[at]).click(); }
+    }
     function key(e) {
+      if (S.sheet) return;
+      if (S.formation) return formationKey(e);
       if (e.key === 'Escape') { e.preventDefault(); api.openSettings(); }
       // Les boutons, cases à cocher et Tab gardent leur comportement natif.
     }
-    return { open, close, key, errors, plan: () => S.plan.map(p => ({ ...p })) };
+    return { open, close, key, errors, openFormation, closeFormation, plan: () => S.plan.map(p => ({ ...p })) };
   }
   root.Preparation = { create };
 })(self);

@@ -46,19 +46,19 @@ module.exports = (editor, openPlaytest) => {
       assert(result.stats.some(t => /^For/.test(t)) && result.stats.some(t => /^Attaque/.test(t)) && result.stats.some(t => /^Dép/.test(t)), 'page Stats : ' + result.stats);
       assert(await js(`!!document.querySelector('#unit-sheet [data-sheet-status="poison"]')`), 'poison affiché');
       await shot('a_stats');
-      // 2. pages suivantes
-      await key('Right');
+      // 2. pages suivantes (↓)
+      await key('Down');
       await until(`document.querySelector('#unit-sheet .rd-sheet').dataset.page === 'items'`);
       result.objets = await js(`[...document.querySelectorAll('#unit-sheet .rd-item')].map(r => r.textContent)`);
       assert(result.objets.length >= 1, 'objets');
       await shot('b_objets');
-      await key('Right');
+      await key('Down');
       await until(`document.querySelector('#unit-sheet .rd-sheet').dataset.page === 'skills'`);
       result.competences = await js(`[...document.querySelectorAll('#unit-sheet .rd-item')].map(r => r.textContent)`);
       assert(result.competences.some(t => /Précision/.test(t)) && result.competences.some(t => /Luna/.test(t)), 'compétences : ' + result.competences);
       await wait(300); await shot('c_competences');
-      // 3. unité suivante (même page)
-      await key('Down');
+      // 3. unité suivante (→, même page)
+      await key('Right');
       result.suivant = await js(`document.querySelector('#unit-sheet .rd-name').textContent`);
       assert(result.suivant !== result.nom, 'unité suivante');
       assert(await js(`document.querySelector('#unit-sheet .rd-sheet').dataset.page === 'skills'`), 'page gardée');
@@ -71,6 +71,19 @@ module.exports = (editor, openPlaytest) => {
       await until(`!!document.querySelector('#unit-sheet .rd-sheet')`);
       await js(`document.querySelector('#unit-sheet').dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))`);
       await until(`!document.querySelector('#unit-sheet')`);
+      // 5. menu de la carte › Unités : tous les personnages déployés, flèche ▶ pour passer au suivant
+      await js(`(() => { const G = PlaytestState; for (let y = 0; y < G.map.height; y++) for (let x = 0; x < G.map.width; x++) if (!G.units.some(u => !u.dead && u.x === x && u.y === y)) { G.cursor = { x, y }; return; } })()`);
+      await key('Z'); await until(`PlaytestState.ui === 'mapmenu'`);
+      await js(`PlaytestState.menu.items.find(i => i.label === 'Unités').action()`);
+      await until(`!!document.querySelector('#unit-sheet .rd-title')`);
+      result.unites = await js(`({ titre: document.querySelector('#unit-sheet .rd-title').textContent, deployes: PlaytestState.units.filter(u => u.team === 'player' && !u.dead).length })`);
+      assert(result.unites.titre.includes('1 / ' + result.unites.deployes), 'écran Unités : ' + JSON.stringify(result.unites));
+      const first = await js(`document.querySelector('#unit-sheet .rd-name').textContent`);
+      await js(`document.querySelector('[data-sheet-nav="next"]').click()`);
+      result.unitesSuivant = await js(`document.querySelector('#unit-sheet .rd-name').textContent`);
+      assert(result.unitesSuivant !== first, 'flèche ▶');
+      await wait(400); await shot('d_unites');
+      await key('X'); await until(`!document.querySelector('#unit-sheet')`);
     } catch (e) { errors.push(String(e && e.stack || e)); }
     finish();
   });

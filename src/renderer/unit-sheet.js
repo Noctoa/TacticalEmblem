@@ -67,17 +67,36 @@
     return cell;
   }
 
-  function statsPage(u, ctx, panel) {
+  /** Taux de croissance (%) : ceux de l'unité, sinon de son personnage, sinon de sa classe. */
+  function growthsOf(u, ctx) {
+    const { G, R } = ctx;
+    const def = R.byId(G.db.units, u.sourceId), cl = R.byId(G.db.classes, u.classId);
+    return Object.assign({}, cl && cl.growths, def && def.growths, u.growths);
+  }
+  function statsPage(u, ctx, panel, growths, toggle) {
     const { G, R } = ctx;
     const cl = R.byId(G.db.classes, u.classId) || {};
-    const keys = ['str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
-    keys.forEach((k, i) => {
-      const v = u.stats[k], cap = (cl.caps && cl.caps[k]) || CAPS[k];
-      const y = BARS[i];
-      panel.append(box(116, y - 11, 44, 10, 'rd-row', h('span', { class: 'rd-lbl' }, R.STAT_LABELS[k]), h('b', { class: v >= cap ? 'rd-max' : '' }, String(v))));
-      if (v > 0) panel.append(box(119, y, Math.max(1, Math.round(39 * Math.min(1, v / cap))), 2, 'rd-gauge' + (v >= cap ? ' max' : '')));
-    });
-    panel.append(box(116, BARS[7] - 11, 44, 10, 'rd-row', h('span', { class: 'rd-lbl' }, 'Dép'), h('b', {}, String(u.mov))));
+    if (growths) {
+      // croissances : PV et les 7 stats, jauge sur 100 %
+      const gr = growthsOf(u, ctx);
+      ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'].forEach((k, i) => {
+        const v = Number(gr[k]) || 0, y = BARS[i];
+        panel.append(box(116, y - 11, 44, 10, 'rd-row rd-growth', h('span', { class: 'rd-lbl' }, R.STAT_LABELS[k] || 'PV'), h('b', {}, v + '%')));
+        if (v > 0) panel.append(box(119, y, Math.max(1, Math.round(39 * Math.min(1, v / 100))), 2, 'rd-gauge growth'));
+      });
+    } else {
+      const keys = ['str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
+      keys.forEach((k, i) => {
+        const v = u.stats[k], cap = (cl.caps && cl.caps[k]) || CAPS[k];
+        const y = BARS[i];
+        panel.append(box(116, y - 11, 44, 10, 'rd-row', h('span', { class: 'rd-lbl' }, R.STAT_LABELS[k]), h('b', { class: v >= cap ? 'rd-max' : '' }, String(v))));
+        if (v > 0) panel.append(box(119, y, Math.max(1, Math.round(39 * Math.min(1, v / cap))), 2, 'rd-gauge' + (v >= cap ? ' max' : '')));
+      });
+      panel.append(box(116, BARS[7] - 11, 44, 10, 'rd-row', h('span', { class: 'rd-lbl' }, 'Dép'), h('b', {}, String(u.mov))));
+    }
+    // bascule stats / croissances (touche C)
+    panel.append(box(166, 23, 64, 11, 'rd-growth-toggle', h('button', { class: 'rd-tab' + (growths ? ' on' : ''), 'data-sheet-growth': growths ? 'on' : 'off', title: 'Afficher les taux de croissance (C)',
+      onclick: (e) => { e.stopPropagation(); toggle(); } }, growths ? 'Croissances' : '% Croissances')));
     const c = combat(u, ctx);
     [['Attaque', c.atk], ['Précision', c.hit], ['Esquive', c.avo], ['Critique', c.crit]].forEach(([label, v], i) => {
       panel.append(box(166, LINES[i] - 11, 57, 10, 'rd-row', h('span', { class: 'rd-lbl' }, label), h('b', {}, String(v))));
@@ -136,7 +155,7 @@
 
   /** Fiche d'une unité (élément). opts.page : 'stats' | 'items' | 'skills' ; opts.scale : taille d'un pixel (sinon --s du parent). */
   function element(u, ctx, opts = {}) {
-    const state = { page: PAGES.some(p => p[0] === opts.page) ? opts.page : 'stats' };
+    const state = { page: PAGES.some(p => p[0] === opts.page) ? opts.page : 'stats', growths: !!opts.growths };
     const el = h('div', { class: 'rd-sheet', 'data-unit-sheet': u.uid || u.sourceId || '' });
     if (opts.scale) el.style.setProperty('--s', String(opts.scale));
     const { G, R } = ctx;
@@ -156,44 +175,67 @@
       const panel = h('div', { class: 'rd-panel' });
       panel.append(box(102, 7, 128, 13, 'rd-tabs', PAGES.map(([id, label]) => h('button', { class: 'rd-tab' + (state.page === id ? ' on' : ''), 'data-sheet-page': id,
         onclick: (e) => { e.stopPropagation(); state.page = id; render(); } }, label))));
-      if (state.page === 'stats') statsPage(u, ctx, panel);
+      if (state.page === 'stats') statsPage(u, ctx, panel, state.growths, () => el.toggleGrowths());
       else if (state.page === 'items') itemsPage(u, ctx, panel);
       else skillsPage(u, ctx, panel);
       el.append(panel);
     };
     el.page = (d) => { const i = PAGES.findIndex(p => p[0] === state.page); state.page = PAGES[(i + d + PAGES.length) % PAGES.length][0]; render(); };
     el.getPage = () => state.page;
+    /** Stats ⇄ taux de croissance (repasse sur la page Stats). */
+    el.toggleGrowths = () => { state.growths = !state.growths; state.page = 'stats'; render(); if (opts.onGrowths) opts.onGrowths(state.growths); };
+    el.getGrowths = () => state.growths;
     render();
     return el;
   }
 
-  /** Fiche plein écran : promesse résolue à la fermeture. */
+  /**
+   * Fiche plein écran : promesse résolue à la fermeture.
+   * ← → (ou les flèches de chaque côté) : personnage précédent / suivant de la liste (les unités déployées) ;
+   * ↑ ↓, Q / E ou les onglets : page ; C (ou G) : stats ⇄ taux de croissance ; X / Échap / clic droit / R : fermer.
+   * opts.actions : [{ id, label, onClick(unité) }] — boutons sous la fiche (la fiche se ferme puis l'action reçoit l'unité affichée). opts.title : titre au-dessus (ex. « Unités »).
+   */
   function open(u, ctx, opts = {}) {
     const list = (opts.list && opts.list.length ? opts.list : [u]);
-    let i = Math.max(0, list.indexOf(u)), page = opts.page || 'stats';
+    let i = Math.max(0, list.indexOf(u)), page = opts.page || 'stats', growths = !!opts.growths;
     return new Promise((resolve) => {
       const back = h('div', { id: 'unit-sheet', class: 'rd-overlay' });
-      const fit = () => { const s = Math.max(2, Math.min(6, Math.floor(Math.min((window.innerWidth - 40) / W, (window.innerHeight - 70) / H)))); back.style.setProperty('--s', String(s)); };
+      const fit = () => { const s = Math.max(2, Math.min(6, Math.floor(Math.min((window.innerWidth - 160) / W, (window.innerHeight - 110) / H)))); back.style.setProperty('--s', String(s)); };
       let sheet = null;
+      const se = (n) => { try { Music.se(n); } catch (er) { /* sans son */ } };
+      const go = (d) => { if (list.length < 2) return; page = sheet.getPage(); i = (i + d + list.length) % list.length; show(); se('cursor'); };
+      const turn = (d) => { sheet.page(d); page = sheet.getPage(); se('cursor'); };
       const show = () => {
-        sheet = element(list[i], ctx, { page });
-        back.replaceChildren(sheet, h('div', { class: 'rd-help' }, '← → : page · ↑ ↓ : personnage' + (list.length > 1 ? ` (${i + 1}/${list.length})` : '') + ' · X / Échap : fermer'));
+        sheet = element(list[i], ctx, { page, growths, onGrowths: (g) => { growths = g; page = 'stats'; } });
+        const many = list.length > 1;
+        back.replaceChildren(
+          opts.title ? h('div', { class: 'rd-title' }, opts.title, many ? h('span', {}, ` ${i + 1} / ${list.length}`) : null) : null,
+          h('div', { class: 'rd-stage' },
+            many ? h('button', { class: 'rd-nav prev', 'data-sheet-nav': 'prev', title: 'Personnage précédent (←)', onclick: (e) => { e.stopPropagation(); go(-1); } }, '◀') : null,
+            sheet,
+            many ? h('button', { class: 'rd-nav next', 'data-sheet-nav': 'next', title: 'Personnage suivant (→)', onclick: (e) => { e.stopPropagation(); go(1); } }, '▶') : null),
+          (opts.actions || []).length ? h('div', { class: 'rd-actions' }, opts.actions.map(a => h('button', { class: 'rd-action', 'data-sheet-action': a.id || a.label,
+            onclick: (e) => { e.stopPropagation(); const target = list[i]; close(); a.onClick(target); } }, a.label))) : null,
+          h('div', { class: 'rd-help' }, (many ? '← → : personnage · ' : '') + '↑ ↓ : page · C : croissances · X / Échap : fermer'));
       };
       const close = () => { window.removeEventListener('keydown', onKey, true); window.removeEventListener('resize', fit); back.remove(); resolve(); };
       const onKey = (e) => {
         e.stopImmediatePropagation();
         const k = e.key;
-        if (['x', 'X', 'Escape', 'Backspace', 'r', 'R'].includes(k)) { e.preventDefault(); try { Music.se('cancel'); } catch (er) { /* sans son */ } close(); }
-        else if (k === 'ArrowRight' || k === 'ArrowLeft') { e.preventDefault(); sheet.page(k === 'ArrowRight' ? 1 : -1); page = sheet.getPage(); try { Music.se('cursor'); } catch (er) { /* sans son */ } }
-        else if ((k === 'ArrowDown' || k === 'ArrowUp') && list.length > 1) { e.preventDefault(); page = sheet.getPage(); i = (i + (k === 'ArrowDown' ? 1 : -1) + list.length) % list.length; show(); try { Music.se('cursor'); } catch (er) { /* sans son */ } }
+        if (['x', 'X', 'Escape', 'Backspace', 'r', 'R'].includes(k)) { e.preventDefault(); se('cancel'); close(); }
+        else if (k === 'ArrowRight' || k === 'ArrowLeft') { e.preventDefault(); go(k === 'ArrowRight' ? 1 : -1); }
+        else if (k === 'c' || k === 'C' || k === 'g' || k === 'G') { e.preventDefault(); sheet.toggleGrowths(); se('cursor'); }
+        else if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'q' || k === 'Q' || k === 'e' || k === 'E') { e.preventDefault(); turn(k === 'ArrowDown' || k === 'e' || k === 'E' ? 1 : -1); }
       };
       back.addEventListener('mousedown', (e) => { if (e.target === back || e.button === 2) { e.preventDefault(); close(); } });
       back.addEventListener('contextmenu', (e) => e.preventDefault());
+      // molette : personnage suivant / précédent
+      back.addEventListener('wheel', (e) => { e.preventDefault(); go(e.deltaY > 0 || e.deltaX > 0 ? 1 : -1); }, { passive: false });
       window.addEventListener('keydown', onKey, true);
       window.addEventListener('resize', fit);
       fit(); show();
       document.body.append(back);
-      try { Music.se('confirm'); } catch (er) { /* sans son */ }
+      se('confirm');
     });
   }
 
