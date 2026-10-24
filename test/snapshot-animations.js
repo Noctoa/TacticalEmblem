@@ -27,7 +27,7 @@ module.exports = (editor, openPlaytest) => {
       const oldDir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-anims-old-')), 'Ancien');
       const o = io.createProject(oldDir, 'Ancien', 'sample', path.join(__dirname, '..', 'assets'));
       o.meta.pluginMigrations = o.meta.pluginMigrations.filter(m => m !== 'animations'); delete o.meta.animationDefaults;
-      o.db.animations = []; o.db.skills.forEach(sk => { delete sk.animation; }); (o.db.ultimates || []).forEach(u => { u.animation = ''; }); o.meta.lobby.enabled = false;
+      o.db.animations = []; o.db.skills.forEach(sk => { delete sk.animation; }); (o.db.ultimates || []).forEach(u => { u.animation = ''; u.castAnimation = ''; }); o.meta.lobby.enabled = false;
       io.saveProject(oldDir, o);
       fs.unlinkSync(path.join(oldDir, 'data', 'animations.json'));
       fs.rmSync(path.join(oldDir, 'ressources', 'animations'), { recursive: true, force: true });
@@ -54,6 +54,7 @@ module.exports = (editor, openPlaytest) => {
       // déplacer la première cellule à la souris (origine : pieds de la cible)
       const before = await js(`JSON.stringify(Editor.db().animations.find(a => a.id === 'anim_fire_hit').frames[4].cells.at(-1))`);
       await js(`(() => {
+        document.querySelector('[data-anim-stage]').scrollIntoView({ block: 'center' }); // visible quels que soient les panneaux dépliés au-dessus
         const cv = document.querySelector('[data-anim-stage]'), r = cv.getBoundingClientRect(), z = r.width / AnimationEditor.STAGE.w;
         const c = Editor.db().animations.find(a => a.id === 'anim_fire_hit').frames[4].cells.at(-1); // la cellule du dessus
         const x = r.left + (480 + c.x) * z, y = r.top + (222 + 72 + c.y) * z;
@@ -103,7 +104,7 @@ module.exports = (editor, openPlaytest) => {
       const saved = io.loadProject(dir);
       assert(saved.db.animations.some(a => a.id === result.nouvelle), 'animation enregistrée');
 
-      // 4. jeu : Xarrin lance Feu à distance (combat animé), puis sur la map
+      // 4. jeu : le héros lance Feu à distance (combat animé), puis sur la map
       const q = io.loadProject(dir);
       const hero = q.db.units[0], ch = q.db.chapters[0];
       hero.inventory = [{ id: 'w_fire' }]; hero.stats.mag = 12; hero.level = 1;

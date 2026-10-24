@@ -1612,8 +1612,7 @@
     meta.pluginMigrations = [...(meta.pluginMigrations || []), 'ultimates'];
     markDirty();
     db.ultimates = Array.isArray(db.ultimates) ? db.ultimates : [];
-    const added = Ultimates.samples().filter(u => !db.ultimates.some(x => x.id === u.id))
-      .map(u => (u.animation && !(db.animations || []).some(a => a.id === u.animation) ? Object.assign(u, { animation: '' }) : u));
+    const added = Ultimates.dropMissingAnimations(Ultimates.samples().filter(u => !db.ultimates.some(x => x.id === u.id)), db.animations);
     db.ultimates.push(...added);
     if (added.length) UI.toast(`Ultimes : ${added.length} ultime(s) d'exemple ajouté(s) (Base de données › Ultimes).`);
   }

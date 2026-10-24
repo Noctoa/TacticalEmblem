@@ -513,21 +513,6 @@ def preview(name, meta, sheet):
 # Animations de combat fournies en GIF (une image = une frame, durées du GIF)
 # ======================================================================
 GIF_BATTLERS = {
-    'Xarrin': {
-        'file': 'xarrin.gif', 'bg': (168, 208, 160), 'label': 'Xarrin (Seigneur)', 'facing': 'left',
-        'erase': [(232, 0, 247, 1)],      # palette collée dans le coin (rip)
-        'shadow': (40, 40, 40),           # couleur de l'ombre au sol : point d'ancrage de la garde
-        'drop': [33],                     # dernière image = première (boucle du GIF)
-        'credit': 'Xarrin : animation fournie par le projet (GIF)',
-        # positions gardées telles que dessinées (recul, ruée) ; le moteur fait le reste du trajet (reach)
-        'anims': {
-            'stance': {'frames': [0], 'durations': [500], 'loop': True},
-            'attack': {'frames': list(range(33)), 'first': 60, 'hit': 16, 'approach': [14, 16], 'retreat': [24, 29], 'reach': 0.56},
-            'critical': {'frames': list(range(33)), 'first': 60, 'hit': 16, 'approach': [14, 16], 'retreat': [24, 29], 'reach': 0.56,
-                         'slow': [6, 11], 'hold': {11: 450}},
-        },
-        'team': None,                     # détection automatique (manteau vert)
-    },
 }
 
 
@@ -603,14 +588,6 @@ def build_gif_battler(name, spec):
 # Sprites de map dessinés en une seule pose (image agrandie ×N acceptée) : les animations sont simulées
 # (respiration de 1 px, pas sautillés, miroir pour la droite). base = taille de case pour laquelle le sprite est dessiné.
 POSE_MAP_SPRITES = {
-    'Xarrin_Lord': {
-        'file': 'xarrin_map.png', 'label': 'Xarrin — Seigneur', 'base': 32,
-        'feet': (37, 47),                 # centre des pieds (pixels d'origine) : posé sur le bas de la case
-        'ground': 49,                     # ligne posée sur le bas de la case (juste sous l'ombre)
-        'waist': 33,                      # au-dessus de cette ligne, le corps « respire »
-        'team': ['#212b22', '#34523a', '#42694a'],   # manteau vert
-        'credit': 'Xarrin : sprite fourni par le projet',
-    },
 }
 
 

@@ -357,3 +357,14 @@
 .sup-pair-body .form { gap: 10px; }
 .armory-icon { width: 16px; height: 16px; flex: none; background: url("img/ui/weapon-icons.png") no-repeat; image-rendering: pixelated; }
 .sup-pair-body > .field { margin-bottom: 10px; }
+.anim-ult-grid { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.anim-ult-row { display: grid; grid-template-columns: minmax(150px, 1.1fr) 1fr 1fr; gap: 6px 12px; align-items: end; padding: 4px 0; border-top: 1px solid var(--line); }
+.anim-ult-row:first-child { border-top: 0; }
+.anim-ult-name { display: flex; align-items: center; gap: 8px; min-width: 0; padding-bottom: 6px; }
+.anim-ult-name > span:not(.skill-icon) { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.anim-ult-name small { color: var(--muted, #9aa); font-size: 11px; white-space: nowrap; }
+.anim-ult-row .field { margin: 0; }
+@media (max-width: 760px) { .anim-ult-row { grid-template-columns: 1fr; } }
+.gen-field { margin: 4px 0 10px; }
+.gen-row { display: flex; align-items: center; gap: 12px; }
+.gen-row .form-info { margin: 0; }

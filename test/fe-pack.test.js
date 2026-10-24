@@ -114,15 +114,3 @@ test('images du pack : Eliwood, Lyn et Hector (ressources de base), les autres v
   P.install(r.db, ['fe7'], { has: () => false, art });
   assert.equal(r.db.units.find(u => u.name === 'Lyn').portrait, '');
 });
-
-test('Xarrin a son propre sprite de map (pose unique, .json complet)', () => {
-  const fs = require('fs'), path = require('path');
-  const x = D.characters().find(u => u.id === 'c_xarrin');
-  assert.equal(x.mapSprite, 'ressources/personnages/Xarrin/map_Lord');
-  const meta = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'assets', 'default', x.mapSprite + '.json'), 'utf8'));
-  assert.equal(meta.type, 'mapsprite');
-  assert.deepEqual(meta.frame, [64, 64]);
-  assert.equal(meta.base, 32);
-  for (const a of ['idle', 'left', 'right', 'down', 'up', 'focus']) assert.ok(meta.anims[a], a);
-  assert.ok(meta.teamColors.length);
-});

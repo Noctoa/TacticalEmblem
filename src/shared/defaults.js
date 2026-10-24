@@ -155,14 +155,8 @@
   function characters() {
     const u = (o) => Object.assign({ isLord: true, mapSprite: '', battler: '', portrait: '', movBonus: 0, gender: '', protagonist: false, ending: '', series: '' }, o);
     return [
-      // protagoniste : héros du camp, chef d'escouade (convoi). Il a son propre sprite de map (pose unique, ressources/personnages/Xarrin).
-      u({ id: 'c_xarrin', name: 'Xarrin', series: 'Original', rarity: 5, classId: 'lord', level: 1, color: '#2f7d4f', convoy: true, gender: 'homme', protagonist: true,
-        ending: "Xarrin ne posa jamais vraiment son épée. Mais ceux qui l'avaient suivi savaient qu'il reviendrait toujours au camp, là où tout avait commencé.",
-        stats: st(19, 6, 0, 6, 8, 6, 5, 1), growths: st(80, 50, 5, 50, 50, 45, 30, 30),
-        inventory: [{ id: 'w_iron_sword' }, { id: 'w_slim_sword' }, { id: 'i_vulnerary' }],
-        mapSprite: CH('Xarrin_Lord'), battler: BT('Xarrin'), portrait: FACE('Xarrin'),
-        bio: "Épéiste au manteau vert qui mène la compagnie. Rapide, direct, et toujours le premier à charger." }),
-      u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', rarity: 5, classId: 'lord', level: 1, color: '#c0392b', convoy: false, gender: 'homme', protagonist: true,
+      // protagoniste : héros du camp, chef d'escouade (convoi)
+      u({ id: 'c_eliwood', name: 'Eliwood', series: 'Fire Emblem 7', rarity: 5, classId: 'lord', level: 1, color: '#c0392b', convoy: true, gender: 'homme', protagonist: true,
         ending: "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
         stats: st(18, 5, 0, 5, 7, 7, 5, 0), growths: st(80, 45, 5, 50, 40, 45, 30, 35),
         inventory: [{ id: 'w_rapier' }, { id: 'w_iron_sword' }, { id: 'i_vulnerary' }],
@@ -314,8 +308,7 @@
       kind: 'story', gold: 600, // or gagné à la première victoire (lobby)
       villages: [{ id: 'v_south', name: 'Village du sud', x: 2, y: 8, script: 'Villageois: Ces brigands nous empêchent de quitter nos maisons. Prenez cette potion et ces pièces pour vous aider !', reward: { gold: 250, itemId: 'i_vulnerary', uses: 0 } }],
       players: [
-        { id: 'p0', unitId: 'c_xarrin', x: 5, y: 13 },
-        { id: 'p1', unitId: 'c_eliwood', x: 5, y: 12 },
+        { id: 'p1', unitId: 'c_eliwood', x: 5, y: 13 },
         { id: 'p2', unitId: 'c_lyn', x: 4, y: 13 },
         { id: 'p3', unitId: 'c_hector', x: 6, y: 13 }
       ],
@@ -339,19 +332,19 @@
         { id: 'ev1', trigger: { type: 'start' }, once: true, script:
           "Lyn: Les brigands tiennent le vieux fort depuis l'aube. Ils pillent tout ce qui traverse la rivière.\n" +
           "Hector: Parfait. Ça fait trois jours que ma hache s'ennuie.\n" +
-          "Xarrin: Doucement, Hector. Leur chef, Batta, ne quittera pas le fort : on avance ensemble.\n" +
-          "Eliwood: Je reste à côté de toi, Xarrin. Si l'un de nous est encerclé, l'autre le dégage.\n" +
+          "Eliwood: Doucement, Hector. Leur chef, Batta, ne quittera pas le fort : on avance ensemble.\n" +
+          "Hector: Ensemble, alors. Je reste à côté de toi, Eliwood. Si l'un de nous est encerclé, l'autre le dégage.\n" +
           "Lyn: Je couvre le flanc gauche. Mon arc portera plus loin que leurs hachettes.\n" +
           "Cloud: … Ces brigands bloquent ma route. Je m'en occupe, mais je ne travaille pas pour vous.\n" +
-          "Xarrin: Un mercenaire ? Tant qu'il vise les brigands, il est le bienvenu.\n" +
-          "Xarrin: Si quelqu'un a besoin d'une arme ou d'une potion, venez me voir : j'ai le convoi." },
+          "Eliwood: Un mercenaire ? Tant qu'il vise les brigands, il est le bienvenu.\n" +
+          "Eliwood: Si quelqu'un a besoin d'une arme ou d'une potion, venez me voir : j'ai le convoi." },
         { id: 'ev2', trigger: { type: 'turn', turn: 3 }, once: true, script:
-          "Lyn: Xarrin ! D'autres brigands descendent des collines, au sud-est.\n" +
+          "Lyn: Eliwood ! D'autres brigands descendent des collines, au sud-est.\n" +
           "Hector: Tant mieux. Plus on est de fous…" },
         { id: 'ev3', trigger: { type: 'death', target: 'e7' }, once: true, script:
           "Batta: Grr… battu par trois gamins…" },
         { id: 'ev4', trigger: { type: 'victory' }, once: true, script:
-          "Xarrin: Le fort est libre. Les villageois vont pouvoir rentrer chez eux.\n" +
+          "Eliwood: Le fort est libre. Les villageois vont pouvoir rentrer chez eux.\n" +
           "Hector: Déjà fini ? J'espérais mieux de ce Batta.\n" +
           "Lyn: Ne te plains pas, Hector. Personne n'est blessé." }
       ]
@@ -419,12 +412,11 @@
   }
   function lobby() {
     return {
-      enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_xarrin', startGold: 500, music: '',
+      enabled: true, name: 'Camp de Varenne', mapId: 'map_camp', heroId: 'c_eliwood', startGold: 500, music: '',
       start: { x: 7, y: 8 },
       board: { x: 10, y: 2, label: 'Tableau des quêtes' },
       shop: { enabled: true, x: 2, y: 2, name: 'Marchand', stock: ['w_iron_sword', 'w_steel_sword', 'w_iron_lance', 'w_javelin', 'w_iron_axe', 'w_hand_axe', 'w_iron_bow', 'w_heal', 'i_vulnerary', 'i_elixir', 'i_master_seal', 'i_chest_key', 'i_door_key'] },
       spots: [
-        { unitId: 'c_eliwood', x: 5, y: 7, after: '' },
         { unitId: 'c_lyn', x: 5, y: 5, after: '' },
         { unitId: 'c_hector', x: 9, y: 5, after: '' },
         { unitId: 'c_cloud', x: 11, y: 8, after: 'arc_1' } // rejoint le camp après le chapitre 1
@@ -434,16 +426,16 @@
   // conversations du lobby : avec un personnage présent, débloquées par la progression
   function talks() {
     return [
-      { id: 't_eli_1', name: 'Un second', unitId: 'c_eliwood', after: '', alive: [], points: 10, once: true, script:
-        "Eliwood: Xarrin. Les autres t'attendent pour décider de la route.\nXarrin: Et toi, tu en penses quoi ?\nEliwood: Que tu ne demandes l'avis de personne… mais que tu as souvent raison.\nXarrin: Souvent ?\nEliwood: Je reste poli." },
+      { id: 't_hec_0', name: 'Un second', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
+        "Hector: Eliwood. Les autres t'attendent pour décider de la route.\nEliwood: Et toi, tu en penses quoi ?\nHector: Que tu ne demandes l'avis de personne… mais que tu as souvent raison.\nEliwood: Souvent ?\nHector: Je reste poli. Pour une fois." },
       { id: 't_lyn_1', name: 'Les guetteurs', unitId: 'c_lyn', after: '', alive: [], points: 10, once: true, script:
-        "Lyn: Xarrin. Le fort des brigands est juste au nord de la rivière.\nXarrin: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
+        "Lyn: Eliwood. Le fort des brigands est juste au nord de la rivière.\nEliwood: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal." },
       { id: 't_hec_1', name: 'Une bourse vide', unitId: 'c_hector', after: '', alive: [], points: 10, once: true, script:
-        "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nXarrin: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
+        "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nEliwood: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude." },
       { id: 't_lyn_2', name: 'Après le fort', unitId: 'c_lyn', after: 'arc_1', alive: [], points: 15, once: true, script:
-        "Lyn: Tu t'es bien battu, au fort.\nXarrin: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
+        "Lyn: Tu t'es bien battu, au fort.\nEliwood: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire." },
       { id: 't_cloud_1', name: 'Un camp calme', unitId: 'c_cloud', after: 'arc_1', alive: [], points: 0, once: true, script:
-        "Cloud: … Ton camp est calme.\nXarrin: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
+        "Cloud: … Ton camp est calme.\nEliwood: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant." }
     ];
   }
   // ------------------------------------------------------------------
@@ -453,42 +445,42 @@
   const act = (o) => Object.assign({ mapId: 'map_1', kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true,
     next: '', final: false, allies: [], events: [] }, o);
   const say = (id, script, trigger) => ({ id, trigger: trigger || { type: 'start' }, once: true, script });
-  const trio = (e, l, h, x) => [{ id: 'p0', unitId: 'c_xarrin', x: x[0], y: x[1] }, { id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
+  const trio = (e, l, h) => [{ id: 'p1', unitId: 'c_eliwood', x: e[0], y: e[1] }, { id: 'p2', unitId: 'c_lyn', x: l[0], y: l[1] }, { id: 'p3', unitId: 'c_hector', x: h[0], y: h[1] }];
 
   function extraActs() {
     return [
       act({ id: 'ch_1_2', name: 'Les renforts des collines', next: 'ch_2_1', gold: 600,
         objective: { type: 'rout', turns: 10, x: 0, y: 0 },
-        players: trio([17, 2], [16, 2], [18, 3], [17, 3]),
+        players: trio([17, 2], [16, 2], [18, 3]),
         enemies: [foe('r1', 8, 10, 2), foe('r2', 13, 10, 2, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('r3', 14, 9, 3, { gold: 100 }),
           foe('r4', 0, 7, 2, { appearTurn: 2 }), foe('r5', 1, 8, 3, { appearTurn: 2, gold: 100 })],
-        events: [say('ev1', "Lyn: Le fort est à nous… mais regardez les collines.\nHector: Des renforts ! Ils arrivent trop tard pour sauver Batta.\nXarrin: Pas trop tard pour nous causer des ennuis. On les repousse !")] }),
+        events: [say('ev1', "Lyn: Le fort est à nous… mais regardez les collines.\nHector: Des renforts ! Ils arrivent trop tard pour sauver Batta.\nEliwood: Pas trop tard pour nous causer des ennuis. On les repousse !")] }),
       act({ id: 'ch_2_1', name: "L'embuscade", next: 'ch_2_2', gold: 800,
         objective: { type: 'survive', turns: 5, x: 0, y: 0 },
-        players: trio([16, 6], [17, 7], [16, 7], [17, 6]),
+        players: trio([16, 6], [17, 7], [16, 7]),
         enemies: [foe('m1', 12, 3, 3, { name: 'Mercenaire', classId: 'mercenary', inventory: [{ id: 'w_iron_sword' }] }), foe('m2', 19, 9, 3), foe('m3', 13, 12, 3, { ai: 'range', inventory: [{ id: 'w_hand_axe' }] }),
           foe('m4', 18, 12, 2, { gold: 150 }), foe('m5', 19, 4, 3, { appearTurn: 2 }), foe('m6', 19, 10, 3, { appearTurn: 3 }), foe('m7', 15, 13, 2, { appearTurn: 3 })],
-        events: [say('ev1', "Eliwood: La route de Pherae passe par ce pont.\nLyn: Attention… on nous attendait. Ils sont partout !\nXarrin: On serre les rangs. Tenez bon jusqu'à ce qu'ils se lassent : cinq tours, pas plus !")] }),
+        events: [say('ev1', "Eliwood: La route de Pherae passe par ce pont.\nLyn: Attention… on nous attendait. Ils sont partout !\nEliwood: On serre les rangs. Tenez bon jusqu'à ce qu'ils se lassent : cinq tours, pas plus !")] }),
       act({ id: 'ch_2_2', name: 'Le fort de Zagan', final: true, gold: 1200, // dernier acte de l'histoire : la victoire ouvre l'épilogue
         objective: { type: 'seize', turns: 10, x: 5, y: 12, text: 'Prendre le fort du sud-ouest' },
-        players: trio([17, 2], [16, 2], [18, 3], [17, 3]),
+        players: trio([17, 2], [16, 2], [18, 3]),
         enemies: [{ id: 'z1', name: 'Zagan', classId: 'brigand', level: 6, x: 5, y: 12, ai: 'stationary', appearTurn: 0, isBoss: true,
           inventory: [{ id: 'w_iron_axe' }, { id: 'w_hand_axe' }], statBonus: { hp: 8, str: 2, def: 3 }, gold: 500 },
           foe('z2', 4, 11, 3), foe('z3', 6, 11, 3, { ai: 'range' }), foe('z4', 3, 10, 2, { inventory: [{ id: 'w_hand_axe' }] }), foe('z5', 7, 9, 3), foe('z6', 9, 4, 2)],
-        events: [say('ev1', "Eliwood: Le fort du sud-ouest garde l'entrée de Pherae.\nHector: Et son chef, Zagan, n'a pas l'air de vouloir nous laisser passer.\nXarrin: Alors on le prend. Ensemble."),
+        events: [say('ev1', "Eliwood: Le fort du sud-ouest garde l'entrée de Pherae.\nHector: Et son chef, Zagan, n'a pas l'air de vouloir nous laisser passer.\nEliwood: Alors on le prend. Ensemble."),
           say('ev2', "Zagan: Pherae ne vous… attendra pas…", { type: 'death', target: 'z1' })] }),
       // évènement : deux actes
       act({ id: 'ch_ev_1', name: 'Les pillards', kind: 'event', next: 'ch_ev_2', gold: 300, goldEachClear: true,
         objective: { type: 'rout', turns: 10, x: 0, y: 0 },
-        players: trio([5, 12], [4, 13], [6, 13], [5, 13]),
+        players: trio([5, 12], [4, 13], [6, 13]),
         enemies: [foe('ev_e1', 8, 9, 2, { name: 'Pillard', gold: 100 }), foe('ev_e2', 10, 6, 2, { name: 'Pillard' }), foe('ev_e3', 13, 6, 3, { name: 'Pillard', ai: 'range', gold: 100 })],
-        events: [say('ev1', "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nXarrin: Alors chassons-les avant qu'ils reviennent en nombre.")] }),
+        events: [say('ev1', "Lyn: Des pillards au gué. Ils ont vu passer nos chariots.\nEliwood: Alors chassons-les avant qu'ils reviennent en nombre.")] }),
       act({ id: 'ch_ev_2', name: 'Le chef des pillards', kind: 'event', gold: 500, goldEachClear: true,
         objective: { type: 'boss', turns: 10, x: 13, y: 5, text: 'Vaincre Kord' },
-        players: trio([5, 12], [4, 13], [6, 13], [5, 13]),
+        players: trio([5, 12], [4, 13], [6, 13]),
         enemies: [{ id: 'k1', name: 'Kord', classId: 'brigand', level: 5, x: 13, y: 5, ai: 'stationary', appearTurn: 0, isBoss: true, inventory: [{ id: 'w_iron_axe' }], statBonus: { hp: 5, str: 1 }, gold: 300 },
           foe('k2', 10, 5, 3, { name: 'Pillard' }), foe('k3', 12, 3, 2, { name: 'Pillard', ai: 'range', inventory: [{ id: 'w_hand_axe' }] }), foe('k4', 8, 10, 2, { name: 'Pillard' })],
-        events: [say('ev1', "Hector: Leur chef s'est retranché sur le banc de sable.\nXarrin: Sans lui, les pillards se disperseront. Allons-y.")] })
+        events: [say('ev1', "Hector: Leur chef s'est retranché sur le banc de sable.\nEliwood: Sans lui, les pillards se disperseront. Allons-y.")] })
     ];
   }
   /** Chapitres : groupes d'actes, joués dans l'ordre (data/arcs.json). */
@@ -507,23 +499,6 @@
   function supports() {
     const conv = (C, B, A, S) => ({ C, B, A, S: S || '' });
     return [
-      { id: 'sp_xar_eli', a: 'c_xarrin', b: 'c_eliwood', startPoints: 60, maxRank: 'A',
-        special: { rank: 'B', name: 'Lames jumelles', chance: 25, dmg: 3, hit: 10, crit: 5 },
-        combo: { rank: 'A', name: 'Charge des deux épées', chance: 40, might: 3, hit: 10 },
-        conversations: conv(
-          "Eliwood: Tu fonces toujours le premier.\nXarrin: Quelqu'un doit bien ouvrir la voie.\nEliwood: Alors je fermerai la marche derrière toi.",
-          "Xarrin: Tu as paré ce coup qui m'était destiné.\nEliwood: Tu aurais fait pareil.\nXarrin: … Oui. Mais je ne l'aurais pas fait aussi proprement.",
-          "Eliwood: Quand tout sera fini, Pherae aura besoin d'épées comme la tienne.\nXarrin: Pherae, ou toi ?\nEliwood: Les deux, mon ami."),
-        ending: "Xarrin et Eliwood restèrent liés comme des frères d'armes. On dit que la garde de Pherae porte encore un manteau vert en son honneur." },
-      { id: 'sp_xar_lyn', a: 'c_xarrin', b: 'c_lyn', startPoints: 20, maxRank: 'S',
-        special: { rank: 'B', name: 'Vent et acier', chance: 20, dmg: 3, hit: 15, crit: 0 },
-        combo: { rank: 'A', name: 'Tempête des plaines', chance: 35, might: 4, hit: 5 },
-        conversations: conv(
-          "Lyn: Tu marches comme quelqu'un qui a grandi sur les routes.\nXarrin: Et toi, comme quelqu'un qui n'a jamais vu de murs.",
-          "Xarrin: Ton arc m'a sauvé, au gué.\nLyn: Tu comptes ?\nXarrin: Je note. C'est différent.",
-          "Lyn: Le vent tourne, Xarrin. Il tourne toujours vers toi.\nXarrin: C'est bon signe ?\nLyn: Chez moi, oui.",
-          "Xarrin: Les plaines de Sacae… tu m'y emmènerais ?\nLyn: Seulement si tu restes.\nXarrin: Alors je reste."),
-        ending: "Xarrin suivit Lyn jusqu'aux plaines de Sacae. Les nomades l'appelèrent « l'épée verte », et il ne repartit jamais." },
       { id: 'sp_eli_lyn', a: 'c_eliwood', b: 'c_lyn', startPoints: 70, maxRank: 'S',
         special: { rank: 'B', name: 'Lame inspirée', chance: 25, dmg: 3, hit: 10, crit: 0 },
         combo: { rank: 'A', name: 'Danse des deux lames', chance: 40, might: 3, hit: 10 },
@@ -573,7 +548,7 @@
 
   // crédits du projet d'exemple (Système › Écran titre et crédits ; écran titre › Crédits)
   const SAMPLE_CREDITS = ['Tactical Emblem :', 'EdnidCorp.', 'Xarrin', 'Noctoa', 'Reito', 'Ota', '',
-    'Assets d’exemple :', 'Lexou', 'LS', 'Grim', 'Bonzai', 'Lord Zymeth', 'Cynon', 'OurBoiRoy', 'TheNinjaGuy914', 'trainboy2019', 'Maelstrom210', '',
+    'Assets d’exemple :', 'Lexou', 'LS', 'Grim', 'Bonzai', 'Lord Zymeth', 'TheFlyingMinotaur', 'Cynon', 'OurBoiRoy', 'TheNinjaGuy914', 'trainboy2019', 'Maelstrom210', '',
     'Musiques :', 'Yuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)', '',
     'Game Company :', 'Nintendo', 'Square-Enix'].join('\n');
   // ancien texte d'exemple : remplacé par le nouveau à l'ouverture d'un projet qui l'a gardé tel quel

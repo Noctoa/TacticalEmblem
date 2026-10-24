@@ -42,9 +42,25 @@ test('validation : recharge 1-9, réglages de chaque effet, références', () =>
   assert.match(U.validateAll([ok, Object.assign({}, ok)]).join(), /double/);
   const db = { ultimates: [ok], units: [{ name: 'Lyn', ultimate: 'absent' }, { name: 'Eli', ultimate: 'x' }], animations: [] };
   assert.match(U.validateLinks(db).join(), /Lyn/);
-  ok.animation = 'anim_absente'; assert.match(U.validateLinks(db).join(), /animation introuvable/);
+  ok.animation = 'anim_absente'; assert.match(U.validateLinks(db).join(), /animation d’impact introuvable/);
+  ok.animation = ''; ok.castAnimation = 'anim_absente'; assert.match(U.validateLinks(db).join(), /animation de lancement introuvable/);
+  ok.castAnimation = '';
   assert.deepEqual(U.usersOf(db, 'x'), ['Unité « Eli »']);
   U.forget(db, 'x'); assert.equal(db.units[1].ultimate, '');
+});
+
+test('animations des ultimes : lancement et impact, utilisateurs, suppression, exemples sans animation', () => {
+  const A = require('../src/shared/animations');
+  const p = D.sampleProject('Jeu');
+  const met = p.db.ultimates.find(u => u.id === 'ult_meteore');
+  assert.equal(met.castAnimation, 'anim_thunder'); assert.equal(met.animation, 'anim_fire_hit');
+  assert.ok(A.usersOf(p.db, p.meta, 'anim_thunder').includes('Ultime « Météore »'));
+  A.forget(p.db, p.meta, 'anim_thunder'); A.forget(p.db, p.meta, 'anim_fire_hit');
+  assert.equal(met.castAnimation, ''); assert.equal(met.animation, '');
+  const list = U.dropMissingAnimations(U.samples(), [{ id: 'anim_heal' }]);
+  assert.deepEqual(list.find(u => u.id === 'ult_aurore').castAnimation, 'anim_heal');
+  assert.equal(list.find(u => u.id === 'ult_assaut').castAnimation, '');
+  assert.equal(U.strikeOpts(U.samples()[0]).castAnimation, 'anim_sol');
 });
 
 test('changement d’effet : les réglages de l’ancien effet disparaissent', () => {
@@ -98,8 +114,8 @@ test('unité d’un personnage : ultime et recharge de départ', () => {
   const p = D.sampleProject('Jeu');
   const hector = R.makeUnitFromCharacter(p.db.units.find(u => u.id === 'c_hector'), p.db, { x: 0, y: 0 });
   assert.equal(hector.ultimate, 'ult_meteore'); assert.equal(hector.ultCharge, 4); // « Météore » commence en recharge
-  const xarrin = R.makeUnitFromCharacter(p.db.units.find(u => u.id === 'c_xarrin'), p.db, { x: 0, y: 0 });
-  assert.equal(xarrin.ultCharge, 0);
+  const eliwood = R.makeUnitFromCharacter(p.db.units.find(u => u.id === 'c_eliwood'), p.db, { x: 0, y: 0 });
+  assert.equal(eliwood.ultimate, 'ult_cri'); assert.equal(eliwood.ultCharge, 0);
   const lost = R.makeUnitFromCharacter(Object.assign({}, p.db.units[0], { ultimate: 'absent' }), p.db, { x: 0, y: 0 });
   assert.equal(lost.ultimate, '');
 });

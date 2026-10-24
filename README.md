@@ -88,13 +88,18 @@ Par défaut, un défi n’est récompensé qu’une fois dans la campagne ; un d
 
 **Icônes de compétences** — Chaque compétence peut avoir une icône façon *Heroes* (Base de données › Compétences › *Icône* › « Choisir une icône… ») : plus de 1 300 icônes rangées en 9 planches (`src/renderer/img/skills/`), toutes disponibles même si aucune compétence de base ne les utilise encore. Les compétences de base ont la leur (un ancien projet la reçoit à l'ouverture) ; sans icône, le symbole s'affiche comme avant. L'icône apparaît dans la liste des compétences, les prévisions de combat, la fiche des compétences en jeu, l'équipe au camp et le bandeau turquoise des combats animés.
 
-**Ultimes** — Une action spéciale par personnage, rechargée en tours. Les ultimes se créent dans **Base de données › Ultimes** et se choisissent dans la fiche du personnage (**Unités › Ultime**). Réglages communs : nom, icône (l'icône d'ultime de `src/renderer/img/ui/ultimate/`, ou une icône des planches de compétences), description, **tours de recharge** (1 à 9), « prêt dès le premier tour », animation. Quatre effets :
+**Ultimes** — Une action spéciale par personnage, rechargée en tours. Les ultimes se créent dans **Base de données › Ultimes** et se choisissent dans la fiche du personnage (**Unités › Ultime**). Réglages communs : nom, icône (l'icône d'ultime de `src/renderer/img/ui/ultimate/`, ou une icône des planches de compétences), description, **tours de recharge** (1 à 9), « prêt dès le premier tour », animations de **lancement** (jouée sur le personnage quand il lance l'ultime, après l'annonce) et d'**impact** (le coup d'une frappe, ou l'effet sur chaque unité touchée). Ces deux animations se règlent aussi dans **Base de données › Animations › Animations des ultimes**, une ligne par ultime. Quatre effets :
 - **Frappe ultime** : une attaque contre une cible à portée de l'arme ; le premier coup inflige un pourcentage des dégâts normaux (100 à 500 %), avec touche assurée et sans riposte en option. La prévision affiche les dégâts de l'ultime.
 - **Soin de zone** : rend un pourcentage des PV max aux alliés autour du lanceur (lui compris en option) et peut dissiper les altérations.
 - **Dégâts de zone** : autour du lanceur, ou autour d'une case choisie à portée (violet : portée, rouge : zone). Dégâts = Force ou Magie (ou la plus haute) × puissance − Défense ou Résistance ; les alliés ne sont jamais touchés et « peut vaincre » se désactive pour laisser 1 PV.
 - **Renfort d'alliés** : bonus de dégâts / précision / esquive pendant 1 à 9 tours aux alliés proches, et en option un nouveau tour pour ceux qui ont déjà agi.
 
 En bataille, **Ultime** apparaît dans le menu d'action ; une fois utilisé, il se recharge d'un tour au début de chaque phase de son camp. Au-dessus du personnage, la carte affiche les tours restants avec les chiffres de l'asset, puis l'icône d'ultime (pulsée) quand il est prêt ; la fenêtre d'unité et la fiche (page Compétences) indiquent aussi l'ultime et sa recharge. Le projet d'exemple contient quatre ultimes (Assaut fulgurant, Aurore, Météore, Cri de ralliement) attribués à ses héros ; un ancien projet reçoit les exemples sans les attribuer. Les ennemis n'utilisent pas d'ultime. Fichiers : `src/shared/ultimates.js`, `data/ultimates.json`, découpe de l'asset par `tools/build_ui_ultimate.py`.
+
+**Générateur de personnage** — D'après *FE Character Creator* (TheFlyingMinotaur) : plus de 900 pièces façon Fire Emblem GBA (258 coiffures, 240 visages, 239 tenues, 206 figurines de classe) se superposent et se recolorent en six teintes (peau, cheveux, métal, ornements, tissu, cuir).
+- **Éditeur** : **Unités › une unité › Apparence › « Créer avec le générateur… »**. Flèches ◀ ▶ ou grille de vignettes (avec recherche) pour chaque pièce, nuancier ou couleur libre, décalage pixel par pixel des cheveux, du visage et de la tenue, boutons *Aléatoire* et *Couleurs au hasard*. À l'enregistrement, un portrait au format face set (`portrait_genere.png`, 128 × 112 avec son mini-portrait) et un sprite de map animé tiré de la figurine (`map_genere.png` / `.json`, respiration, pas, miroir, couleurs d'équipe sur le tissu) sont écrits dans `ressources/personnages/<Nom>/` et attribués à l'unité. La recette est gardée dans la fiche : « Retoucher avec le générateur… » la rouvre. Les pièces de départ portent le nom du personnage quand elles existent (Lyn, Eliwood, Hector…).
+- **Protagoniste créé par le joueur** : **Système › Protagoniste créé par le joueur** — à la nouvelle partie, le joueur compose l'apparence (et, si coché, le nom) du personnage choisi (héros du camp par défaut) dans une fenêtre aux couleurs du jeu. Portrait, sprite de map et nom remplacent ceux du personnage pendant toute la partie et sont sauvegardés avec elle ; dans les dialogues et les fins, son nom d'origine devient le nom choisi, et `{héros}` s'écrit pour le nommer. Ses statistiques, sa classe et son animation de combat restent celles de sa fiche.
+- Pièces : `tools/generator-parts/` (sources), regroupées en planches dans `src/renderer/img/generator/` par `tools/build_generator_parts.py` ; calculs dans `src/shared/char-gen.js`, fenêtre dans `src/renderer/char-gen-ui.js`.
 
 **Altérations d'état** — Poison, Sommeil et Silence sont disponibles dans le noyau, sans plugin. Les lettres **P / Z / S** apparaissent sur la map ; la fiche d'unité affiche le nom et la durée restante, avec le détail au survol.
 
@@ -183,7 +188,7 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Alliés (unités vertes)** — En mode Unités, la section *Alliés* de la palette place un personnage de la base en vert. Il ne fait pas partie de l'équipe : sa mort ne fait pas perdre, il ne compte pas pour la défaite. La **phase alliée** se joue juste après la phase du joueur. Pour chaque allié, *Contrôle* : **Jouable** (tu le diriges pendant la phase alliée) ou **IA** (il joue seul, avec le comportement choisi). Sur la map il est posé sur un carré vert. Cloud est fourni comme exemple d'allié jouable.
 
-**Convoi** — Coche *Chef d'escouade* dans la fiche d'une unité (Xarrin par défaut). Il a l'action *Convoi* dans son menu ; les autres unités du joueur l'ont aussi quand elles s'arrêtent sur une case adjacente à lui. On y dépose et retire armes et objets (5 places par unité). Le contenu de départ et la capacité se règlent dans Système.
+**Convoi** — Coche *Chef d'escouade* dans la fiche d'une unité (Eliwood par défaut). Il a l'action *Convoi* dans son menu ; les autres unités du joueur l'ont aussi quand elles s'arrêtent sur une case adjacente à lui. On y dépose et retire armes et objets (5 places par unité). Le contenu de départ et la capacité se règlent dans Système.
 
 **Terrains** — Chaque terrain donne un bonus d'esquive et de défense au défenseur, plus un coût de déplacement par type d'unité : forêt (+20 esq, +1 déf), buisson (+10 esq), fourré (+40 esq, +1 déf, interdit aux cavaliers et blindés), fort (+20 esq, +2 déf, soin 20 %)… Le bonus de la case occupée s'affiche sous l'unité en jeu, et il est déjà compté dans les prévisions de combat.
 
@@ -336,7 +341,7 @@ Les données d'un plugin se rangent dans la base (`db.<clé>` est enregistré da
 
 ## Affinités (soutiens) et épilogue
 
-**Affinités, dans la fiche des unités** (Base de données › Unités › Affinités) — Une paire par partenaire, dépliable : partenaire, points au départ, rang maximum (A ou S), attaque spéciale, attaque duo, une conversation par rang et le texte de fin du couple ; « ＋ Nouvelle affinité avec… » en ajoute une. Six paires sont fournies : Xarrin ♥ Eliwood, Xarrin ♥ Lyn, Eliwood ♥ Lyn, Eliwood ♥ Hector, Hector ♥ Lyn, Lyn ♥ Cloud.
+**Affinités, dans la fiche des unités** (Base de données › Unités › Affinités) — Une paire par partenaire, dépliable : partenaire, points au départ, rang maximum (A ou S), attaque spéciale, attaque duo, une conversation par rang et le texte de fin du couple ; « ＋ Nouvelle affinité avec… » en ajoute une. Quatre paires sont fournies : Eliwood ♥ Lyn, Eliwood ♥ Hector, Hector ♥ Lyn, Lyn ♥ Cloud.
 
 **Comment ça monte** — +3 points quand les deux finissent la phase joueur côte à côte, +2 quand l'un combat à côté de l'autre (réglable dans Système › Affinités, ainsi que les seuils C/B/A/S). Quand un nouveau rang est atteint, l'action **Soutien** apparaît dans le menu si les deux sont adjacents : la conversation se joue et le rang monte. Comme dans les jeux, un personnage ne peut avoir qu'un seul rang S.
 
@@ -393,7 +398,7 @@ MonJeu/
         combat.png         + combat.json          animation de combat
         combat_arrow.png                          projectile de l'animation
         portrait.png                              portrait / face set
-      Brigand/ Cloud/ Eliwood/ Hector/ Xarrin/
+      Brigand/ Cloud/ Eliwood/ Hector/
     tilesets/              images des tilesets
     interface/             curseur, fenêtres…
     musiques/              musiques de phase
@@ -435,7 +440,6 @@ Chaque nouveau projet reçoit le contenu de `assets/default/ressources/` :
 
 | Dossier | Contenu |
 |---|---|
-| `personnages/Xarrin` | protagoniste : animation de combat (tirée de `xarrin.gif`), portrait, sprite de map `map_Lord` (tiré de `xarrin_map.png`, une seule pose dessinée en 64×64 pour des cases de 32 : `base: 32`) |
 | `personnages/Eliwood` | sprites de map Seigneur et Chevalier-Seigneur, animation de combat, portrait en face set (planche FE GBA animée) |
 | `personnages/Lyn` | Seigneur et Lame-Seigneur, animation (épée + arc, flèche en projectile), portrait |
 | `personnages/Hector` | Seigneur et Grand Seigneur, animation (hache + hachette lancée), portrait |
@@ -464,7 +468,7 @@ Pour un projet sans ressources : Base de données › Ressources › **Ajouter l
 
 Les sprites sont liés aux **classes** (Base de données › Classes : *Sprite de map* et *Animation de combat*). Une unité peut surcharger ceux de sa classe. Une classe sans sprite s'affiche en jeton coloré ; si un des deux combattants n'a pas d'animation, le combat se joue directement sur la map. L'onglet **Ressources** de la base de données liste tout ce qu'il y a dans `ressources/`, avec une recherche et un **Trier par** : personnage (dossier), type de ressource (sprites de map, animations, portraits), série ou arme du personnage. Le personnage d'un dossier est l'unité de même nom ou celle qui utilise ses ressources ; pour l'arme, à défaut d'unité, c'est la classe qui les utilise (le Brigand est rangé sous Hache). Chaque ressource est présentée avec un aperçu animé (couleur d'origine / bleu / rouge / vert / gris, chaque animation, frame d'impact), les couleurs d'équipe et un bouton qui ouvre le dossier de la ressource.
 
-Le chapitre d'exemple met Xarrin, Eliwood, Lyn et Hector face aux brigands de Batta. Xarrin est le héros du camp et le chef d'escouade (convoi).
+Le chapitre d'exemple met Eliwood, Lyn et Hector face aux brigands de Batta. Eliwood est le héros du camp et le chef d'escouade (convoi).
 
 Un tileset dont les tiles sont plus petits que les cases de la map (16 px sur une map en 32 px, par ex.) est agrandi d'un facteur entier à l'affichage, comme les sprites de map.
 
@@ -488,7 +492,7 @@ Toutes les frames ont la même taille (`cell`) et le même point d'ancrage au so
 
 - `hit` : frame de l'impact (dégâts, flash, recul)
 - `approach` / `retreat` : frames pendant lesquelles l'attaquant avance vers l'adversaire / revient
-- `reach` : part du trajet parcourue pendant `approach` (1 par défaut ; moins quand le mouvement est déjà dessiné dans les frames, comme pour Xarrin)
+- `reach` : part du trajet parcourue pendant `approach` (1 par défaut ; moins quand le mouvement est déjà dessiné dans les frames)
 - `projectile`, `release`, `catch` : projectile (`arrow`, `axe`), frame du tir et frame où l'arme revient
 - `projectiles` : images des projectiles, rangées à côté de la planche (`{ "arrow": "combat_arrow.png" }`)
 - `teamColors` : comme pour les sprites de map
@@ -504,7 +508,7 @@ Les planches d'origine sont dans `tools/sprite-sources/` (dont `cloud.gif`). Le 
 python3 tools/build_default_resources.py --preview apercu/
 ```
 
-Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_combat.png` (même taille que la planche générée, y compris pour les animations tirées d'un GIF) : elle remplace la planche générée, le `.json` reste celui du script. Un face set se pose dans `<nom>_faceset.png`, un portrait simple dans `<nom>_portrait.png`. Les animations tirées d'un GIF (Cloud, Xarrin) se règlent dans `GIF_BATTLERS` : couleur de fond, ombre, frames de chaque animation, impact, avance / recul. Un sprite de map dessiné en une seule pose (agrandi ×N accepté) se déclare dans `POSE_MAP_SPRITES` : le script le ramène à sa taille d'origine et simule les animations (respiration, petits sauts pendant la marche, miroir pour la droite). Le champ `base` du `.json` donne la taille de case pour laquelle le sprite est dessiné : 16 pour les sprites GBA, 32 pour Xarrin.
+Une planche retouchée à la main se pose dans `tools/sprite-sources/<nom>_combat.png` (même taille que la planche générée, y compris pour les animations tirées d'un GIF) : elle remplace la planche générée, le `.json` reste celui du script. Un face set se pose dans `<nom>_faceset.png`, un portrait simple dans `<nom>_portrait.png`. Les animations tirées d'un GIF se règlent dans `GIF_BATTLERS` : couleur de fond, ombre, frames de chaque animation, impact, avance / recul. Un sprite de map dessiné en une seule pose (agrandi ×N accepté) se déclare dans `POSE_MAP_SPRITES` : le script le ramène à sa taille d'origine et simule les animations (respiration, petits sauts pendant la marche, miroir pour la droite). Le champ `base` du `.json` donne la taille de case pour laquelle le sprite est dessiné : 16 pour les sprites GBA, 32 pour un sprite dessiné en 64×64.
 
 (Pillow + numpy.) Les découpages, frames d'impact et cadrages des portraits sont réglés en haut du script.
 

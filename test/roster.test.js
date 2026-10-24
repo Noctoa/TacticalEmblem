@@ -5,13 +5,13 @@ const Roster = require('../src/shared/roster');
 const D = require('../src/shared/defaults');
 
 // les cinq personnages de l'histoire (sans ceux à invoquer)
-const db = () => { const d = D.sampleProject('Tri').db; d.units = d.units.filter(u => ['c_xarrin', 'c_eliwood', 'c_lyn', 'c_hector', 'c_cloud'].includes(u.id)); return d; };
+const db = () => { const d = D.sampleProject('Tri').db; d.units = d.units.filter(u => ['c_eliwood', 'c_lyn', 'c_hector', 'c_cloud'].includes(u.id)); return d; };
 const names = groups => groups.map(g => [g.label, g.units.map(u => u.name)]);
 
 test('ordre de la base et tri par nom', () => {
   const d = db();
-  assert.deepEqual(names(Roster.arrange(d.units, d, {})), [['', ['Xarrin', 'Eliwood', 'Lyn', 'Hector', 'Cloud']]]);
-  assert.deepEqual(names(Roster.arrange(d.units, d, { by: 'name' })), [['', ['Cloud', 'Eliwood', 'Hector', 'Lyn', 'Xarrin']]]);
+  assert.deepEqual(names(Roster.arrange(d.units, d, {})), [['', ['Eliwood', 'Lyn', 'Hector', 'Cloud']]]);
+  assert.deepEqual(names(Roster.arrange(d.units, d, { by: 'name' })), [['', ['Cloud', 'Eliwood', 'Hector', 'Lyn']]]);
 });
 
 test('par série : ordre alphabétique, personnages sans série à la fin', () => {
@@ -19,8 +19,8 @@ test('par série : ordre alphabétique, personnages sans série à la fin', () =
   d.units.push(Object.assign({}, d.units[0], { id: 'c_x', name: 'Anonyme', series: '  ' }));
   d.units.push(Object.assign({}, d.units[0], { id: 'c_y', name: 'Roy', series: 'fire emblem 7' })); // même série, casse différente
   assert.deepEqual(names(Roster.arrange(d.units, d, { by: 'series' })), [
-    ['Final Fantasy VII', ['Cloud']], ['Fire Emblem 7', ['Eliwood', 'Hector', 'Lyn', 'Roy']], ['Original', ['Xarrin']], [Roster.NO_SERIES, ['Anonyme']]]);
-  assert.deepEqual(Roster.seriesList(d), ['Final Fantasy VII', 'Fire Emblem 7', 'Original']);
+    ['Final Fantasy VII', ['Cloud']], ['Fire Emblem 7', ['Eliwood', 'Hector', 'Lyn', 'Roy']], [Roster.NO_SERIES, ['Anonyme']]]);
+  assert.deepEqual(Roster.seriesList(d), ['Final Fantasy VII', 'Fire Emblem 7']);
 });
 
 test('par arme : armes de la classe, dans l’ordre des types ; plusieurs armes = plusieurs groupes', () => {
@@ -46,7 +46,7 @@ test('par classe, dans l’ordre des classes de la base', () => {
   const groups = Roster.arrange(d.units, d, { by: 'class' });
   const order = d.classes.map(c => c.id);
   assert.deepEqual(groups.map(g => g.key), groups.map(g => g.key).slice().sort((a, b) => order.indexOf(a) - order.indexOf(b)));
-  assert.deepEqual(groups.find(g => g.key === 'lord').units.map(u => u.name), ['Eliwood', 'Xarrin']);
+  assert.deepEqual(groups.find(g => g.key === 'lord').units.map(u => u.name), ['Eliwood']);
 });
 
 test('recherche : nom, classe, arme ou série, sans accents ni casse', () => {
@@ -57,5 +57,5 @@ test('recherche : nom, classe, arme ou série, sans accents ni casse', () => {
   assert.deepEqual(find('EPEE fire'), ['Eliwood', 'Lyn']);
   assert.deepEqual(find('hache'), ['Hector']);
   assert.deepEqual(find('zzz'), []);
-  assert.deepEqual(names(Roster.arrange(d.units, d, { by: 'series', query: 'xar' })), [['Original', ['Xarrin']]]);
+  assert.deepEqual(names(Roster.arrange(d.units, d, { by: 'series', query: 'clou' })), [['Final Fantasy VII', ['Cloud']]]);
 });

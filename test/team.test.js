@@ -6,7 +6,7 @@ const Team = require('../src/shared/team'), C = require('../src/shared/campaign'
 const R = require('../src/shared/rules'), P = require('../src/shared/promotions'), io = require('../src/main/project-io');
 function fixture() {
   const project = D.sampleProject('Préparatifs'), db = project.db, meta = project.meta;
-  meta.lobby.initialRoster = ['c_xarrin', 'c_hector'];
+  meta.lobby.initialRoster = ['c_eliwood', 'c_hector'];
   const campaign = C.create('classic');
   const members = Team.sync(campaign, db, meta).map(id => C.apply(campaign, R.makeUnitFromCharacter(db.units.find(u => u.id === id), db, { x: 0, y: 0 }), db));
   return { project, db, meta, campaign, members, convoy: [{ id: 'w_iron_sword', uses: 7 }], capacity: 3 };
@@ -14,7 +14,7 @@ function fixture() {
 test('effectif indépendant des PNJ : personnage recruté absent de la map et PNJ non recruté', () => {
   const { db, meta, campaign } = fixture();
   meta.lobby.spots = [{ unitId: 'c_lyn', x: 2, y: 2 }];
-  assert.deepEqual(Team.sync(campaign, db, meta), ['c_xarrin', 'c_hector']);
+  assert.deepEqual(Team.sync(campaign, db, meta), ['c_eliwood', 'c_hector']);
   assert.ok(!campaign.recruited.includes('c_lyn'));
   assert.ok(!campaign.recruited.includes('c_cloud'));
 });
@@ -84,7 +84,7 @@ test('préparatifs et promotion d’un réserviste : sauvegarde puis déploiemen
   assert.ok(Team.setSkill(unit, 'skill_sol', 0, db.skills).ok);
   assert.ok(P.apply(unit, 'great_lord', db).ok); C.commit(campaign, members);
   const save = C.checkpoint('@lobby', campaign, convoy, {}), restored = C.restore(JSON.parse(JSON.stringify(save)), {});
-  assert.deepEqual(Team.sync(restored.campaign, db, meta), ['c_xarrin', 'c_hector']);
+  assert.deepEqual(Team.sync(restored.campaign, db, meta), ['c_eliwood', 'c_hector']);
   const next = C.apply(restored.campaign, R.makeUnitFromCharacter(db.units.find(u => u.id === unit.sourceId), db, { x: 5, y: 5 }), db);
   assert.equal(next.classId, 'great_lord'); assert.equal(next.level, 1); assert.equal(next.effectiveLevel, 21);
   assert.deepEqual(next.inventory, unit.inventory); assert.deepEqual(next.equippedSkills, ['skill_sol']);
@@ -109,6 +109,6 @@ test('nouveau projet vide : aucun recrutement lié aux actes supprimés de l’e
   assert.equal(project.db.chapters.length, 0);
   assert.deepEqual(Team.validate(project.db, project.meta), []);
   assert.ok(project.db.units.every(unit => !unit.recruitAfter));
-  assert.deepEqual(Team.sync(C.create('classic'), project.db, project.meta), ['c_xarrin']);
+  assert.deepEqual(Team.sync(C.create('classic'), project.db, project.meta), ['c_eliwood']);
   assert.doesNotThrow(() => io.saveProject(dir, project));
 });

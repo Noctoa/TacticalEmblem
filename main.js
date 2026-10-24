@@ -209,6 +209,8 @@ handle('portrait:import', importAsset((dir, owner) => io.DIRS.characters + '/' +
 handle('resources:scan', (e, dir) => io.scanResources(dir));
 handle('resources:installDefaults', (e, dir, only) => io.installDefaults(dir, ASSETS, only));
 handle('resources:setTeamColors', (e, dir, key, colors) => io.setTeamColors(dir, key, colors));
+// générateur de personnage : portrait et sprite de map écrits dans ressources/personnages/<Nom>/
+handle('resources:writeGenerated', (e, dir, owner, files) => io.writeGenerated(dir, owner, files));
 handle('resources:openFolder', (e, dir, sub) => {
   const target = path.resolve(dir, sub || Layout.ROOT);
   if (!target.startsWith(path.resolve(dir))) throw new Error('Dossier hors du projet.');

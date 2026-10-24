@@ -6,7 +6,8 @@
  *     cooldown: 3,            tours de recharge après utilisation (1 à 9)
  *     ready: true,            prêt dès le premier tour (sinon il commence en recharge)
  *     effect: 'strike' | 'heal' | 'blast' | 'rally',
- *     animation: 'anim_…',    animation jouée (frappe : remplace celle de l'arme ; zone : sur chaque unité touchée)
+ *     castAnimation: 'anim_…', animation de lancement, jouée sur le lanceur quand il lance l'ultime
+ *     animation: 'anim_…',    animation d'impact (frappe : remplace celle de l'arme ; zone : sur chaque unité touchée)
  *     strike : power (% des dégâts), sureHit (touche assurée), noCounter (pas de riposte)
  *     heal   : amount (% des PV max), radius, self (le lanceur aussi), cure (dissipe les altérations)
  *     blast  : area ('self' autour du lanceur | 'tile' case choisie), range (portée de la case), radius,
@@ -49,18 +50,18 @@
     for (const k of PARAM_KEYS) delete u[k];
     return Object.assign(u, { effect }, parameters(effect));
   }
-  const create = (effect = 'strike') => Object.assign({ name: 'Nouvel ultime', icon: '✹', image: ICON, description: '', cooldown: 3, ready: true, animation: '', effect }, parameters(effect));
+  const create = (effect = 'strike') => Object.assign({ name: 'Nouvel ultime', icon: '✹', image: ICON, description: '', cooldown: 3, ready: true, castAnimation: '', animation: '', effect }, parameters(effect));
 
   function samples() {
     return [
-      Object.assign(create('strike'), { id: 'ult_assaut', name: 'Assaut fulgurant', description: 'Un coup assuré qui inflige le double des dégâts.', cooldown: 3 }),
-      Object.assign(create('heal'), { id: 'ult_aurore', name: 'Aurore', description: 'Rend la moitié de leurs PV aux alliés proches et dissipe leurs altérations.', cooldown: 4, cure: true }),
-      Object.assign(create('blast'), { id: 'ult_meteore', name: 'Météore', description: 'Une pluie de feu sur une zone choisie à 3 cases.', cooldown: 4, ready: false, animation: 'anim_fire_hit' }),
-      Object.assign(create('rally'), { id: 'ult_cri', name: 'Cri de ralliement', description: 'Les alliés proches gagnent des bonus et ceux qui ont déjà agi rejouent.', cooldown: 5, refresh: true })
+      Object.assign(create('strike'), { id: 'ult_assaut', name: 'Assaut fulgurant', description: 'Un coup assuré qui inflige le double des dégâts.', cooldown: 3, castAnimation: 'anim_sol', animation: 'anim_luna' }),
+      Object.assign(create('heal'), { id: 'ult_aurore', name: 'Aurore', description: 'Rend la moitié de leurs PV aux alliés proches et dissipe leurs altérations.', cooldown: 4, cure: true, castAnimation: 'anim_heal', animation: 'anim_heal' }),
+      Object.assign(create('blast'), { id: 'ult_meteore', name: 'Météore', description: 'Une pluie de feu sur une zone choisie à 3 cases.', cooldown: 4, ready: false, castAnimation: 'anim_thunder', animation: 'anim_fire_hit' }),
+      Object.assign(create('rally'), { id: 'ult_cri', name: 'Cri de ralliement', description: 'Les alliés proches gagnent des bonus et ceux qui ont déjà agi rejouent.', cooldown: 5, refresh: true, castAnimation: 'anim_sol' })
     ];
   }
   /** Ultimes des personnages de l'exemple (sampleProject). */
-  const SAMPLE_UNITS = { c_xarrin: 'ult_assaut', c_eliwood: 'ult_cri', c_lyn: 'ult_assaut', c_hector: 'ult_meteore', c_serra: 'ult_aurore', c_cloud: 'ult_assaut' };
+  const SAMPLE_UNITS = { c_eliwood: 'ult_cri', c_lyn: 'ult_assaut', c_hector: 'ult_meteore', c_serra: 'ult_aurore', c_cloud: 'ult_assaut' };
 
   function validate(u, list) {
     const errors = [], who = u && u.name ? `Ultime « ${u.name} »` : 'Ultime';
@@ -102,7 +103,8 @@
   function validateLinks(db) {
     const list = (db && db.ultimates) || [], errors = [];
     for (const c of (db && db.units) || []) if (c && c.ultimate && !byId(list, c.ultimate)) errors.push(`Unité « ${c.name} » : ultime introuvable.`);
-    for (const u of list) if (u && u.animation && db && Array.isArray(db.animations) && !byId(db.animations, u.animation)) errors.push(`Ultime « ${u.name} » : animation introuvable.`);
+    for (const u of list) for (const [k, what] of [['animation', 'animation d’impact'], ['castAnimation', 'animation de lancement']])
+      if (u && u[k] && db && Array.isArray(db.animations) && !byId(db.animations, u[k])) errors.push(`Ultime « ${u.name} » : ${what} introuvable.`);
     return errors;
   }
   const usersOf = (db, id) => ((db && db.units) || []).filter(c => c.ultimate === id).map(c => 'Unité « ' + c.name + ' »');
@@ -142,7 +144,7 @@
     return ult.lethal ? Math.min(dmg, target.hp) : Math.min(dmg, Math.max(0, target.hp - 1));
   }
   /** Réglages de la frappe pour Rules.resolveCombat (opts.ultimate). */
-  const strikeOpts = (ult) => ({ id: ult.id, name: ult.name, icon: ult.icon || '✹', image: ult.image || ICON, animation: ult.animation || '',
+  const strikeOpts = (ult) => ({ id: ult.id, name: ult.name, castAnimation: ult.castAnimation || '', icon: ult.icon || '✹', image: ult.image || ICON, animation: ult.animation || '',
     power: ult.power, sureHit: !!ult.sureHit, noCounter: !!ult.noCounter });
   /** Dégâts d'un coup d'ultime (après protection et critique). */
   const strikeDamage = (damage, ult) => Math.floor(damage * ((ult && ult.power) || 100) / 100);
@@ -173,6 +175,12 @@
     return parts.filter(Boolean).join(' · ') + ` · recharge ${u.cooldown} tour(s)${u.ready === false ? ' (en recharge au départ)' : ''}.`;
   }
 
-  return { EFFECTS, STATS, AREAS, ICON, effectOf, parameters, setEffect, create, samples, SAMPLE_UNITS, validate, validateAll, validateLinks,
+  /** Animations (lancement, impact) d'exemple absentes du projet : retirées de ces ultimes. */
+  function dropMissingAnimations(list, animations) {
+    for (const u of list) for (const k of ['animation', 'castAnimation']) if (u[k] && !(animations || []).some(a => a.id === u[k])) u[k] = '';
+    return list;
+  }
+
+  return { dropMissingAnimations, EFFECTS, STATS, AREAS, ICON, effectOf, parameters, setEffect, create, samples, SAMPLE_UNITS, validate, validateAll, validateLinks,
     usersOf, forget, initialCharge, area, centerOf, affected, healAmount, blastDamage, strikeOpts, strikeDamage, rallyBonus, beginPhase, describe, byId };
 });

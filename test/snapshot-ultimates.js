@@ -46,6 +46,17 @@ module.exports = (editor, openPlaytest) => {
       assert(await ejs(`Editor.db().ultimates.find(u => u.id === 'ult_meteore').area === undefined`), 'réglages de zone retirés');
       await ejs(`(() => { const s = [...document.querySelectorAll('.db-form select')].find(x => [...x.options].some(o => o.value === 'rally')); s.value = 'blast'; s.dispatchEvent(new Event('change')); })()`);
       await euntil(`Editor.db().ultimates.find(u => u.id === 'ult_meteore').effect === 'blast'`);
+      // onglet Animations : animations de lancement et d'impact de chaque ultime
+      await ejs(`DBEditor.open('animations', 'anim_thunder')`);
+      await euntil(`!!document.querySelector('[data-anim-ult-cast="ult_meteore"]')`);
+      await ejs(`document.querySelector('.anim-ultimates').open = true`);
+      result.animUltimes = await ejs(`({ lancement: document.querySelector('[data-anim-ult-cast="ult_meteore"]').value, impact: document.querySelector('[data-anim-ult-hit="ult_meteore"]').value, lignes: document.querySelectorAll('.anim-ult-row').length })`);
+      assert(result.animUltimes.lancement === 'anim_thunder' && result.animUltimes.impact === 'anim_fire_hit' && result.animUltimes.lignes === 4, 'animations des ultimes : ' + JSON.stringify(result.animUltimes));
+      await ejs(`(() => { const s = document.querySelector('[data-anim-ult-cast="ult_cri"]'); s.value = 'anim_flux'; s.dispatchEvent(new Event('change')); })()`);
+      assert(await ejs(`Editor.db().ultimates.find(u => u.id === 'ult_cri').castAnimation === 'anim_flux'`), 'lancement attribué');
+      await ejs(`document.querySelector('.anim-ultimates').scrollIntoView()`);
+      await wait(300); await eshot('b0_animations_ultimes');
+      await ejs(`document.querySelector('.anim-ultimates').open = false`);
       await ejs(`DBEditor.open('units', 'c_hector')`);
       await euntil(`[...document.querySelectorAll('.field-label')].some(l => l.textContent.startsWith('Ultime'))`);
       result.champUnite = await ejs(`(() => { const l = [...document.querySelectorAll('.field-label')].find(l => l.textContent.startsWith('Ultime')); const s = l.parentElement.querySelector('select'); return s.options[s.selectedIndex].textContent; })()`);

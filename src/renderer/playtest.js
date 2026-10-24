@@ -129,6 +129,7 @@
         return startFromSave(saved);
       } else {
         G.campaign = Campaign.create(choice === 'direct' ? 'classic' : choice, lobbyCfg.startGold);
+        await createAvatar(); // protagoniste créé par le joueur (Système), avant le premier écran de jeu
         startClock(0);
         TacticalEmblem.emit('campaign:new', { campaign: G.campaign }); // plugins : monnaies de départ…
         if (choice === 'direct') { toLobby = false; first = direct; }
@@ -140,6 +141,50 @@
       await UI.alert('Impossible de lancer le playtest', e.message || String(e));
       window.close();
     }
+  }
+
+  // ---------- protagoniste créé par le joueur (Système › Protagoniste créé par le joueur) ----------
+  /** Nouvelle partie : le joueur compose l'apparence (et le nom) du protagoniste ; gardé dans la campagne. */
+  async function createAvatar() {
+    const cfg = self.CharGen ? CharGen.avatarConfig(G.project.meta, G.db) : { enabled: false };
+    const def = cfg.enabled && R.byId(G.db.units, cfg.unitId);
+    if (!def || !self.CharGenUI) return applyAvatar();
+    let r = null;
+    try {
+      Music.bgm('title');
+      r = await CharGenUI.open({ game: true, cancel: false, askName: cfg.rename, name: def.name, recipe: def.generator,
+        title: 'Ton protagoniste', subtitle: cfg.rename ? 'Choisis son nom et son apparence' : def.name, okLabel: 'Commencer l’aventure' });
+    } catch (e) { console.error('[générateur]', e); UI.toast('Générateur de personnage indisponible : ' + e.message, 'error'); }
+    if (r) G.campaign.avatar = { unitId: def.id, name: cfg.rename ? r.name : def.name, recipe: r.recipe };
+    await applyAvatar();
+  }
+  /** Applique (ou retire) le protagoniste de la campagne : nom, portrait et sprite de map de son personnage. */
+  async function applyAvatar() {
+    if (G.avatar) { // retire l'application précédente (une autre sauvegarde peut ne pas en avoir)
+      const prev = R.byId(G.db.units, G.avatar.unitId);
+      if (prev) Object.assign(prev, G.avatar.original);
+      delete G.resources.characters['avatar:' + G.avatar.unitId];
+      G.avatar = null;
+    }
+    const a = G.campaign && G.campaign.avatar, def = a && R.byId(G.db.units, a.unitId);
+    if (!def || !self.CharGenUI || !a.recipe) return;
+    const problems = CharGen.validateAvatar(a, self.GENERATOR_PARTS);
+    if (problems.length) { console.warn('[générateur] protagoniste ignoré :', problems.join(' ')); return; }
+    try {
+      const r = await CharGenUI.render(a.recipe, { name: a.name || def.name });
+      const face = r.faceset.toDataURL('image/png'), sheet = r.map.canvas.toDataURL('image/png');
+      await Promise.all([Render.loadImage(G.baseUrl, face), Render.loadImage(G.baseUrl, sheet)]);
+      const key = 'avatar:' + def.id;
+      G.resources.characters[key] = Object.assign({}, r.map.meta, { image: sheet, owner: a.name || def.name });
+      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite } };
+      Object.assign(def, { name: G.avatar.to, portrait: face, mapSprite: key });
+    } catch (e) { console.error('[générateur]', e); }
+  }
+  /** Texte des dialogues : nom d'origine du protagoniste → nom choisi, {héros} → son nom. */
+  function avatarText(text) {
+    if (!self.CharGen) return text;
+    const hero = R.byId(G.db.units, CharGen.avatarConfig(G.project.meta, G.db).unitId);
+    return CharGen.renameText(text, G.avatar ? G.avatar.from : '', G.avatar ? G.avatar.to : (hero ? hero.name : ''));
   }
 
   /** Charge un chapitre. Les niveaux, objets, affinités et le convoi sont conservés d'un chapitre à l'autre. */
@@ -219,6 +264,7 @@
     startClock(save && save.info && save.info.playTime); // temps de jeu (cadre PLAYTIME des sauvegardes)
     G.sup = R.initSupports(G.db, G.supCfg);
     Object.assign(G, Campaign.restore(save, G.sup));
+    await applyAvatar();
     G.settings.aiDifficulty = R.normalizeAiDifficulty(save.aiDifficulty === undefined ? (G.project.meta.settings || {}).aiDifficulty : save.aiDifficulty);
     G.settings.weatherEffects = save.weatherEffects !== false;
     if (save.chapterId === Lobby.LOBBY_SAVE) {
@@ -1144,7 +1190,14 @@
     el.className = 'ultimate'; el.innerHTML = '';
     el.append(h('span', { class: 'ult-pop' }, SkillIcons.element(ultimateSkill(ult), 64, 'ult-pop-icon'),
       h('span', { class: 'ult-pop-text' }, h('small', {}, u.name), h('b', {}, ult.name))));
-    return sleep(G.fast ? 500 : 1050).then(() => el.classList.add('hidden'));
+    return sleep(G.fast ? 500 : 1050).then(() => el.classList.add('hidden')).then(() => castUltimate(u, ult));
+  }
+  /** Animation de lancement de l'ultime, jouée sur le lanceur (onglet Animations › Animations des ultimes). */
+  async function castUltimate(u, ult) {
+    const id = ult.castAnimation;
+    if (!id || !unitVisible(u) || !self.Animations || !Animations.byId((G.db.animations || []), id)) return;
+    focus(u.x, u.y);
+    await playMapAnimation(id, u, u).done;
   }
   /** Soin, dégâts ou renfort de zone ; la recharge démarre et l'action se termine. */
   async function useUltimateArea(u, ult, tile) {
@@ -2284,7 +2337,7 @@
       for (const [a, b] of Object.entries(pairs)) {
         const e = G.sup[R.pairKey(a, b)];
         const ua = R.byId(G.db.units, a), ub = R.byId(G.db.units, b);
-        items.push({ faces: [ua, ub], title: `${ua.name} & ${ub.name}`, text: (e && e.def.ending) || `${ua.name} et ${ub.name} ne se quittèrent plus.` });
+        items.push({ faces: [ua, ub], title: `${ua.name} & ${ub.name}`, text: avatarText((e && e.def.ending) || `${ua.name} et ${ub.name} ne se quittèrent plus.`) });
         done.add(a); done.add(b);
       }
       const seen = new Set(G.units.filter(u => u.team !== 'enemy').map(u => u.sourceId).concat(Object.keys(G.campaign.units)));
@@ -2292,7 +2345,7 @@
         if (done.has(id)) continue;
         const u = R.byId(G.db.units, id); if (!u) continue;
         const dead = G.campaign.dead.includes(id);
-        items.push({ faces: [u], title: u.name, text: dead ? `${u.name} tomba au combat.` : (u.ending || `${u.name} reprit le cours de sa vie.`), dead });
+        items.push({ faces: [u], title: u.name, text: dead ? `${u.name} tomba au combat.` : avatarText(u.ending || `${u.name} reprit le cours de sa vie.`), dead });
       }
       let i = 0;
       const show = () => {
@@ -2331,7 +2384,7 @@
   }
 
   function playDialogue(script) {
-    const lines = script.split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const lines = avatarText(script).split('\n').map(l => l.trim()).filter(Boolean).map(l => {
       const m = /^([^:]{1,40}):\s*(.*)$/.exec(l);
       return m ? { who: m[1].trim(), text: m[2] } : { who: '', text: l };
     });

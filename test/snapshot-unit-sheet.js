@@ -36,7 +36,7 @@ module.exports = (editor, openPlaytest) => {
       await until('!!PlaytestState.map && !PlaytestState.busy', 20000);
       await js(`(() => { const G = PlaytestState; window.H = G.units.find(u => u.sourceId === ${JSON.stringify(hero.id)}); G.cursor = { x: H.x, y: H.y }; Statuses.apply(H, 'poison', 3); })()`);
       await wait(300);
-      // 1. touche R : fiche de Xarrin, page Stats
+      // 1. touche R : fiche du héros, page Stats
       await key('R');
       await until(`!!document.querySelector('#unit-sheet .rd-sheet')`);
       await wait(700);

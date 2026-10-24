@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('tf', {
   scanResources: (dir) => call('resources:scan', dir),
   installDefaultResources: (dir, only) => call('resources:installDefaults', dir, only),
   setTeamColors: (dir, key, colors) => call('resources:setTeamColors', dir, key, colors),
+  writeGenerated: (dir, owner, files) => call('resources:writeGenerated', dir, owner, files),
   openResourceFolder: (dir, sub) => call('resources:openFolder', dir, sub),
   bundledPlugins: () => call('plugins:bundled'),
   installedPlugins: (dir) => call('plugins:installed', dir),

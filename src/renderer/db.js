@@ -127,6 +127,39 @@
   }
 
   /** Sprite de map + animation de combat d'une unité : effectifs, avec leur origine (classe ou propre à l'unité). */
+  /**
+   * Générateur de personnage (char-gen-ui.js) : compose un portrait (face set) et un sprite de map à partir de
+   * pièces, les écrit dans ressources/personnages/<Nom>/ et les attribue à l'unité ; la recette reste dans
+   * u.generator pour retoucher le personnage plus tard.
+   */
+  function generatorField(u) {
+    const box = h('div', { class: 'gen-field' });
+    const run = async () => {
+      if (!self.CharGenUI) return UI.alert('Générateur indisponible', 'Les pièces du générateur sont absentes de cette installation.');
+      let r;
+      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name }); }
+      catch (e) { return UI.alert('Générateur indisponible', e.message); }
+      if (!r) return;
+      const meta = Object.assign({}, r.map.meta, { name: u.name + ' (généré)' });
+      const out = await tf.writeGenerated(Editor.dir(), u.name, [
+        { name: 'portrait_genere.png', base64: CharGenUI.base64(r.faceset) },
+        { name: 'map_genere.png', base64: CharGenUI.base64(r.map.canvas) },
+        { name: 'map_genere.json', json: Object.assign(meta, { image: undefined }) }]);
+      for (const f of Object.values(out.files)) Render.forget(Editor.baseUrl(), f); // l'ancienne image en cache est remplacée
+      await Editor.rescanResources();
+      u.portrait = out.files['portrait_genere.png'];
+      u.mapSprite = out.files['map_genere.json'].replace(/\.json$/, '');
+      u.generator = r.recipe;
+      change(); renderBody();
+      UI.toast(`Portrait et sprite de map de ${u.name} enregistrés (${out.dir}).`);
+    };
+    box.append(h('div', { class: 'gen-row' },
+      h('button', { class: 'small primary', 'data-generator-open': true, onclick: run }, u.generator ? 'Retoucher avec le générateur…' : 'Créer avec le générateur…'),
+      h('span', { class: 'form-info' }, u.generator
+        ? 'Personnage généré : rouvre le générateur pour changer ses pièces, ses couleurs ou leur position (portrait et sprite de map réécrits).'
+        : 'Compose un portrait et un sprite de map à partir de pièces façon Fire Emblem GBA (cheveux, visage, tenue, figurine) et de six couleurs.')));
+    return box;
+  }
   function appearanceField(u) {
     const cls = byId(db().classes, u.classId);
     const effSprite = u.mapSprite || (cls && cls.mapSprite) || '';
@@ -471,7 +504,11 @@
           { type: 'row', fields: [
             { key: 'self', label: 'Le lanceur en profite aussi', type: 'checkbox' },
             { key: 'refresh', label: 'Les alliés qui ont déjà agi rejouent', type: 'checkbox' }] }] : []),
-        { key: 'animation', label: u.effect === 'strike' ? 'Animation du coup' : 'Animation sur chaque unité touchée', type: 'select', empty: u.effect === 'strike' ? '— celle de l’arme —' : '— aucune —', options: animOpts }
+        { type: 'heading', label: 'Animations' },
+        { type: 'row', fields: [
+          { key: 'castAnimation', label: 'Lancement (sur le lanceur)', type: 'select', empty: '— aucune —', options: animOpts },
+          { key: 'animation', label: u.effect === 'strike' ? 'Impact (le coup de l’ultime)' : 'Impact (sur chaque unité touchée)', type: 'select', empty: u.effect === 'strike' ? '— celle de l’arme —' : '— aucune —', options: animOpts }] },
+        { type: 'info', text: 'Les animations se créent dans l’onglet Animations, qui permet aussi de les attribuer aux ultimes.' }
       ]
     },
     animations: {
@@ -537,6 +574,7 @@
           options: () => (db().ultimates || []).map(x => ({ value: x.id, label: `${x.name} · recharge ${x.cooldown} t.` })),
           help: 'Les ultimes se créent dans l’onglet Ultimes : frappe, soin de zone, dégâts de zone ou renfort d’alliés.' },
         { type: 'heading', label: 'Apparence' },
+        { type: 'custom', render: generatorField },
         { type: 'custom', render: appearanceField },
         { type: 'custom', render: faceField },
         { key: 'bio', label: 'Description', type: 'textarea', rows: 2 },
@@ -1169,12 +1207,12 @@
         list.push(...missing); selected.skills = missing[0].id; change(); renderBody();
       } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     }
-    if (tab === 'animations') pane.append(animationDefaultsPanel(list));
+    if (tab === 'animations') pane.append(animationDefaultsPanel(list), ultimateAnimationsPanel());
     if (tab === 'ultimates') {
       pane.append(h('p', { class: 'note' }, 'Un ultime par personnage, choisi dans sa fiche (Unités). Il s’utilise avec l’action « Ultime » puis se recharge pendant le nombre de tours réglé.'));
       const missing = Ultimates.samples().filter(u => !list.some(x => x.id === u.id));
       if (missing.length) pane.append(h('button', { class: 'small', style: { margin: '10px 0' }, 'data-ultimate-samples': true, onclick: () => {
-        list.push(...missing.map(u => (u.animation && !(db().animations || []).some(a => a.id === u.animation) ? Object.assign(u, { animation: '' }) : u)));
+        list.push(...Ultimates.dropMissingAnimations(missing, db().animations));
         selected.ultimates = missing[0].id; change(); renderBody();
       } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     }
@@ -1241,6 +1279,28 @@
       list.push(...JSON.parse(JSON.stringify(missing))); selected.animations = missing[0].id; change(); renderBody();
     } }, 'Ajouter les exemples manquants (' + missing.length + ')'));
     return wrap;
+  }
+  /** Onglet Animations : animations de lancement et d'impact de chaque ultime (onglet Ultimes). */
+  function ultimateAnimationsPanel() {
+    const ults = db().ultimates || [];
+    const box = h('details', { class: 'anim-defaults anim-ultimates', open: store('tf.animUltimatesOpen') === '1' },
+      h('summary', {}, 'Animations des ultimes'),
+      h('p', { class: 'form-info' }, 'Lancement : jouée sur le personnage quand il lance son ultime, pendant l’annonce. Impact : le coup d’une frappe ultime (à la place de celle de l’arme) ou l’effet sur chaque unité touchée par un ultime de zone.'));
+    if (!ults.length) box.append(h('p', { class: 'note' }, 'Aucun ultime : crée-les dans l’onglet Ultimes.'));
+    const select = (u, k, empty) => {
+      const sel = h('select', { [`data-anim-ult-${k === 'castAnimation' ? 'cast' : 'hit'}`]: u.id, 'aria-label': `${u.name} : ${k === 'castAnimation' ? 'lancement' : 'impact'}` },
+        h('option', { value: '' }, empty), animOpts().map(o => h('option', { value: o.value }, o.label)));
+      if (u[k] && !(db().animations || []).some(a => a.id === u[k])) sel.append(h('option', { value: u[k] }, 'Introuvable : ' + u[k]));
+      sel.value = u[k] || '';
+      sel.onchange = () => { u[k] = sel.value; change(); };
+      return sel;
+    };
+    box.append(h('div', { class: 'anim-ult-grid' }, ults.map(u => h('div', { class: 'anim-ult-row' },
+      h('span', { class: 'anim-ult-name' }, ultimateIcon(u, 22), h('span', {}, u.name), h('small', {}, (Ultimates.effectOf(u) || { name: '' }).name.split(' — ')[0])),
+      h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Lancement'), select(u, 'castAnimation', '— aucune —')),
+      h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Impact'), select(u, 'animation', u.effect === 'strike' ? '— celle de l’arme —' : '— aucune —'))))));
+    box.addEventListener('toggle', () => { try { localStorage.setItem('tf.animUltimatesOpen', box.open ? '1' : '0'); } catch (e) { /* sans stockage */ } });
+    return box;
   }
   function store(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function renderSkillErrors(pane, skill) {
@@ -1868,7 +1928,7 @@
       if (!c.mapSprite && def.mapSprite) { c.mapSprite = def.mapSprite; linked++; }
       if (!c.battler && def.battler) { c.battler = def.battler; linked++; }
     }
-    // et les personnages de base (Xarrin, Eliwood…) à leurs propres ressources, champ vide seulement
+    // et les personnages de base (Eliwood, Lyn…) à leurs propres ressources, champ vide seulement
     const r2 = res();
     const exists = { mapSprite: (k) => !!(r2.characters || {})[k], battler: (k) => !!(r2.battlers || {})[k], portrait: (k) => (r2.faces || []).includes(k) };
     for (const def of Defaults.characters()) {
@@ -2154,6 +2214,7 @@
     for (const k of ['overkill', 'overkillExp', 'aiDifficulty']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
     Editor.project().meta.title = Object.assign({ subtitle: '', background: '', music: '', newGameMode: 'classic' }, Editor.project().meta.title || {});
     if (typeof Editor.project().meta.credits !== 'string') Editor.project().meta.credits = '';
+    if (self.CharGen) Editor.project().meta.avatar = Object.assign({ enabled: false, unitId: '', rename: true }, Editor.project().meta.avatar || {}, { unitId: CharGen.avatarConfig(Editor.project().meta, db()).unitId });
     // sections des plugins (Extensions « system » : { label, prepare(meta), fields(meta) })
     const pluginSections = Extensions.list('system').flatMap(sec => {
       try { if (typeof sec.prepare === 'function') sec.prepare(Editor.project().meta); return [{ type: 'heading', label: sec.label }, ...(sec.fields(Editor.project().meta) || [])]; }
@@ -2176,6 +2237,13 @@
       { key: 'credits', label: 'Crédits (bouton « Crédits » de l’écran titre)', type: 'textarea', rows: 8,
         placeholder: 'Graphismes :\nSprites : Lexou, Grim & Bonzai\nMusiques : Yuka Tsujiyoko\n\nMerci d’avoir joué !' },
       { type: 'info', text: 'Une ligne « Rôle : Nom » s’affiche sur deux colonnes ; une ligne qui finit par « : » devient un titre ; une ligne vide sépare les blocs. Le nom du jeu et l’auteur s’affichent en haut. Le jeu (bouton Tester) s’ouvre sur l’écran titre : Jouer crée une partie s’il n’y a pas de sauvegarde, sinon propose de continuer ou de charger.' },
+      // protagoniste créé par le joueur (char-gen-ui.js) : apparence et nom choisis à la nouvelle partie
+      { type: 'heading', label: 'Protagoniste créé par le joueur' },
+      { key: 'avatar.enabled', label: 'À la nouvelle partie, le joueur crée l’apparence de son protagoniste (générateur de personnage)', type: 'checkbox' },
+      { type: 'row', fields: [
+        { key: 'avatar.unitId', label: 'Personnage concerné', type: 'select', options: () => db().units.map(u => ({ value: u.id, label: u.name + (u.protagonist ? ' (personnage principal)' : '') })) },
+        { key: 'avatar.rename', label: 'Le joueur choisit aussi son nom', type: 'checkbox' }] },
+      { type: 'info', text: 'Le portrait, le sprite de map et le nom choisis remplacent ceux du personnage pendant toute la partie (sauvegardés avec elle). Dans les dialogues, son nom d’origine est remplacé par le nom choisi ; {héros} s’écrit aussi pour le nommer. Ses statistiques, sa classe et son animation de combat restent celles de sa fiche ; ses pièces et couleurs de départ sont celles du générateur de sa fiche (Unités), s’il en a.' },
       { type: 'row', fields: [
         { key: 'startChapter', label: 'Acte de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'defaultTerrain', label: 'Terrain par défaut', type: 'select', options: () => db().terrains.map(t => ({ value: t.id, label: t.name })), help: 'Utilisé pour les cases dont le tile n\'a pas de terrain.' }] },

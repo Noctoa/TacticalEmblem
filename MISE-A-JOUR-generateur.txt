@@ -1,0 +1,73 @@
+Tactical Emblem — mise à jour « Générateur de personnage » (+ ultimes, sans Xarrin)
+Basée sur origin/main 9e395e3 (« Ultime » : ta version avec les ultimes intégrés).
+Ce zip REMPLACE TacticalEmblem-ultimes-animations.zip et TacticalEmblem-ultimes-sans-xarrin.zip (il les contient ; les sections 1 à 4 sont déjà dans ta version).
+Installation : décompresser à la racine du dépôt en écrasant les fichiers.
+
+1. Base de données › Ultimes (nouvel onglet, après Compétences)
+   - Nom, icône (ton icône d'ultime par défaut, ou une icône de compétence), description,
+     tours de recharge (1 à 9), « prêt dès le premier tour », animation.
+   - Quatre effets :
+     · Frappe ultime : attaque une cible, 1er coup à 100–500 % des dégâts, touche assurée / sans riposte en option.
+     · Soin de zone : % des PV max aux alliés autour du lanceur, peut dissiper les altérations.
+     · Dégâts de zone : autour du lanceur ou d'une case choisie à portée ; For / Mag × puissance − Déf / Rés ;
+       les alliés ne sont jamais touchés ; « peut vaincre » désactivable (laisse 1 PV).
+     · Renfort d'alliés : bonus DGT / PRÉC / ESQ pendant N tours, et en option un nouveau tour aux alliés ayant agi.
+   - Unités › Ultime : choisir l'ultime de chaque personnage (un par personnage).
+
+2. En bataille
+   - Action « Ultime » dans le menu (grisée pendant la recharge, avec le nombre de tours restants).
+   - Au-dessus du personnage : le nombre de tours restants avec tes chiffres, puis l'icône d'ultime quand il est prêt.
+   - Bandeau d'annonce à l'utilisation, prévision de combat avec les dégâts de l'ultime, zone en surbrillance.
+   - La recharge baisse d'un tour au début de chaque phase du camp du personnage.
+   - Fenêtre d'unité et fiche (page Compétences) : l'ultime et sa recharge.
+
+3. Exemples : Assaut fulgurant, Aurore, Météore, Cri de ralliement (attribués à Eliwood, Lyn, Hector,
+   Serra et Cloud dans le projet d'exemple ; un ancien projet reçoit les exemples sans attribution).
+
+4. Corrigé : le texte « null » qui s'affichait au-dessus et en dessous de la fiche d'unité ouverte depuis la carte.
+
+Asset : tools/ui-ultimate/ultimate.png, découpé par tools/build_ui_ultimate.py en
+src/renderer/img/ui/ultimate/icon.png et digits.png. Les ennemis n'utilisent pas d'ultime.
+
+5. Animations des ultimes (nouveau)
+   - Chaque ultime a une animation de LANCEMENT (jouée sur le personnage quand il lance l'ultime, après l'annonce)
+     et une animation d'IMPACT (le coup d'une frappe ultime, ou l'effet sur chaque unité touchée).
+   - Base de données › Animations : nouveau panneau « Animations des ultimes », une ligne par ultime avec ses deux
+     animations (aussi réglables dans l'onglet Ultimes). Supprimer une animation la retire des ultimes qui l'utilisent.
+   - Exemples : Assaut fulgurant (Sol → Luna), Aurore (Soin → Soin), Météore (Éclair → Explosion de feu),
+     Cri de ralliement (Sol au lancement).
+
+6. Xarrin retiré des assets de base
+   - Le personnage Xarrin n'est plus dans le projet d'exemple (ni ses dialogues, ni ses deux affinités).
+   - Eliwood devient le héros du camp, le chef d'escouade (convoi) et le meneur des dialogues ;
+     les conversations du camp s'adressent à lui (« Un second » est maintenant une conversation avec Hector).
+   - Les actes d'exemple se jouent à trois : Eliwood, Lyn et Hector.
+   - Tes projets existants ne changent pas : leurs ressources sont déjà copiées dans leur dossier.
+
+   ⚠ Le zip ne peut pas supprimer de fichiers : supprime à la main ces fichiers du dépôt
+   (ou lance « git rm » dessus) :
+     assets/default/ressources/personnages/Xarrin/   (tout le dossier)
+     tools/sprite-sources/xarrin.gif
+     tools/sprite-sources/xarrin_combat.png
+     tools/sprite-sources/xarrin_portrait.png
+     test/snapshot-xarrin-sprite.js
+
+7. Générateur de personnage (nouveau, d'après FE Character Creator de TheFlyingMinotaur)
+   - Plus de 900 pièces façon Fire Emblem GBA : 258 coiffures, 240 visages, 239 tenues, 206 figurines de classe,
+     recolorées en 6 teintes (peau, cheveux, métal, ornements, tissu, cuir).
+   - Éditeur : Unités › une unité › Apparence › « Créer avec le générateur… »
+     · flèches ◀ ▶ ou grille de vignettes avec recherche pour chaque pièce ;
+     · nuancier ou couleur libre ; décalage pixel par pixel des cheveux, du visage et de la tenue ;
+     · « Aléatoire » et « Couleurs au hasard » ;
+     · à l'enregistrement : portrait au format face set (portrait_genere.png, avec mini-portrait) et sprite de map
+       animé tiré de la figurine (map_genere.png / .json : respiration, pas, miroir, couleurs d'équipe sur le tissu),
+       écrits dans ressources/personnages/<Nom>/ et attribués à l'unité ;
+     · la recette reste dans la fiche : « Retoucher avec le générateur… » la rouvre.
+   - Protagoniste créé par le joueur : Système › « Protagoniste créé par le joueur »
+     · à la nouvelle partie, le joueur choisit l'apparence (et le nom si coché) du personnage choisi
+       (le héros du camp par défaut), dans une fenêtre aux couleurs du jeu ;
+     · portrait, sprite de map et nom remplacent ceux du personnage pour toute la partie (sauvegardés avec elle) ;
+     · dialogues et fins : le nom d'origine devient le nom choisi ; {héros} s'écrit aussi pour le nommer ;
+     · statistiques, classe et animation de combat restent celles de sa fiche.
+   - Fichiers : tools/generator-parts/ (tes pièces), tools/build_generator_parts.py, src/renderer/img/generator/,
+     src/shared/char-gen.js, src/renderer/char-gen-ui.js, src/renderer/char-gen.css.

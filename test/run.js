@@ -93,7 +93,7 @@ test('création / sauvegarde / rechargement', () => {
   assert.ok(fs.existsSync(path.join(dir, 'ressources', 'LISEZMOI.txt')));
   assert.ok(fs.existsSync(path.join(dir, 'data', 'maps', 'map_1.json')));
   // un dossier par personnage : sprites de map, animation de combat, portrait
-  assert.deepStrictEqual(p.resources.owners, ['Brigand', 'Cloud', 'Eliwood', 'Hector', 'Lyn', 'Xarrin']);
+  assert.deepStrictEqual(p.resources.owners, ['Brigand', 'Cloud', 'Eliwood', 'Hector', 'Lyn']);
   assert.ok(p.resources.characters['ressources/personnages/Eliwood/map_Lord']);
   assert.strictEqual(p.resources.characters['ressources/personnages/Eliwood/map_Lord'].owner, 'Eliwood');
   assert.strictEqual(p.resources.battlers['ressources/personnages/Lyn/combat'].facing, 'left');
@@ -103,13 +103,13 @@ test('création / sauvegarde / rechargement', () => {
   assert.ok(!p.resources.faces.some(f => /combat_arrow/.test(f)), 'un projectile n\'est pas un portrait');
   // une seule palette (couleurs d'origine) : plus de planche à 4 blocs
   for (const m of Object.values(p.resources.characters)) assert.ok(!m.palettes && Array.isArray(m.teamColors), m.image);
-  assert.deepStrictEqual(p.db.units.map(u => u.name), ['Xarrin', 'Eliwood', 'Lyn', 'Hector', 'Cloud', 'Rebecca', 'Oswin', 'Matthew', 'Serra', 'Dorcas']);
+  assert.deepStrictEqual(p.db.units.map(u => u.name), ['Eliwood', 'Lyn', 'Hector', 'Cloud', 'Rebecca', 'Oswin', 'Matthew', 'Serra', 'Dorcas']);
   // sprites propres à une unité (Cloud), convoi, musique, allié du chapitre d'exemple
   for (const u of p.db.units) {
     if (u.mapSprite) assert.ok(p.resources.characters[u.mapSprite], u.mapSprite);
     if (u.battler) assert.ok(p.resources.battlers[u.battler], u.battler);
   }
-  assert.strictEqual(p.db.units.filter(u => u.convoy).map(u => u.name).join(), 'Xarrin');
+  assert.strictEqual(p.db.units.filter(u => u.convoy).map(u => u.name).join(), 'Eliwood');
   assert.ok(p.meta.convoy.items.length > 0);
   for (const k of ['playerPhase', 'enemyPhase', 'levelUp', 'gameOver']) assert.ok(fs.existsSync(path.join(dir, p.meta.audio[k])), k);
   assert.ok(p.resources.bgm.length === 2 && p.resources.me.length === 2);
@@ -162,14 +162,14 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   };
   const sheets = { 'Eliwood/map_Lord': 'img/characters/Eliwood_Lord', 'Eliwood/map_KnightLord': 'img/characters/Eliwood_KnightLord', 'Lyn/map_Lord': 'img/characters/Lyn_Lord',
     'Lyn/map_BladeLord': 'img/characters/Lyn_BladeLord', 'Hector/map_Lord': 'img/characters/Hector_Lord', 'Hector/map_GreatLord': 'img/characters/Hector_GreatLord',
-    'Brigand/map': 'img/characters/Brigand', 'Cloud/map': 'img/characters/Cloud', 'Xarrin/map_Lord': 'img/characters/Xarrin_Lord',
-    'Eliwood/combat': 'img/battlers/Eliwood', 'Lyn/combat': 'img/battlers/Lyn', 'Hector/combat': 'img/battlers/Hector', 'Brigand/combat': 'img/battlers/Brigand', 'Cloud/combat': 'img/battlers/Cloud', 'Xarrin/combat': 'img/battlers/Xarrin' };
+    'Brigand/map': 'img/characters/Brigand', 'Cloud/map': 'img/characters/Cloud',
+    'Eliwood/combat': 'img/battlers/Eliwood', 'Lyn/combat': 'img/battlers/Lyn', 'Hector/combat': 'img/battlers/Hector', 'Brigand/combat': 'img/battlers/Brigand', 'Cloud/combat': 'img/battlers/Cloud' };
   for (const [n, old] of Object.entries(sheets)) { mv(P + n + '.png', old + '.png'); mv(P + n + '.json', old + '.json'); back.set(P + n, old); }
   mv(P + 'Lyn/combat_arrow.png', 'img/battlers/Lyn_arrow.png');
   const lyn = JSON.parse(fs.readFileSync(path.join(dir, 'img/battlers/Lyn.json'), 'utf8'));
   lyn.projectiles = { arrow: 'img/battlers/Lyn_arrow.png' };
   fs.writeFileSync(path.join(dir, 'img/battlers/Lyn.json'), JSON.stringify(lyn));
-  for (const n of ['Eliwood', 'Lyn', 'Hector', 'Brigand', 'Cloud', 'Xarrin']) mv(P + n + '/portrait.png', 'img/faces/' + n + '.png');
+  for (const n of ['Eliwood', 'Lyn', 'Hector', 'Brigand', 'Cloud']) mv(P + n + '/portrait.png', 'img/faces/' + n + '.png');
   mv('ressources/tilesets/village.png', 'img/tilesets/village.png');
   for (const f of ['Advance', 'Winning_Road']) mv('ressources/musiques/' + f + '.mp3', 'audio/bgm/' + f + '.mp3');
   for (const f of ['Level_Up', 'Game_Over']) mv('ressources/jingles/' + f + '.mp3', 'audio/me/' + f + '.mp3');
@@ -224,7 +224,7 @@ test('restes d\'une ancienne version dans assets/default (img/, audio/) ignorés
   assert.ok(!fs.existsSync(path.join(dir, 'img')));
   assert.ok(!io.loadProject(dir, assets).migration);
   assert.strictEqual(io.installDefaults(dir, assets).added, 0);
-  assert.ok(p.resources.faces.length === 6);
+  assert.ok(p.resources.faces.length === 5);
 });
 
 test('couleurs d\'équipe enregistrées dans le .json de la planche', () => {

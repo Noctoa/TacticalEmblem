@@ -1,6 +1,6 @@
 /*
  * Pack « Personnages de la série » : import depuis Base de données › Unités, tri par série, bannières par jeu ;
- * puis action Danser en jeu (Olivia redonne son tour à Xarrin).
+ * puis action Danser en jeu (Olivia redonne son tour à Eliwood).
  * TF_SNAPSHOT=dossier TF_SNAPSHOT_SCRIPT=$PWD/test/snapshot-fe-pack.js npm start
  */
 'use strict';
@@ -39,7 +39,7 @@ module.exports = (win, openPlaytest) => {
       await ejs(`DBEditor.open('units', 'fe_fe13_olivia')`); await wait(500); await shot('c_fiche_olivia');
       await ejs(`DBEditor.open('banners', 'bn_fe13')`); await wait(500); await shot('d_banniere_awakening');
       win.webContents.send('menu', 'save'); await wait(1500);
-      // danse : Olivia à côté de Xarrin dans le premier acte
+      // danse : Olivia à côté d'Eliwood dans le premier acte
       const p = io.loadProject(dir);
       p.meta.lobby.enabled = false;
       const ch = p.db.chapters.find(c => c.id === 'ch_1'); ch.events = [];
@@ -54,15 +54,15 @@ module.exports = (win, openPlaytest) => {
       await js(`[...document.querySelectorAll('.choice-list button')].find(b => b.textContent.includes('Classique')).click()`);
       await until(`PlaytestState.phase === 'player' && !PlaytestState.busy && !PlaytestState.dialogue`);
       result.olivia = await js(`(() => { const o = PlaytestState.units.find(u => u.name === 'Olivia'); return o && [o.x, o.y]; })()`);
-      await js(`(() => { const G = PlaytestState; const x = G.units.find(u => u.name === 'Xarrin'); const o = G.units.find(u => u.name === 'Olivia'); x.x = x.rx = o.x - 1; x.y = x.ry = o.y; x.done = true; G.cursor = { x: o.x, y: o.y }; })()`);
+      await js(`(() => { const G = PlaytestState; const x = G.units.find(u => u.name === 'Eliwood'); const o = G.units.find(u => u.name === 'Olivia'); x.x = x.rx = o.x - 1; x.y = x.ry = o.y; x.done = true; G.cursor = { x: o.x, y: o.y }; })()`);
       const key = async k => { wc.sendInputEvent({ type: 'keyDown', keyCode: k }); wc.sendInputEvent({ type: 'keyUp', keyCode: k }); await wait(150); };
       await key('Z'); await until(`PlaytestState.ui === 'moving'`);
       await key('Z'); await until(`PlaytestState.ui === 'menu'`);
       result.menu = await js(`PlaytestState.menu.items.map(i => i.label)`);
       await shot('e_menu_danser', wc);
       await js(`PlaytestState.menu.items.find(i => i.label === 'Danser').action()`); await wait(1500);
-      result.danse = await js(`(() => { const G = PlaytestState; return { xarrin: G.units.find(u => u.name === 'Xarrin').done, olivia: G.units.find(u => u.name === 'Olivia').done }; })()`);
-      assert(result.danse.xarrin === false && result.danse.olivia === true, 'danse');
+      result.danse = await js(`(() => { const G = PlaytestState; return { eliwood: G.units.find(u => u.name === 'Eliwood').done, olivia: G.units.find(u => u.name === 'Olivia').done }; })()`);
+      assert(result.danse.eliwood === false && result.danse.olivia === true, 'danse');
       await shot('f_apres_danse', wc);
     } catch (e) { errs.push(String(e.stack || e)); }
     finish();

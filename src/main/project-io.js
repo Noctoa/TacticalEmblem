@@ -214,4 +214,28 @@ function createProject(dir, name, template, assetsDir) {
   return loadProject(dir);
 }
 
-module.exports = { PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };
+/**
+ * Générateur de personnage : écrit ses images dans ressources/personnages/<Nom>/.
+ * files : [{ name: 'portrait.png' | 'map_genere.png' | …, base64 } | { name: '….json', json }] ; noms simples uniquement.
+ * Renvoie { dir, files: { nom: chemin relatif }, resources }.
+ */
+function writeGenerated(dir, owner, files) {
+  if (!Array.isArray(files) || !files.length || files.length > 8) throw new Error('Fichiers du générateur invalides.');
+  const rel = Layout.DIRS.characters + '/' + Layout.safeName(owner || 'Personnage');
+  const abs = path.join(dir, rel);
+  fs.mkdirSync(abs, { recursive: true });
+  const out = {};
+  for (const f of files) {
+    if (!f || typeof f.name !== 'string' || !/^[\w-]{1,64}\.(png|json)$/.test(f.name)) throw new Error('Nom de fichier invalide : ' + (f && f.name));
+    if (f.name.endsWith('.png')) {
+      if (typeof f.base64 !== 'string' || f.base64.length > 4e6) throw new Error('Image invalide : ' + f.name);
+      const buf = Buffer.from(f.base64, 'base64');
+      if (buf.slice(1, 4).toString() !== 'PNG') throw new Error('Image PNG attendue : ' + f.name);
+      fs.writeFileSync(path.join(abs, f.name), buf);
+    } else fs.writeFileSync(path.join(abs, f.name), JSON.stringify(f.json, null, 1));
+    out[f.name] = rel + '/' + f.name;
+  }
+  return { dir: rel, files: out, resources: scanResources(dir) };
+}
+
+module.exports = { writeGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };

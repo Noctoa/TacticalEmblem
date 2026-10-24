@@ -41,7 +41,7 @@ module.exports = (editor, openPlaytest) => {
       // 2. cases de la flèche : départ, droit, coin, pointe
       result.cases = await js(`PlaytestDebug.arrowTiles([{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 1, y: 2 }])`);
       assert(JSON.stringify(result.cases) === '[0,14,5,12,7,10]', 'cases : ' + result.cases);
-      // 3. flèche sur la map : Xarrin sélectionné, curseur à 2 cases avec un coin
+      // 3. flèche sur la map : le héros sélectionné, curseur à 2 cases avec un coin
       await js(`(() => { const G = PlaytestState; window.H = G.units.find(u => u.team === 'player' && !u.done); G.cursor = { x: H.x, y: H.y }; })()`);
       const key = async k => { wc.sendInputEvent({ type: 'keyDown', keyCode: k }); wc.sendInputEvent({ type: 'keyUp', keyCode: k }); await wait(120); };
       await key('Z'); await until(`PlaytestState.ui === 'moving'`);
