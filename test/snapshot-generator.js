@@ -46,19 +46,44 @@ module.exports = (editor, openPlaytest) => {
       await wait(200); await E.shot('b_grille');
       await E.js(`document.querySelector('[data-cg-picker="hair"] .cg-cell').click()`);
       await E.until(`document.querySelector('[data-cg-label="hair"]').textContent === 'Ninian'`);
-      await E.js(`document.querySelector('[data-cg-swatch="hair:#5080d8"]').click()`);
+      // portrait : 225 dégradés pour chaque teinte (cheveux, yeux, métal…), 34 pour la peau (du plus clair au plus foncé)
+      const pick = async (sel) => { await E.js(`document.querySelector('${sel}').click()`); await wait(60); };
+      assert(await E.js(`document.querySelectorAll('[data-cg-ramp^="hair:"]').length === 225`), 'nuancier cheveux');
+      await pick('[data-cg-ramp="hair:120"]');
+      await pick('[data-cg-group="skin"]');
+      assert(await E.js(`document.querySelectorAll('[data-cg-ramp^="skin:"]').length === 34`), 'nuancier peau');
+      await pick('[data-cg-ramp="skin:9"]');
+      await pick('[data-cg-group="eyes"]'); await pick('[data-cg-ramp="eyes:30"]');
+      assert(await E.js(`document.querySelector('[data-cg-ramp="eyes:30"]').classList.contains('on') && !document.querySelector('[data-cg-eyes-hair]').classList.contains('on')`), 'sélection visible');
+      await pick('[data-cg-group="trim"]'); assert(await E.js(`document.querySelectorAll('[data-cg-ramp^="trim:"]').length === 225`), 'nuancier ornements');
+      await wait(200); await E.shot('c1_couleurs_portrait');
+      // carte : couleurs propres (tissu)
+      await pick('[data-cg-tab="map"]');
+      assert(await E.js(`document.querySelector('[data-cg-map-linked]').checked && !document.querySelector('[data-cg-ramp]')`), 'carte liée au portrait');
+      await pick('[data-cg-map-linked]'); await pick('[data-cg-group="cloth"]'); await pick('[data-cg-ramp="cloth:5"]');
+      await wait(200); await E.shot('c2_couleurs_carte');
+      // combat : tenue de l'animation de la classe
+      await pick('[data-cg-tab="battle"]');
+      assert(await E.js(`!!document.querySelector('[data-cg-battler]') && document.querySelector('[data-cg-battle-origin]').classList.contains('on')`), 'combat : aperçu, couleurs d’origine');
+      await pick('[data-cg-ramp="battle:10"]');
+      await wait(200); await E.shot('c3_couleurs_combat');
+      await pick('[data-cg-tab="portrait"]');
       await E.js(`document.querySelector('[data-cg-offset="face:1"]').nextElementSibling.click()`);
       assert(await E.js(`document.querySelector('[data-cg-offset="face:1"]').textContent === '1'`), 'décalage');
       await wait(200); await E.shot('c_retouche');
       await E.js(`document.querySelector('[data-cg-ok]').click()`);
       await E.until(`(Editor.db().units.find(u => u.id === 'c_lyn').generator || {}).hair === 'Ninian'`, 20000);
-      result.unite = await E.js(`(() => { const u = Editor.db().units.find(u => u.id === 'c_lyn'); return { portrait: u.portrait, sprite: u.mapSprite, couleur: u.generator.colors.hair, decalage: u.generator.offsets.face, enRessources: !!Editor.resources().characters[u.mapSprite] }; })()`);
+      result.unite = await E.js(`(() => { const u = Editor.db().units.find(u => u.id === 'c_lyn'); return { portrait: u.portrait, sprite: u.mapSprite, couleur: u.generator.colors.hair, rampes: u.generator.ramps, yeux: u.generator.colors.eyes, carte: u.generator.map, combat: u.battleColors, decalage: u.generator.offsets.face, enRessources: !!Editor.resources().characters[u.mapSprite] }; })()`);
       assert(result.unite.portrait === 'ressources/personnages/Lyn/portrait_genere.png' && result.unite.sprite === 'ressources/personnages/Lyn/map_genere' && result.unite.enRessources, 'unité : ' + JSON.stringify(result.unite));
-      assert(result.unite.couleur === '#5080d8' && result.unite.decalage[1] === 1, 'recette');
+      const R = require('../src/shared/char-gen');
+      assert(result.unite.rampes.hair.join() === R.HAIR_RAMPS[120].join() && result.unite.rampes.skin.join() === R.SKIN_RAMPS[9].join(), 'dégradés : ' + JSON.stringify(result.unite.rampes));
+      assert(result.unite.couleur === R.HAIR_RAMPS[120][1] && result.unite.yeux === R.HAIR_RAMPS[30][1] && result.unite.rampes.eyes.join() === R.HAIR_RAMPS[30].join() && result.unite.decalage[1] === 1, 'recette');
+      assert(result.unite.carte && result.unite.carte.ramps.cloth.join() === R.HAIR_RAMPS[5].join() && !(result.unite.rampes.cloth || []).length, 'carte : ' + JSON.stringify(result.unite.carte));
+      assert(result.unite.combat === 'custom:' + R.HAIR_RAMPS[10].join(','), 'combat : ' + result.unite.combat);
       const png = fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/portrait_genere.png'));
       assert(png.readUInt32BE(16) === 128 && png.readUInt32BE(20) === 112, 'face set 128 × 112');
       const sheet = JSON.parse(fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/map_genere.json'), 'utf8'));
-      assert(sheet.type === 'mapsprite' && sheet.base === 32 && sheet.anims.left && sheet.teamColors.length === 3, 'sprite de map');
+      assert(sheet.type === 'mapsprite' && sheet.base === 32 && sheet.anims.left && sheet.teamColors.join() === R.HAIR_RAMPS[5].join(), 'sprite de map (couleurs d’équipe = tissu de la carte)');
       await E.until(`!!document.querySelector('[data-generator-open]') && /Retoucher/.test(document.querySelector('[data-generator-open]').textContent)`);
       await E.js(`document.querySelector('[data-generator-open]').scrollIntoView({ block: 'center' })`);
       await wait(400); await E.shot('d_fiche_unite');
@@ -87,12 +112,25 @@ module.exports = (editor, openPlaytest) => {
       assert(result.nomDefaut === 'Eliwood', 'nom proposé : ' + result.nomDefaut);
       await G.js(`(() => { const i = document.querySelector('[data-cg-name]'); i.value = 'Kael'; i.dispatchEvent(new Event('input')); })()`);
       await G.js(`document.querySelector('[data-cg-random]').click()`);
+      // sprite de map animé tiré de la bibliothèque FE : filtre par catégorie + recherche
+      await G.js(`document.querySelector('[data-cg-choose="sprite"]').click()`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 500`);
+      await G.js(`(() => { const s = document.querySelector('[data-cg-sprite-group]'); s.value = [...s.options].find(o => /Myrms and Swordmasters/.test(o.value)).value; s.dispatchEvent(new Event('change')); })()`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 5 && document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length < 200`);
+      await wait(300); await G.shot('e0_jeu_sprites_fe');
+      await G.js(`(() => { const s = document.querySelector('[data-cg-picker="sprite"] input.cg-search'); s.value = 'swordmaster'; s.dispatchEvent(new Event('input')); })()`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length >= 1`);
+      result.spriteFE = await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').dataset.cgPart`);
+      await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').click()`);
+      await G.until(`document.querySelector('[data-cg-row="token"]').classList.contains('cg-unused')`);
       await wait(400); await G.shot('e_jeu_creation');
       assert(await G.js(`!document.querySelector('[data-cg-cancel]')`), 'pas d’annulation en jeu');
       await G.js(`document.querySelector('[data-cg-ok]').click()`);
       await G.until(`PlaytestState.mode === 'lobby' && !PlaytestState.busy`, 25000);
       result.jeu = await G.js(`(() => { const S = PlaytestState, u = S.db.units.find(u => u.id === 'c_eliwood'); return { nom: u.name, avatar: S.campaign.avatar && S.campaign.avatar.name, portrait: u.portrait.slice(0, 22), sprite: u.mapSprite, meta: !!S.resources.characters[u.mapSprite] }; })()`);
       assert(result.jeu.nom === 'Kael' && result.jeu.avatar === 'Kael' && result.jeu.portrait.startsWith('data:image/png') && result.jeu.sprite === 'avatar:c_eliwood' && result.jeu.meta, 'avatar : ' + JSON.stringify(result.jeu));
+      result.jeuSprite = await G.js(`(() => { const m = PlaytestState.resources.characters['avatar:c_eliwood']; return { base: m.base, frame: m.frame, source: m.source, recette: PlaytestState.campaign.avatar.recipe.sprite }; })()`);
+      assert(result.jeuSprite.base === 16 && result.jeuSprite.frame[0] === 32 && /^FE-Repo/.test(result.jeuSprite.source) && result.jeuSprite.recette === result.spriteFE, 'sprite FE : ' + JSON.stringify(result.jeuSprite));
       await wait(500); await G.shot('f_camp');
       // équipe : portrait et nom
       await G.js('PlaytestLobby.openTeam()');
@@ -109,8 +147,8 @@ module.exports = (editor, openPlaytest) => {
       first.win.close();
       const again = await start('Continuer');
       await again.G.until(`PlaytestState.mode === 'lobby' && !PlaytestState.busy`, 25000);
-      result.reprise = await again.G.js(`(() => { const u = PlaytestState.db.units.find(u => u.id === 'c_eliwood'); return { nom: u.name, sprite: u.mapSprite }; })()`);
-      assert(result.reprise.nom === 'Kael' && result.reprise.sprite === 'avatar:c_eliwood', 'reprise : ' + JSON.stringify(result.reprise));
+      result.reprise = await again.G.js(`(() => { const u = PlaytestState.db.units.find(u => u.id === 'c_eliwood'); return { nom: u.name, sprite: u.mapSprite, base: PlaytestState.resources.characters[u.mapSprite].base }; })()`);
+      assert(result.reprise.nom === 'Kael' && result.reprise.sprite === 'avatar:c_eliwood' && result.reprise.base === 16, 'reprise : ' + JSON.stringify(result.reprise));
       await wait(400); await again.G.shot('h_reprise');
     } catch (e) { errors.push(String(e && e.stack || e)); }
     finish();

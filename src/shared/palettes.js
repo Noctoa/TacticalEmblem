@@ -9,6 +9,8 @@
  *   red       ennemis
  *   green     alliés (unités vertes)
  *   gray      unité qui a déjà joué ce tour
+ *   custom:#rrggbb,#rrggbb,…   dégradé choisi (générateur de personnage) : les couleurs d'équipe de la planche,
+ *             de la plus claire à la plus foncée, prennent les couleurs du dégradé dans le même ordre
  *
  * Seules les « couleurs d'équipe » de la planche (tenue, armure…) changent de teinte ; la peau,
  * les cheveux, les armes gardent leurs couleurs. La liste est enregistrée dans le .json de la
@@ -40,7 +42,8 @@
   ];
   const DEFAULT_MODE = 'map';
 
-  const norm = (p) => ALIAS[p] || (LIST.includes(p) ? p : 'original');
+  const CUSTOM = /^custom:#[0-9a-f]{6}(,#[0-9a-f]{6}){1,7}$/i;
+  const norm = (p) => ALIAS[p] || (LIST.includes(p) || CUSTOM.test(p) ? p : 'original');
   const hex = (n) => '#' + n.toString(16).padStart(6, '0');
   const parseHex = (s) => {
     const m = /^#?([0-9a-f]{6})$/i.exec(String(s || '').trim());
@@ -143,6 +146,18 @@
     }
     const keys = (teamColors || []).map(parseHex).filter(k => k !== null);
     if (!keys.length) return out;
+    if (palette.startsWith('custom:')) {
+      const lum = (k) => 0.3 * (k >> 16) + 0.59 * ((k >> 8) & 255) + 0.11 * (k & 255);
+      const ramp = palette.slice(7).split(',').map(parseHex);
+      const sorted = [...new Set(keys)].sort((a, b) => lum(b) - lum(a));
+      const ch = (c) => [c >> 16, (c >> 8) & 255, c & 255];
+      sorted.forEach((k, i) => { // position dans le dégradé, interpolée entre ses couleurs
+        const t = sorted.length === 1 ? (ramp.length - 1) / 2 : i * (ramp.length - 1) / (sorted.length - 1);
+        const a = ch(ramp[Math.floor(t)]), b = ch(ramp[Math.ceil(t)]), f = t - Math.floor(t);
+        out.set(k, a.map((v, j) => Math.round(v + (b[j] - v) * f)));
+      });
+      return out;
+    }
     const center = centerHue(keys);
     const target = TARGET_HUE[palette];
     const avgSat = keys.reduce((a, k) => a + toHsv(k >> 16, (k >> 8) & 255, k & 255)[1], 0) / keys.length;

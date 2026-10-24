@@ -1,0 +1,1628 @@
+Crédits des map sprites (FE-Repo, Klokinator — sprites de la communauté Fire Emblem)
+Les noms entre accolades {…} dans les noms de fichiers. « IS » = Intelligent Systems (sprites d'origine).
+
+Artistes (273), par nombre de sprites :
+  IS (180)
+  flasuban (48)
+  Pikmin (48)
+  L95 (46)
+  CelestiaHeart (40)
+  N426 (40)
+  Unknown (40)
+  Topazlight (38)
+  SALVAGED (37)
+  Nuramon (35)
+  ArcherBias (32)
+  UltraFenix (32)
+  Der (31)
+  blood (27)
+  MeatOfJustice (24)
+  ZoramineFae (23)
+  VelvetKitsune (22)
+  Leif (21)
+  Hanakko (20)
+  Ryn (18)
+  Alexsplode (16)
+  Norikins (15)
+  Pushwall (15)
+  TytheBub (15)
+  Zoramine (15)
+  Cynon (13)
+  Shuusuke (13)
+  TheGreatNothing (13)
+  Rasdel (12)
+  Agro (11)
+  Augenis (11)
+  BoneManSeth (11)
+  Cygnus (11)
+  Knabepicer (11)
+  Leo_Link (11)
+  Alusq (10)
+  Aruka (10)
+  FE7if (10)
+  FEGirls (10)
+  RobertFPY (10)
+  Ash3wl (9)
+  Dominus_Vobiscum (9)
+  Kenpuhu (9)
+  Sphealnuke (9)
+  Yerek (9)
+  DATonDemand (8)
+  dondon151 (8)
+  Dutch Introvert (8)
+  PKLucky (8)
+  Seal (8)
+  SkidMarc25 (8)
+  StreetHero (8)
+  UltraxBlade (8)
+  Yellowtoad (8)
+  BatimaTheBat (7)
+  Blademaster (7)
+  Dellhonne (7)
+  Dora Drago (7)
+  Estratega (7)
+  Jiege (7)
+  Seliost1 (7)
+  SSHX (7)
+  WarPath (7)
+  Zacara'sDaydreamer (7)
+  d_h (6)
+  Huichelaar (6)
+  HyperGammaSpaces (6)
+  LB (6)
+  SHYUTERz (6)
+  Stephano (6)
+  Stormblight (6)
+  Teelvade (6)
+  Tordo45 (6)
+  WiiSportsRemote (6)
+  ArcaneEli (5)
+  Ash3wl Jr (5)
+  AstraLunaSol (5)
+  CamusZekeSirius (5)
+  Dei (5)
+  Eden (5)
+  EldritchAbomination (5)
+  Feier (5)
+  GabrielKnight (5)
+  JaidynReiman (5)
+  Marcelfe (5)
+  Shtick (5)
+  Uncle Mikey (5)
+  BoneSethMan (4)
+  EA (4)
+  GreatDoot (4)
+  Jay (4)
+  MegaCowSamMan (4)
+  Merpin (4)
+  MeteorSR23 (4)
+  NamelessX (4)
+  RandomWizard (4)
+  Redbean (4)
+  Skitty (4)
+  Snewping (4)
+  WhatIsAnAubin (4)
+  Yangfly Master (4)
+  Alice (3)
+  Ayr (3)
+  BandanaSplitzzz (3)
+  Black Mage (3)
+  Circleseverywhere (3)
+  DerTheVaporeon (3)
+  DespicableDuck (3)
+  Devisian_Nights (3)
+  Eldritch Abomination (3)
+  Erukolindo (3)
+  Faeriefruit (3)
+  Haifried (3)
+  Its_Just_Jay (3)
+  Jeorge Reds (3)
+  Knapicer (3)
+  LucaYoshi (3)
+  Morth (3)
+  MrGreen (3)
+  NYZgamer3 (3)
+  Permafrost (3)
+  Rexacuse (3)
+  SamirPlayz (3)
+  Scraiza (3)
+  Sephie (3)
+  Sirknite031 (3)
+  Sme (3)
+  Spud (3)
+  TAS20XX (3)
+  Teraspark (3)
+  TLP (3)
+  ToGY (3)
+  Vilkalizer (3)
+  Zarg (3)
+  2WB (2)
+  7743 (2)
+  AnnoyingAnon (2)
+  Author_Pendragon (2)
+  BBHood217 (2)
+  BigMood (2)
+  Cardcafe (2)
+  ColeTheOne (2)
+  Cornontherob (2)
+  D4rkblade (2)
+  darkjaden (2)
+  Duckbeard (2)
+  Dutch_Introvert (2)
+  DutchIntrovert (2)
+  Eldritch (2)
+  Epicer (2)
+  Fates-Blade (2)
+  Glaceo (2)
+  Gojira (2)
+  Hatsuru (2)
+  HGS (2)
+  J-Treecko (2)
+  Jey the Count (2)
+  Jj09 (2)
+  Kemui52 (2)
+  LonkFC (2)
+  Maiser6 (2)
+  MasterAwesome (2)
+  Mattiator (2)
+  Metalocif (2)
+  Mightyappa (2)
+  Momo (2)
+  Orihara_Saki (2)
+  Peerless (2)
+  Polinym (2)
+  Roxannity (2)
+  Sacred War (2)
+  SaintRubenio (2)
+  ShadowAllyX (2)
+  Shinkuma (2)
+  SHYUTER (2)
+  Smug_Mug (2)
+  Squaresoft (2)
+  Tanakakiri (2)
+  TBA (2)
+  Tdim (2)
+  ThisThat (2)
+  valak (2)
+  Velvet Kitsune (2)
+  Windsweep (2)
+  Zeldacrafter63 (2)
+  Akkuma407 (1)
+  Almirage (1)
+  Argo (1)
+  AVerySheepGamer (1)
+  Batima (1)
+  Blue Druid (1)
+  Booster_seat87 (1)
+  BoW (1)
+  Bowgun (1)
+  Brober (1)
+  catinator (1)
+  Chi-Chi (1)
+  daemoth (1)
+  Dat (1)
+  Dinar (1)
+  Elibian Nights (1)
+  EN (1)
+  Estra (1)
+  Fiuke Bnuy (1)
+  Fuike Bnuy (1)
+  FungusCaesar (1)
+  FuriousHaunter (1)
+  Glueseppers (1)
+  Hairfried (1)
+  HIRITO (1)
+  Jeoger Reds (1)
+  JeytheCount (1)
+  Jotari (1)
+  Khrene (1)
+  Klokinator (1)
+  LegendofLoog (1)
+  Lexou (1)
+  Lief (1)
+  ltranc (1)
+  Luigiofthegods (1)
+  Madzz (1)
+  Mage boy (1)
+  Marlon&Louis (1)
+  Max Limit (1)
+  Melia (1)
+  Memae (1)
+  Memai (1)
+  Mikey_Seregon (1)
+  milom (1)
+  Mother 3 (1)
+  NeoMasterZX (1)
+  NightBloodKT (1)
+  Orihara Saki (1)
+  Pikmin1211 4 (1)
+  Primefusion (1)
+  Quinnabon (1)
+  Raspberry (1)
+  Rdrouyn (1)
+  REALxViPerZ (1)
+  ReanuKeeves7716 (1)
+  RiriK (1)
+  Sable Mage (1)
+  Saint Rubenio (1)
+  Sax Marine (1)
+  SD9K (1)
+  serif (1)
+  Shin19 (1)
+  SHIRMER (1)
+  SigmanRaven (1)
+  SigmaRaven (1)
+  Sirknite (1)
+  Sirknite31 (1)
+  Siuloir (1)
+  Snerdels (1)
+  Squid1003 (1)
+  SteamingTofu (1)
+  Stitch (1)
+  Tambo (1)
+  Tarantino500 (1)
+  TATUTA_CHANG (1)
+  The_Big_Dededester (1)
+  ThyAnarchists (1)
+  Ultra-Fenix (1)
+  Unhooded (1)
+  VelvetKtsune (1)
+  Vorgus (1)
+  Waleed (1)
+  Warren (1)
+  Xenith (1)
+  Yera (1)
+  Yggdra (1)
+  Yikes! (1)
+  ZeroXA (1)
+
+Liste alphabétique :
+  2WB, 7743, Agro, Akkuma407, Alexsplode, Alice, Almirage, Alusq, AnnoyingAnon, ArcaneEli, ArcherBias, Argo, Aruka, Ash3wl, Ash3wl Jr, AstraLunaSol, Augenis, Author_Pendragon, AVerySheepGamer, Ayr, BandanaSplitzzz, Batima, BatimaTheBat, BBHood217, BigMood, Black Mage, Blademaster, blood, Blue Druid, BoneManSeth, BoneSethMan, Booster_seat87, BoW, Bowgun, Brober, CamusZekeSirius, Cardcafe, catinator, CelestiaHeart, Chi-Chi, Circleseverywhere, ColeTheOne, Cornontherob, Cygnus, Cynon, D4rkblade, d_h, daemoth, darkjaden, Dat, DATonDemand, Dei, Dellhonne, Der, DerTheVaporeon, DespicableDuck, Devisian_Nights, Dinar, Dominus_Vobiscum, dondon151, Dora Drago, Duckbeard, Dutch Introvert, Dutch_Introvert, DutchIntrovert, EA, Eden, Eldritch, Eldritch Abomination, EldritchAbomination, Elibian Nights, EN, Epicer, Erukolindo, Estra, Estratega, Faeriefruit, Fates-Blade, FE7if, FEGirls, Feier, Fiuke Bnuy, flasuban, Fuike Bnuy, FungusCaesar, FuriousHaunter, GabrielKnight, Glaceo, Glueseppers, Gojira, GreatDoot, Haifried, Hairfried, Hanakko, Hatsuru, HGS, HIRITO, Huichelaar, HyperGammaSpaces, IS, Its_Just_Jay, J-Treecko, JaidynReiman, Jay, Jeoger Reds, Jeorge Reds, Jey the Count, JeytheCount, Jiege, Jj09, Jotari, Kemui52, Kenpuhu, Khrene, Klokinator, Knabepicer, Knapicer, L95, LB, LegendofLoog, Leif, Leo_Link, Lexou, Lief, LonkFC, ltranc, LucaYoshi, Luigiofthegods, Madzz, Mage boy, Maiser6, Marcelfe, Marlon&Louis, MasterAwesome, Mattiator, Max Limit, MeatOfJustice, MegaCowSamMan, Melia, Memae, Memai, Merpin, Metalocif, MeteorSR23, Mightyappa, Mikey_Seregon, milom, Momo, Morth, Mother 3, MrGreen, N426, NamelessX, NeoMasterZX, NightBloodKT, Norikins, Nuramon, NYZgamer3, Orihara Saki, Orihara_Saki, Peerless, Permafrost, Pikmin, Pikmin1211 4, PKLucky, Polinym, Primefusion, Pushwall, Quinnabon, RandomWizard, Rasdel, Raspberry, Rdrouyn, REALxViPerZ, ReanuKeeves7716, Redbean, Rexacuse, RiriK, RobertFPY, Roxannity, Ryn, Sable Mage, Sacred War, Saint Rubenio, SaintRubenio, SALVAGED, SamirPlayz, Sax Marine, Scraiza, SD9K, Seal, Seliost1, Sephie, serif, ShadowAllyX, Shin19, Shinkuma, SHIRMER, Shtick, Shuusuke, SHYUTER, SHYUTERz, SigmanRaven, SigmaRaven, Sirknite, Sirknite031, Sirknite31, Siuloir, SkidMarc25, Skitty, Sme, Smug_Mug, Snerdels, Snewping, Sphealnuke, Spud, Squaresoft, Squid1003, SSHX, SteamingTofu, Stephano, Stitch, Stormblight, StreetHero, Tambo, Tanakakiri, Tarantino500, TAS20XX, TATUTA_CHANG, TBA, Tdim, Teelvade, Teraspark, The_Big_Dededester, TheGreatNothing, ThisThat, ThyAnarchists, TLP, ToGY, Topazlight, Tordo45, TytheBub, Ultra-Fenix, UltraFenix, UltraxBlade, Uncle Mikey, Unhooded, Unknown, valak, Velvet Kitsune, VelvetKitsune, VelvetKtsune, Vilkalizer, Vorgus, Waleed, WarPath, Warren, WhatIsAnAubin, WiiSportsRemote, Windsweep, Xenith, Yangfly Master, Yellowtoad, Yera, Yerek, Yggdra, Yikes!, Zacara'sDaydreamer, Zarg, Zeldacrafter63, ZeroXA, Zoramine, ZoramineFae
+
+== Générateur de personnage (1073 sprites) — tools/map-sprites/generateur/
+  [Bards, Dancers, Suppliers, Misc] Bard (F) Fancy : RandomWizard, MeatOfJustice, Knabepicer
+  [Bards, Dancers, Suppliers, Misc] Bard (M) Fancy : MeatOfJustice
+  [Bards, Dancers, Suppliers, Misc] Bard (M) FE5 : ArcherBias
+  [Bards, Dancers, Suppliers, Misc] Bear (U) : AVerySheepGamer
+  [Bards, Dancers, Suppliers, Misc] Bunny (U) : Madzz
+  [Bards, Dancers, Suppliers, Misc] Dancer (F) : Circleseverywhere
+  [Bards, Dancers, Suppliers, Misc] Dancer (M) FE8-Style : L95
+  [Bards, Dancers, Suppliers, Misc] Dancer (U) Dracodancer : Sirknite31
+  [Bards, Dancers, Suppliers, Misc] Dancer (U) FF Moogle : Warren
+  [Bards, Dancers, Suppliers, Misc] Doll (F) : FEGirls
+  [Bards, Dancers, Suppliers, Misc] Eggman (M) Egg Mobile : Saint Rubenio
+  [Bards, Dancers, Suppliers, Misc] Fish (U) : LegendofLoog
+  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, Colored Visor) : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, Secondary Visor) : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, White Visor) : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Gold plating, Colored Visor) : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (White plating, Colored Visor) : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] Gazelle (U) Stantler : Scraiza
+  [Bards, Dancers, Suppliers, Misc] Goomba (U) : Uncle Mikey
+  [Bards, Dancers, Suppliers, Misc] Goose (Honk!!) : Faeriefruit
+  [Bards, Dancers, Suppliers, Misc] Hero (F) Wheelchair : Merpin
+  [Bards, Dancers, Suppliers, Misc] Horse : L95
+  [Bards, Dancers, Suppliers, Misc] Horse (16x16) : L95
+  [Bards, Dancers, Suppliers, Misc] Horse (White) : N426
+  [Bards, Dancers, Suppliers, Misc] Hound : Cygnus
+  [Bards, Dancers, Suppliers, Misc] Hound (Alt) : Cygnus
+  [Bards, Dancers, Suppliers, Misc] Ice Climbers (U) : Uncle Mikey
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (F) Queen : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Archer : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Guardsman : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) King : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Knight : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Wizard : LB, Norikins
+  [Bards, Dancers, Suppliers, Misc] Man : non crédité
+  [Bards, Dancers, Suppliers, Misc] Muse_Gypsy (F) : Alexsplode
+  [Bards, Dancers, Suppliers, Misc] Peer (M) : IS
+  [Bards, Dancers, Suppliers, Misc] Pegasus : N426
+  [Bards, Dancers, Suppliers, Misc] Pegasus (Brown) : N426
+  [Bards, Dancers, Suppliers, Misc] pegasus (Brown) : N426
+  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - Brown Armor : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - Gold Armor : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - White Armor : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar -Main Color Armor : Shuusuke
+  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) : BoneManSeth
+  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) with Papers : BoneManSeth
+  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) with Table : BoneManSeth
+  [Bards, Dancers, Suppliers, Misc] Pontifex (M) : IS
+  [Bards, Dancers, Suppliers, Misc] Prince (M) : EldritchAbomination
+  [Bards, Dancers, Suppliers, Misc] Princess (F) : EldritchAbomination
+  [Bards, Dancers, Suppliers, Misc] Queen (F) : IS
+  [Bards, Dancers, Suppliers, Misc] Queen (F) (Hat) : IS
+  [Bards, Dancers, Suppliers, Misc] Radiant Peach (F) : Uncle Mikey
+  [Bards, Dancers, Suppliers, Misc] Rat (U) : Squaresoft, RandomWizard
+  [Bards, Dancers, Suppliers, Misc] Rat (U) : The_Big_Dededester
+  [Bards, Dancers, Suppliers, Misc] Samus (F) : MeatOfJustice
+  [Bards, Dancers, Suppliers, Misc] Squire (M) Sword : Yangfly Master
+  [Bards, Dancers, Suppliers, Misc] Supplier (F) Lance : N426
+  [Bards, Dancers, Suppliers, Misc] Supplier (F) Unarmed : N426
+  [Bards, Dancers, Suppliers, Misc] Supplier v2 (F) Lance : N426
+  [Bards, Dancers, Suppliers, Misc] Supplier v2 (F) Unarmed : N426
+  [Bards, Dancers, Suppliers, Misc] SW (U) B1 Droid : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Engineer : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Heavy Trooper : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Medic : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Sergeant : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Sniper : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Trooper : Augenis
+  [Bards, Dancers, Suppliers, Misc] SW (U) Heavy Droid : Augenis
+  [Bards, Dancers, Suppliers, Misc] Sword Maiden (F) Yuril Artwaltz : Aruka, Kenpuhu
+  [Bards, Dancers, Suppliers, Misc] Tactician (M) (FE7) : IS
+  [Bards, Dancers, Suppliers, Misc] Tactician (U) : IS
+  [Bards, Dancers, Suppliers, Misc] Theif and Archer (M,F) : Mage boy
+  [Bards, Dancers, Suppliers, Misc] Tortoise (U) : Dutch Introvert
+  [Bards, Dancers, Suppliers, Misc] Turret (M) Magic (Shaman) : Cardcafe, Estratega
+  [Bards, Dancers, Suppliers, Misc] Turret (U) Magical : Cardcafe, Estratega
+  [Bards, Dancers, Suppliers, Misc] Turret (U) Magical : Estratega
+  [Bards, Dancers, Suppliers, Misc] Villager (F) (Girl) : IS
+  [Bards, Dancers, Suppliers, Misc] Villager (F) (Woman) : IS
+  [Bards, Dancers, Suppliers, Misc] Villager (M) (Boy) : IS
+  [Bards, Dancers, Suppliers, Misc] Villager (M) (Man) : IS
+  [Bards, Dancers, Suppliers, Misc] Weegee : Tambo
+  [Bards, Dancers, Suppliers, Misc] Woman : IS
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Barbarian (M) Axe : valak, topazlight
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Barbarian (M) Axe Alt : valak, topazlight
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Axe : Unknown
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Axe : Pikmin, Der
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Axe Bandana : Pikmin, Der, Brober
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Bow : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Lance : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Sword : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Thin Axe : FEGirls
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Axe : IS
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Bow : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Dartserker Axe : WarPath
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Dartzerker Sword : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkzerker Axe : NYZgamer3
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Lance : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Lizardzerker Axe : Seliost1
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Magic : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Oni Chieftain : Dora Drago
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Staff : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Sword : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (U) Axe Generic : CelestiaHeart
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe : Skitty
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe (No Handband) : Skitty, Cygnus
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe 16x16 : Skitty
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) FE13-Style Axe : Glaceo, Skitty, blood
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored : NYZGamer3
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored : NYZgamer3
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored - Darker Clothes : Unknown
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Fix Axe : flasuban
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Sword : Rasdel
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Sword 16x16 : Rasdel
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Axe : IS
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Axe 16x16 : Alusq
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Clothed Axe : Yangfly Master
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) FE13-Style Axe : Glaceo
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Improved +Clothing : Flasuban
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Improved +Clothing (No Headband) : Flasuban, Yellowtoad
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Sword : ZoramineFae
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Torch : Hanakko, D4rkblade, Zeldacrafter63
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Torch + Axe : Hanakko, D4rkblade, Zeldacrafter63
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (U) Axe Generic : CelestiaHeart
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (U) Lizard Wildling : Tarantino500
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Gladiator (M) : Pikmin, L95
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Gladiator (M) : SSHX
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Gladiator (M) : SkidMarc25
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Gladiator (M) Sword : Pikmin, L95, Pushwall
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Marauder (F) Spud's : LonkFC, TytheBub
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Marauder (M) Axe : Author_Pendragon
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Marauder (M) Basic Axe : Blademaster
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Marauder (M) Spud's : LonkFC
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (F) Axe : StreetHero
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (F) Axe : flasuban, Mikey_Seregon
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (M) Axe : IS
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (M) DS-Style Axe : Der
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (M) DS-Style No-Bandana Axe : Der
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (M) Hat Axe : 7743
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Pirate (U) Axe Generic : CelestiaHeart
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Swashbuckler (F) Axe : Yellowtoad
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Swashbuckler (M) Axe : Yellowtoad
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Swashbuckler (M) Sword : Yellowtoad, ColeTheOne
+  [Infantry - (Axe) Fighters and Warriors] Fighter (F) Axe : Alusq
+  [Infantry - (Axe) Fighters and Warriors] Fighter (F) FE10-Style Axe : Pikmin
+  [Infantry - (Axe) Fighters and Warriors] Fighter (F) FE10-Style Axe 1 : Pikmin
+  [Infantry - (Axe) Fighters and Warriors] Fighter (F) Thin Axe : FEGirls
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) (FE6 Beta) : Pushwall
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Armoured : Yellowtoad
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Axe : IS
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Axe Improvment : Cynon
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Axe Improvment (Alusq Mix - Shadow) : Cynon, Alusq, UltraFenix
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Axe Improvment (Alusq Mix) : Cynon, Alusq, UltraFenix
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Bow : Scraiza
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) FE10-Style Axe : L95
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) FE10-Style Axe : ZoramineFae
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) FE10-Style Sword : L95, Warpath
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Flail Knight : L95, Stephano
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Improved Axe : flasuban
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Manetyr Fighter : Zacara'sDaydreamer
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Revamped Axe : Alusq
+  [Infantry - (Axe) Fighters and Warriors] Fighter (M) Wolf Rider (green) : Teelvade
+  [Infantry - (Axe) Fighters and Warriors] Fighter (U) Axe Generic : CelestiaHeart
+  [Infantry - (Axe) Fighters and Warriors] Journeyman (F) Axe : Vorgus
+  [Infantry - (Axe) Fighters and Warriors] Journeyman (M) Alt Stance : Topazlight
+  [Infantry - (Axe) Fighters and Warriors] Journeyman (M) Alt Stance 2 : Topazlight
+  [Infantry - (Axe) Fighters and Warriors] Journeyman (M) Axe : IS
+  [Infantry - (Axe) Fighters and Warriors] Journeyman (M) Axe 16x16 : IS
+  [Infantry - (Axe) Fighters and Warriors] Warrior (F) Axe : FEGirls
+  [Infantry - (Axe) Fighters and Warriors] Warrior (F) Axe : Pushwall, FEGirls
+  [Infantry - (Axe) Fighters and Warriors] Warrior (F) Axe Tellius Style (No : non crédité
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Axe : IS
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Magic : ColeTheOne
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Tellius : Rasdel
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Tellius + helmet : Rasdel, Jey the Count
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Tellius Bigger Axe : Rasdel, Fuike Bnuy
+  [Infantry - (Axe) Fighters and Warriors] Warrior (M) Tellius Rework V2 : Rasdel, UltraFenix
+  [Infantry - (Axe) Fighters and Warriors] Warrior (U) Axe Generic : CelestiaHeart
+  [Infantry - (Bow) Archers and Hunters] Archer (F) : IS
+  [Infantry - (Bow) Archers and Hunters] Archer (F) Improved : Der
+  [Infantry - (Bow) Archers and Hunters] Archer (F) Improved Short hair : Der, UltraFenix
+  [Infantry - (Bow) Archers and Hunters] Archer (M) : IS
+  [Infantry - (Bow) Archers and Hunters] Archer (M) Coniro Archer : Zacara'sDaydreamer
+  [Infantry - (Bow) Archers and Hunters] Archer (M) FE14-Style Thief Bow : Rasdel
+  [Infantry - (Bow) Archers and Hunters] Archer (M) FE5-Style : Pushwall
+  [Infantry - (Bow) Archers and Hunters] Archer (M) Improved v1 : Der
+  [Infantry - (Bow) Archers and Hunters] Archer (M) Improved v2 : Der, topazlight
+  [Infantry - (Bow) Archers and Hunters] Archer (U) Generic : CelestiaHeart
+  [Infantry - (Bow) Archers and Hunters] Cowboy (M) Crossbow : MeatofJustice
+  [Infantry - (Bow) Archers and Hunters] Cowboy (M) Gun : MeatofJustice
+  [Infantry - (Bow) Archers and Hunters] Hunter (F) : MeatOfJustice
+  [Infantry - (Bow) Archers and Hunters] Hunter (M) : MeatOfJustice
+  [Infantry - (Bow) Archers and Hunters] Hunter (M) FE1-3 : knabepicer, NightBloodKT
+  [Infantry - (Bow) Archers and Hunters] Hunter (M) MeatOfJustice-style : knabepicer
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) FE1 Ballistician Tank : DespicableDuck
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) FE6 Basic Mounted Generic : CelestiaHeart
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) FE6 Iron Mounted Generic : CelestiaHeart
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) FE6 Killer Mounted Generic : CelestiaHeart
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) Killer Mounted Generic : CelestiaHeart
+  [Infantry - (Bow) Snipers and Ballistae] Ballista (U) Normal Mounted Generic : CelestiaHeart
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Dark Mounted : IS, Zarg
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Dark Vacant : IS, Zarg
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE5-Style Rider : Pushwall
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Basic Mounted : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Basic Vacant Stationary : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Iron Mounted : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Iron Vacant : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Killer Mounted : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista FE6 Killer Vacant Stationary : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Killer Mounted : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Killer Vacant : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Normal Mounted : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Normal Mounted Stationary : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballista Normal Vacant : IS
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (F) : dondon151
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (F) 16x32 : dondon151
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (F) Improved : flasuban, Der
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (M) : Der
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (M) : dondon151
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (M) Improved : flasuban, Der
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (U) : Aruka, Kenpuhu
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (U) : MrGreen, Aruka, Kenpuhu
+  [Infantry - (Bow) Snipers and Ballistae] Ballistician (U) : flasuban, Der, Stormblight
+  [Infantry - (Bow) Snipers and Ballistae] Marksman (F) Nuramon-style : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Marksman (M) Nuramon-style : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (F) : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (F) : IS
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (F) Royal : ArcherBias, MeteorSR23
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (F) v2 : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (M) : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (M) : IS
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (M) Plume : DespicableDuck
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (M) Royal : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (M) v2 : ArcherBias
+  [Infantry - (Bow) Snipers and Ballistae] Sniper (U) Generic : CelestiaHeart
+  [Infantry - (Lnc) Soldiers, Halberdiers] Bird Soldier (M) Lance : DutchIntrovert
+  [Infantry - (Lnc) Soldiers, Halberdiers] Dragoon (M) Lance : Unknown
+  [Infantry - (Lnc) Soldiers, Halberdiers] Dragoon (M) v2 Lance : Pikmin, Unknown
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (F) Helmet : Dei, dondon151, Yellowtoad
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (M) 1.0 : Unknown
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (M) 2.0 : TBA
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (M) 2.0 Alt Helmet : TBA, Topazlight
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (M) Alt A Lance : Aruka, Kenpuhu
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (U) Lance : Dei, dondon151
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (U) Skeleton : Dei, dondon151, d_h
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (F) Blonde : SALVAGED
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (F) Brown Hair : SALVAGED
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (F) Red Hair : SALVAGED
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (M) Brown Hair : SALVAGED
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (M) Lance : Jj09
+  [Infantry - (Lnc) Soldiers, Halberdiers] Lancer (M) Red Hair : SALVAGED
+  [Infantry - (Lnc) Soldiers, Halberdiers] Militia (F) Deserter Lance : Alusq, Epicer
+  [Infantry - (Lnc) Soldiers, Halberdiers] Militia (M) Deserter Lance : Alusq
+  [Infantry - (Lnc) Soldiers, Halberdiers] Recruit (M) : Waleed
+  [Infantry - (Lnc) Soldiers, Halberdiers] Recruit (M) Flagbearer : Dutch Introvert
+  [Infantry - (Lnc) Soldiers, Halberdiers] Sergeant (F) : Spud, Dora Drago
+  [Infantry - (Lnc) Soldiers, Halberdiers] Sergeant (Helmet) (M) : Spud, Jiege
+  [Infantry - (Lnc) Soldiers, Halberdiers] Sergeant (M) : Spud
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) DSFE12 : AstraLunaSol
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) DSFE12 16x16 : AstraLunaSol, Topazlight
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) Echoes Lance : Feier, flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) FE10-Style Lance : flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) FE10-Style v2 Lance : flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) Lance : Yellowtoad
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) Lance (Unicorn Overlord) : Booster_seat87
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (F) Shield : Rexacuse, Peerless, Alusq, WarPath
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Alt Lance : Alusq
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) DSFE12 : AstraLunaSol
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) DSFE12 16x16 : AstraLunaSol, Topazlight
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Echoes Lance : Feier, flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Echoes Sword : Feier, flasuban, UltraxBlade
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Ephraim-Style Lance : Aruka, Kenpuhu
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) FE10-Style Lance : flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) FE10-Style v2 Lance : flasuban
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Flintlock : BandanaSplitzzz
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Infantry : MeatofJustice
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Infantry Esper Knight : MeatofJustice
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Lance : IS
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (M) Shield Lance : Rexacuse, Peerless, Alusq
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (U) Basic Shield : DespicableDuck, ZoramineFae
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (U) Echoes Lance : Feier, flasuban, Quinnabon
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (U) Manetyr Soldier : Zacara'sDaydreamer
+  [Infantry - (Lnc) Soldiers, Halberdiers] Solider (M) DSFE12 16x16 : AstraLunaSol, Topazlight
+  [Infantry - (Lnc) Soldiers, Halberdiers] Spartan (M) Lance : Der
+  [Infantry - (Lnc) Soldiers, Halberdiers] Spartan (M) Lance Narrowed : Der, Pushwall
+  [Infantry - (Lnc) Soldiers, Halberdiers] Spear Fighter (M) FE14 Hoshidan : ArcherBias
+  [Infantry - (Lnc) Soldiers, Halberdiers] Spear Fighter (M) FE14 Hoshidan Update : ArcherBias
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Axe : StreetHero
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Axe (No Shield) : Pikmin, Pushwall, UltraFenix
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Axe (No Shield) : blood, UltraFenix
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Blue Shield Axe : ZoramineFae
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Blue Shield Sword : Pikmin, Pushwall
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Blue Shield Sword : Pikmin
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Brown Shield Axe : ZoramineFae
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Brown Shield Sword : Pikmin, Pushwall
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Gerik-Style Sword : Nuramon
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Sword : IS
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Sword (No Shield) : Pikmin, Pushwall, UltraFenix
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Sword (No Shield) : blood, UltraFenix
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (F) Wingless Heroine : Zacara'sDaydreamer
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Axe : Raspberry
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Blue Shield Axe : ZoramineFae
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Blue Shield Sword : Pikmin
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Brown Shield Axe : ZoramineFae
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Brown Shield Sword : Pikmin
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Gerik-Style Sword : Nuramon
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Sword : IS
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Mercenaries and Heroes] Mercanry (M) Brawler : Scraiza
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (F) : FEGirls
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (F) Axe : Pushwall, Argo, Flasuban, ArcherBias
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (F) Improved Sword : flasuban
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (F) Long-Hair Sword : Rasdel
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (F) Sword : Agro
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) : IS
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Armored : Unknown
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Axe : Flasuban, ArcherBias
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Axe : Unknown
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Beta : IS
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Beta Edit : Unknown
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (M) Sword Improved : Flasuban
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Mercenaries and Heroes] Outlander (M) : J-Treecko
+  [Infantry - (Swd) Mercenaries and Heroes] Outlander (M) 16x16 : J-Treecko
+  [Infantry - (Swd) Mercenaries and Heroes] Vanguard (M) : Nuramon
+  [Infantry - (Swd) Mercenaries and Heroes] Villager (F) Sword : HyperGammaSpaces
+  [Infantry - (Swd) Mercenaries and Heroes] Villager (F) v2 Sword : HyperGammaSpaces
+  [Infantry - (Swd) Mercenaries and Heroes] Villager (M) Sword : HyperGammaSpaces
+  [Infantry - (Swd) Mercenaries and Heroes] Villager (M) v2 Sword : HyperGammaSpaces
+  [Infantry - (Swd) Mercenaries and Heroes] Villager (M) v2 Sword (Blonde) : HyperGammaSpaces, Estratega
+  [Infantry - (Swd) Myrms and Swordmasters] Dread Fighter (F) : Nuramon
+  [Infantry - (Swd) Myrms and Swordmasters] Dread Fighter (M) : Nuramon
+  [Infantry - (Swd) Myrms and Swordmasters] Dread Fighter (M) Short Hair : Nuramon, Seliost1
+  [Infantry - (Swd) Myrms and Swordmasters] Dread Fighter (U) Skeleton : Nuramon, d_h
+  [Infantry - (Swd) Myrms and Swordmasters] Dread Fighter Echoes (U) : Feier
+  [Infantry - (Swd) Myrms and Swordmasters] FE15-Myrmidon (U) Sword : Nuramon
+  [Infantry - (Swd) Myrms and Swordmasters] Master of Arms (F) : Archerbias
+  [Infantry - (Swd) Myrms and Swordmasters] Master of Arms (M) : Archerbias
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (F) Awakening-Style : Leo_link, Stormblight
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (F) Bow : N426
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (F) Karla-Style : Alice
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (F) Ponytail Sword : IS
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (F) Sword : FEGirls
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Awakening-Style : Leo_link
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Bow : N426
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Manetyr Myrmidon : Zacara'sDaydreamer
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Shorthaired Sword : Sephie
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Sword : IS
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (U) Sword Generic : CelestiaHeart
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (U) Twi'lek Myrmidon : Augenis
+  [Infantry - (Swd) Myrms and Swordmasters] Sephiroth : N426
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (F) : IS
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (F) Alt : FE7if
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (F) FE10-Style Sword : L95, darkjaden
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) : IS
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Bald : Pikmin, L95
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) FE10-Style Sword : L95
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Izark : Yangfly Master
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Minor Edit : MrGreen
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Short Hair : Seliost1
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Short Hair (Alt) : Seliost1
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Short Hair Sword : Shtick
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Myrms and Swordmasters] Trueblade (M) : Seliost1
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (F) : RobertFPY
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (F) RobertFPY : non crédité
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (F) Thief Head : Pushwall
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) : IS
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Hair Edit : ltranc
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Hood : Jey the Count
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Hooded : SkidMarc25
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Hoodless Sword : RobertFPY
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Ghost : Ryn
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Lance : ArcherBias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Lance (invisible) : ArcherBias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Shadow : Klokinator
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Sword : ArcherBias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Novistador Sword (invisible) : ArcherBias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (U) Generic Hood : Archerbias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (U) Generic Hood - Vanilla Hover : Archerbias
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Katt (F) BoStaff : FE7if
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Ninja : Der
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Ninja (M) Master : Der
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Rogue (F) : Unknown
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Rogue (F) Long Pants : Yerek
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Rogue (F) Trickster-Valkyrie : Aruka, Kenpuhu
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Rogue (M) : IS
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Rogue (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Samurai (Iaijutsu - Rouge) (F) Sword : GabrielKnight
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Samurai (Iaijutsu - Rouge) (F) Sword 16x16 : GabrielKnight
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Samurai (Iaijutsu - Rouge) (M) Sword : GabrielKnight
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Samurai (Iaijutsu - Rouge) (M) Sword 16x16 : GabrielKnight
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) : IS
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) Bow : Alice
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) FE5-Style Sword : Yangfly Master
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) Staff : Cygnus
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (M) : IS
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (M) Unhooded Sword : Rasdel
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (M) Winged : Ryn
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (U) Generic : CelestiaHeart
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thug (M) Cutthroat Sword : Cynon
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thug (M) Cutthroat Sword : Khrene
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thug (M) Cutthroat Sword (Helmet) : Cynon, TheGreatNothing
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thug (M) Sword : Rasdel
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Trickster (F) : StreetHero, Sable Mage
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Trickster (M) : StreetHero
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Trickster (M) Redone : StreetHero, blood
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Boxer (M) : ShadowAllyX
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Boxer (M) Bald : ShadowAllyX
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Brawler (F) Claw : Dora Drago
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Brawler 16x16 (F) Claw : Dora Drago
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Grappler (F) Claw : Dora Drago
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Grappler 16x16 (F) Claw : Dora Drago
+  [Infantry - (Unarmed) Brawlers, Fistfighters] Grappler 16x16 Flipped (F) Claw : Dora Drago
+  [Infantry - Knights, Generals, Armors] Baron (M) Lance : Unknown
+  [Infantry - Knights, Generals, Armors] Baron (U) +Cape and Shield Axe Centurion Helm : Topazlight, Nuramon, Jay, Ryn
+  [Infantry - Knights, Generals, Armors] Baron (U) +Cape and Shield Axe Crusader Helm : Topazlight, Nuramon, Jay, Ryn
+  [Infantry - Knights, Generals, Armors] Baron (U) +Cape and Shield Lance Centurion Helm : Nuramon, Jay, Ryn
+  [Infantry - Knights, Generals, Armors] Baron (U) +Cape and Shield Lance Crusader Helm : Nuramon, Jay, Ryn
+  [Infantry - Knights, Generals, Armors] Baron (U) Axe : Topazlight, Nuramon, Its_Just_Jay
+  [Infantry - Knights, Generals, Armors] Baron (U) Lance : Topazlight, Nuramon, Its_Just_Jay
+  [Infantry - Knights, Generals, Armors] Baron (U) Magic : WarPath
+  [Infantry - Knights, Generals, Armors] Baron (U) Rework Shield Lance : Nuramon, UltraFenix
+  [Infantry - Knights, Generals, Armors] Black Knight (U) Sword : Nuramon
+  [Infantry - Knights, Generals, Armors] Emperor (M) : Unknown
+  [Infantry - Knights, Generals, Armors] General (F) : RiriK
+  [Infantry - Knights, Generals, Armors] General (F) Lance : 7743
+  [Infantry - Knights, Generals, Armors] General (F) Sword : Norikins, Stormblight
+  [Infantry - Knights, Generals, Armors] General (U) Axe : IS, Blademaster
+  [Infantry - Knights, Generals, Armors] General (U) Cape Lance : topazlight
+  [Infantry - Knights, Generals, Armors] General (U) IronShell_Tiny : Alexsplode
+  [Infantry - Knights, Generals, Armors] General (U) Lance : IS
+  [Infantry - Knights, Generals, Armors] General (U) Shield Axe : Shinkuma, Nuramon
+  [Infantry - Knights, Generals, Armors] General (U) Shield Lance : Nuramon
+  [Infantry - Knights, Generals, Armors] General (U) Shield Sword : Shinkuma, Nuramon
+  [Infantry - Knights, Generals, Armors] General (U) Sword : Norikins
+  [Infantry - Knights, Generals, Armors] Guardian (M) Berwick Saga : SSHX
+  [Infantry - Knights, Generals, Armors] King (U) Bulwark Axe : blood
+  [Infantry - Knights, Generals, Armors] King (U) Bulwark Lance : blood
+  [Infantry - Knights, Generals, Armors] King (U) Bulwark Sword : Sax Marine
+  [Infantry - Knights, Generals, Armors] King (U) Generic Lance : EN, L95, Pikmin, Der, Huichelaar
+  [Infantry - Knights, Generals, Armors] Knight (F) Sword : SALVAGED, BoneManSeth, Stormblight
+  [Infantry - Knights, Generals, Armors] Knight (M) Axe : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (M) Bow : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (M) Bow +Cape & White Hair : SALVAGED, BoneManSeth, Topazlight
+  [Infantry - Knights, Generals, Armors] Knight (M) Bow +Shield on Back : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (M) Lance : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (M) Sword : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (U) Axe : Agro
+  [Infantry - Knights, Generals, Armors] Knight (U) Axe : SALVAGED
+  [Infantry - Knights, Generals, Armors] Knight (U) Axe Alt : SALVAGED, Blademaster
+  [Infantry - Knights, Generals, Armors] Knight (U) Bow : Agro, Blademaster
+  [Infantry - Knights, Generals, Armors] Knight (U) Bow : Agro
+  [Infantry - Knights, Generals, Armors] Knight (U) Bow : SALVAGED
+  [Infantry - Knights, Generals, Armors] Knight (U) Bow Shield Back : SALVAGED
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Hybrid-Style Lance : Nuramon, flasuban
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Style Axe : Unknown
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Style Bow : Unknown
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Style Lance : Unknown
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Style Magic : flasuban
+  [Infantry - Knights, Generals, Armors] Knight (U) FE10-Style Sword : Unknown
+  [Infantry - Knights, Generals, Armors] Knight (U) Helmetless Axe : SALVAGED, BoneManSeth
+  [Infantry - Knights, Generals, Armors] Knight (U) Helmetless Bow : SALVAGED, BoneSethMan
+  [Infantry - Knights, Generals, Armors] Knight (U) Helmetless Bow Shield Back : SALVAGED, BoneSethMan
+  [Infantry - Knights, Generals, Armors] Knight (U) Helmetless Lance : SALVAGED, BoneSethMan
+  [Infantry - Knights, Generals, Armors] Knight (U) Helmetless Sword : SALVAGED, BoneSethMan
+  [Infantry - Knights, Generals, Armors] Knight (U) Lance : IS
+  [Infantry - Knights, Generals, Armors] Knight (U) Lance : SALVAGED
+  [Infantry - Knights, Generals, Armors] Knight (U) Lance (Helmetless) : Marcelfe
+  [Infantry - Knights, Generals, Armors] Knight (U) Lance Alt : Agro
+  [Infantry - Knights, Generals, Armors] Knight (U) Lance Alt 16x16 : Agro
+  [Infantry - Knights, Generals, Armors] Knight (U) Staff : knabepicer, IS
+  [Infantry - Knights, Generals, Armors] Knight (U) Sword : Agro
+  [Infantry - Knights, Generals, Armors] Knight (U) Sword : SALVAGED
+  [Infantry - Knights, Generals, Armors] Knight (U) Sword 16x16 : Agro
+  [Infantry - Knights, Generals, Armors] Marshal (U) King motion Axe : Nuramon, Knapicer, UltraFenix
+  [Infantry - Knights, Generals, Armors] Marshal (U) King motion Lance : Nuramon, Knapicer, UltraFenix
+  [Infantry - Knights, Generals, Armors] Marshal (U) King motion lance : Nuramon, Knapicer, UltraFenix
+  [Infantry - Knights, Generals, Armors] Marshall (U) Axe : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Capeless Axe : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Capeless Lance : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Capeless Sword : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Lance : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Sword : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (U) Sword Alt : Nuramon
+  [Lords - Vanilla and Custom] Blade Lord (F) Exalt Magic : FE7if
+  [Lords - Vanilla and Custom] Blade Lord (F) Exalt Magic Effect : FE7if, Jiege
+  [Lords - Vanilla and Custom] Blade Lord (F) Generic Sword : AnnoyingAnon
+  [Lords - Vanilla and Custom] Blade Lord (F) Kawaii Blader Sword : blood
+  [Lords - Vanilla and Custom] Blade Lord (F) Sword : FE7if
+  [Lords - Vanilla and Custom] Knight Lord (M) Generic Blade : Pushwall
+  [Lords - Vanilla and Custom] Lord (F) Elf Sword : JaidynReiman
+  [Lords - Vanilla and Custom] Lord (F) Priestess Sword : blood
+  [Lords - Vanilla and Custom] Lord (M) Roy T1 Generic : AnnoyingAnon
+  [Lords - Vanilla and Custom] Lord (M) Sword Generic : Leif
+  [Lords - Vanilla and Custom] Lord (M) Sword Generic (Leif, admrl765) : non crédité
+  [Lords - Vanilla and Custom] Lord (M) Sword Generic 16x16 : Leif
+  [Lords - Vanilla and Custom] Mage Lord (F) Elf : TyTheBub, JaidynReiman
+  [Lords - Vanilla and Custom] Mage Lord (M) Elf : TyTheBub, JaidynReiman
+  [Lords - Vanilla and Custom] Noble (M) Launch T1 : VelvetKitsune
+  [Lords - Vanilla and Custom] Oracle v2 : Sacred War
+  [Lords - Vanilla and Custom] Oracle v3 : Sacred War, WhatIsAnAubin
+  [Lords - Vanilla and Custom] Successor (M) Launch T2 : VelvetKitsune
+  [Lords - Vanilla and Custom] Successor 16x16 (M) Launch T2 : VelvetKitsune
+  [Magi - Dark-Type] Arcanist (U) Unfinished : Norikins
+  [Magi - Dark-Type] Dark Druid (M) : IS
+  [Magi - Dark-Type] Dark Druid (M) 16x16 : IS
+  [Magi - Dark-Type] Dark Mage FE3-4 : TAS20xx
+  [Magi - Dark-Type] Dark Prince (M) : Norikins
+  [Magi - Dark-Type] Druid (F) : IS
+  [Magi - Dark-Type] Druid (F) Catgirl Staff : Hanakko
+  [Magi - Dark-Type] Druid (F) Staff : Cygnus, Hanakko
+  [Magi - Dark-Type] Druid (M) : IS
+  [Magi - Dark-Type] Druid (M) : Unhooded, IS, Stormblight
+  [Magi - Dark-Type] Druid Hoodless (F) : Ultra-Fenix, Velvet Kitsune
+  [Magi - Dark-Type] Executioner (U) : Huichelaar, IS, Lexou
+  [Magi - Dark-Type] Moloch Sorcerer (U) : Huichelaar
+  [Magi - Dark-Type] Necromancer (F) Skirt : Bowgun
+  [Magi - Dark-Type] Necromancer (M) Generic : Rasdel
+  [Magi - Dark-Type] Necromancer (M) Generic : Unknown
+  [Magi - Dark-Type] Plague Doctor (F) : DatonDemand
+  [Magi - Dark-Type] Shaman (F) : IS
+  [Magi - Dark-Type] Shaman (F) Catgirl Staff : Cygnus, Hanakko
+  [Magi - Dark-Type] Shaman (F) Staff : Cygnus
+  [Magi - Dark-Type] Shaman (M) : IS
+  [Magi - Dark-Type] Shaman (M) Armored : Estratega
+  [Magi - Dark-Type] Shaman (M) Hoodless Magic : Ash3wl, L95
+  [Magi - Dark-Type] Shaman (M) Hoodless Staff : Ash3wl, L95
+  [Magi - Dark-Type] Shaman (M) Occultist : Devisian_Nights, Pikmin
+  [Magi - Dark-Type] Shaman (M) Sword : SSHX
+  [Magi - Dark-Type] Shaman (U) Skeleton : d_h
+  [Magi - Dark-Type] Summoner (F) : VelvetKitsune
+  [Magi - Dark-Type] Summoner (F) 16x16 : VelvetKitsune
+  [Magi - Dark-Type] Summoner (F) Alt : blood
+  [Magi - Dark-Type] Summoner (F) Alt 16x16 : blood
+  [Magi - Dark-Type] Summoner (F) Headband : Unknown
+  [Magi - Dark-Type] Summoner (F) Headband 16x16 : Unknown
+  [Magi - Dark-Type] Summoner (F) Plague Doctor : DATonDemand, Unknown
+  [Magi - Dark-Type] Summoner (M) : IS
+  [Magi - Dark-Type] Summoner (M) 16x16 : IS
+  [Magi - Holy-Type] Bishop (F) : IS
+  [Magi - Holy-Type] Bishop (F) EgyptAndKemomimi-Style : VelvetKitsune, BatimaTheBat
+  [Magi - Holy-Type] Bishop (F) Ponytail : Fiuke Bnuy
+  [Magi - Holy-Type] Bishop (M) : IS
+  [Magi - Holy-Type] Bishop (M) Hatless : Permafrost
+  [Magi - Holy-Type] Bishop (M) Hatless Pants : Permafrost
+  [Magi - Holy-Type] Bishop (U) Generic : CelestiaHeart
+  [Magi - Holy-Type] Bishop (U) Lizard Staff : ThisThat
+  [Magi - Holy-Type] Cleric (F) Awakening-Style : BatimaTheBat
+  [Magi - Holy-Type] Cleric (F) Caped Staff : topazlight
+  [Magi - Holy-Type] Cleric (F) Egyptian (Variant 1) : VelvetKitsune
+  [Magi - Holy-Type] Cleric (F) Egyptian (Variant 2) : VelvetKitsune
+  [Magi - Holy-Type] Cleric (F) Egyptian (Variant 3) : VelvetKitsune
+  [Magi - Holy-Type] Cleric (F) Egyptian (Variant 4) : VelvetKitsune
+  [Magi - Holy-Type] Cleric (F) Egyptian (Variant 5) : VelvetKitsune
+  [Magi - Holy-Type] Cleric (F) Generic : IS
+  [Magi - Holy-Type] Cleric (F) Improved : flasuban
+  [Magi - Holy-Type] Cleric (F) Trainee : Tdim
+  [Magi - Holy-Type] Cleric (M) Pterodes Cleric : Zacara'sDaydreamer
+  [Magi - Holy-Type] Cleric (M) Trainee : Tdim
+  [Magi - Holy-Type] Maid (F) Staff : Batima, NamelessX, Hanakko
+  [Magi - Holy-Type] Maiden (F) : Sirknite
+  [Magi - Holy-Type] Matriarch (F) : Unknown
+  [Magi - Holy-Type] Monk (F) : Teraspark
+  [Magi - Holy-Type] Monk (F) Aerith : N426
+  [Magi - Holy-Type] Monk (F) Veil : TATUTA_CHANG
+  [Magi - Holy-Type] Monk (M) : IS
+  [Magi - Holy-Type] Patriarch (M) : Unknown
+  [Magi - Holy-Type] Priest (M) Caped Staff : topazlight
+  [Magi - Holy-Type] Priest (M) Improved Staff : flasuban
+  [Magi - Holy-Type] Priest (M) Staff : IS
+  [Magi - Holy-Type] Priest (U) Generic : CelestiaHeart
+  [Magi - Holy-Type] Priest (U) Lizard Staff : ThisThat
+  [Magi - Holy-Type] Saint (F) : Melia
+  [Magi - Nature-Type] Archsage (F) Shurei : VelvetKitsune, Jiege, TLP
+  [Magi - Nature-Type] Archsage (M) : IS
+  [Magi - Nature-Type] High Magus (F) : Unknown
+  [Magi - Nature-Type] High Magus (M) : Unknown
+  [Magi - Nature-Type] Mage (F) : IS
+  [Magi - Nature-Type] Mage (F) Alt : Leif, MeatofJustice
+  [Magi - Nature-Type] Mage (F) Alt Pose : ArcherBias
+  [Magi - Nature-Type] Mage (F) Apprentice : BBHood217
+  [Magi - Nature-Type] Mage (F) Awakening : blood
+  [Magi - Nature-Type] Mage (F) Fe4-Style Fire Mage : Ash3wl Jr, Black Mage
+  [Magi - Nature-Type] Mage (F) Fe4-Style Thunder Idle : Ash3wl, L95, Dominus_Vobiscum
+  [Magi - Nature-Type] Mage (F) Fe4-Style Thunder Mage : Ash3wl Jr, Black Mage
+  [Magi - Nature-Type] Mage (F) Fe4-Style Wind Mage : Ash3wl Jr, Black Mage
+  [Magi - Nature-Type] Mage (F) Gaiden-Style : TAS20XX
+  [Magi - Nature-Type] Mage (F) Gaiden-Style 16x16 : TAS20XX
+  [Magi - Nature-Type] Mage (F) Light Mage : Leo_Link, L95
+  [Magi - Nature-Type] Mage (F) Long-Haired : flasuban
+  [Magi - Nature-Type] Mage (F) Magistra : Cynon
+  [Magi - Nature-Type] Mage (F) Magistra Blonde : Cynon
+  [Magi - Nature-Type] Mage (F) Magistra Brunette : Cynon
+  [Magi - Nature-Type] Mage (F) Non-Lilina : Ash3wl Jr, 2WB
+  [Magi - Nature-Type] Mage (F) Thief : FEGirls
+  [Magi - Nature-Type] Mage (F) Thunder : Leif
+  [Magi - Nature-Type] Mage (M) : IS
+  [Magi - Nature-Type] Mage (M) Alt : Leif, MeatofJustice
+  [Magi - Nature-Type] Mage (M) Beret : Leif
+  [Magi - Nature-Type] Mage (M) Bulky : Stitch
+  [Magi - Nature-Type] Mage (M) Cowl : Leif
+  [Magi - Nature-Type] Mage (M) FE4-Style Fire Idle : Ash3wl, L95
+  [Magi - Nature-Type] Mage (M) Fe4-Style Fire Idle : Ash3wl, L95, Dominus_Vobiscum
+  [Magi - Nature-Type] Mage (M) Fe4-Style Thunder Idle : Ash3wl, L95, Dominus_Vobiscum
+  [Magi - Nature-Type] Mage (M) Fe4-Style Thunder Idle : Ash3wl, L95
+  [Magi - Nature-Type] Mage (M) FE4-Style Wind Idle : Ash3wl, L95
+  [Magi - Nature-Type] Mage (M) Fe4-Style Wind Idle : Ash3wl, L95, Dominus_Vobiscum
+  [Magi - Nature-Type] Mage (M) Hat Hybrid : Pikmin, SamirPlayz
+  [Magi - Nature-Type] Mage (M) Hatless : Pikmin
+  [Magi - Nature-Type] Mage (M) Light Mage : Leo_Link, L95, Pikmin, UltraFenix
+  [Magi - Nature-Type] Mage (M) Thief : FEGirls, Glueseppers
+  [Magi - Nature-Type] Mage (M) Thunder : Leif
+  [Magi - Nature-Type] Mage (U) Court Mage : Cynon
+  [Magi - Nature-Type] Mage (U) Court Mage Hair Bun : Cynon
+  [Magi - Nature-Type] Mage (U) Generic : CelestiaHeart
+  [Magi - Nature-Type] Mage (U) Generic Hatless : CelestiaHeart
+  [Magi - Nature-Type] Malig Lord (M) Lance : Lief, WhatIsAnAubin
+  [Magi - Nature-Type] Malig Lord (M) Lance : WhatIsAnAubin
+  [Magi - Nature-Type] Pupil (F) : catinator
+  [Magi - Nature-Type] Pupil (M) : IS
+  [Magi - Nature-Type] Pupil (M) Evil : ArcherBias
+  [Magi - Nature-Type] Pupil (M) Staff : TheGreatNothing
+  [Magi - Nature-Type] Sage (F) Alt : IS, Blademaster
+  [Magi - Nature-Type] Sage (F) Battle Sage Magic : Smug_Mug, Unknown
+  [Magi - Nature-Type] Sage (F) Battle Sage Sword : Leif, L95, Hanakko
+  [Magi - Nature-Type] Sage (F) Battle Sage Sword : Leif, L95
+  [Magi - Nature-Type] Sage (F) Battle Sage Sword : topazlight
+  [Magi - Nature-Type] Sage (F) Better : Shtick, L95, Hanakko
+  [Magi - Nature-Type] Sage (F) Better : Shtick, L95
+  [Magi - Nature-Type] Sage (F) Better - Brown boots : Shtick, L95, Hanakko, UltraFenix
+  [Magi - Nature-Type] Sage (F) FE2 : Leif, MeatofJustice, Rexacuse
+  [Magi - Nature-Type] Sage (F) Long-Haired : Unknown
+  [Magi - Nature-Type] Sage (F) Magician : BBHood217
+  [Magi - Nature-Type] Sage (F) Non-Lilina : Ash3wl Jr, 2WB
+  [Magi - Nature-Type] Sage (F) Thief-Style : FEGirls
+  [Magi - Nature-Type] Sage (F) Vanilla : IS
+  [Magi - Nature-Type] Sage (F) White Dress : CelestiaHeart
+  [Magi - Nature-Type] Sage (F) White Dress+ Blonde Hair : CelestiaHeart
+  [Magi - Nature-Type] Sage (F) White Robe : Estra
+  [Magi - Nature-Type] Sage (M) : IS
+  [Magi - Nature-Type] Sage (M) Battle Sage : Topazlight, Unknown
+  [Magi - Nature-Type] Sage (M) Battle Sage : Unknown
+  [Magi - Nature-Type] Sage (M) Battle Sage (Hat) : Topazlight, Unknown
+  [Magi - Nature-Type] Sage (M) Battle Sage Magic : Smug_Mug, Unknown
+  [Magi - Nature-Type] Sage (M) Battle Sage Sword : L95
+  [Magi - Nature-Type] Sage (M) FE2 : Leif, MeatofJustice
+  [Magi - Nature-Type] Sage (M) Gaiden-Style : Ryn
+  [Magi - Nature-Type] Sage (M) Hat : Marcelfe
+  [Magi - Nature-Type] Sage (M) Phantom : Hanakko
+  [Magi - Nature-Type] Sage (U) Generic : CelestiaHeart
+  [Magi - Nature-Type] Sage (U) Generic - FE7-8 Style + Brown boots : CelestiaHeart, Shtick, L95, Hanakko, UltraFenix
+  [Magi - Special] Angel (F) : Unknown
+  [Magi - Special] Diviner (F) Orochi : Sphealnuke
+  [Magi - Special] Seer (M) : Devisian_Nights
+  [Magi - Special] Tactician (U) : SALVAGED
+  [Magi - Special] War Cleric (F) Axe : Der
+  [Magi - Special] War Cleric (F) Staff : SkidMarc25
+  [Magi - Special] War Monk (M) Axe : Der
+  [Magi - Special] War Monk (M) Staff : Der, Author_Pendragon
+  [Magi - Special] Witch (F) : Aruka, Kenpuhu
+  [Monsters - Basic Types] Bael (F) Queen : Seal
+  [Monsters - Basic Types] Bael (F) Queen Alt : Ryn
+  [Monsters - Basic Types] Bael (U) : IS
+  [Monsters - Basic Types] Bael (U) Elder : IS
+  [Monsters - Basic Types] Bael (U) Elder Resize : Pikmin
+  [Monsters - Basic Types] Bael (U) Resize : Pikmin
+  [Monsters - Basic Types] Bael [F] Queen Bael : TytheBub
+  [Monsters - Basic Types] Bael [F] Queen Bael 16x32 : TytheBub, Hanakko
+  [Monsters - Basic Types] Bael Widow (F) : MeatOfJustice
+  [Monsters - Basic Types] Bonewalker (U) Armored - Wight : SSHX
+  [Monsters - Basic Types] Bonewalker (U) Axe : Snerdels
+  [Monsters - Basic Types] Bonewalker (U) Bow : IS
+  [Monsters - Basic Types] Bonewalker (U) Bow Resize : Pikmin
+  [Monsters - Basic Types] Bonewalker (U) Cantor Gaiden-Style : Ryn, N426
+  [Monsters - Basic Types] Bonewalker (U) Cantor Gaiden-Style : Ryn
+  [Monsters - Basic Types] Bonewalker (U) King Sword : Seal, Cornontherob
+  [Monsters - Basic Types] Bonewalker (U) Lance : Epicer
+  [Monsters - Basic Types] Bonewalker (U) Legion Bow : Seal
+  [Monsters - Basic Types] Bonewalker (U) Legion Sword : Seal
+  [Monsters - Basic Types] Bonewalker (U) Legion Sword Alt : Ryn
+  [Monsters - Basic Types] Bonewalker (U) One Arm : IS
+  [Monsters - Basic Types] Bonewalker (U) Skelemonk : Ryn, N426
+  [Monsters - Basic Types] Bonewalker (U) Skelemonk 16x16 : Ryn, N426
+  [Monsters - Basic Types] Bonewalker (U) Specter : Alexsplode
+  [Monsters - Basic Types] Bonewalker (U) Sword : IS
+  [Monsters - Basic Types] Bonewalker (U) Wight Bow : IS
+  [Monsters - Basic Types] Bonewalker (U) Wight Sword : IS
+  [Monsters - Basic Types] Cyclops (U) Axe : IS
+  [Monsters - Basic Types] Cyclops (U) Promoted Two-Headed Axe : Teelvade
+  [Monsters - Basic Types] Cyclops (U) Ronin : Alexsplode
+  [Monsters - Basic Types] Cyclops (U) Two-Headed Axe : Teelvade
+  [Monsters - Basic Types] Cyclops (U) Two-Headed Magic : Teelvade
+  [Monsters - Basic Types] FemClops (F) Axe : Alexsplode
+  [Monsters - Basic Types] Gore (U) : Alexsplode
+  [Monsters - Basic Types] Gorgon (U) : IS
+  [Monsters - Basic Types] Gorgon (U) Resize : Huichelaar
+  [Monsters - Basic Types] Goyle (U) T1 Lance : IS
+  [Monsters - Basic Types] Goyle (U) T1 Lance Resize : Pikmin
+  [Monsters - Basic Types] Goyle (U) T2 Lance : IS
+  [Monsters - Basic Types] Goyle (U) T2 Lance : L95
+  [Monsters - Basic Types] Goyle (U) T2 Lance (Alt) 16x32 : L95, Hanakko
+  [Monsters - Basic Types] Goyle (U) T2 Lance Resize : Pikmin
+  [Monsters - Basic Types] Lamia (F) : Dutch Introvert
+  [Monsters - Basic Types] Lamia (F) 16x16 : Dutch Introvert, Topazlight
+  [Monsters - Basic Types] Lich (U) : Eldritch Abomination
+  [Monsters - Basic Types] Lich (U) : SkidMarc25
+  [Monsters - Basic Types] Mogall (U) : IS
+  [Monsters - Basic Types] Mogall (U) Arch Mogall : IS
+  [Monsters - Basic Types] Mogall (U) Arch Mogall Resize : Huichelaar
+  [Monsters - Basic Types] Mogall (U) Beholder : Nuramon
+  [Monsters - Basic Types] Mogall (U) Gazer : Hanakko
+  [Monsters - Basic Types] Mogall (U) Gazer : Seal
+  [Monsters - Basic Types] Mogall (U) Jockey Bow : Haifried
+  [Monsters - Basic Types] Mogall (U) Jockey Magic : Haifried
+  [Monsters - Basic Types] Mogall (U) Resize : Huichelaar
+  [Monsters - Basic Types] Mogall (U) Watcher : Alexsplode
+  [Monsters - Basic Types] Phantom (Human head) : marcelfe
+  [Monsters - Basic Types] Phantom (U) : IS, Pushwall
+  [Monsters - Basic Types] Phantom (U) : IS
+  [Monsters - Basic Types] Tarvos (F) (Alfred Kamon's Anim) : Blood
+  [Monsters - Basic Types] Tarvos (F) Centaur Sword : DATonDemand
+  [Monsters - Basic Types] Tarvos (F) Centaur Sword : Ryn
+  [Monsters - Basic Types] Tarvos (M) Axe : IS
+  [Monsters - Basic Types] Tarvos (M) Centaur Knight Lance : Chi-Chi
+  [Monsters - Basic Types] Tarvos (M) CentaurZerker : NamelessX
+  [Monsters - Basic Types] Tarvos (M) Elder Centaur Axe : Seal
+  [Monsters - Basic Types] Tarvos (M) Elder Centaur Axe 16x32 : Seal
+  [Monsters - Basic Types] Tarvos (M) Maelduin Axe : IS
+  [Monsters - Basic Types] Tarvos (M) Maelduin Axe Resize : Pikmin
+  [Monsters - Basic Types] Tarvos (U) CentaurZerker : NamelessX, Topazlight
+  [Monsters - Basic Types] Tarvos (U) CentaurZerker (Swapped Shoulder Pad : NamelessX, Topazlight
+  [Monsters - Basic Types] Tarvos Armor Promo (F) : Dutch Introvert
+  [Monsters - Basic Types] Wolf (U) : IS
+  [Monsters - Basic Types] Wolf (U) : VelvetKitsune
+  [Monsters - Basic Types] Wolf (U) Dire Wolf : VelvetKitsune
+  [Monsters - Basic Types] Wolf (U) Gwyllgi : IS
+  [Monsters - Basic Types] Wolf (U) Gwyllgi Resize : Pikmin
+  [Monsters - Basic Types] Wolf (U) Gwyllgi Resize 16x16 : IS
+  [Monsters - Basic Types] Wolf (U) Hellhound : Dellhonne
+  [Monsters - Basic Types] Wolf (U) Hellhound 16x32 : Dellhonne, Hanakko
+  [Monsters - Basic Types] Wolf (U) Mauthe Doog T3 : EldritchAbomination
+  [Monsters - Basic Types] Wolf (U) Mauthe Doog T3 16x16 : EldritchAbomination
+  [Monsters - Basic Types] Wolf (U) Resize : Pikmin
+  [Monsters - Basic Types] Wolf Winged : Velvet Kitsune, Dellhonne, WiiSPortsRemote
+  [Monsters - Basic Types] Zombie (F) Entombed : SaintRubenio
+  [Monsters - Basic Types] Zombie (U) : IS
+  [Monsters - Basic Types] Zombie (U) Drowned : DATonDemand, Tanakakiri
+  [Monsters - Basic Types] Zombie (U) Entombed : IS
+  [Monsters - Basic Types] Zombie (U) Entombed Resize : Pikmin
+  [Monsters - Basic Types] Zombie (U) flipped : IS
+  [Monsters - Basic Types] Zombie (U) Goop : Ryn
+  [Monsters - Basic Types] Zombie (U) Goop 16x16 : Ryn
+  [Monsters - Basic Types] Zombie (U) Resize : Pikmin
+  [Monsters - Basic Types] Zombie (U) Symphone : DATonDemand, Tanakakiri
+  [Monsters - Basic Types] Zombie Lich (+Staff) : EldritchAbomination, SkidMarc25, Blood
+  [Monsters - Dragons and Special] AMOGUS Imposter (U) : Shuusuke
+  [Monsters - Dragons and Special] Banshee (F) : Sphealnuke
+  [Monsters - Dragons and Special] Battle of Wesnoth (M) Goblin Spearman : BoW, Norikins
+  [Monsters - Dragons and Special] Berserker Wolf (U) : Momo
+  [Monsters - Dragons and Special] Blast Golem (U) : Alexsplode
+  [Monsters - Dragons and Special] Blight Dragon (U) Fe Fates : IS, Metalocif
+  [Monsters - Dragons and Special] Bombardino Crocodilo (U) : LucaYoshi
+  [Monsters - Dragons and Special] Cactus (U) : Stephano
+  [Monsters - Dragons and Special] Cultist (U) : Windsweep
+  [Monsters - Dragons and Special] Cursed Sword (U) : Der
+  [Monsters - Dragons and Special] Demon King (U) : IS
+  [Monsters - Dragons and Special] Demon King (U) Angry : SHYUTERz
+  [Monsters - Dragons and Special] Demon King (U) Movable : MrGreen, IS
+  [Monsters - Dragons and Special] Demon King (U) Stationary : IS
+  [Monsters - Dragons and Special] Djinn (M) : Alexsplode
+  [Monsters - Dragons and Special] Djinn (M) Supply : Alexsplode
+  [Monsters - Dragons and Special] Djinn (M) supply : Alexsplode
+  [Monsters - Dragons and Special] Dracozombie (U) : IS
+  [Monsters - Dragons and Special] Dragon (U) Divine : L95
+  [Monsters - Dragons and Special] Dragon (U) Earth : L95
+  [Monsters - Dragons and Special] Dragon (U) FE6 Fire Dragon (U) : IS
+  [Monsters - Dragons and Special] Dragon (U) FE7 Fire Dragon (U) : IS
+  [Monsters - Dragons and Special] Dragon (U) Ice : L95
+  [Monsters - Dragons and Special] Dragon (U) Ice Dragon (U) : L95
+  [Monsters - Dragons and Special] Dragon (U) Magic : L95
+  [Monsters - Dragons and Special] Dragon (U) Myrrh Generic : Kemui52
+  [Monsters - Dragons and Special] Dragon (U) Super : SHYUTER
+  [Monsters - Dragons and Special] Dragon Horse (U) Longma : Sphealnuke
+  [Monsters - Dragons and Special] Dryad (F) : Stephano
+  [Monsters - Dragons and Special] Evergrim (U) : Almirage, Jj09
+  [Monsters - Dragons and Special] Fairy (U) Ogre Battle : Eldritch
+  [Monsters - Dragons and Special] Faoladh (F) : Sirknite031, VelvetKitsune
+  [Monsters - Dragons and Special] Faoladh (M) : Sirknite031, VelvetKitsune
+  [Monsters - Dragons and Special] Faoladh (U) : Sirknite031, VelvetKitsune
+  [Monsters - Dragons and Special] Fire Imp (U) : Alexsplode
+  [Monsters - Dragons and Special] Ghost (U) : Eldritch Abomination
+  [Monsters - Dragons and Special] Ghost (U) 16x16 : Eldritch Abomination
+  [Monsters - Dragons and Special] Ghost Axe (U) (Tchyrimi) : non crédité
+  [Monsters - Dragons and Special] Ghost Bow (U) (Tchyrimi) : non crédité
+  [Monsters - Dragons and Special] Ghost Lance (U) (Tchyrimi) : non crédité
+  [Monsters - Dragons and Special] Ghost Sword (U) (Tchyrimi) : non crédité
+  [Monsters - Dragons and Special] Ghost Tome (U) (Tchyrimi) : non crédité
+  [Monsters - Dragons and Special] Gomorrah (U) : Windsweep
+  [Monsters - Dragons and Special] Half Dragon (F) Generic Sword : FuriousHaunter
+  [Monsters - Dragons and Special] Harpy (U) : Sphealnuke
+  [Monsters - Dragons and Special] Kerendu (U) : Eldritch
+  [Monsters - Dragons and Special] Kraken (U) Sea Monster : Xenith
+  [Monsters - Dragons and Special] Laguz (F) Wolfskin : UltraxBlade
+  [Monsters - Dragons and Special] Laguz (M) Wolfskin : UltraxBlade
+  [Monsters - Dragons and Special] Living Armor (U) : Sphealnuke
+  [Monsters - Dragons and Special] Living Armor Blue Flame : Sphealnuke, topazlight
+  [Monsters - Dragons and Special] Living Armor Red Flame : Sphealnuke, topazlight
+  [Monsters - Dragons and Special] Living Armor Red Flame 32x32 : Sphealnuke, topazlight
+  [Monsters - Dragons and Special] Living Doll (F) : DatonDemand
+  [Monsters - Dragons and Special] Loot Bug (Deep Rock Galactic) : NeoMasterZX
+  [Monsters - Dragons and Special] Manakete (U) : MeatOfJustice
+  [Monsters - Dragons and Special] Manakete (U) FE6 edit : Dellhonne
+  [Monsters - Dragons and Special] Manakete (U) FE6 Generic : IS
+  [Monsters - Dragons and Special] Mermaid (F) : N426
+  [Monsters - Dragons and Special] Mermaid (F) : ZoramineFae
+  [Monsters - Dragons and Special] Mimic (U) : Seal
+  [Monsters - Dragons and Special] Minotaur (U) : Alexsplode
+  [Monsters - Dragons and Special] Minotaur (U) Archdemon : Mightyappa
+  [Monsters - Dragons and Special] Minotaur (U) Demon : Mightyappa
+  [Monsters - Dragons and Special] Mosquito (U) : Dutch Introvert
+  [Monsters - Dragons and Special] Nether Dryad (F) : Alexsplode
+  [Monsters - Dragons and Special] Ophanim (U) : Sphealnuke
+  [Monsters - Dragons and Special] Python (U) SoV : Mother 3, RandomWizard
+  [Monsters - Dragons and Special] Salamander (U) : Memai
+  [Monsters - Dragons and Special] Salamander (U) Hat : Memae
+  [Monsters - Dragons and Special] Scorpgal (F) : Stephano
+  [Monsters - Dragons and Special] Shark (U) : N426
+  [Monsters - Dragons and Special] Skibidi Toilet (U) : Shuusuke
+  [Monsters - Dragons and Special] Skibidi Toilet (U) Gold : Shuusuke
+  [Monsters - Dragons and Special] Skibidi Toilet (U) White : Shuusuke
+  [Monsters - Dragons and Special] Slime (U) : Yellowtoad
+  [Monsters - Dragons and Special] Succubus (F) : SkidMarc25
+  [Monsters - Dragons and Special] Sylph (M) : Alexsplode
+  [Monsters - Dragons and Special] Taguel (M) : Jotari
+  [Monsters - Dragons and Special] Tamed Drake (U) : Dutch_Introvert, L95
+  [Monsters - Dragons and Special] Tiger (U) : RandomWizard, Squaresoft
+  [Monsters - Dragons and Special] Tome (U) Anima : N426
+  [Monsters - Dragons and Special] Tome (U) Axe : N426
+  [Monsters - Dragons and Special] Tome (U) Blank : N426
+  [Monsters - Dragons and Special] Tome (U) Bow : N426
+  [Monsters - Dragons and Special] Tome (U) Dark : N426
+  [Monsters - Dragons and Special] Tome (U) Lance : N426
+  [Monsters - Dragons and Special] Tome (U) Light : N426
+  [Monsters - Dragons and Special] Tome (U) Sword : N426
+  [Monsters - Dragons and Special] Tralalero Tralala (U) : LucaYoshi
+  [Monsters - Dragons and Special] Treant : Dutch Introvert
+  [Monsters - Dragons and Special] Tung Sahun (U) : LucaYoshi
+  [Monsters - Dragons and Special] Warbird (F) : Unknown, Alexsplode
+  [Monsters - Dragons and Special] Wetgal (U) : Stephano
+  [Monsters - Dragons and Special] Wild Wyvern (U) : Estratega
+  [Monsters - Dragons and Special] Wyvern Wild (U) : Faeriefruit
+  [Monsters - Dragons and Special] Wyvern Wild (U) 16x16 : Faeriefruit
+  [Mounted - Cavs, Paladins, Rangers] Axe Cavalier (M) : Leo_Link
+  [Mounted - Cavs, Paladins, Rangers] Bow Knight (F) Bow : flasuban
+  [Mounted - Cavs, Paladins, Rangers] Bow Knight (M) : Der, Pikmin
+  [Mounted - Cavs, Paladins, Rangers] Bow Knight (M) Bow : flasuban
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Alt Axe : RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Alt Hair Axe : SALVAGED, flasuban
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Alt Hair Lance : SALVAGED, flasuban
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Alt Hair Sword : SALVAGED, flasuban
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Alt Sword : RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Axe : SALVAGED, Pikmin
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Lance : SALVAGED, Pikmin
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Lance : Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Ponytail Sword : SALVAGED, Rasdel
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Revision Axe : flasuban, Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Revision Lance : flasuban, Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Revision Sword : flasuban, Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Sword : Agro
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (F) Sword : SALVAGED, Pikmin
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Axe : SALVAGED
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Axe : Siuloir
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Bird Axe : Dutch Introvert
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Bow : FungusCaesar
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Crusader (Sword) : Yerek
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Lance : IS
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Lance : SALVAGED
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Sword : Agro
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Sword : SALVAGED
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (M) Sword (closer to vanilla) : Agro, ToGY
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (U) Lance (Flag) : DutchIntrovert
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (U) Lance Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Cavalier (U) Skeleton Lance : d_h
+  [Mounted - Cavs, Paladins, Rangers] Cavalier Helmetless (M) Lance : SALVAGED, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Duke Knight (U) : Leo_Link, DerTheVaporeon
+  [Mounted - Cavs, Paladins, Rangers] Forest Knight (U) Sword : Leo_Link, DerTheVaporeon
+  [Mounted - Cavs, Paladins, Rangers] Gold Knight (M) Axe : Pikmin, Der
+  [Mounted - Cavs, Paladins, Rangers] Gold Knight (U) Lance : Hypergammaspaces
+  [Mounted - Cavs, Paladins, Rangers] Grand Paladin (F) Lance : Fates-Blade, WhatIsAnAubin
+  [Mounted - Cavs, Paladins, Rangers] Grand Paladin (M) Lance : Fates-Blade
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (F) : IS, Blood
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (F) Axe : blood
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (F) Axe (Helmetless) : Marcelfe
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (M) Alt Axe : Pikmin, L95, Der
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (M) Alt Axe (White) : Pikmin, L95, Der
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (M) Axe : IS
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (M) Axe (Helmetless) : Marcelfe
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (M) Lance : MeatofJustice
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (U) Axe : Leo_Link, DerTheVaporeon
+  [Mounted - Cavs, Paladins, Rangers] Great Knight (U) Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Master Knight (F) Lance : Unknown
+  [Mounted - Cavs, Paladins, Rangers] Master Knight (M) Bow Knight Bow : blood
+  [Mounted - Cavs, Paladins, Rangers] Master Knight (M) Lance : Unknown
+  [Mounted - Cavs, Paladins, Rangers] Nomad (F) : IS
+  [Mounted - Cavs, Paladins, Rangers] Nomad (F) Non-Sacaen : Roxannity
+  [Mounted - Cavs, Paladins, Rangers] Nomad (F) Rework : IS, MeatOfJustice, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Nomad (M) : IS
+  [Mounted - Cavs, Paladins, Rangers] Nomad (M) Non-Sacaen : Roxannity
+  [Mounted - Cavs, Paladins, Rangers] Nomad (M) Rework : IS, MeatOfJustice, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Nomad (U) Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Nomad Trooper (F) : IS
+  [Mounted - Cavs, Paladins, Rangers] Nomad Trooper (M) : IS
+  [Mounted - Cavs, Paladins, Rangers] Nomad Trooper (U) Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Nomad Trooper Knife (F) : Leif
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Axe : L95
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Bow : VelvetKitsune, Leif, RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Lance : L95
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Lance - Shield : L95, Leo_Link, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Ponytail Lance : Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Ponytail Sword : Unknown
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Revision Lance : flasuban, Tordo45
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Revision Sword : Permafrost
+  [Mounted - Cavs, Paladins, Rangers] Paladin (F) Sword : RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) Bow : Leif
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) Lance : IS
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) Lance - Helmetless : Seliost1
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) v2 Axe : RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) v2 Lance : Pikmin
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) v2 Lance - Shield : Pikmin, Leo_link, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) v2 Lance - Shield : Pikmin, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Paladin (M) v2 Sword : RobertFPY
+  [Mounted - Cavs, Paladins, Rangers] Paladin (U) Gendarme Axe : RobertFPY, MeteorSR23
+  [Mounted - Cavs, Paladins, Rangers] Paladin (U) Gendarme Lance : Pikmin, MeteorSR23
+  [Mounted - Cavs, Paladins, Rangers] Paladin (U) Gendarme Sword : RobertFPY, MeteorSR23
+  [Mounted - Cavs, Paladins, Rangers] Paladin (U) Lance Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Ranger (F) Improved Bow : flasuban
+  [Mounted - Cavs, Paladins, Rangers] Ranger (M) : IS
+  [Mounted - Cavs, Paladins, Rangers] Ranger (M) Hat : Estratega
+  [Mounted - Cavs, Paladins, Rangers] Ranger (M) Rework : IS, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Ranger (M) rework : IS, UltraFenix
+  [Mounted - Cavs, Paladins, Rangers] Ranger (U) Coniro Ranger : Zacara'sDaydreamer
+  [Mounted - Cavs, Paladins, Rangers] Ranger (U) Generic : CelestiaHeart
+  [Mounted - Cavs, Paladins, Rangers] Skeleton Paladin (U) Lance : Hanakko
+  [Mounted - Cavs, Paladins, Rangers] Sword Cavalier (M) : Leo_Link
+  [Mounted - Dismounted, Monsters, Misc] Archsage (M) Wolf Rider : Teelvade
+  [Mounted - Dismounted, Monsters, Misc] Berserker (F) Axe Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (F) Lance Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (F) Sword Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (F) Unarmed Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (M) Axe Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (M) Lance Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (M) Sword Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Berserker (M) Unarmed Wolf Rider : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (F) Wolf Rider Axe : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (F) Wolf Rider Sword : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (M) Armored Wolf Rider Axe : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (M) Armored Wolf Rider Sword : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (M) Wolf Rider (green) : Teelvade
+  [Mounted - Dismounted, Monsters, Misc] Brigand (M) Wolf Rider Axe : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Brigand (M) Wolf Rider Sword : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Camel Rider (M) Lance : Orihara Saki
+  [Mounted - Dismounted, Monsters, Misc] Cavalier (M) Elder Bael Sword : Metalocif
+  [Mounted - Dismounted, Monsters, Misc] Cavalier (M) Spider Rider Sword : Zoramine
+  [Mounted - Dismounted, Monsters, Misc] Chocobo Rider (F) Lance : SkidMarc25
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (F) Axe : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (F) Bow : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (F) Lance : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (F) Sword : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Axe : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Bow : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Lance : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword : ArcherBias
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword Squire-Paladin : Maiser6
+  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword Squire-Paladin 16x16 : Maiser6
+  [Mounted - Dismounted, Monsters, Misc] Drake Rider (F) Axe : Dutch_Introvert, L95
+  [Mounted - Dismounted, Monsters, Misc] Grand Mahout (U) : CamusZekeSirius, SHYUTERz, Orihara_Saki
+  [Mounted - Dismounted, Monsters, Misc] Grand Mahout Edit (U) : CamusZekeSirius, SHYUTERz, Orihara_Saki, Dat
+  [Mounted - Dismounted, Monsters, Misc] Hog Rider (M) : ReanuKeeves7716
+  [Mounted - Dismounted, Monsters, Misc] Plumber Rider (M) : Uncle Mikey
+  [Mounted - Dismounted, Monsters, Misc] Plumber Rider (M) Promoted : Uncle Mikey
+  [Mounted - Dismounted, Monsters, Misc] Shark Rider (F) : N426
+  [Mounted - Dismounted, Monsters, Misc] Shark Rider (M) : N426
+  [Mounted - Dismounted, Monsters, Misc] Snail Knight (M) : Squid1003
+  [Mounted - Dismounted, Monsters, Misc] Wolf Knight (F) : JaidynReiman, VelvetKitsune, Leif
+  [Mounted - Dismounted, Monsters, Misc] Wolf Knight (M) : JaidynReiman, VelvetKitsune, Leif
+  [Mounted - Pegs, Wyverns, Griffons] Custom Flier Deva (F) : Ayr
+  [Mounted - Pegs, Wyverns, Griffons] Custom Flier Harrier (F) : Ayr
+  [Mounted - Pegs, Wyverns, Griffons] Custom Flier Nephilim (F) : Ayr
+  [Mounted - Pegs, Wyverns, Griffons] Griffon (U) Sky Knight : SkidMarc25
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Knight (U) : Blue Druid
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Axe : N426
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Bird Rider Lance : N426, Stephano
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Bow : N426
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Lance : Haifried
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Lance : Hairfried
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Lance : N426
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Rider (U) Sword : N426
+  [Mounted - Pegs, Wyverns, Griffons] Griffon Wild (U) : Rdrouyn, N426
+  [Mounted - Pegs, Wyverns, Griffons] Malig Knight (M) Axe : Pikmin
+  [Mounted - Pegs, Wyverns, Griffons] Malig Knight (M) Lance : Pikmin
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Axe : Flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Black Beauty Lance : L95
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Helmet Sword : Sephie, Cornontherob
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Helmless Sword : Sephie
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Lance : Flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Lance : IS
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Lance : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Staff : WarPath
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T1 Sword : Flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T2 Black Beauty Lance : L95
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T2 Lance : IS
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T2 Revision Lance : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T2 Staff : Blademaster, Hanakko
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (F) T2 Staff : Blademaster
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (U) T1 Lance Generic : CelestiaHeart
+  [Mounted - Pegs, Wyverns, Griffons] Pegasi (U) T2 Lance Generic : CelestiaHeart
+  [Mounted - Pegs, Wyverns, Griffons] Seraph Knight (F) Lance : CamusZekeSirius, flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Seraph Knight (F) Lance : CamusZekeSirius
+  [Mounted - Pegs, Wyverns, Griffons] Seraph Knight (F) Lance : Dinar
+  [Mounted - Pegs, Wyverns, Griffons] Seraph Knight (F) Lance v2 : CamusZekeSirius, flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wicked Flier (U) : MeatOfJustice
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (F) Axe : ArcaneEli, Blood, Max Limit
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (F) Axe : ArcaneEli, Blood, Yikes!
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (F) Lance : Blood
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (U) Axe : ArcaneEli
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (U) Bow : Knabepicer, MeatofJustice, Eden
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (U) Lance : IS
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Knight (U) Lance (Arms) : Eden
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (F) Lance : SHYUTER
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (F) Lance (Armless) : Eden
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (M) Helmless Axe : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (M) Helmless Lance : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Armored Lance : SHYUTERz
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Lance : IS
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Lance (Armless) : Eden
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Lance Female : IS
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Lance Male : IS
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Lord (U) Sword : Knabepicer
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (F) Axe : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (F) Lance : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (M) Axe : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (M) Lance : flasuban
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Armless Wyvern Axe : Leif, Eden
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Armless Wyvern Lance : Leif
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Axe : Unknown
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Bow : Knabepicer
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Lance : IS
+  [Mounted - Pegs, Wyverns, Griffons] Wyvern Rider (U) Sword : SamirPlayz
+  [Mounted - Valks, MKs, Magi] Dark Knight (U) : Pikmin, Nuramon, Der
+  [Mounted - Valks, MKs, Magi] Dark Knight (U) Helm : Unknown
+  [Mounted - Valks, MKs, Magi] Dark Knight Hood : Pikmin, Nuramon, Der
+  [Mounted - Valks, MKs, Magi] Mage Knight (F) : IS
+  [Mounted - Valks, MKs, Magi] Mage Knight (M) : IS
+  [Mounted - Valks, MKs, Magi] Mage Knight (M) Black Hair : CelestiaHeart, Gojira
+  [Mounted - Valks, MKs, Magi] Mage Knight (M) Black Hair & White Horse : CelestiaHeart, Gojira
+  [Mounted - Valks, MKs, Magi] Mage Knight (U) Generic : CelestiaHeart
+  [Mounted - Valks, MKs, Magi] Troubadour (F) : IS
+  [Mounted - Valks, MKs, Magi] Troubadour (F) Lance : SALVAGED, Pikmin, Merpin
+  [Mounted - Valks, MKs, Magi] Troubadour (F) Rework : IS, UltraFenix
+  [Mounted - Valks, MKs, Magi] Troubadour (F) Thaumaturge : Pikmin, Der
+  [Mounted - Valks, MKs, Magi] Troubadour (M) : ZeroXA
+  [Mounted - Valks, MKs, Magi] Troubadour (M) Deacon : Unknown
+  [Mounted - Valks, MKs, Magi] Troubadour (M) Thaumaturge : Pikmin, Der
+  [Mounted - Valks, MKs, Magi] Troubadour (U) Generic : CelestiaHeart
+  [Mounted - Valks, MKs, Magi] Valkyrie (F) : IS
+  [Mounted - Valks, MKs, Magi] Valkyrie (F) Ascended : UltraFenix
+  [Mounted - Valks, MKs, Magi] Valkyrie (F) Mage Knight Style : Leif
+  [Mounted - Valks, MKs, Magi] Valkyrie (F) Non-Religious Staff : Der
+  [Mounted - Valks, MKs, Magi] Valkyrie (M) Ascended : UltraFenix
+  [Mounted - Valks, MKs, Magi] Valkyrie (M) Mage Knight Style : Leif
+  [Mounted - Valks, MKs, Magi] Valkyrie (M) Non-Religious Staff : Der
+  [Mounted - Valks, MKs, Magi] Valkyrie (U) Generic : CelestiaHeart
+
+== Personnages principaux de la série (163 sprites) — tools/map-sprites/personnages-principaux/
+  [Bards, Dancers, Suppliers, Misc] Bard (F) Elffin : Knabepicer
+  [Bards, Dancers, Suppliers, Misc] Bard (F) Nils : Knabepicer
+  [Bards, Dancers, Suppliers, Misc] Bard (M) Elffin : IS
+  [Bards, Dancers, Suppliers, Misc] Bard (M) Nils : IS
+  [Bards, Dancers, Suppliers, Misc] Bard (M) Sonneteer Elffin : Marlon&Louis
+  [Bards, Dancers, Suppliers, Misc] Bramimond (U) : IS
+  [Bards, Dancers, Suppliers, Misc] Dancer (F) Larum : IS
+  [Bards, Dancers, Suppliers, Misc] Dancer (F) Larum Long Hair : Momo
+  [Bards, Dancers, Suppliers, Misc] Dancer (F) Ninian : IS
+  [Bards, Dancers, Suppliers, Misc] Noble (M) Joshua : Aruka, Kenpuhu
+  [Bards, Dancers, Suppliers, Misc] Peer (M) Lyon : EA
+  [Bards, Dancers, Suppliers, Misc] Prince (Zephiel) : IS
+  [Bards, Dancers, Suppliers, Misc] Supplier v2 Anna (F) Lance : N426, Erukolindo, Cygnus
+  [Bards, Dancers, Suppliers, Misc] Supplier v2 Anna (F) Unarmed : N426, Erukolindo
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkeye Axe : IS
+  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkeye Sword : ZoramineFae
+  [Infantry - (Axe) Fighters and Warriors] Warrior (F) Camilla : SteamingTofu
+  [Infantry - (Lnc) Soldiers, Halberdiers] Amelia (F) T1 (Spud's Infantry) : Blood
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (F) Amelia : blood, Dei, dondon151
+  [Infantry - (Lnc) Soldiers, Halberdiers] Halberdier (F) Amelia 16x16 : blood, Dei, dondon151
+  [Infantry - (Lnc) Soldiers, Halberdiers] Recruit (F) Amelia Lance : IS
+  [Infantry - (Lnc) Soldiers, Halberdiers] Recruit (F) Evil Amelia Lance : ArcherBias
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Linus : WarPath, MeatofJustice
+  [Infantry - (Swd) Mercenaries and Heroes] Hero (M) Linus Sword : Ryn
+  [Infantry - (Swd) Myrms and Swordmasters] Myrmidon (M) Joshua : blood
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M) Joshua : Aruka, Yggdra
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Assassin (M) Legault : IS
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (M) Jaffar Sword : Yera
+  [Infantry - Knights, Generals, Armors] Emperor (M) Hardin : REALxViPerZ
+  [Infantry - Knights, Generals, Armors] General (F) Red Bean's Amelia : IS, Blood
+  [Infantry - Knights, Generals, Armors] King (M) Zephiel Eckesachs : Elibian Nights
+  [Infantry - Knights, Generals, Armors] King (M) Zephiel Eckesachs : IS
+  [Infantry - Knights, Generals, Armors] King (M) Zephiel Eckesachs (more accurate) : non crédité
+  [Infantry - Knights, Generals, Armors] Knight (F) Amelia : SALVAGED, blood
+  [Infantry - Knights, Generals, Armors] Marshall (M) Zelgius Helmless Sword : Nuramon
+  [Infantry - Knights, Generals, Armors] Marshall (M) Zelgius Sword : Nuramon
+  [Lords - Vanilla and Custom] Alm (M) Fighter : Norikins
+  [Lords - Vanilla and Custom] Alm (M) Hero : Norikins
+  [Lords - Vanilla and Custom] Blade Lord (F) Brave Lyn Bow : StreetHero
+  [Lords - Vanilla and Custom] Blade Lord (F) Lyn Axe : Vilkalizer, Morth
+  [Lords - Vanilla and Custom] Blade Lord (F) Lyn Sword : IS
+  [Lords - Vanilla and Custom] Great Lord (F) Eirika Sniper Bow : ArcaneEli
+  [Lords - Vanilla and Custom] Great Lord (F) Eirika Sword : IS
+  [Lords - Vanilla and Custom] Great Lord (F) Ephraim-Infantry Lance : VelvetKitsune, Snewping, HGS
+  [Lords - Vanilla and Custom] Great Lord (F) Ephraim-Infantry Lance : VelvetKtsune, Snewping, HGS
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim Axe : Sme
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim Infantry : Topazlight
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim Lance : IS
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim Sword : milom
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim-Infantry Alt Lance : Dellhonne
+  [Lords - Vanilla and Custom] Great Lord (M) Ephraim-Infantry Lance : Snewping
+  [Lords - Vanilla and Custom] Great Lord (M) Hector : IS
+  [Lords - Vanilla and Custom] Great Lord (M) Hector (Ephraim Face) : Topazlight
+  [Lords - Vanilla and Custom] Great Lord (M) Hector-Chain Axe Axe : Aruka, Kenpuhu
+  [Lords - Vanilla and Custom] Great Lord (M) Hector-Harbinger : SD9K
+  [Lords - Vanilla and Custom] Great Lord (M) T2 Hector Dual-Sword : TytheBub
+  [Lords - Vanilla and Custom] Greil Lord (M) : Unknown
+  [Lords - Vanilla and Custom] Ike Vanguard (Bulky) (M) : Unknown
+  [Lords - Vanilla and Custom] Ike Vanguard (M) : Unknown
+  [Lords - Vanilla and Custom] Knight Lord (F) Eliwood Sword : Duckbeard
+  [Lords - Vanilla and Custom] Knight Lord (M) Brave Eliwood : ZoramineFae, UltraFenix
+  [Lords - Vanilla and Custom] Knight Lord (M) Eliwood Sword : IS
+  [Lords - Vanilla and Custom] Knight Lord (M) Roy - Cape Sword : ZoramineFae
+  [Lords - Vanilla and Custom] Knight Lord (M) Roy Sword : ZoramineFae
+  [Lords - Vanilla and Custom] Knight Lord (M) Seliph : Norikins
+  [Lords - Vanilla and Custom] Lord (F) Blonde Lucina Sword : VelvetKitsune, BatimaTheBat
+  [Lords - Vanilla and Custom] Lord (F) Eirika Axe : FE7if
+  [Lords - Vanilla and Custom] Lord (F) Eirika Beta : Ryn
+  [Lords - Vanilla and Custom] Lord (F) Eirika Magic : MeatOfJustice, Sme
+  [Lords - Vanilla and Custom] Lord (F) Eirika Sword : IS
+  [Lords - Vanilla and Custom] Lord (F) Ephiram Crossbow : SSHX, WiiSportsRemote
+  [Lords - Vanilla and Custom] Lord (F) Ephraim Lance : SamirPlayz
+  [Lords - Vanilla and Custom] Lord (F) Ephraim Magic : Cynon
+  [Lords - Vanilla and Custom] Lord (F) Ephraim-Sharena Lance : Circleseverywhere
+  [Lords - Vanilla and Custom] Lord (F) Hector Axe : Shin19
+  [Lords - Vanilla and Custom] Lord (F) Lilina : MeatOfJustice, Sme, UltraFenix
+  [Lords - Vanilla and Custom] Lord (F) Lucina Sword : BatimaTheBat
+  [Lords - Vanilla and Custom] Lord (F) Lyn Axe : Vilkalizer, Morth
+  [Lords - Vanilla and Custom] Lord (F) Lyn Axe 16x16 : Vilkalizer, Morth
+  [Lords - Vanilla and Custom] Lord (F) Lyn Bow : StreetHero
+  [Lords - Vanilla and Custom] Lord (F) Lyn Sword : IS
+  [Lords - Vanilla and Custom] Lord (F) Lyn T1 Short-Hair : Merpin
+  [Lords - Vanilla and Custom] Lord (F) Lyn T2 Short-Hair : Merpin
+  [Lords - Vanilla and Custom] Lord (F) Priestess Celica Sword : blood
+  [Lords - Vanilla and Custom] Lord (F) Red Bean's Celica : Blood
+  [Lords - Vanilla and Custom] Lord (M) Alfonse Sword : Circleseverywhere
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Ephraim : Duckbeard
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Lance : ArcaneEli
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Marth : Dominus_Vobiscum
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Marth 16x16 : Dominus_Vobiscum
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Sword : IS
+  [Lords - Vanilla and Custom] Lord (M) Eliwood Sword 16x16 : IS
+  [Lords - Vanilla and Custom] Lord (M) Ephraim +Axe : Its_Just_Jay
+  [Lords - Vanilla and Custom] Lord (M) Ephraim - Dryas (One-armed) : Cynon, TheGreatNothing
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Axe : ZoramineFae
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Bow : SSHX
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Bow (White Hair) : SSHX, Topazlight
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Lance : IS
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Lyon Pairup : Devisian_Nights
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Magic : Cynon
+  [Lords - Vanilla and Custom] Lord (M) Ephraim Sword : Teraspark
+  [Lords - Vanilla and Custom] Lord (M) FE3 Marth : ThyAnarchists
+  [Lords - Vanilla and Custom] Lord (M) Hector Axe : IS
+  [Lords - Vanilla and Custom] Lord (M) Marth Ephraim v2 Sword : Dominus_Vobiscum, Snewping
+  [Lords - Vanilla and Custom] Lord (M) Marth Roy v1 Sword : Dominus_Vobiscum
+  [Lords - Vanilla and Custom] Lord (M) Roy Knight : ZoramineFae
+  [Lords - Vanilla and Custom] Lord (M) Roy T1 : IS
+  [Lords - Vanilla and Custom] Lord (M) Roy T1 : Yerek
+  [Lords - Vanilla and Custom] Lord (M) Roy T1, Redesign Head : Jeoger Reds, UltraFenix
+  [Lords - Vanilla and Custom] Lord (M) Roy T2 : IS
+  [Lords - Vanilla and Custom] Lord (M) Roy T2 : Yerek
+  [Lords - Vanilla and Custom] Lord (M) Roy T2 Redesign : Jeorge Reds
+  [Lords - Vanilla and Custom] Lord (M) Roy T2 Redesign 16x32 : Jeorge Reds
+  [Lords - Vanilla and Custom] Lord (M) Roy T2 Redesign Sword Shine : UltraFenix, Jeorge Reds
+  [Lords - Vanilla and Custom] Lord [M] T1 Hector-Dual Sword : TytheBub
+  [Lords - Vanilla and Custom] Lord [M] T1 Hector-Dual Sword Alt 1 : TytheBub, knabepicer
+  [Lords - Vanilla and Custom] Lord [M] T1 Hector-Dual Sword Alt 2 : TytheBub, knabepicer
+  [Lords - Vanilla and Custom] Lord Lilina alt (F) : Yerek, UltraFenix
+  [Lords - Vanilla and Custom] Mage Lord (F) Eliwood : TyTheBub
+  [Lords - Vanilla and Custom] Mage Lord (F) Eliwood 16x16 : TyTheBub
+  [Lords - Vanilla and Custom] Mage Lord (F) Guinevere : TyTheBub, UltraFenix
+  [Lords - Vanilla and Custom] Mage Lord (M) Eliwood : TyTheBub
+  [Lords - Vanilla and Custom] Mage Lord (M) Eliwood 16x16 : TyTheBub
+  [Lords - Vanilla and Custom] Noble (F) Blue Edelgard : Redbean
+  [Lords - Vanilla and Custom] Noble (F) Blue Edelgard Red Cape : Redbean
+  [Lords - Vanilla and Custom] Noble (F) Edelgard : Redbean
+  [Lords - Vanilla and Custom] Noble (F) Edelgard 16x16 : Redbean
+  [Lords - Vanilla and Custom] Roy (M) Blonde : Norikins
+  [Magi - Dark-Type] Necromancer (M) Lyon : IS
+  [Magi - Dark-Type] Noble (F) Noble Lyon : N426
+  [Magi - Dark-Type] Noble (M) Noble Lyon : N426
+  [Magi - Holy-Type] Bishop (F) Serra : IS
+  [Magi - Holy-Type] Cleric (F) Lissa : BatimaTheBat
+  [Magi - Holy-Type] Cleric (F) Serra : IS
+  [Magi - Holy-Type] Monk (F) Serra : IS, darkjaden
+  [Magi - Holy-Type] Priest (M) Wrys : Dominus_Vobiscum
+  [Magi - Nature-Type] Archmage (F) Lilina : BatimaTheBat, Luigiofthegods
+  [Magi - Nature-Type] Archsage (F) Brunnya : Jiege, TLP
+  [Magi - Nature-Type] Archsage (F) Lilina : BatimaTheBat
+  [Magi - Nature-Type] Archsage (M) Brunnya : Jiege, TLP, Stormblight
+  [Magi - Nature-Type] Great Lord Lilina (F) : Yerek
+  [Magi - Nature-Type] Lord Lilina (F) : Yerek
+  [Magi - Nature-Type] Mage (F) Lilina : Yerek
+  [Magi - Nature-Type] Sage (F) Lilina : Yerek
+  [Magi - Nature-Type] Sage (F) Limstella : FE7if
+  [Magi - Nature-Type] Sage (F) Limstella 16x16 : FE7if
+  [Magi - Special] Custom Pale Flower Nino (F) : StreetHero
+  [Magi - Special] Robin (F) : MeatofJustice
+  [Monsters - Dragons and Special] Dragon (U) FE6 Fae : IS
+  [Monsters - Dragons and Special] Dragon (U) FE6 Fae Repal : Kemui52
+  [Monsters - Dragons and Special] Dragon (U) FE6 Idunn : IS
+  [Monsters - Dragons and Special] Dragon (U) FE8 Morva : IS
+  [Monsters - Dragons and Special] Duma (U) : SHYUTERz, HIRITO, SHIRMER
+  [Monsters - Dragons and Special] Feral Dragon (Corrin) (U) Fe Fates : IS, Seliost1
+  [Monsters - Dragons and Special] Manakete (F) Adult Tiki : Akkuma407
+  [Monsters - Dragons and Special] Manakete (F) Fae : IS
+  [Monsters - Dragons and Special] Manakete (F) Myrrh : IS
+  [Monsters - Dragons and Special] Manakete (U) Morva : EA
+  [Monsters - Dragons and Special] Manakete [F] Kiri : TytheBub
+  [Monsters - Dragons and Special] Tiki (F) Child : JeytheCount
+  [Mounted - Cavs, Paladins, Rangers] Ranger (F) Rebecca Bow : Teraspark
+  [Mounted - Valks, MKs, Magi] Mage Knight (F) Selena : Jiege
+  [Mounted - Valks, MKs, Magi] Mage Knight (F) Selena : jiege
+
+== Objets, décors et poses (106 sprites) — tools/map-sprites/objets-et-poses/
+  [Bards, Dancers, Suppliers, Misc] Assassin (Leila) (Dead) Standing : IS
+  [Bards, Dancers, Suppliers, Misc] Blank : non crédité
+  [Bards, Dancers, Suppliers, Misc] Boat (16x32) : IS, Pushwall
+  [Bards, Dancers, Suppliers, Misc] Boat (U) : IS
+  [Bards, Dancers, Suppliers, Misc] Boulder (U) : PKLucky
+  [Bards, Dancers, Suppliers, Misc] Box (U) : Pikmin1211 4
+  [Bards, Dancers, Suppliers, Misc] Computer (U) : d_h
+  [Bards, Dancers, Suppliers, Misc] Crate (U) Brown : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Crate (U) Faction Highlight : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Crate (U) Faction Shading : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Crate (U) Full Faction Color : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Crate (U) Gold : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Crates (U) : Primefusion
+  [Bards, Dancers, Suppliers, Misc] Dead Archer (M) : SigmanRaven, BigMood
+  [Bards, Dancers, Suppliers, Misc] Dead Assassin (F) Ponytail : Hanakko
+  [Bards, Dancers, Suppliers, Misc] Dead Assassin (M) : Hanakko
+  [Bards, Dancers, Suppliers, Misc] Dead Bonewalker (U) : PKLucky
+  [Bards, Dancers, Suppliers, Misc] Dead Eirika (F) : WiiSPortsRemote
+  [Bards, Dancers, Suppliers, Misc] Dead Elphin (M) Bard : ToGY
+  [Bards, Dancers, Suppliers, Misc] Dead Gargoyle (U) : non crédité
+  [Bards, Dancers, Suppliers, Misc] Dead Gargoyle (U) (Grey) : non crédité
+  [Bards, Dancers, Suppliers, Misc] Dead General (M) : PKLucky
+  [Bards, Dancers, Suppliers, Misc] Dead General (U) Axe : UltraxBlade
+  [Bards, Dancers, Suppliers, Misc] Dead General (U) Lance : UltraxBlade
+  [Bards, Dancers, Suppliers, Misc] Dead General (U) Sword : UltraxBlade
+  [Bards, Dancers, Suppliers, Misc] Dead General (U) Unarmed : UltraxBlade
+  [Bards, Dancers, Suppliers, Misc] Dead Knight (U) : PKLucky
+  [Bards, Dancers, Suppliers, Misc] Dead Mage (U) : PKLucky
+  [Bards, Dancers, Suppliers, Misc] Dead Mamkute (U) (Nes) : Polinym
+  [Bards, Dancers, Suppliers, Misc] Dead Mamkute Alt (U) : Polinym, BandanaSplitzzz
+  [Bards, Dancers, Suppliers, Misc] Dead Mercenary (M) : MasterAwesome
+  [Bards, Dancers, Suppliers, Misc] Dead Peer (F) : GreatDoot
+  [Bards, Dancers, Suppliers, Misc] Dead Peer Alt (F) : GreatDoot
+  [Bards, Dancers, Suppliers, Misc] Dead Rhea (F) : Augenis
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) (Full) : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) Bottom half : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) Lance (Bottom half) : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) Lance (Full) : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) Lance (Top half) : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Soldier (M) Top half : TheGreatNothing
+  [Bards, Dancers, Suppliers, Misc] Dead Swordmaster (F) : Hatsuru
+  [Bards, Dancers, Suppliers, Misc] Dead Swordmaster (M) : MegaCowSamMan
+  [Bards, Dancers, Suppliers, Misc] Dead Swordmaster 2.0 (M) : MegaCowSamMan
+  [Bards, Dancers, Suppliers, Misc] Dead Thief (F) : Cygnus, UltraxBlade
+  [Bards, Dancers, Suppliers, Misc] Dead Thief (M) : Cygnus
+  [Bards, Dancers, Suppliers, Misc] Dead Yowyin (Lord) : WiiSportsremote
+  [Bards, Dancers, Suppliers, Misc] Dragon (Ice Dragon) (Dead) : IS
+  [Bards, Dancers, Suppliers, Misc] Elphin (Dead) : ToGY
+  [Bards, Dancers, Suppliers, Misc] Fleet (U) Tank Treads : N426
+  [Bards, Dancers, Suppliers, Misc] Fourth Allegiance Light Rune : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Fourth Allegiance Light Rune (Lavender) : Topazlight
+  [Bards, Dancers, Suppliers, Misc] Light Rune : IS
+  [Bards, Dancers, Suppliers, Misc] Magic Seal (M) : IS
+  [Bards, Dancers, Suppliers, Misc] Nils (Dead) : IS
+  [Bards, Dancers, Suppliers, Misc] Nils (Dead) : Mattiator
+  [Bards, Dancers, Suppliers, Misc] Ninian (Dead) : IS
+  [Bards, Dancers, Suppliers, Misc] Ninian (Dead) : Mattiator
+  [Bards, Dancers, Suppliers, Misc] Obstacle (U) FE14 : Alice
+  [Bards, Dancers, Suppliers, Misc] Peer (M) (Dead) : IS
+  [Bards, Dancers, Suppliers, Misc] Portal (U) : Hanakko
+  [Bards, Dancers, Suppliers, Misc] Prince (Zephiel) (Back) : IS
+  [Bards, Dancers, Suppliers, Misc] Prince (Zephiel) (Dead) : IS
+  [Bards, Dancers, Suppliers, Misc] Sandbag : SHYUTERz
+  [Bards, Dancers, Suppliers, Misc] Save Points : serif
+  [Bards, Dancers, Suppliers, Misc] Ship (U) : daemoth, Zarg
+  [Bards, Dancers, Suppliers, Misc] Sign (U) Link's Awakening : d_h
+  [Bards, Dancers, Suppliers, Misc] Sparkles (U) : Erukolindo
+  [Bards, Dancers, Suppliers, Misc] Swordmaster (Fallen) : SaintRubenio
+  [Bards, Dancers, Suppliers, Misc] Tent : Gabrielknight
+  [Bards, Dancers, Suppliers, Misc] Torch : FE7if
+  [Bards, Dancers, Suppliers, Misc] Torch (Flickering) : FE7if
+  [Bards, Dancers, Suppliers, Misc] Transporter (Horseless Carriage) : BandanaSplitzzz
+  [Bards, Dancers, Suppliers, Misc] Transporter (Hot Air Balloon) : Warpath
+  [Bards, Dancers, Suppliers, Misc] Transporter (Tent) : IS
+  [Bards, Dancers, Suppliers, Misc] Transporter (Wagon) : IS
+  [Bards, Dancers, Suppliers, Misc] Villager (F) Fallen : Dellhonne
+  [Bards, Dancers, Suppliers, Misc] Villager (F) Fallen : EA
+  [Bards, Dancers, Suppliers, Misc] Villager (M) Fallen : Dellhonne
+  [Bards, Dancers, Suppliers, Misc] Villager (M) Fallen : EA
+  [Bards, Dancers, Suppliers, Misc] Warrior (Dead) : IS
+  [Infantry - (Bow) Archers and Hunters] Archer (Dead) Generic : SigmaRaven, BigMood
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (Dead, Grounded) : TheGreatNothing
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (Dead, Lance, Grounded) : TheGreatNothing
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (Dead, Lance, Walled) : TheGreatNothing
+  [Infantry - (Lnc) Soldiers, Halberdiers] Soldier (Dead, Walled) : TheGreatNothing
+  [Infantry - (Swd) Mercenaries and Heroes] Mercenary (Dead) : MasterAwesome
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (F, Dead) : Hatsuru
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M, Dead, Alt 1) : MegaCowSamMan
+  [Infantry - (Swd) Myrms and Swordmasters] Swordmaster (M, Dead, Alt 2) : MegaCowSamMan
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Asaph (Dead) : Cygnus
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) Collapsed : Topazlight
+  [Infantry - (Swd) Thieves, Rogues, Assassins] Thief (F) Leila against tree : Topazlight
+  [Infantry - Knights, Generals, Armors] Knight (Dead) : PKLucky
+  [Lords - Vanilla and Custom] Eirika (Dead) : WiiSportsRemote
+  [Lords - Vanilla and Custom] Yowyin (Dead) : WiiSportsRemote
+  [Magi - Nature-Type] Mage (Dead) : PKLucky
+  [Magi - Nature-Type] Peer (Dead, Alt 1) : GreatDoot
+  [Magi - Nature-Type] Peer (Dead, Alt 2) : GreatDoot
+  [Monsters - Basic Types] Bonewalker (Dead) : PKLucky
+  [Monsters - Basic Types] Gargoyle (Dead) : DATonDemand
+  [Monsters - Basic Types] Gargoyle (Dead, Grey Stone) : DATonDemand
+  [Monsters - Basic Types] Gorgon Egg (U) Black : IS
+  [Monsters - Basic Types] Gorgon Egg (U) White : IS
+  [Monsters - Dragons and Special] Rhea (Dead) : Augenis
+  [Monsters - Dragons and Special] Shield : N426
+  [Monsters - Dragons and Special] Shield Blank : N426

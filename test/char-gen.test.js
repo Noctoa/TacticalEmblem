@@ -111,3 +111,94 @@ test('protagoniste du joueur : réglage, renommage dans les textes, validation',
   assert.deepEqual(C.validateAvatar(undefined), []);
   assert.match(C.validateAvatar({ unitId: 'c_lyn', name: 'x'.repeat(30), recipe: { face: 'Lyn', colors: {} } }).join(), /20 caractères/);
 });
+
+test('nuanciers détaillés : 225 dégradés (cheveux, yeux, métal, ornements, tissu, cuir), 34 de peau triés, appliqués tels quels', () => {
+  assert.equal(C.HAIR_RAMPS.length, C.HAIR_LAYOUT.rows * (C.HAIR_LAYOUT.columns[0] + C.HAIR_LAYOUT.columns[1]));
+  assert.ok(C.HAIR_RAMPS.every(r => r.length === 3 && r.every(c => C.rgb(c))));
+  assert.equal(C.SKIN_RAMPS.length, 34); // 35 de la planche, un doublon retiré
+  const L = (r) => r.reduce((n, c) => { const v = C.rgb(c); return n + 0.3 * v[0] + 0.59 * v[1] + 0.11 * v[2]; }, 0);
+  assert.ok(C.SKIN_RAMPS.every((r, i, all) => i === 0 || L(all[i - 1]) >= L(r)), 'du plus clair au plus foncé');
+  assert.equal(new Set(C.SKIN_RAMPS.map(r => r.join())).size, 34);
+  assert.ok(C.SKIN_RAMPS.every(r => r.length === 5 && r.every(c => C.rgb(c))));
+  const hair = C.HAIR_RAMPS[50], skin = C.SKIN_RAMPS[3];
+  const pal = C.palette(C.DEFAULT_COLORS, { hair, skin });
+  assert.deepEqual(pal.slice(1, 4), hair.map(C.rgb));
+  assert.deepEqual(pal.slice(4, 9), skin.map(C.rgb));
+  // recette : dégradés valides gardés, invalides retirés ou signalés
+  assert.deepEqual(C.normalize({ ramps: { hair, skin: ['#ffffff'] } }).ramps, { hair });
+  assert.match(C.validate({ face: 'x', colors: {}, ramps: { skin: ['#fff'] } }).join(), /Nuancier invalide/);
+  const r = C.random(parts(), (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })());
+  assert.ok(C.HAIR_RAMPS.some(x => x.join() === r.ramps.hair.join()) && C.SKIN_RAMPS.some(x => x.join() === r.ramps.skin.join()));
+});
+
+test('yeux : couleur propre (iris dessiné en teinte « cheveux » près du blanc de l’œil), barbe épargnée', () => {
+  // œil : blanc (indice 25) en (30,40), iris (indice 2) en (31,40) ; barbe (indice 2) en (30,70), loin du blanc
+  const face = layer([[30, 40, 25], [31, 40, 2], [32, 40, 3], [30, 70, 2]]);
+  const mask = C.eyeMask(face);
+  assert.equal(mask[40 * 96 + 31], 1); assert.equal(mask[40 * 96 + 32], 1); assert.equal(mask[70 * 96 + 30], 0);
+  assert.equal(C.eyePalette({ eyes: '' }), null); // comme les cheveux
+  const recipe = C.normalize({ colors: { hair: '#ff0000', eyes: '#00ff00' } });
+  assert.equal(recipe.colors.eyes, '#00ff00');
+  const p = C.composePortrait({ face }, recipe);
+  assert.deepEqual(at(p, 31, 40), [0, 255, 0, 255]);   // iris : couleur des yeux
+  assert.deepEqual(at(p, 30, 70), [255, 0, 0, 255]);   // barbe : couleur des cheveux
+  const same = C.composePortrait({ face }, C.normalize({ colors: { hair: '#ff0000' } }));
+  assert.deepEqual(at(same, 31, 40), [255, 0, 0, 255]); // sans couleur d'yeux : comme les cheveux
+  assert.deepEqual(C.validate({ face: 'x', colors: { eyes: '' } }), []);
+});
+
+test('couleurs séparées : sprite de map (propres ou comme le portrait), animation de combat (tenue)', () => {
+  const metal = C.HAIR_RAMPS[3], cloth = C.HAIR_RAMPS[100], mapCloth = C.HAIR_RAMPS[7], battle = C.HAIR_RAMPS[150];
+  const pal = C.palette(C.DEFAULT_COLORS, { metal, cloth });
+  assert.deepEqual(pal.slice(9, 12), metal.map(C.rgb)); assert.deepEqual(pal.slice(15, 18), cloth.map(C.rgb));
+  const r = C.normalize({ ramps: { cloth }, map: { colors: {}, ramps: { cloth: mapCloth } }, battle: { ramp: battle } });
+  assert.deepEqual(C.teamColors(r), mapCloth);                  // sprite de map : ses propres couleurs
+  assert.deepEqual(C.teamColors(Object.assign({}, r, { map: null })), cloth); // sinon celles du portrait
+  assert.equal(C.battlePalette(r), 'custom:' + battle.join(','));
+  assert.equal(C.battlePalette(C.normalize({})), '');
+  const tok = new Uint8ClampedArray(64 * 64 * 4); tok[0] = 163; tok[3] = 255; // indice 16 : tissu de base
+  assert.deepEqual(Array.from(C.composeToken(tok, r).slice(0, 3)), C.rgb(mapCloth[1]));
+  // l'animation de combat : couleurs d'équipe de la planche remplacées par le dégradé, de la plus claire à la plus foncée
+  const P = require('../src/shared/palettes');
+  const t = P.table(C.battlePalette(r), ['#3060c0', '#203060', '#90b0f0']);
+  assert.deepEqual(t.get(0x90b0f0), C.rgb(battle[0])); assert.deepEqual(t.get(0x203060), C.rgb(battle[2]));
+  assert.equal(P.norm('custom:#zzzzzz'), 'original');
+});
+
+test('bibliothèque de sprites FE : liste, planches, vignettes et crédits cohérents', () => {
+  const ctx = { self: {} }; vm.runInNewContext(fs.readFileSync(path.join(GEN, 'sprites.js'), 'utf8'), ctx);
+  const S = ctx.self.GENERATOR_SPRITES;
+  assert.ok(S.list.length > 500, 'des centaines de sprites');
+  const ids = new Set();
+  for (const e of S.list) {
+    assert.match(e.id, /^[a-z0-9-]+$/); assert.ok(!ids.has(e.id), 'id unique : ' + e.id); ids.add(e.id);
+    assert.ok(e.label && e.group && Array.isArray(e.credits) && e.f.length === 3);
+    assert.ok(!e.credits.some(c => /^[MFU]$/.test(c)), 'pas de (M)/(F)/(U) dans les crédits : ' + e.id);
+  }
+  const files = fs.readdirSync(path.join(GEN, 'sprites'));
+  assert.equal(files.length, S.list.length);
+  for (const e of S.list.slice(0, 40)) assert.deepEqual(pngSize(path.join('sprites', e.id + '.png')), [128, 192]);
+  const [tw, th] = pngSize('sprites-thumbs.png');
+  assert.equal(tw, S.cols * 32); assert.equal(th, Math.ceil(S.list.length / S.cols) * 32);
+  // personnages principaux mis de côté, pas dans le générateur
+  assert.ok(!S.list.some(e => /eliwood|hector|ephraim|marth|lyn\b/i.test(e.label.replace(/\S+-Style/g, ''))));
+  const credits = fs.readFileSync(path.join(__dirname, '..', 'tools', 'map-sprites', 'CREDITS.txt'), 'utf8');
+  for (const c of new Set(S.list.flatMap(e => e.credits))) assert.ok(credits.includes(c), 'crédit listé : ' + c);
+});
+
+test('recette : sprite FE gardé, vérifié et décrit (.json base 16, cases 32 × 32)', () => {
+  const p = Object.assign({}, parts(), { sprite: [{ id: 'soldier-m', label: 'Soldier (M)', group: 'x', credits: ['IS', 'Blood'], f: [3, 4, 3] }] });
+  assert.equal(C.normalize({ sprite: 'soldier-m' }, p).sprite, 'soldier-m');
+  assert.equal(C.normalize({ sprite: 'inconnu' }, p).sprite, '');
+  assert.equal(C.normalize({}).sprite, '');
+  const face = p.face[0].id;
+  assert.deepEqual(C.validate({ face, sprite: 'inconnu' }, p), ['Sprite de map inconnu (inconnu).']);
+  assert.deepEqual(C.validate({ face, sprite: 'soldier-m' }, p), []);
+  const m = C.spriteMeta(p.sprite[0], 'Garde');
+  assert.deepEqual([m.type, m.name, m.frame, m.anchor, m.base], ['mapsprite', 'Garde', [32, 32], [16, 32], 16]);
+  assert.equal(m.source, 'FE-Repo — IS, Blood');
+  assert.deepEqual(Object.keys(m.anims), ['idle', 'left', 'right', 'down', 'up', 'focus']);
+  for (const a of Object.values(m.anims)) { assert.equal(a.frames.length, a.durations.length); assert.ok(a.frames.every(f => f >= 0 && f < 4)); }
+  const still = C.spriteMeta({ f: [1, 3, 3] });
+  assert.deepEqual(still.anims.idle.frames, [0]); assert.deepEqual(still.anims.down.frames, [0, 1, 2]);
+});

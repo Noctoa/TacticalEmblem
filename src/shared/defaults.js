@@ -548,7 +548,7 @@
 
   // crédits du projet d'exemple (Système › Écran titre et crédits ; écran titre › Crédits)
   const SAMPLE_CREDITS = ['Tactical Emblem :', 'EdnidCorp.', 'Xarrin', 'Noctoa', 'Reito', 'Ota', '',
-    'Assets d’exemple :', 'Lexou', 'LS', 'Grim', 'Bonzai', 'Lord Zymeth', 'TheFlyingMinotaur', 'Cynon', 'OurBoiRoy', 'TheNinjaGuy914', 'trainboy2019', 'Maelstrom210', '',
+    'Assets d’exemple :', 'Lexou', 'LS', 'Grim', 'Bonzai', 'Lord Zymeth', 'TheFlyingMinotaur', 'Blade', 'AK', 'Cynon', 'OurBoiRoy', 'TheNinjaGuy914', 'trainboy2019', 'Maelstrom210', '',
     'Musiques :', 'Yuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)', '',
     'Game Company :', 'Nintendo', 'Square-Enix'].join('\n');
   // ancien texte d'exemple : remplacé par le nouveau à l'ouverture d'un projet qui l'a gardé tel quel

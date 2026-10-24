@@ -152,7 +152,9 @@
     let r = null;
     try {
       Music.bgm('title');
-      r = await CharGenUI.open({ game: true, cancel: false, askName: cfg.rename, name: def.name, recipe: def.generator,
+      const cls = R.byId(G.db.classes, def.classId), bMeta = G.resources.battlers[def.battler || (cls && cls.battler)];
+      const bImg = bMeta && Render.readyImage(G.baseUrl, bMeta.image);
+      r = await CharGenUI.open({ game: true, cancel: false, askName: cfg.rename, name: def.name, recipe: def.generator, battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null,
         title: 'Ton protagoniste', subtitle: cfg.rename ? 'Choisis son nom et son apparence' : def.name, okLabel: 'Commencer l’aventure' });
     } catch (e) { console.error('[générateur]', e); UI.toast('Générateur de personnage indisponible : ' + e.message, 'error'); }
     if (r) G.campaign.avatar = { unitId: def.id, name: cfg.rename ? r.name : def.name, recipe: r.recipe };
@@ -176,8 +178,8 @@
       await Promise.all([Render.loadImage(G.baseUrl, face), Render.loadImage(G.baseUrl, sheet)]);
       const key = 'avatar:' + def.id;
       G.resources.characters[key] = Object.assign({}, r.map.meta, { image: sheet, owner: a.name || def.name });
-      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite } };
-      Object.assign(def, { name: G.avatar.to, portrait: face, mapSprite: key });
+      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battleColors: def.battleColors } };
+      Object.assign(def, { name: G.avatar.to, portrait: face, mapSprite: key, battleColors: CharGen.battlePalette(r.recipe) || undefined });
     } catch (e) { console.error('[générateur]', e); }
   }
   /** Texte des dialogues : nom d'origine du protagoniste → nom choisi, {héros} → son nom. */
@@ -699,6 +701,11 @@
     const meta = u.mapSprite && G.resources.characters[u.mapSprite];
     const img = meta && Render.readyImage(G.baseUrl, meta.image);
     return meta && img ? { meta, img } : null;
+  }
+  /** Palette de l'animation de combat : couleurs choisies au générateur (fiche de l'unité) à la place des couleurs d'origine. */
+  function battlePaletteOf(u) {
+    const p = Palettes.paletteFor(u.team, colorMode(u), 'battle', false), def = R.byId(G.db.units, u.sourceId);
+    return p === 'original' && u.team !== 'enemy' && def && def.battleColors ? def.battleColors : p;
   }
   /** Couleurs d'une unité : placement › unité › classe › réglage du projet. */
   function colorMode(u) { return Palettes.resolveMode(u.colorsOverride, u.colors, G.settings.colors); }
@@ -1831,7 +1838,7 @@
       await BattleScene.play({
         weather: G.settings.weatherEffects !== false ? G.weather : undefined,
         baseUrl: G.baseUrl, battlerOf, att, def, hp0, strikes: res.strikes, forecast: res.forecast, distance,
-        paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'battle', false),
+        paletteOf: battlePaletteOf,
         partner: res.duo ? res.duo.partner : null, helpers, mapSpriteOf, overkill: res.overkill,
         weaponOf: (u) => (u === att ? wAtt : wDef), terrainOf, background: base,
         battleback: battlebackOf(def) || battlebackOf(att),

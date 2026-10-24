@@ -137,7 +137,11 @@
     const run = async () => {
       if (!self.CharGenUI) return UI.alert('Générateur indisponible', 'Les pièces du générateur sont absentes de cette installation.');
       let r;
-      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name }); }
+      // aperçu de l'animation de combat (celle de l'unité, sinon de sa classe) pour les couleurs de combat
+      const cls = byId(db().classes, u.classId), bKey = u.battler || (cls && cls.battler), bMeta = bKey && res().battlers[bKey];
+      const bImg = bMeta ? await Render.loadImage(Editor.baseUrl(), bMeta.image) : null;
+      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name,
+        battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null }); }
       catch (e) { return UI.alert('Générateur indisponible', e.message); }
       if (!r) return;
       const meta = Object.assign({}, r.map.meta, { name: u.name + ' (généré)' });
@@ -150,6 +154,7 @@
       u.portrait = out.files['portrait_genere.png'];
       u.mapSprite = out.files['map_genere.json'].replace(/\.json$/, '');
       u.generator = r.recipe;
+      if (CharGen.battlePalette(r.recipe)) u.battleColors = CharGen.battlePalette(r.recipe); else delete u.battleColors;
       change(); renderBody();
       UI.toast(`Portrait et sprite de map de ${u.name} enregistrés (${out.dir}).`);
     };
