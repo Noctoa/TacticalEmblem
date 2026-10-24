@@ -117,6 +117,13 @@
     const be = battlerEntry(recipe.token), bs = be && battlerSheets[be.id];
     const battler = bs ? { meta: Object.assign(JSON.parse(JSON.stringify(be.meta)), { name: (name || 'Personnage généré') + ' — ' + be.label }), canvas: copyCanvas(bs),
       arrow: be.meta.projectiles && battlerSheets.arrow ? copyCanvas(battlerSheets.arrow) : null } : null;
+    const bGroups = battler && root.GENERATOR_BATTLER_COLORS && root.GENERATOR_BATTLER_COLORS[be.id];
+    if (bGroups) { // peau, cheveux, métal, ornements, cuir aux couleurs de l'onglet Combat (le tissu reste la couleur d'équipe)
+      const g = battler.canvas.getContext('2d'), px = g.getImageData(0, 0, battler.canvas.width, battler.canvas.height);
+      // couleurs d'équipe repérées sur la planche d'origine : la recoloration ne doit pas les déplacer
+      if (!Array.isArray(battler.meta.teamColors) && root.Palettes) battler.meta.teamColors = root.Palettes.detect(root.Palettes.countColors(px.data));
+      C.recolorBattler(px.data, bGroups, recipe); g.putImageData(px, 0, 0);
+    }
     return { recipe, name, portrait: toCanvas(portrait, 96, 96), faceset: toCanvas(fs.data, fs.width, fs.height),
       map: mapOut, token: toCanvas(combatToken, 64, 64), battler };
   }
@@ -265,7 +272,7 @@
           const key = cstate.tab === 'map' ? 'map' : 'combat';
           colorBox.append(h('p', { class: 'cg-note', 'data-cg-sprite-note': true }, key === 'map'
             ? 'Ces couleurs s’appliquent au sprite de map (en jeu, le tissu prend la couleur du camp).'
-            : 'Ces couleurs s’appliquent au sprite de combat ; le tissu donne aussi la tenue de l’animation de combat de la classe.'));
+            : 'Ces couleurs s’appliquent au sprite et à l’animation de combat : peau, cheveux, métal, ornements et cuir. Le tissu donne la tenue (en jeu, il prend la couleur du camp selon le réglage des couleurs).'));
           colorBox.append(h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', ['data-cg-' + key + '-linked']: true, checked: !recipe[key],
             onchange: (e) => { recipe[key] = e.target.checked ? null : C.normColors(recipe); drawColors(); refresh(); } }), ' Mêmes couleurs que le portrait'));
           if (!recipe[key]) return;

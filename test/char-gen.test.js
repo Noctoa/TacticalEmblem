@@ -289,3 +289,40 @@ test('animations de combat FE des sprites de combat : liste, planches et animati
   const lab = (tok) => (B.list.find(b => b.id === B.tokens[tok]) || {}).label || '';
   assert.match(lab('Eliwood'), /Eliwood/); assert.match(lab('Hector'), /Hector/); assert.match(lab('Soldier'), /Soldier/); assert.match(lab('ArcherFemale'), /\[F\]/);
 });
+
+test('animations de combat : peau, cheveux, métal, ornements et cuir prennent les couleurs de combat', () => {
+  const ctx = { self: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(GEN, 'battlers.js'), 'utf8'), ctx);
+  vm.runInNewContext(fs.readFileSync(path.join(GEN, 'battler-colors.js'), 'utf8'), ctx);
+  const B = ctx.self.GENERATOR_BATTLERS, BC = ctx.self.GENERATOR_BATTLER_COLORS;
+  for (const b of B.list) assert.ok(BC[b.id], 'couleurs repérées : ' + b.id);
+  const eli = BC[B.tokens.Eliwood];
+  assert.equal(eli.hair.length, 3, 'cheveux d’Eliwood : 3 nuances'); assert.ok(eli.skin.length >= 2, 'peau d’Eliwood');
+  // le tissu (couleurs d'équipe) n'est jamais dans les groupes recolorés
+  const all = Object.values(eli).flat();
+  assert.ok(!all.includes('#4058c0') && !all.includes('#2820a0'), 'bleus d’équipe laissés au tissu');
+  const hair = ['#ffa0ff', '#ff00ff', '#800080'];
+  const r = C.normalize({ combat: { colors: { hair: '#ff00ff' }, ramps: { hair } } });
+  const t = C.battlerColorTable(eli, r), key = (h) => parseInt(h.slice(1), 16);
+  assert.deepEqual(Array.from(eli.hair, c => C.hex(t.get(key(c)))), hair, 'cheveux : du plus clair au plus foncé');
+  const px = new Uint8ClampedArray([0xd0, 0x10, 0x00, 255, 0x40, 0x58, 0xc0, 255]);
+  C.recolorBattler(px, eli, r);
+  assert.equal(C.hex(Array.from(px.slice(0, 3))), '#ff00ff', 'nuance moyenne des cheveux');
+  assert.equal(C.hex(Array.from(px.slice(4, 7))), '#4058c0', 'tissu inchangé');
+  // montures : le cheval suit le cuir, pas la peau
+  const cav = BC['cavalier-base-m-vanilla-weapons-lance'];
+  assert.ok(cav.leather.length >= 3 && !cav.skin, 'cheval du cavalier dans le cuir');
+});
+
+test('recette de départ : sprite de map du personnage, sinon Eliwood (comme les autres pièces)', () => {
+  const ctx = { self: {} };
+  for (const f of ['parts.js', 'sprites.js', 'battlers.js']) vm.runInNewContext(fs.readFileSync(path.join(GEN, f), 'utf8'), ctx);
+  const P = Object.assign({}, ctx.self.GENERATOR_PARTS, { sprite: ctx.self.GENERATOR_SPRITES.list, battlers: ctx.self.GENERATOR_BATTLERS });
+  const pick = (n) => { const d = C.defaults(P, n); return [d.hair, d.face, d.armor, d.token, d.sprite]; };
+  assert.deepEqual(pick('Eliwood'), ['Eliwood', 'Eliwood', 'Eliwood', 'Eliwood', 'lord-m-eliwood-sword']);
+  assert.deepEqual(pick('Lyn'), ['Lyn', 'Lyn', 'Lyn', 'Lyn', 'lord-f-lyn-sword']);
+  assert.equal(pick('Hector')[4], 'lord-m-hector-axe', 'Hector : seigneur, même sexe que son animation');
+  assert.deepEqual(pick('Personne'), ['Eliwood', 'Eliwood', 'Eliwood', 'Lord', 'lord-m-eliwood-sword'], 'sans pièce du même nom : Eliwood');
+  assert.deepEqual(pick(''), ['Eliwood', 'Eliwood', 'Eliwood', 'Lord', 'lord-m-eliwood-sword']);
+  assert.equal(C.defaults(parts(), 'Lyn').sprite, '', 'sans bibliothèque de sprites : la figurine');
+});

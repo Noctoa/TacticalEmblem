@@ -6,8 +6,9 @@
  *     colors: { skin, hair, eyes, metal, trim, cloth, leather }   couleurs '#rrggbb' (eyes '' = comme les cheveux)
  *     ramps: { hair | eyes | metal | trim | cloth | leather: [clair, base, ombre], skin: [5 nuances] }   dégradés exacts (facultatif)
  *     map: null | { colors, ramps }   couleurs propres au sprite de map (null = celles du portrait)
- *     combat: null | { colors, ramps }   couleurs propres au sprite de combat (null = celles du portrait) ; son tissu
- *                                        donne aussi la tenue (couleurs d'équipe) de l'animation de combat de la classe
+ *     combat: null | { colors, ramps }   couleurs propres au sprite de combat (null = celles du portrait) : peau, cheveux,
+ *                                        métal, ornements et cuir de son animation (recolorBattler) ; son tissu donne la
+ *                                        tenue (couleurs d'équipe) de cette animation ou de celle de la classe
  *     offsets: { hair: [dx, dy], face: [dx, dy], armor: [dx, dy] }   décalage de chaque pièce en pixels
  *     sprite: '' | id }   sprite de map animé tiré de la bibliothèque FE (img/generator/sprites.js) ; '' = la figurine
  *
@@ -140,6 +141,40 @@
     const cc = combatColors(recipe), pal = palette(cc.colors, cc.ramps);
     return 'custom:' + [pal[15], pal[16], pal[17]].map(hex).join(',');
   }
+  /**
+   * Animation de combat FE recolorée avec les couleurs de combat de la recette : peau, cheveux, métal, ornements et cuir.
+   * groups = img/generator/battler-colors.js › id : { peau | cheveux | … : ['#rrggbb' du plus clair au plus foncé] } ;
+   * chaque nuance de la planche prend la nuance de même rang dans le dégradé choisi. Le tissu n'est pas touché :
+   * ce sont les couleurs d'équipe, teintes en jeu (battlePalette).
+   */
+  function battlerColorTable(groups, recipe) {
+    const out = new Map();
+    if (!groups || !recipe) return out;
+    const cc = combatColors(recipe), pal = palette(cc.colors, cc.ramps);
+    for (const [g, list] of Object.entries(groups)) {
+      const at = RAMP_INDEX[g];
+      if (at === undefined || g === 'cloth' || !Array.isArray(list) || !list.length) continue;
+      const ramp = pal.slice(at, at + RAMP_SIZE[g]);
+      list.forEach((c, i) => {
+        const src = rgb(c); if (!src) return;
+        const t = list.length === 1 ? (ramp.length - 1) / 2 : i * (ramp.length - 1) / (list.length - 1);
+        const a = ramp[Math.floor(t)], b = ramp[Math.ceil(t)], f = t - Math.floor(t);
+        out.set((src[0] << 16) | (src[1] << 8) | src[2], a.map((v, j) => Math.round(v + (b[j] - v) * f)));
+      });
+    }
+    return out;
+  }
+  /** Recolore en place les pixels RGBA d'une planche de combat (voir battlerColorTable). */
+  function recolorBattler(data, groups, recipe) {
+    const t = battlerColorTable(groups, recipe);
+    if (!t.size) return data;
+    for (let i = 0; i < data.length; i += 4) {
+      if (!data[i + 3]) continue;
+      const c = t.get((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+      if (c) { data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2]; }
+    }
+    return data;
+  }
   const EMPTY_OFFSETS = () => ({ hair: [0, 0], face: [0, 0], armor: [0, 0] });
   const clampOff = (v) => Math.max(-48, Math.min(48, Math.round(Number(v) || 0)));
   /** Recette complète et valide (pièces inconnues retirées si parts est donné). */
@@ -188,9 +223,36 @@
     return Object.assign(r, keep);
   }
   /** Recette par défaut : pièces de ce nom si elles existent (ex. « Eliwood »), sinon les premières. */
+  /**
+   * Recette de départ : les pièces du même nom que le personnage (Lyn, Hector…), sinon celles d'Eliwood ; le sprite
+   * de combat « Lord » (animation d'Eliwood) ; le sprite de map FE du personnage (« Lord (F) Lyn Sword »…), sinon
+   * celui d'Eliwood (« Lord (M) Eliwood Sword »).
+   */
+  const DEFAULT_PART = 'Eliwood', DEFAULT_SPRITE = 'lord-m-eliwood-sword';
   function defaults(parts, name) {
-    const find = (list, filter) => { const l = (list || []).filter(filter || (() => true)); return (l.find(p => p.id.toLowerCase() === String(name || '').toLowerCase()) || l[0] || {}).id || ''; };
-    return normalize({ hair: find(parts.hair, p => p.front), face: find(parts.face), armor: find(parts.armor), token: (parts.token || []).some(p => p.id.toLowerCase() === String(name || '').toLowerCase()) ? find(parts.token) : (find(parts.token, p => /^lord$/i.test(p.id)) || find(parts.token)) }, parts);
+    const key = String(name || '').trim().toLowerCase();
+    const find = (list, filter, fallback) => {
+      const l = (list || []).filter(filter || (() => true)), by = (id) => l.find(p => p.id.toLowerCase() === id);
+      return ((key && by(key)) || (fallback && by(fallback.toLowerCase())) || l[0] || {}).id || '';
+    };
+    const token = (parts.token || []).some(p => p.id.toLowerCase() === key) ? find(parts.token) : (find(parts.token, p => /^lord$/i.test(p.id)) || find(parts.token));
+    return normalize({ hair: find(parts.hair, p => p.front, DEFAULT_PART), face: find(parts.face, null, DEFAULT_PART), armor: find(parts.armor, null, DEFAULT_PART),
+      token, sprite: defaultSprite(parts, key, token) }, parts);
+  }
+  /** Sprite de map FE par défaut : celui qui porte le nom du personnage (seigneur de base d'abord, du même sexe que son
+   *  animation de combat), sinon celui d'Eliwood ; '' sans bibliothèque de sprites. */
+  function defaultSprite(parts, key, token) {
+    const list = parts.sprite || [];
+    if (!list.length) return '';
+    const word = key.replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const B = parts.battlers, bid = (B && B.tokens && B.tokens[token]) || '';
+    const sex = /(^|-)f(-|$)/.test(bid) ? 'f' : /(^|-)m(-|$)/.test(bid) ? 'm' : '';
+    const named = word ? list.filter(p => new RegExp('(^|-)' + word + '(-|$)').test(p.id)) : [];
+    if (named.length) {
+      const score = (p) => (/^lord-/.test(p.id) ? 4 : 0) + (sex && new RegExp('(^|-)' + sex + '(-|$)').test(p.id) ? 2 : 0) - p.id.length / 100;
+      return named.slice().sort((a, b) => score(b) - score(a))[0].id;
+    }
+    return list.some(p => p.id === DEFAULT_SPRITE) ? DEFAULT_SPRITE : '';
   }
 
   // ------------------------------------------------------------- composition (tableaux RGBA)
@@ -421,6 +483,6 @@
     return errors.concat(validate(a.recipe, parts));
   }
 
-  return { normColors, mapColors, combatColors, battlePalette, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
+  return { normColors, mapColors, combatColors, battlePalette, battlerColorTable, recolorBattler, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
     normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feTeamColors };
 });

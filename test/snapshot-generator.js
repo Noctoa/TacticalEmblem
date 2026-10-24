@@ -37,7 +37,16 @@ module.exports = (editor, openPlaytest) => {
       await E.until(`!!document.querySelector('.cg-win [data-cg-label="hair"]') && document.querySelector('[data-cg-label="hair"]').textContent !== ''`, 20000);
       result.defaut = await E.js(`({ cheveux: document.querySelector('[data-cg-label="hair"]').textContent, visage: document.querySelector('[data-cg-label="face"]').textContent })`);
       assert(result.defaut.cheveux === 'Lyn' && result.defaut.visage === 'Lyn', 'pièces de départ du même nom : ' + JSON.stringify(result.defaut));
+      // sprite de map FE de départ : celui du personnage (sinon celui d'Eliwood)
+      result.defaut.sprite = await E.js(`document.querySelector('[data-cg-label="sprite"]').textContent`);
+      assert(result.defaut.sprite === 'Lord (F) Lyn Sword', 'sprite de map de départ : ' + result.defaut.sprite);
+      await E.until(`(() => { const c = document.querySelector('[data-cg-sprite]'); const d = c.getContext('2d').getImageData(0, 0, 64, 64).data; let n = 0; for (let i = 3; i < d.length; i += 4) n += d[i] ? 1 : 0; return n > 50; })()`);
       await wait(300); await E.shot('a_generateur');
+      // la suite vérifie le sprite de map tiré de la figurine : « Aucun »
+      await E.js(`document.querySelector('[data-cg-choose="sprite"]').click()`);
+      await E.until(`!!document.querySelector('[data-cg-picker="sprite"]')`);
+      await E.js(`[...document.querySelectorAll('[data-cg-picker="sprite"] .cg-pop-head button')].find(b => /^Aucun/.test(b.textContent)).click()`);
+      await E.until(`/^Aucun/.test(document.querySelector('[data-cg-label="sprite"]').textContent)`);
       // choisir des cheveux dans la grille, une couleur, décaler le visage
       await E.js(`document.querySelector('[data-cg-choose="hair"]').click()`);
       await E.until(`document.querySelectorAll('[data-cg-picker="hair"] .cg-cell').length > 100`);
@@ -67,6 +76,10 @@ module.exports = (editor, openPlaytest) => {
       assert(await E.js(`document.querySelector('[data-cg-combat-linked]').checked && !document.querySelector('[data-cg-ramp]') && !document.querySelector('[data-cg-battler]')`), 'combat lié au portrait');
       await pick('[data-cg-combat-linked]'); await pick('[data-cg-group="cloth"]'); await pick('[data-cg-ramp="cloth:10"]');
       await wait(200); await E.shot('c3_couleurs_combat');
+      // combat : cheveux et peau de l'animation (pas seulement le tissu)
+      await pick('[data-cg-group="hair"]'); await pick('[data-cg-ramp="hair:40"]');
+      await pick('[data-cg-group="skin"]'); await pick('[data-cg-ramp="skin:20"]');
+      await wait(400); await E.shot('c4_couleurs_combat_cheveux');
       await pick('[data-cg-tab="portrait"]');
       await E.js(`document.querySelector('[data-cg-offset="face:1"]').nextElementSibling.click()`);
       assert(await E.js(`document.querySelector('[data-cg-offset="face:1"]').textContent === '1'`), 'décalage');
@@ -88,6 +101,16 @@ module.exports = (editor, openPlaytest) => {
       assert(result.battler.key === 'ressources/personnages/Lyn/combat_genere' && result.battler.ok, 'animation de combat : ' + JSON.stringify(result.battler));
       const bj = JSON.parse(fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/combat_genere.json'), 'utf8'));
       assert(bj.type === 'battler' && bj.anims.attack && bj.anims.stance && /^FE-Repo/.test(bj.source), 'combat_genere.json');
+      // la planche écrite porte les cheveux et la peau de l'onglet Combat ; le tissu reste en couleurs d'équipe
+      assert(Array.isArray(bj.teamColors) && bj.teamColors.length >= 3, 'couleurs d’équipe de l’animation : ' + JSON.stringify(bj.teamColors));
+      {
+        const { nativeImage } = require('electron');
+        const im = nativeImage.createFromPath(path.join(dir, 'ressources/personnages/Lyn/combat_genere.png')), bmp = im.toBitmap();
+        const seen = new Set(); for (let i = 0; i < bmp.length; i += 4) if (bmp[i + 3]) seen.add('#' + [bmp[i + 2], bmp[i + 1], bmp[i]].map(v => v.toString(16).padStart(2, '0')).join(''));
+        const hair = R.HAIR_RAMPS[40], skin = R.SKIN_RAMPS[20];
+        result.combatPlanche = { cheveux: hair.filter(c => seen.has(c)), peau: skin.filter(c => seen.has(c)), equipe: bj.teamColors.filter(c => seen.has(c)) };
+        assert(result.combatPlanche.cheveux.length >= 2 && result.combatPlanche.peau.length >= 2 && result.combatPlanche.equipe.length >= 3, 'planche de combat recolorée : ' + JSON.stringify(result.combatPlanche));
+      }
       const sheet = JSON.parse(fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/map_genere.json'), 'utf8'));
       assert(sheet.type === 'mapsprite' && sheet.base === 32 && sheet.anims.left && sheet.teamColors.join() === R.HAIR_RAMPS[5].join(), 'sprite de map (couleurs d’équipe = tissu de la carte)');
       await E.until(`!!document.querySelector('[data-generator-open]') && /Retoucher/.test(document.querySelector('[data-generator-open]').textContent)`);
