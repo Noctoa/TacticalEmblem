@@ -145,18 +145,26 @@
       catch (e) { return UI.alert('Générateur indisponible', e.message); }
       if (!r) return;
       const meta = Object.assign({}, r.map.meta, { name: u.name + ' (généré)' });
-      const out = await tf.writeGenerated(Editor.dir(), u.name, [
+      const files = [
         { name: 'portrait_genere.png', base64: CharGenUI.base64(r.faceset) },
         { name: 'map_genere.png', base64: CharGenUI.base64(r.map.canvas) },
-        { name: 'map_genere.json', json: Object.assign(meta, { image: undefined }) }]);
+        { name: 'map_genere.json', json: Object.assign(meta, { image: undefined }) }];
+      if (r.battler) { // animation de combat FE du sprite de combat (+ sa flèche pour un arc)
+        const bm = Object.assign({}, r.battler.meta, { image: undefined });
+        if (r.battler.arrow) { files.push({ name: 'combat_genere_arrow.png', base64: CharGenUI.base64(r.battler.arrow) }); bm.projectiles = { arrow: 'combat_genere_arrow.png' }; }
+        else delete bm.projectiles;
+        files.push({ name: 'combat_genere.png', base64: CharGenUI.base64(r.battler.canvas) }, { name: 'combat_genere.json', json: bm });
+      }
+      const out = await tf.writeGenerated(Editor.dir(), u.name, files);
       for (const f of Object.values(out.files)) Render.forget(Editor.baseUrl(), f); // l'ancienne image en cache est remplacée
       await Editor.rescanResources();
       u.portrait = out.files['portrait_genere.png'];
       u.mapSprite = out.files['map_genere.json'].replace(/\.json$/, '');
+      if (out.files['combat_genere.json']) u.battler = out.files['combat_genere.json'].replace(/\.json$/, '');
       u.generator = r.recipe;
       if (CharGen.battlePalette(r.recipe)) u.battleColors = CharGen.battlePalette(r.recipe); else delete u.battleColors;
       change(); renderBody();
-      UI.toast(`Portrait et sprite de map de ${u.name} enregistrés (${out.dir}).`);
+      UI.toast(`Portrait, sprite de map${r.battler ? ' et animation de combat' : ''} de ${u.name} enregistrés (${out.dir}).`);
     };
     box.append(h('div', { class: 'gen-row' },
       h('button', { class: 'small primary', 'data-generator-open': true, onclick: run }, u.generator ? 'Retoucher avec le générateur…' : 'Créer avec le générateur…'),

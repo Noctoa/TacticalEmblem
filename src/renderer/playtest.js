@@ -166,6 +166,7 @@
       const prev = R.byId(G.db.units, G.avatar.unitId);
       if (prev) Object.assign(prev, G.avatar.original);
       delete G.resources.characters['avatar:' + G.avatar.unitId];
+      delete G.resources.battlers['avatar-combat:' + G.avatar.unitId];
       G.avatar = null;
     }
     const a = G.campaign && G.campaign.avatar, def = a && R.byId(G.db.units, a.unitId);
@@ -178,8 +179,15 @@
       await Promise.all([Render.loadImage(G.baseUrl, face), Render.loadImage(G.baseUrl, sheet)]);
       const key = 'avatar:' + def.id;
       G.resources.characters[key] = Object.assign({}, r.map.meta, { image: sheet, owner: a.name || def.name });
-      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battleColors: def.battleColors } };
+      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battleColors: def.battleColors, battler: def.battler } };
       Object.assign(def, { name: G.avatar.to, portrait: face, mapSprite: key, battleColors: CharGen.battlePalette(r.recipe) || undefined });
+      if (r.battler) { // animation de combat FE du sprite de combat
+        const bimg = r.battler.canvas.toDataURL('image/png'), arrow = r.battler.arrow ? r.battler.arrow.toDataURL('image/png') : null;
+        await Promise.all([Render.loadImage(G.baseUrl, bimg), arrow ? Render.loadImage(G.baseUrl, arrow) : null]);
+        const bkey = 'avatar-combat:' + def.id;
+        G.resources.battlers[bkey] = Object.assign({}, r.battler.meta, { image: bimg, owner: G.avatar.to }, arrow ? { projectiles: { arrow } } : {});
+        def.battler = bkey;
+      }
     } catch (e) { console.error('[générateur]', e); }
   }
   /** Texte des dialogues : nom d'origine du protagoniste → nom choisi, {héros} → son nom. */

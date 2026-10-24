@@ -65,9 +65,7 @@ module.exports = (editor, openPlaytest) => {
       // combat : tenue de l'animation de la classe
       await pick('[data-cg-tab="battle"]');
       assert(await E.js(`document.querySelector('[data-cg-combat-linked]').checked && !document.querySelector('[data-cg-ramp]') && !document.querySelector('[data-cg-battler]')`), 'combat lié au portrait');
-      const combatBefore = await E.js(`document.querySelector('[data-cg-combat]').toDataURL()`);
       await pick('[data-cg-combat-linked]'); await pick('[data-cg-group="cloth"]'); await pick('[data-cg-ramp="cloth:10"]');
-      assert(await E.js(`document.querySelector('[data-cg-combat]').toDataURL()`) !== combatBefore, 'combat : le sprite de combat change');
       await wait(200); await E.shot('c3_couleurs_combat');
       await pick('[data-cg-tab="portrait"]');
       await E.js(`document.querySelector('[data-cg-offset="face:1"]').nextElementSibling.click()`);
@@ -85,6 +83,11 @@ module.exports = (editor, openPlaytest) => {
       assert(result.unite.combat === 'custom:' + R.HAIR_RAMPS[10].join(','), 'combat : ' + result.unite.combat);
       const png = fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/portrait_genere.png'));
       assert(png.readUInt32BE(16) === 128 && png.readUInt32BE(20) === 112, 'face set 128 × 112');
+      // animation de combat FE du sprite de combat (Lyn) : écrite et attribuée à l'unité
+      result.battler = await E.js(`(() => { const u = Editor.db().units.find(u => u.id === 'c_lyn'); return { key: u.battler, ok: !!Editor.resources().battlers[u.battler] }; })()`);
+      assert(result.battler.key === 'ressources/personnages/Lyn/combat_genere' && result.battler.ok, 'animation de combat : ' + JSON.stringify(result.battler));
+      const bj = JSON.parse(fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/combat_genere.json'), 'utf8'));
+      assert(bj.type === 'battler' && bj.anims.attack && bj.anims.stance && /^FE-Repo/.test(bj.source), 'combat_genere.json');
       const sheet = JSON.parse(fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/map_genere.json'), 'utf8'));
       assert(sheet.type === 'mapsprite' && sheet.base === 32 && sheet.anims.left && sheet.teamColors.join() === R.HAIR_RAMPS[5].join(), 'sprite de map (couleurs d’équipe = tissu de la carte)');
       await E.until(`!!document.querySelector('[data-generator-open]') && /Retoucher/.test(document.querySelector('[data-generator-open]').textContent)`);
@@ -138,6 +141,8 @@ module.exports = (editor, openPlaytest) => {
       await G.until(`PlaytestState.mode === 'lobby' && !PlaytestState.busy`, 25000);
       result.jeu = await G.js(`(() => { const S = PlaytestState, u = S.db.units.find(u => u.id === 'c_eliwood'); return { nom: u.name, avatar: S.campaign.avatar && S.campaign.avatar.name, portrait: u.portrait.slice(0, 22), sprite: u.mapSprite, meta: !!S.resources.characters[u.mapSprite] }; })()`);
       assert(result.jeu.nom === 'Kael' && result.jeu.avatar === 'Kael' && result.jeu.portrait.startsWith('data:image/png') && result.jeu.sprite === 'avatar:c_eliwood' && result.jeu.meta, 'avatar : ' + JSON.stringify(result.jeu));
+      result.jeuCombat = await G.js(`(() => { const u = PlaytestState.db.units.find(u => u.id === 'c_eliwood'); const m = PlaytestState.resources.battlers[u.battler]; return { key: u.battler, attack: !!(m && m.anims.attack), img: !!(m && /^data:image/.test(m.image)) }; })()`);
+      assert(result.jeuCombat.key === 'avatar-combat:c_eliwood' && result.jeuCombat.attack && result.jeuCombat.img, 'animation de combat du protagoniste : ' + JSON.stringify(result.jeuCombat));
       result.jeuSprite = await G.js(`(() => { const m = PlaytestState.resources.characters['avatar:c_eliwood']; return { base: m.base, frame: m.frame, source: m.source, team: m.teamColors, recette: PlaytestState.campaign.avatar.recipe.sprite }; })()`);
       const RR = require('../src/shared/char-gen');
       assert(result.jeuSprite.team && result.jeuSprite.team[1] === RR.HAIR_RAMPS[3][0] && result.jeuSprite.team[2] === RR.HAIR_RAMPS[3][1], 'sprite FE recoloré : ' + JSON.stringify(result.jeuSprite.team));

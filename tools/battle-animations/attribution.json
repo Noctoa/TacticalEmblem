@@ -1,0 +1,1238 @@
+{
+ "AcherAlt2Iscaneus": {
+  "label": "Acher Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE7 + Magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "Archer": {
+  "label": "Archer",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE7 + Magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "ArcherAlt2Iscaneus": {
+  "label": "Archer Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE7 + Magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "ArcherAltIscaneus": {
+  "label": "Archer Alt (Iscaneus)",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE7 + Magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "ArcherFemale": {
+  "label": "Archer Female",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE6 Alt1 + Magic [F] by Merpin",
+  "weapon": "bow"
+ },
+ "ArcherIscaneus": {
+  "label": "Archer (Iscaneus)",
+  "cat": "Infantry - (Bow) Archers and Hunters",
+  "folder": "[Archer-Base] Vanilla FE7 + Magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "Assassin": {
+  "label": "Assassin",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Assassin-Base] Jaffar Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "AssassinAlt2Iscaneus": {
+  "label": "Assassin Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Assassin-Base] Jaffar Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "AssassinAltIscaneus": {
+  "label": "Assassin Alt (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Assassin-Base] Jaffar Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "AssassinIscaneus": {
+  "label": "Assassin (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Assassin-Base] Jaffar Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "AstridBoxIscaneus": {
+  "label": "Astrid Box (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [F] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "AstridIscaneus": {
+  "label": "Astrid (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [F] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "Athos": {
+  "label": "Athos",
+  "cat": "Magi - Nature-Type",
+  "folder": "[T3 FE7] Archsage Athos +Fixes [M]",
+  "weapon": "magic"
+ },
+ "Axe2Iscaneus": {
+  "label": "Axe 2 (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "AxeFighterIscaneus": {
+  "label": "Axe Fighter (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "AxeIscaneus": {
+  "label": "Axe (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "Bandit": {
+  "label": "Bandit",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Brigand-Base] Vanilla +Magic Anims [M]",
+  "weapon": "axe"
+ },
+ "Bard": {
+  "label": "Bard",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Bard-Base] [M] Elffin +Weapons",
+  "weapon": "staff"
+ },
+ "Berserker": {
+  "label": "Berserker",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Berserker-Base] Vanilla +Magic [M]",
+  "weapon": "axe"
+ },
+ "BerserkerIscaneus": {
+  "label": "Berserker (Iscaneus)",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Berserker-Base] Vanilla +Magic [M]",
+  "weapon": "axe"
+ },
+ "Bishop": {
+  "label": "Bishop",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T2 Bishop-Base] Vanilla FE6 [M]",
+  "weapon": "magic"
+ },
+ "BishopAlt": {
+  "label": "Bishop Alt",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T2 Bishop-Base] Vanilla FE6 [M]",
+  "weapon": "magic"
+ },
+ "BishopAlt2": {
+  "label": "Bishop Alt 2",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T2 Bishop-Base] Vanilla FE6 [M]",
+  "weapon": "magic"
+ },
+ "BishopFemale": {
+  "label": "Bishop Female",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T2 Bishop-Base] Vanilla FE6-8 [F]",
+  "weapon": "magic"
+ },
+ "BishopIscaneus": {
+  "label": "Bishop (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T2 Bishop-Base] Vanilla FE6 [M]",
+  "weapon": "magic"
+ },
+ "BowKnightAltIscaneus": {
+  "label": "Bow Knight Alt (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Custom] [M] Bow Knight by Spud",
+  "weapon": "bow"
+ },
+ "BowKnightIscaneus": {
+  "label": "Bow Knight (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Custom] [M] Bow Knight by Spud",
+  "weapon": "bow"
+ },
+ "BoydAltIscaneus": {
+  "label": "Boyd Alt (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[T3 Reaver] Boyd [M] by Mycahel",
+  "weapon": "axe"
+ },
+ "BoydFighterIscaneus": {
+  "label": "Boyd Fighter (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[T3 Reaver] Boyd [M] by Mycahel",
+  "weapon": "axe"
+ },
+ "BoydIscaneus": {
+  "label": "Boyd (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[T3 Reaver] Boyd [M] by Mycahel",
+  "weapon": "axe"
+ },
+ "Cavalier": {
+  "label": "Cavalier",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "CavalierAxeAltIscaneus": {
+  "label": "Cavalier Axe Alt (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "axe"
+ },
+ "CavalierAxeIscaneus": {
+  "label": "Cavalier Axe (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "axe"
+ },
+ "CavalierBowIscaneus": {
+  "label": "Cavalier Bow (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "bow"
+ },
+ "CavalierSwordAltIscaneus": {
+  "label": "Cavalier Sword Alt (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "sword"
+ },
+ "CavalierSwordIscaneus": {
+  "label": "Cavalier Sword (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [M] Vanilla +Weapons",
+  "weapon": "sword"
+ },
+ "CavelierFemale": {
+  "label": "Cavelier Female",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Cavalier-Base] [F] Vanilla +Bow",
+  "weapon": "lance"
+ },
+ "ChromAltIscaneus": {
+  "label": "Chrom Alt (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE13 Lord Custom] Chrom [M] by Blaze King",
+  "weapon": "sword"
+ },
+ "ChromIscaneus": {
+  "label": "Chrom (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE13 Lord Custom] Chrom [M] by Blaze King",
+  "weapon": "sword"
+ },
+ "Cleric": {
+  "label": "Cleric",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Cleric-Base] Vanilla FE6 +Weapons [F]",
+  "weapon": "staff"
+ },
+ "ClericAlt": {
+  "label": "Cleric Alt",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Cleric-Base] Vanilla FE6 +Weapons [F]",
+  "weapon": "staff"
+ },
+ "ClericIscaneus": {
+  "label": "Cleric (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Cleric-Base] Vanilla FE6 +Weapons [F]",
+  "weapon": "staff"
+ },
+ "Dancer": {
+  "label": "Dancer",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Dancer-Base] [F] Vanilla FE8 Tethys +Weapons",
+  "weapon": "dance"
+ },
+ "DancerAlt": {
+  "label": "Dancer Alt",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Dancer-Base] [F] Vanilla FE8 Tethys +Weapons",
+  "weapon": "dance"
+ },
+ "DancerIscaneus": {
+  "label": "Dancer (Iscaneus)",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Dancer-Base] [F] Vanilla FE8 Tethys +Weapons",
+  "weapon": "dance"
+ },
+ "DarkKnightAltIscaneus": {
+  "label": "Dark Knight Alt (Iscaneus)",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Dark-Knight] Leo's Dark Knight [M] by Leo_Link 3",
+  "weapon": "sword"
+ },
+ "DarkKnightIscaneus": {
+  "label": "Dark Knight (Iscaneus)",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Dark-Knight] Leo's Dark Knight [M] by Leo_Link 3",
+  "weapon": "sword"
+ },
+ "DonnelIscaneus": {
+  "label": "Donnel (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Villager-Custom] Villager [M] by Nuramon",
+  "weapon": "sword"
+ },
+ "Druid": {
+  "label": "Druid",
+  "cat": "Magi - Dark-Type",
+  "folder": "[T2 Druid-Base] Vanilla FE6-8 [M]",
+  "weapon": "magic"
+ },
+ "DruidFemale": {
+  "label": "Druid Female",
+  "cat": "Magi - Dark-Type",
+  "folder": "[T2 Druid-Base] Vanilla FE6 [F]",
+  "weapon": "magic"
+ },
+ "Eliwood": {
+  "label": "Eliwood",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Eliwood-Base] T1 Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "EliwoodGreatlord": {
+  "label": "Eliwood Greatlord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Eliwood-Base] T2 Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "Elphin": {
+  "label": "Elphin",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Bard-Base] [M] Elffin +Weapons",
+  "weapon": "staff"
+ },
+ "Ephraim": {
+  "label": "Ephraim",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE8 Ephraim-Base] T1 Vanilla Repack +Weapons +Manakete [M]",
+  "weapon": "lance"
+ },
+ "EphraimGreatlord": {
+  "label": "Ephraim Greatlord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE8 Ephraim-Base] T2 Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "Erika": {
+  "label": "Erika",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE8 Eirika-Base] T1 Vanilla +Weapons [F]",
+  "weapon": "sword"
+ },
+ "ErikaGreatlord": {
+  "label": "Erika Greatlord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE8 Eirika-Base] T2 Vanilla +Weapons [F]",
+  "weapon": "sword"
+ },
+ "FalconKnightIscaneus": {
+  "label": "Falcon Knight (Iscaneus)",
+  "cat": "Mounted - Pegs, Wyverns, Griffons",
+  "folder": "[Peg T2 Base] [F] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "Fighter": {
+  "label": "Fighter",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "FighterAlternateIscaneus": {
+  "label": "Fighter Alternate (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "FighterIscaneus": {
+  "label": "Fighter (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "Gaius": {
+  "label": "Gaius",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Vanilla FE7 Matthew [M]",
+  "weapon": "sword"
+ },
+ "General": {
+  "label": "General",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[General-Base] Vanilla +Weapons [U]",
+  "weapon": "lance"
+ },
+ "GeneralAxeIscaneus": {
+  "label": "General Axe (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[General-Base] Vanilla +Weapons [U]",
+  "weapon": "axe"
+ },
+ "GeneralHandaxeIscaneus": {
+  "label": "General Handaxe (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[General-Base] Vanilla +Weapons [U]",
+  "weapon": "handaxe"
+ },
+ "GreatKnight": {
+  "label": "Great Knight",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[GK-Base] [U] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "GreatKnightIscaneus": {
+  "label": "Great Knight (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[GK-Base] [U] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "GuySwordMaster": {
+  "label": "Guy Sword Master",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE7 Guy [M]",
+  "weapon": "sword"
+ },
+ "HalberdierAltIscaneus": {
+  "label": "Halberdier Alt (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Custom Halb] Halberdier +Axes [M] by TBA",
+  "weapon": "lance"
+ },
+ "HalberdierIscaneus": {
+  "label": "Halberdier (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Custom Halb] Halberdier +Axes [M] by TBA",
+  "weapon": "lance"
+ },
+ "Hawkeye": {
+  "label": "Hawkeye",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Berserker-Hawkeye] Base-Vanilla +Weapons [M]",
+  "weapon": "axe"
+ },
+ "Hector": {
+  "label": "Hector",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Hector-Base] T1 Vanilla +Weapons [M]",
+  "weapon": "axe"
+ },
+ "HectorGreatlord": {
+  "label": "Hector Greatlord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Hector-Base] T2 Vanilla +Magic [M] by Skitty",
+  "weapon": "axe"
+ },
+ "Hero": {
+  "label": "Hero",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Hero-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "HeroAxe": {
+  "label": "Hero Axe",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Hero-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "axe"
+ },
+ "HeroFemale": {
+  "label": "Hero Female",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Hero-Base] Vanilla FE6 Echidna +Lance [F]",
+  "weapon": "sword"
+ },
+ "IkeGreatlordIscaneus": {
+  "label": "Ike Greatlord (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE10 Lord Custom] Vanguard Ike [M]",
+  "weapon": "sword"
+ },
+ "IkeLordAltIscaneus": {
+  "label": "Ike Lord Alt (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE9 Lord Custom] Ike Lord [M] by Ngo",
+  "weapon": "sword"
+ },
+ "IkeLordIscaneus": {
+  "label": "Ike Lord (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE9 Lord Custom] Ike Lord [M] by Ngo",
+  "weapon": "sword"
+ },
+ "Journeyman": {
+  "label": "Journeyman",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Journeyman-Base] Vanilla +Weapons [M]",
+  "weapon": "axe"
+ },
+ "JourneymanAltIscaneus": {
+  "label": "Journeyman Alt (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Journeyman-Base] Vanilla +Weapons [M]",
+  "weapon": "axe"
+ },
+ "JourneymanIscaneus": {
+  "label": "Journeyman (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Journeyman-Base] Vanilla +Weapons [M]",
+  "weapon": "axe"
+ },
+ "Knight": {
+  "label": "Knight",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[Knight-Base] Vanilla +Weapons [U]",
+  "weapon": "lance"
+ },
+ "KnightAxeIscaneus": {
+  "label": "Knight Axe (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[Knight-Base] Vanilla +Weapons [U]",
+  "weapon": "axe"
+ },
+ "KnightIscaneus": {
+  "label": "Knight (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[Knight-Base] Vanilla +Weapons [U]",
+  "weapon": "lance"
+ },
+ "KnightSpearIscaneus": {
+  "label": "Knight Spear (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[Knight-Base] Vanilla +Weapons [U]",
+  "weapon": "lance"
+ },
+ "KnightSwordIscaneus": {
+  "label": "Knight Sword (Iscaneus)",
+  "cat": "Infantry - Knights, Generals, Armors",
+  "folder": "[Knight-Base] Vanilla +Weapons [U]",
+  "weapon": "sword"
+ },
+ "LightMageFemale": {
+  "label": "Light Mage Female",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Custom] Light Mage [F] by L95",
+  "weapon": "magic"
+ },
+ "Lilina": {
+  "label": "Lilina",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE6 Lilina +Staff [F]",
+  "weapon": "magic"
+ },
+ "Lord": {
+  "label": "Lord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Eliwood-Base] T1 Vanilla +Weapons [M]",
+  "weapon": "sword"
+ },
+ "Loyd": {
+  "label": "Loyd",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE7 Lloyd +Alt Pal [M]",
+  "weapon": "sword"
+ },
+ "Lucia": {
+  "label": "Lucia",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6 Ponytail +Bow [F]",
+  "weapon": "sword"
+ },
+ "LuciaMyrmidon": {
+  "label": "Lucia Myrmidon",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6 Ponytail +Bow [F]",
+  "weapon": "sword"
+ },
+ "LucinaIscaneus": {
+  "label": "Lucina (Iscaneus)",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Eliwood-Variant] T1 Lucina Slash [F] by Caim Van Fang",
+  "weapon": "sword"
+ },
+ "Lyn": {
+  "label": "Lyn",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Lyn-Base] T1 Vanilla +Axes [F] by Vilkalizer",
+  "weapon": "sword"
+ },
+ "LynGreatlord": {
+  "label": "Lyn Greatlord",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE7 Lyn-Base] T2 Vanilla +Weapons [F]",
+  "weapon": "sword"
+ },
+ "Mage": {
+  "label": "Mage",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE7-8 +Fix [M] by Shin19",
+  "weapon": "magic"
+ },
+ "MageAltIscaneus": {
+  "label": "Mage Alt (Iscaneus)",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE7-8 +Fix [M] by Shin19",
+  "weapon": "magic"
+ },
+ "MageFemale": {
+  "label": "Mage Female",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE7-8 +Fix [F] by Shin19",
+  "weapon": "magic"
+ },
+ "MageIscaneus": {
+  "label": "Mage (Iscaneus)",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE7-8 +Fix [M] by Shin19",
+  "weapon": "magic"
+ },
+ "MageKnight": {
+  "label": "Mage Knight",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[MK-Base] Vanilla +Weapons [F]",
+  "weapon": "magic"
+ },
+ "MageKnightMale": {
+  "label": "Mage Knight Male",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[MK-Base] Vanilla +Weapons [M]",
+  "weapon": "magic"
+ },
+ "Mercenary": {
+  "label": "Mercenary",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "MercenaryIscaneus": {
+  "label": "Mercenary (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "MiaIscaneus": {
+  "label": "Mia (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Custom] Mia [F] by Redbean",
+  "weapon": "sword"
+ },
+ "MiaMyrmidonIscaneus": {
+  "label": "Mia Myrmidon (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Custom] Mia [F] by Redbean",
+  "weapon": "sword"
+ },
+ "Monk": {
+  "label": "Monk",
+  "cat": "Magi - Holy-Type",
+  "folder": "[Monk-Base] Vanilla FE6-8 [M]",
+  "weapon": "magic"
+ },
+ "MonkAlt": {
+  "label": "Monk Alt",
+  "cat": "Magi - Holy-Type",
+  "folder": "[Monk-Base] Vanilla FE6-8 [M]",
+  "weapon": "magic"
+ },
+ "Myrmidon": {
+  "label": "Myrmidon",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "MyrmidonAlt2Iscaneus": {
+  "label": "Myrmidon Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "MyrmidonAlternateIscaneus": {
+  "label": "Myrmidon Alternate (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "MyrmidonAltIscaneus": {
+  "label": "Myrmidon Alt (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "MyrmidonFemale": {
+  "label": "Myrmidon Female",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6 Ponytail +Bow [F]",
+  "weapon": "sword"
+ },
+ "MyrmidonIscaneus": {
+  "label": "Myrmidon (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "Necromancer": {
+  "label": "Necromancer",
+  "cat": "Magi - Dark-Type",
+  "folder": "[T3 Necromancer-Base] Vanilla FE8 Lyon +Weapons [M]",
+  "weapon": "magic"
+ },
+ "NepheneeHalberdierIscaneus": {
+  "label": "Nephenee Halberdier (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Custom Lance] Nephenee [F] by RedBean",
+  "weapon": "lance"
+ },
+ "NepheneeIscaneus": {
+  "label": "Nephenee (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Custom Lance] Nephenee [F] by RedBean",
+  "weapon": "lance"
+ },
+ "Ninian": {
+  "label": "Ninian",
+  "cat": "Bards, Dancers, Suppliers, Misc",
+  "folder": "[Dancer-Base] [F] Vanilla FE7 Ninian +Weapons",
+  "weapon": "dance"
+ },
+ "NinjaAltIscaneus": {
+  "label": "Ninja Alt (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Sword Custom] Ninja [M] by Pikmin and Der",
+  "weapon": "sword"
+ },
+ "NinjaIscaneus": {
+  "label": "Ninja (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Sword Custom] Ninja [M] by Pikmin and Der",
+  "weapon": "sword"
+ },
+ "NomadFemale": {
+  "label": "Nomad Female",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Nomad-Base] [F] Vanilla",
+  "weapon": "bow"
+ },
+ "NomadTrooper": {
+  "label": "Nomad Trooper",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Nomad Trooper Base] [M] FE7 Vanilla +Fix",
+  "weapon": "sword"
+ },
+ "NomadTrooperFemale": {
+  "label": "Nomad Trooper Female",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Nomad Trooper Base] [F] Vanilla FE6 +Fix",
+  "weapon": "sword"
+ },
+ "OniAltIscaneus": {
+  "label": "Oni Alt (Iscaneus)",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Axe-Custom] Oni Chieftain [M] by Dora Drago",
+  "weapon": "axe"
+ },
+ "OniIscaneus": {
+  "label": "Oni (Iscaneus)",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Axe-Custom] Oni Chieftain [M] by Dora Drago",
+  "weapon": "axe"
+ },
+ "Paladin": {
+  "label": "Paladin",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [M] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "PaladinFemale": {
+  "label": "Paladin Female",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [F] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "PaladinIscaneus": {
+  "label": "Paladin (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [M] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "PaladinSpearIscaneus": {
+  "label": "Paladin Spear (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [M] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "PaladinSwordIscaneus": {
+  "label": "Paladin Sword (Iscaneus)",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Paladin-Base] [M] Vanilla +Weapons",
+  "weapon": "sword"
+ },
+ "Pirate": {
+  "label": "Pirate",
+  "cat": "Infantry - (Axe) Brigs, Pirates, Zerkers",
+  "folder": "[Pirate-Base] Vanilla +Sword [M] by Pimpstick",
+  "weapon": "axe"
+ },
+ "Priest": {
+  "label": "Priest",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Priest-Base] Vanilla Priest +Magic [M]",
+  "weapon": "staff"
+ },
+ "PriestAltIscaneus": {
+  "label": "Priest Alt (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Priest-Base] Vanilla Priest +Magic [M]",
+  "weapon": "staff"
+ },
+ "PriestessAltIscaneus": {
+  "label": "Priestess Alt (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Cleric-Base] Vanilla FE6 +Weapons [F]",
+  "weapon": "staff"
+ },
+ "PriestessIscaneus": {
+  "label": "Priestess (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Cleric-Base] Vanilla FE6 +Weapons [F]",
+  "weapon": "staff"
+ },
+ "PriestIscaneus": {
+  "label": "Priest (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Priest-Base] Vanilla Priest +Magic [M]",
+  "weapon": "staff"
+ },
+ "PriestStaffIscaneus": {
+  "label": "Priest Staff (Iscaneus)",
+  "cat": "Magi - Holy-Type",
+  "folder": "[T1 Priest-Base] Vanilla Priest +Magic [M]",
+  "weapon": "staff"
+ },
+ "Pupil": {
+  "label": "Pupil",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Pupil-Base] Vanilla FE8 +Staff [M] by Citrus",
+  "weapon": "magic"
+ },
+ "Ranger": {
+  "label": "Ranger",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Ranger-Base] [M] Vanilla +Lance",
+  "weapon": "sword"
+ },
+ "RangerFemale": {
+  "label": "Ranger Female",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Ranger-Base] [F] Vanilla",
+  "weapon": "sword"
+ },
+ "Rath": {
+  "label": "Rath",
+  "cat": "Mounted - Cavs, Paladins, Rangers",
+  "folder": "[Nomad Trooper Base] [M] FE7 Vanilla +Fix",
+  "weapon": "bow"
+ },
+ "RobinAltIscaneus": {
+  "label": "Robin Alt (Iscaneus)",
+  "cat": "Magi - Special",
+  "folder": "[Tactician] [U] Tactician by SALVAGED",
+  "weapon": "sword"
+ },
+ "RobinIscaneus": {
+  "label": "Robin (Iscaneus)",
+  "cat": "Magi - Special",
+  "folder": "[Tactician] [U] Tactician by SALVAGED",
+  "weapon": "sword"
+ },
+ "RobinLevinIscaneus": {
+  "label": "Robin Levin (Iscaneus)",
+  "cat": "Magi - Special",
+  "folder": "[Tactician] [U] Tactician by SALVAGED",
+  "weapon": "magic"
+ },
+ "Rogue": {
+  "label": "Rogue",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Rogue-Base] Vanilla +Staff [M]",
+  "weapon": "sword"
+ },
+ "RogueFemale": {
+  "label": "Rogue Female",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Rogue-Reskin] Ponytail [F] by Temp",
+  "weapon": "sword"
+ },
+ "Roy": {
+  "label": "Roy",
+  "cat": "Lords - Vanilla and Custom",
+  "folder": "[FE6 Roy-Base] Vanilla +Magic [M] by Pikmin",
+  "weapon": "sword"
+ },
+ "sage_casting": {
+  "label": "Sage casting",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 [M]",
+  "weapon": "magic"
+ },
+ "SageAltIscaneus": {
+  "label": "Sage Alt (Iscaneus)",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 [M]",
+  "weapon": "magic"
+ },
+ "SageFemale": {
+  "label": "Sage Female",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 Lute +Fixes [F]",
+  "weapon": "magic"
+ },
+ "SageFemaleAlt": {
+  "label": "Sage Female Alt",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 Lute +Fixes [F]",
+  "weapon": "magic"
+ },
+ "SageIscaneus": {
+  "label": "Sage (Iscaneus)",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 [M]",
+  "weapon": "magic"
+ },
+ "SageMale": {
+  "label": "Sage Male",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 [M]",
+  "weapon": "magic"
+ },
+ "Shaman": {
+  "label": "Shaman",
+  "cat": "Magi - Dark-Type",
+  "folder": "[Shaman-Base] Vanilla +Staff [M]",
+  "weapon": "magic"
+ },
+ "ShamanFemale": {
+  "label": "Shaman Female",
+  "cat": "Magi - Dark-Type",
+  "folder": "[Shaman-Base] Vanilla FE8 [F]",
+  "weapon": "magic"
+ },
+ "ShinonIscaneus": {
+  "label": "Shinon (Iscaneus)",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "Sniper": {
+  "label": "Sniper",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "SniperAlt2Iscaneus": {
+  "label": "Sniper Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "SniperAlt3Iscaneus": {
+  "label": "Sniper Alt 3 (Iscaneus)",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "SniperAltIscaneus": {
+  "label": "Sniper Alt (Iscaneus)",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "SniperFemale": {
+  "label": "Sniper Female",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [F] by Merpin",
+  "weapon": "bow"
+ },
+ "SniperIscaneus": {
+  "label": "Sniper (Iscaneus)",
+  "cat": "Infantry - (Bow) Snipers and Ballistae",
+  "folder": "[Sniper-Base] Vanilla FE7 + magic [M] by Merpin",
+  "weapon": "bow"
+ },
+ "SolderAlt2Iscaneus": {
+  "label": "Solder Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "Soldier": {
+  "label": "Soldier",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SoldierAltIscaneus": {
+  "label": "Soldier Alt (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SoldierIscaneus": {
+  "label": "Soldier (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SorcererIscaneus": {
+  "label": "Sorcerer (Iscaneus)",
+  "cat": "Magi - Dark-Type",
+  "folder": "[T2 Druid-Base] Vanilla FE6-8 [M]",
+  "weapon": "magic"
+ },
+ "SpearFighterAlt2Iscaneus": {
+  "label": "Spear Fighter Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SpearFighterAlt3Iscaneus": {
+  "label": "Spear Fighter Alt 3 (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SpearFighterAlt4Iscaneus": {
+  "label": "Spear Fighter Alt 4 (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SpearFighterAltIscaneus": {
+  "label": "Spear Fighter Alt (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "SpearFighterIscaneus": {
+  "label": "Spear Fighter (Iscaneus)",
+  "cat": "Infantry - (Lnc) Soldiers, Halberdiers",
+  "folder": "[Soldier-Base] Vanilla +Weapons [M]",
+  "weapon": "lance"
+ },
+ "Squire": {
+  "label": "Squire",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Journeyman-Type] Waleed's Squire [M]",
+  "weapon": "axe"
+ },
+ "Summoner": {
+  "label": "Summoner",
+  "cat": "Magi - Dark-Type",
+  "folder": "[T2 Summoner-Base] Vanilla +Axes [M]",
+  "weapon": "magic"
+ },
+ "Sword2Iscaneus": {
+  "label": "Sword 2 (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "SwordAlt2Iscaneus": {
+  "label": "Sword Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "SwordAlt3Iscaneus": {
+  "label": "Sword Alt 3 (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "SwordAlt5Iscaneus": {
+  "label": "Sword Alt 5 (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "SwordAltIscaneus": {
+  "label": "Sword Alt (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "SwordIscaneus": {
+  "label": "Sword (Iscaneus)",
+  "cat": "Infantry - (Swd) Mercenaries and Heroes",
+  "folder": "[Mercenary-Base] Vanilla FE7-8 +Weapons [M]",
+  "weapon": "sword"
+ },
+ "Swordmaster": {
+  "label": "Swordmaster",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE6 [M]",
+  "weapon": "sword"
+ },
+ "SwordMasterAlt2Iscaneus": {
+  "label": "Sword Master Alt 2 (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE6 [M]",
+  "weapon": "sword"
+ },
+ "SwordMasterAltIscaneus": {
+  "label": "Sword Master Alt (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE6 [M]",
+  "weapon": "sword"
+ },
+ "SwordmasterFemale": {
+  "label": "Swordmaster Female",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE7 [F]",
+  "weapon": "sword"
+ },
+ "SwordMasterIscaneus": {
+  "label": "Sword Master (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Swordmaster-Base] Vanilla FE6 [M]",
+  "weapon": "sword"
+ },
+ "TharjaIscaneus": {
+  "label": "Tharja (Iscaneus)",
+  "cat": "Magi - Dark-Type",
+  "folder": "[Custom DM] Dark Mage Tharja [F] by SteamingTofu",
+  "weapon": "magic"
+ },
+ "Thief": {
+  "label": "Thief",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Vanilla FE7 Matthew [M]",
+  "weapon": "sword"
+ },
+ "ThiefAlt": {
+  "label": "Thief Alt",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Vanilla FE7 Matthew [M]",
+  "weapon": "sword"
+ },
+ "ThiefFemale": {
+  "label": "Thief Female",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Cath Vanilla FE6 [F]",
+  "weapon": "sword"
+ },
+ "ThiefFemaleAlt": {
+  "label": "Thief Female Alt",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Cath Vanilla FE6 [F]",
+  "weapon": "sword"
+ },
+ "ThiefIscaneus": {
+  "label": "Thief (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Thief-Base] Vanilla FE7 Matthew [M]",
+  "weapon": "sword"
+ },
+ "TormodIscaneus": {
+  "label": "Tormod (Iscaneus)",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Mage-Base] Vanilla FE7-8 +Fix [M] by Shin19",
+  "weapon": "magic"
+ },
+ "TricksterIscaneus": {
+  "label": "Trickster (Iscaneus)",
+  "cat": "Infantry - (Swd) Thieves, Rogues, Assassins",
+  "folder": "[Trickster] Trickster V.2 by Leo_Link [M]",
+  "weapon": "sword"
+ },
+ "Troubadour": {
+  "label": "Troubadour",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Troubadour-Base] Vanilla Ponytail +Magic [F]",
+  "weapon": "staff"
+ },
+ "TroubadourIscaneus": {
+  "label": "Troubadour (Iscaneus)",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Troubadour-Base] Vanilla Ponytail +Magic [F]",
+  "weapon": "staff"
+ },
+ "Valkyrie": {
+  "label": "Valkyrie",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Valkyrie-Base] Vanilla +Alt [F]",
+  "weapon": "magic"
+ },
+ "ValkyrieIscaneus": {
+  "label": "Valkyrie (Iscaneus)",
+  "cat": "Mounted - Valks, MKs, Magi",
+  "folder": "[Valkyrie-Base] Vanilla +Alt [F]",
+  "weapon": "magic"
+ },
+ "Warmage": {
+  "label": "Warmage",
+  "cat": "Magi - Nature-Type",
+  "folder": "[Sage-Base] Vanilla FE8 [M]",
+  "weapon": "magic"
+ },
+ "Warrior": {
+  "label": "Warrior",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Warrior-Base] Vanilla +Magic [M]",
+  "weapon": "axe"
+ },
+ "WarriorAxe": {
+  "label": "Warrior Axe",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Warrior-Base] Vanilla +Magic [M]",
+  "weapon": "axe"
+ },
+ "WarriorIscaneus": {
+  "label": "Warrior (Iscaneus)",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Warrior-Base] Vanilla +Magic [M]",
+  "weapon": "axe"
+ },
+ "Woodsman": {
+  "label": "Woodsman",
+  "cat": "Infantry - (Axe) Fighters and Warriors",
+  "folder": "[Fighter-Base] Vanilla + Weapons [M]",
+  "weapon": "axe"
+ },
+ "WyvernKnight": {
+  "label": "Wyvern Knight",
+  "cat": "Mounted - Pegs, Wyverns, Griffons",
+  "folder": "[WK Base] [U] Vanilla",
+  "weapon": "lance"
+ },
+ "WyvernLord": {
+  "label": "Wyvern Lord",
+  "cat": "Mounted - Pegs, Wyverns, Griffons",
+  "folder": "[WL Base] [U] Vanilla +Weapons",
+  "weapon": "lance"
+ },
+ "ZiharkIscaneus": {
+  "label": "Zihark (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ },
+ "ZiharkMyrmidonIscaneus": {
+  "label": "Zihark Myrmidon (Iscaneus)",
+  "cat": "Infantry - (Swd) Myrms and Swordmasters",
+  "folder": "[Myrmidon-Base] Vanilla FE6-8 Generic [M]",
+  "weapon": "sword"
+ }
+}

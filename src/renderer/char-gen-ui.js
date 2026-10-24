@@ -6,6 +6,7 @@
  *     recipe, name, faceset: canvas 128×112, portrait: canvas 96×96, map: { canvas, meta } }>
  *   CharGenUI.render(recipe, { name }) → Promise<même résultat sans fenêtre> (jeu : recette sauvegardée)
  *   CharGenUI.load() → Promise<parts> (planches chargées ; parts.sprite = bibliothèque de sprites FE)
+ *   Résultat : … battler: null | { meta, canvas, arrow } (animation de combat FE du sprite de combat, img/generator/battlers.js)
  */
 (function (root) {
   'use strict';
@@ -22,6 +23,7 @@
     const parts = root.GENERATOR_PARTS;
     if (!parts) return Promise.reject(new Error('Pièces du générateur absentes (img/generator/parts.js).'));
     parts.sprite = (root.GENERATOR_SPRITES && root.GENERATOR_SPRITES.list) || [];
+    parts.battlers = root.GENERATOR_BATTLERS || { list: [], tokens: {} };
     loading = Promise.all(SHEETS.filter(n => n !== 'sprites-thumbs' || parts.sprite.length).map(name => new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
@@ -51,6 +53,28 @@
       img.src = 'img/generator/sprites/' + id + '.png';
     });
   }
+  /** Animation de combat FE d'un sprite de combat (img/generator/battlers.js › tokens) ; null sans correspondance. */
+  function battlerEntry(tokenId) {
+    const B = root.GENERATOR_BATTLERS, id = B && B.tokens && B.tokens[tokenId];
+    return id ? B.list.find(b => b.id === id) || null : null;
+  }
+  const battlerSheets = {}; // id → canvas ; 'arrow' → flèche
+  function loadImg(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => { const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; cv.getContext('2d').drawImage(img, 0, 0); resolve(cv); };
+      img.onerror = () => resolve(null);
+      img.src = src;
+    });
+  }
+  async function loadBattler(tokenId) {
+    const e = battlerEntry(tokenId);
+    if (!e || battlerSheets[e.id]) return;
+    const [sheet, arrow] = await Promise.all([loadImg('img/generator/battlers/' + e.id + '.png'), battlerSheets.arrow ? battlerSheets.arrow : loadImg('img/generator/battlers/arrow.png')]);
+    if (sheet) battlerSheets[e.id] = sheet;
+    if (arrow) battlerSheets.arrow = arrow;
+  }
+  const copyCanvas = (src) => { const cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height; cv.getContext('2d').drawImage(src, 0, 0); return cv; };
   /** Pixels RGBA d'une case (pièce n° index de la feuille). */
   function cell(sheet, index, size) {
     const P = pixels[sheet], cols = sheet === 'sprites-thumbs' ? root.GENERATOR_SPRITES.cols : root.GENERATOR_PARTS.cols;
@@ -90,13 +114,16 @@
       const map = C.mapSprite(token, { name: name || 'Personnage généré', teamColors: C.teamColors(recipe) });
       mapOut = { canvas: toCanvas(map.data, map.width, map.height), meta: map.meta };
     }
+    const be = battlerEntry(recipe.token), bs = be && battlerSheets[be.id];
+    const battler = bs ? { meta: Object.assign(JSON.parse(JSON.stringify(be.meta)), { name: (name || 'Personnage généré') + ' — ' + be.label }), canvas: copyCanvas(bs),
+      arrow: be.meta.projectiles && battlerSheets.arrow ? copyCanvas(battlerSheets.arrow) : null } : null;
     return { recipe, name, portrait: toCanvas(portrait, 96, 96), faceset: toCanvas(fs.data, fs.width, fs.height),
-      map: mapOut, token: toCanvas(combatToken, 64, 64) };
+      map: mapOut, token: toCanvas(combatToken, 64, 64), battler };
   }
   async function render(recipe, opts = {}) {
     const parts = await load();
     const r = C.normalize(recipe, parts);
-    await loadSprite(r.sprite);
+    await Promise.all([loadSprite(r.sprite), loadBattler(r.token)]);
     return build(r, opts.name);
   }
 
@@ -128,13 +155,14 @@
       back.append(win);
       const big = h('canvas', { class: 'cg-portrait', width: 96, height: 80, 'data-cg-portrait': true });
       const sprite = h('canvas', { class: 'cg-sprite', width: 64, height: 64, 'data-cg-sprite': true });
-      const combat = h('canvas', { class: 'cg-sprite', width: 64, height: 64, 'data-cg-combat': true });
-      let result = null, sheet = null;
+      const combat = h('canvas', { class: 'cg-sprite cg-combat', width: 64, height: 56, 'data-cg-combat': true });
+      let result = null, sheet = null, combatImg = null;
       const refresh = () => {
         result = build(recipe, name);
         const g = big.getContext('2d'); g.clearRect(0, 0, 96, 80); g.drawImage(result.portrait, 0, C.FACESET.top, 96, 80, 0, 0, 96, 80);
         sheet = result.map;
-        { const g = combat.getContext('2d'); g.clearRect(0, 0, 64, 64); g.drawImage(result.token, 0, 0); }
+        combatImg = result.battler ? Sprites.tinted(result.battler.canvas, result.battler.meta, C.battlePalette(recipe) || 'original') : null;
+        if (!result.battler) { const g = combat.getContext('2d'); g.imageSmoothingEnabled = false; g.clearRect(0, 0, combat.width, combat.height); g.drawImage(result.token, 0, 0, 64, 64, 4, -4, 56, 56); }
         for (const el of win.querySelectorAll('[data-cg-label]')) { const k = el.dataset.cgLabel, p = parts[k].find(x => x.id === recipe[k]); el.textContent = p ? p.label : (k === 'sprite' ? 'Aucun (d’après le sprite de combat)' : 'Aucun'); }
         refreshColors();
         for (const el of win.querySelectorAll('[data-cg-offset]')) { const [k, a] = el.dataset.cgOffset.split(':'); el.textContent = String(recipe.offsets[k][+a]); }
@@ -167,10 +195,18 @@
           const [fw, fh] = m.frame, z = 64 / fw; // les sprites FE (32 px) sont affichés au double
           g.imageSmoothingEnabled = false; g.clearRect(0, 0, 64, 64); g.drawImage(sheet.canvas, f * fw, anim.row * fh, fw, fh, 0, 64 - fh * z, fw * z, fh * z);
         }
+        if (result && result.battler && combatImg) { // animation de combat : garde, puis attaque toutes les 3 s
+          const m = result.battler.meta, A = m.anims, cyc = (t - t0) % 3600, atk = A.attack || A.bow;
+          let f = A.stance.frames[0];
+          if (atk && cyc > 1200) { let k = cyc - 1200; for (let i = 0; i < atk.frames.length; i++) { const d = atk.durations[i] || 50; if (k < d) { f = atk.frames[i]; break; } k -= d; } }
+          const g = combat.getContext('2d'); // taille réelle (affichée au double), centrée sur la garde ; la ruée peut sortir du cadre
+          g.imageSmoothingEnabled = false; g.clearRect(0, 0, combat.width, combat.height);
+          Sprites.drawBattlerFrame(g, m, combatImg, f, combat.width * 0.55, combat.height - 3, 1, false);
+        }
         requestAnimationFrame(tick);
       };
       requestAnimationFrame(tick);
-      const set = (k, v) => { recipe[k] = v; if (k === 'sprite') { drawColors(); if (v && !spriteSheets[v]) loadSprite(v).then(() => { if (back.isConnected) refresh(); }); } refresh(); };
+      const set = (k, v) => { recipe[k] = v; if (k === 'token' && v) loadBattler(v).then(() => { if (back.isConnected) refresh(); }); if (k === 'sprite') { drawColors(); if (v && !spriteSheets[v]) loadSprite(v).then(() => { if (back.isConnected) refresh(); }); } refresh(); };
       const step = (k, d) => {
         const list = k === 'hair' ? parts.hair.filter(p => p.front) : parts[k];
         const i = list.findIndex(p => p.id === recipe[k]);
@@ -275,7 +311,7 @@
         h('div', { class: 'cg-body' },
           h('div', { class: 'cg-preview' }, h('div', { class: 'cg-frame' }, big), h('div', { class: 'cg-map cg-map-duo' }, h('figure', {}, combat, h('small', {}, 'Sprite de combat')), h('figure', {}, sprite, h('small', {}, 'Sprite de map'))),
             nameInput ? h('label', { class: 'cg-name-row' }, h('span', {}, 'Nom'), nameInput) : null,
-            h('button', { class: 'cg-btn', 'data-cg-random': true, onclick: () => { recipe = C.normalize(Object.assign(C.random(parts), { sprite: recipe.sprite }), parts); refresh(); } }, '🎲 Aléatoire'),
+            h('button', { class: 'cg-btn', 'data-cg-random': true, onclick: () => { recipe = C.normalize(Object.assign(C.random(parts), { sprite: recipe.sprite }), parts); refresh(); loadBattler(recipe.token).then(() => { if (back.isConnected) refresh(); }); } }, '🎲 Aléatoire'),
             h('button', { class: 'cg-btn', 'data-cg-random-colors': true, onclick: () => { recipe.colors = C.random(parts).colors; refresh(); } }, '🎨 Couleurs au hasard')),
           h('div', { class: 'cg-controls' }, partRows, colorRows, offRows)),
         h('div', { class: 'cg-foot' }, h('small', {}, 'Pièces : FE Character Creator (TheFlyingMinotaur) et la communauté Fire Emblem · nuanciers de cheveux et de peau : Blade (corps : AK).'),
@@ -284,6 +320,7 @@
       (document.getElementById('modal-root') || document.body).append(back);
       refresh();
       if (recipe.sprite && !spriteSheets[recipe.sprite]) loadSprite(recipe.sprite).then(() => { if (back.isConnected) refresh(); });
+      loadBattler(recipe.token).then(() => { if (back.isConnected) refresh(); });
       if (nameInput) setTimeout(() => nameInput.focus(), 10);
     }));
   }

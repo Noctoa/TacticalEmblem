@@ -90,3 +90,4 @@
 .cg-map-duo { justify-content: space-around; gap: 4px; padding: 4px; }
 .cg-map-duo figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .cg-map-duo .cg-sprite { width: 112px; height: 112px; }
+.cg-map-duo .cg-combat { width: 128px; height: 112px; }

@@ -261,3 +261,31 @@ test('sprite de combat monté : la monture prend les teintes du cuir, la mèche 
   const tk = ctx.self.GENERATOR_PARTS.token, isM = (n) => !!(tk.find(p => p.label === n) || {}).mount;
   assert.ok(isM('Cavalier') && isM('Paladin Female') && isM('Falcon Knight (Iscaneus)') && !isM('Soldier') && !isM('Myrmidon'));
 });
+
+test('animations de combat FE des sprites de combat : liste, planches et animations cohérentes', () => {
+  const ctx = { self: {} };
+  vm.runInNewContext(fs.readFileSync(path.join(GEN, 'battlers.js'), 'utf8'), ctx);
+  vm.runInNewContext(fs.readFileSync(path.join(GEN, 'parts.js'), 'utf8'), ctx);
+  const B = ctx.self.GENERATOR_BATTLERS, P = ctx.self.GENERATOR_PARTS;
+  assert.ok(B.list.length > 50, 'des dizaines d’animations');
+  const ids = new Set(B.list.map(b => b.id));
+  for (const [tok, id] of Object.entries(B.tokens)) { assert.ok(P.token.some(p => p.id === tok), 'sprite de combat ' + tok); assert.ok(ids.has(id), id); }
+  assert.ok(Object.keys(B.tokens).length >= P.token.length - 5, 'presque tous les sprites de combat sont animés');
+  for (const b of B.list) {
+    const m = b.meta, [w, h] = pngSize(path.join('battlers', b.id + '.png'));
+    assert.equal(m.type, 'battler'); assert.equal(m.facing, 'left');
+    assert.equal(w, m.columns * m.cell[0]); assert.equal(h, Math.ceil(m.count / m.columns) * m.cell[1]);
+    assert.ok(m.anims.stance && m.anims.stance.loop && (m.anims.attack || m.anims.bow), 'garde et attaque : ' + b.id);
+    for (const [k, a] of Object.entries(m.anims)) {
+      assert.equal(a.frames.length, a.durations.length, b.id + ' ' + k);
+      assert.ok(a.frames.every(f => f >= 0 && f < m.count), b.id + ' ' + k);
+      if (a.hit !== undefined) assert.ok(a.hit >= 0 && a.hit < a.frames.length, b.id + ' ' + k + ' hit');
+      if (a.release !== undefined) assert.ok(a.release < a.frames.length && a.projectile === 'arrow', b.id + ' ' + k + ' flèche');
+    }
+    assert.ok(/^FE-Repo/.test(m.source));
+  }
+  assert.ok(fs.existsSync(path.join(GEN, 'battlers', 'arrow.png')));
+  // personnages et classes de base
+  const lab = (tok) => (B.list.find(b => b.id === B.tokens[tok]) || {}).label || '';
+  assert.match(lab('Eliwood'), /Eliwood/); assert.match(lab('Hector'), /Hector/); assert.match(lab('Soldier'), /Soldier/); assert.match(lab('ArcherFemale'), /\[F\]/);
+});
