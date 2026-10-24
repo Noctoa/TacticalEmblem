@@ -10,7 +10,7 @@
 (function (root) {
   'use strict';
   const C = root.CharGen;
-  const KINDS = [['hair', 'Cheveux'], ['face', 'Visage'], ['armor', 'Tenue'], ['token', 'Figurine (sprite de map)'], ['sprite', 'Sprite de map animé (FE)']];
+  const KINDS = [['hair', 'Cheveux'], ['face', 'Visage'], ['armor', 'Tenue'], ['token', 'Sprite de combat'], ['sprite', 'Sprite de map']];
   const OFFSET_KINDS = [['hair', 'Cheveux'], ['face', 'Visage'], ['armor', 'Tenue']];
   const SHEETS = ['hair', 'hairb', 'face', 'armor', 'token', 'sprites-thumbs'];
   let loading = null;
@@ -78,10 +78,11 @@
     const token = C.composeToken(cell('token', indexOf('token', recipe.token), 64), recipe);
     const entry = recipe.sprite && root.GENERATOR_PARTS.sprite && root.GENERATOR_PARTS.sprite.find(p => p.id === recipe.sprite);
     let mapOut;
-    if (entry && spriteSheets[entry.id]) { // sprite FE : sa planche telle quelle (couleurs d'équipe détectées en jeu)
+    if (entry && spriteSheets[entry.id]) { // sprite FE : sa planche recolorée avec les couleurs de la carte
       const src = spriteSheets[entry.id], cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height;
-      cv.getContext('2d').drawImage(src, 0, 0);
-      mapOut = { canvas: cv, meta: C.spriteMeta(entry, name || 'Personnage généré') };
+      const g = cv.getContext('2d'); g.drawImage(src, 0, 0);
+      const px = g.getImageData(0, 0, cv.width, cv.height); C.recolorFeSprite(px.data, recipe); g.putImageData(px, 0, 0);
+      mapOut = { canvas: cv, meta: Object.assign(C.spriteMeta(entry, name || 'Personnage généré'), { teamColors: C.feTeamColors(recipe) }) };
     } else {
       const map = C.mapSprite(token, { name: name || 'Personnage généré', teamColors: C.teamColors(recipe) });
       mapOut = { canvas: toCanvas(map.data, map.width, map.height), meta: map.meta };
@@ -101,7 +102,7 @@
     const cv = document.createElement('canvas');
     if (kind === 'sprite') {
       const t = cell('sprites-thumbs', index, 32);
-      cv.width = 32; cv.height = 32; if (t) cv.getContext('2d').putImageData(new ImageData(t, 32, 32), 0, 0);
+      cv.width = 32; cv.height = 32; if (t) cv.getContext('2d').putImageData(new ImageData(C.recolorFeSprite(t, recipe), 32, 32), 0, 0);
     } else if (kind === 'token') {
       const t = C.composeToken(cell('token', index, 64), recipe);
       cv.width = 64; cv.height = 64; cv.getContext('2d').putImageData(new ImageData(t, 64, 64), 0, 0);
@@ -124,13 +125,14 @@
       back.append(win);
       const big = h('canvas', { class: 'cg-portrait', width: 96, height: 80, 'data-cg-portrait': true });
       const sprite = h('canvas', { class: 'cg-sprite', width: 64, height: 64, 'data-cg-sprite': true });
+      const combat = h('canvas', { class: 'cg-sprite', width: 64, height: 64, 'data-cg-combat': true });
       let result = null, sheet = null;
       const refresh = () => {
         result = build(recipe, name);
         const g = big.getContext('2d'); g.clearRect(0, 0, 96, 80); g.drawImage(result.portrait, 0, C.FACESET.top, 96, 80, 0, 0, 96, 80);
         sheet = result.map;
+        { const g = combat.getContext('2d'); g.clearRect(0, 0, 64, 64); g.drawImage(result.token, 0, 0); }
         for (const el of win.querySelectorAll('[data-cg-label]')) { const k = el.dataset.cgLabel, p = parts[k].find(x => x.id === recipe[k]); el.textContent = p ? p.label : (k === 'sprite' ? 'Aucun (figurine)' : 'Aucun'); }
-        const tokRow = win.querySelector('[data-cg-row="token"]'); if (tokRow) tokRow.classList.toggle('cg-unused', !!(recipe.sprite && spriteSheets[recipe.sprite]));
         refreshColors();
         for (const el of win.querySelectorAll('[data-cg-offset]')) { const [k, a] = el.dataset.cgOffset.split(':'); el.textContent = String(recipe.offsets[k][+a]); }
       };
@@ -189,9 +191,9 @@
         const groupSel = groups.length ? h('select', { class: 'cg-search', 'data-cg-sprite-group': true, 'aria-label': 'Catégorie' },
           h('option', { value: '' }, 'Toutes les catégories'), groups.map(g => h('option', { value: g }, g))) : null;
         const pop = h('div', { class: 'cg-pop', 'data-cg-picker': k }, h('div', { class: 'cg-pop-head' }, ...[h('b', {}, label), groupSel, search,
-          k !== 'token' ? h('button', { class: 'cg-btn small', onclick: () => { set(k, ''); pop.remove(); } }, k === 'sprite' ? 'Aucun (figurine)' : 'Aucun') : null,
+          k !== 'token' ? h('button', { class: 'cg-btn small', onclick: () => { set(k, ''); pop.remove(); } }, k === 'sprite' ? 'Aucun (d’après le sprite de combat)' : 'Aucun') : null,
           h('button', { class: 'cg-btn small', onclick: () => pop.remove() }, 'Fermer')].filter(Boolean)), grid,
-          k === 'sprite' ? h('p', { class: 'cg-note' }, 'Sprites de la communauté Fire Emblem (FE-Repo) : ils gardent leurs couleurs ; le jeu les teinte selon le camp. Crédits dans l’infobulle et dans tools/map-sprites/CREDITS.txt.') : null);
+          k === 'sprite' ? h('p', { class: 'cg-note' }, 'Sprites de la communauté Fire Emblem (FE-Repo), recolorés avec les couleurs de l’onglet « Carte » (le jeu teinte ensuite le tissu selon le camp). Crédits dans l’infobulle et dans tools/map-sprites/CREDITS.txt.') : null);
         const fill = () => {
           const q = search.value.trim().toLowerCase(), g = groupSel ? groupSel.value : '';
           const shown = list.filter(p => (!g || p.group === g) && (!q || p.label.toLowerCase().includes(q) || (p.credits || []).some(c => c.toLowerCase().includes(q))));
@@ -240,7 +242,7 @@
           return;
         }
         if (cstate.tab === 'map') {
-          if (recipe.sprite) colorBox.append(h('p', { class: 'cg-note', 'data-cg-sprite-note': true }, 'Le sprite de map animé (FE) garde ses propres couleurs : ces réglages ne s’appliquent qu’à la figurine. En jeu, il est teinté selon le camp.'));
+          colorBox.append(h('p', { class: 'cg-note', 'data-cg-sprite-note': true }, 'Ces couleurs s’appliquent ensemble au sprite de combat et au sprite de map (en jeu, le tissu prend la couleur du camp).'));
           colorBox.append(h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', 'data-cg-map-linked': true, checked: !recipe.map,
             onchange: (e) => { recipe.map = e.target.checked ? null : C.normColors(recipe); drawColors(); refresh(); } }), ' Mêmes couleurs que le portrait'));
           if (!recipe.map) return;
@@ -284,7 +286,7 @@
       document.addEventListener('keydown', onKey, true);
       win.append(h('div', { class: 'cg-head' }, h('b', {}, opts.title || 'Générateur de personnage'), opts.subtitle ? h('span', {}, opts.subtitle) : null),
         h('div', { class: 'cg-body' },
-          h('div', { class: 'cg-preview' }, h('div', { class: 'cg-frame' }, big), h('div', { class: 'cg-map' }, sprite, h('small', {}, 'Sprite de map')),
+          h('div', { class: 'cg-preview' }, h('div', { class: 'cg-frame' }, big), h('div', { class: 'cg-map cg-map-duo' }, h('figure', {}, combat, h('small', {}, 'Sprite de combat')), h('figure', {}, sprite, h('small', {}, 'Sprite de map'))),
             nameInput ? h('label', { class: 'cg-name-row' }, h('span', {}, 'Nom'), nameInput) : null,
             h('button', { class: 'cg-btn', 'data-cg-random': true, onclick: () => { recipe = C.normalize(Object.assign(C.random(parts), { sprite: recipe.sprite }), parts); refresh(); } }, '🎲 Aléatoire'),
             h('button', { class: 'cg-btn', 'data-cg-random-colors': true, onclick: () => { recipe.colors = C.random(parts).colors; refresh(); } }, '🎨 Couleurs au hasard')),

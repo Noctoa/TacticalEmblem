@@ -1,75 +1,71 @@
 Crédits des map sprites (FE-Repo, Klokinator — sprites de la communauté Fire Emblem)
 Les noms entre accolades {…} dans les noms de fichiers. « IS » = Intelligent Systems (sprites d'origine).
 
-Artistes (273), par nombre de sprites :
-  IS (180)
-  flasuban (48)
-  Pikmin (48)
-  L95 (46)
+Artistes (259), par nombre de sprites :
+  IS (175)
+  flasuban (47)
+  Pikmin (47)
+  L95 (44)
   CelestiaHeart (40)
-  N426 (40)
   Unknown (40)
-  Topazlight (38)
   SALVAGED (37)
+  Topazlight (37)
   Nuramon (35)
   ArcherBias (32)
+  N426 (32)
   UltraFenix (32)
-  Der (31)
-  blood (27)
-  MeatOfJustice (24)
+  Der (30)
+  blood (26)
+  MeatofJustice (23)
   ZoramineFae (23)
   VelvetKitsune (22)
   Leif (21)
   Hanakko (20)
   Ryn (18)
-  Alexsplode (16)
-  Norikins (15)
+  Alexsplode (15)
   Pushwall (15)
   TytheBub (15)
-  Zoramine (15)
+  Zoramine (14)
   Cynon (13)
-  Shuusuke (13)
   TheGreatNothing (13)
   Rasdel (12)
   Agro (11)
-  Augenis (11)
-  BoneManSeth (11)
-  Cygnus (11)
   Knabepicer (11)
   Leo_Link (11)
   Alusq (10)
-  Aruka (10)
   FE7if (10)
-  FEGirls (10)
   RobertFPY (10)
+  Aruka (9)
   Ash3wl (9)
   Dominus_Vobiscum (9)
-  Kenpuhu (9)
-  Sphealnuke (9)
+  FEGirls (9)
+  Norikins (9)
   Yerek (9)
-  DATonDemand (8)
+  BoneManSeth (8)
   dondon151 (8)
-  Dutch Introvert (8)
+  Kenpuhu (8)
   PKLucky (8)
   Seal (8)
   SkidMarc25 (8)
+  Sphealnuke (8)
   StreetHero (8)
   UltraxBlade (8)
   Yellowtoad (8)
   BatimaTheBat (7)
   Blademaster (7)
+  Cygnus (7)
+  DATonDemand (7)
   Dellhonne (7)
   Dora Drago (7)
-  Estratega (7)
+  Dutch Introvert (7)
   Jiege (7)
-  Seliost1 (7)
   SSHX (7)
   WarPath (7)
   Zacara'sDaydreamer (7)
   d_h (6)
   Huichelaar (6)
   HyperGammaSpaces (6)
-  LB (6)
+  Seliost1 (6)
   SHYUTERz (6)
   Stephano (6)
   Stormblight (6)
@@ -88,32 +84,28 @@ Artistes (273), par nombre de sprites :
   JaidynReiman (5)
   Marcelfe (5)
   Shtick (5)
-  Uncle Mikey (5)
   BoneSethMan (4)
   EA (4)
+  Estratega (4)
   GreatDoot (4)
   Jay (4)
   MegaCowSamMan (4)
   Merpin (4)
   MeteorSR23 (4)
   NamelessX (4)
-  RandomWizard (4)
   Redbean (4)
-  Skitty (4)
+  Shuusuke (4)
   Snewping (4)
   WhatIsAnAubin (4)
-  Yangfly Master (4)
   Alice (3)
+  Augenis (3)
   Ayr (3)
-  BandanaSplitzzz (3)
   Black Mage (3)
   Circleseverywhere (3)
   DerTheVaporeon (3)
   DespicableDuck (3)
   Devisian_Nights (3)
   Eldritch Abomination (3)
-  Erukolindo (3)
-  Faeriefruit (3)
   Haifried (3)
   Its_Just_Jay (3)
   Jeorge Reds (3)
@@ -123,9 +115,9 @@ Artistes (273), par nombre de sprites :
   MrGreen (3)
   NYZgamer3 (3)
   Permafrost (3)
+  RandomWizard (3)
   Rexacuse (3)
   SamirPlayz (3)
-  Scraiza (3)
   Sephie (3)
   Sirknite031 (3)
   Sme (3)
@@ -135,14 +127,15 @@ Artistes (273), par nombre de sprites :
   TLP (3)
   ToGY (3)
   Vilkalizer (3)
+  Yangfly Master (3)
   Zarg (3)
   2WB (2)
   7743 (2)
   AnnoyingAnon (2)
   Author_Pendragon (2)
+  BandanaSplitzzz (2)
   BBHood217 (2)
   BigMood (2)
-  Cardcafe (2)
   ColeTheOne (2)
   Cornontherob (2)
   D4rkblade (2)
@@ -152,8 +145,8 @@ Artistes (273), par nombre de sprites :
   DutchIntrovert (2)
   Eldritch (2)
   Epicer (2)
+  Faeriefruit (2)
   Fates-Blade (2)
-  Glaceo (2)
   Gojira (2)
   Hatsuru (2)
   HGS (2)
@@ -162,7 +155,6 @@ Artistes (273), par nombre de sprites :
   Jj09 (2)
   Kemui52 (2)
   LonkFC (2)
-  Maiser6 (2)
   MasterAwesome (2)
   Mattiator (2)
   Metalocif (2)
@@ -174,29 +166,27 @@ Artistes (273), par nombre de sprites :
   Roxannity (2)
   Sacred War (2)
   SaintRubenio (2)
+  Scraiza (2)
   ShadowAllyX (2)
   Shinkuma (2)
   SHYUTER (2)
   Smug_Mug (2)
-  Squaresoft (2)
   Tanakakiri (2)
   TBA (2)
   Tdim (2)
   ThisThat (2)
-  valak (2)
+  Uncle Mikey (2)
   Velvet Kitsune (2)
   Windsweep (2)
   Zeldacrafter63 (2)
   Akkuma407 (1)
   Almirage (1)
   Argo (1)
-  AVerySheepGamer (1)
   Batima (1)
   Blue Druid (1)
   Booster_seat87 (1)
   BoW (1)
   Bowgun (1)
-  Brober (1)
   catinator (1)
   Chi-Chi (1)
   daemoth (1)
@@ -204,6 +194,7 @@ Artistes (273), par nombre de sprites :
   Dinar (1)
   Elibian Nights (1)
   EN (1)
+  Erukolindo (1)
   Estra (1)
   Fiuke Bnuy (1)
   Fuike Bnuy (1)
@@ -217,13 +208,10 @@ Artistes (273), par nombre de sprites :
   Jotari (1)
   Khrene (1)
   Klokinator (1)
-  LegendofLoog (1)
   Lexou (1)
   Lief (1)
   ltranc (1)
   Luigiofthegods (1)
-  Madzz (1)
-  Mage boy (1)
   Marlon&Louis (1)
   Max Limit (1)
   Melia (1)
@@ -244,7 +232,6 @@ Artistes (273), par nombre de sprites :
   ReanuKeeves7716 (1)
   RiriK (1)
   Sable Mage (1)
-  Saint Rubenio (1)
   Sax Marine (1)
   SD9K (1)
   serif (1)
@@ -256,20 +243,19 @@ Artistes (273), par nombre de sprites :
   Sirknite31 (1)
   Siuloir (1)
   Snerdels (1)
+  Squaresoft (1)
   Squid1003 (1)
   SteamingTofu (1)
   Stitch (1)
-  Tambo (1)
   Tarantino500 (1)
   TATUTA_CHANG (1)
-  The_Big_Dededester (1)
   ThyAnarchists (1)
   Ultra-Fenix (1)
   Unhooded (1)
+  valak (1)
   VelvetKtsune (1)
   Vorgus (1)
   Waleed (1)
-  Warren (1)
   Xenith (1)
   Yera (1)
   Yggdra (1)
@@ -277,96 +263,29 @@ Artistes (273), par nombre de sprites :
   ZeroXA (1)
 
 Liste alphabétique :
-  2WB, 7743, Agro, Akkuma407, Alexsplode, Alice, Almirage, Alusq, AnnoyingAnon, ArcaneEli, ArcherBias, Argo, Aruka, Ash3wl, Ash3wl Jr, AstraLunaSol, Augenis, Author_Pendragon, AVerySheepGamer, Ayr, BandanaSplitzzz, Batima, BatimaTheBat, BBHood217, BigMood, Black Mage, Blademaster, blood, Blue Druid, BoneManSeth, BoneSethMan, Booster_seat87, BoW, Bowgun, Brober, CamusZekeSirius, Cardcafe, catinator, CelestiaHeart, Chi-Chi, Circleseverywhere, ColeTheOne, Cornontherob, Cygnus, Cynon, D4rkblade, d_h, daemoth, darkjaden, Dat, DATonDemand, Dei, Dellhonne, Der, DerTheVaporeon, DespicableDuck, Devisian_Nights, Dinar, Dominus_Vobiscum, dondon151, Dora Drago, Duckbeard, Dutch Introvert, Dutch_Introvert, DutchIntrovert, EA, Eden, Eldritch, Eldritch Abomination, EldritchAbomination, Elibian Nights, EN, Epicer, Erukolindo, Estra, Estratega, Faeriefruit, Fates-Blade, FE7if, FEGirls, Feier, Fiuke Bnuy, flasuban, Fuike Bnuy, FungusCaesar, FuriousHaunter, GabrielKnight, Glaceo, Glueseppers, Gojira, GreatDoot, Haifried, Hairfried, Hanakko, Hatsuru, HGS, HIRITO, Huichelaar, HyperGammaSpaces, IS, Its_Just_Jay, J-Treecko, JaidynReiman, Jay, Jeoger Reds, Jeorge Reds, Jey the Count, JeytheCount, Jiege, Jj09, Jotari, Kemui52, Kenpuhu, Khrene, Klokinator, Knabepicer, Knapicer, L95, LB, LegendofLoog, Leif, Leo_Link, Lexou, Lief, LonkFC, ltranc, LucaYoshi, Luigiofthegods, Madzz, Mage boy, Maiser6, Marcelfe, Marlon&Louis, MasterAwesome, Mattiator, Max Limit, MeatOfJustice, MegaCowSamMan, Melia, Memae, Memai, Merpin, Metalocif, MeteorSR23, Mightyappa, Mikey_Seregon, milom, Momo, Morth, Mother 3, MrGreen, N426, NamelessX, NeoMasterZX, NightBloodKT, Norikins, Nuramon, NYZgamer3, Orihara Saki, Orihara_Saki, Peerless, Permafrost, Pikmin, Pikmin1211 4, PKLucky, Polinym, Primefusion, Pushwall, Quinnabon, RandomWizard, Rasdel, Raspberry, Rdrouyn, REALxViPerZ, ReanuKeeves7716, Redbean, Rexacuse, RiriK, RobertFPY, Roxannity, Ryn, Sable Mage, Sacred War, Saint Rubenio, SaintRubenio, SALVAGED, SamirPlayz, Sax Marine, Scraiza, SD9K, Seal, Seliost1, Sephie, serif, ShadowAllyX, Shin19, Shinkuma, SHIRMER, Shtick, Shuusuke, SHYUTER, SHYUTERz, SigmanRaven, SigmaRaven, Sirknite, Sirknite031, Sirknite31, Siuloir, SkidMarc25, Skitty, Sme, Smug_Mug, Snerdels, Snewping, Sphealnuke, Spud, Squaresoft, Squid1003, SSHX, SteamingTofu, Stephano, Stitch, Stormblight, StreetHero, Tambo, Tanakakiri, Tarantino500, TAS20XX, TATUTA_CHANG, TBA, Tdim, Teelvade, Teraspark, The_Big_Dededester, TheGreatNothing, ThisThat, ThyAnarchists, TLP, ToGY, Topazlight, Tordo45, TytheBub, Ultra-Fenix, UltraFenix, UltraxBlade, Uncle Mikey, Unhooded, Unknown, valak, Velvet Kitsune, VelvetKitsune, VelvetKtsune, Vilkalizer, Vorgus, Waleed, WarPath, Warren, WhatIsAnAubin, WiiSportsRemote, Windsweep, Xenith, Yangfly Master, Yellowtoad, Yera, Yerek, Yggdra, Yikes!, Zacara'sDaydreamer, Zarg, Zeldacrafter63, ZeroXA, Zoramine, ZoramineFae
+  2WB, 7743, Agro, Akkuma407, Alexsplode, Alice, Almirage, Alusq, AnnoyingAnon, ArcaneEli, ArcherBias, Argo, Aruka, Ash3wl, Ash3wl Jr, AstraLunaSol, Augenis, Author_Pendragon, Ayr, BandanaSplitzzz, Batima, BatimaTheBat, BBHood217, BigMood, Black Mage, Blademaster, blood, Blue Druid, BoneManSeth, BoneSethMan, Booster_seat87, BoW, Bowgun, CamusZekeSirius, catinator, CelestiaHeart, Chi-Chi, Circleseverywhere, ColeTheOne, Cornontherob, Cygnus, Cynon, D4rkblade, d_h, daemoth, darkjaden, Dat, DATonDemand, Dei, Dellhonne, Der, DerTheVaporeon, DespicableDuck, Devisian_Nights, Dinar, Dominus_Vobiscum, dondon151, Dora Drago, Duckbeard, Dutch Introvert, Dutch_Introvert, DutchIntrovert, EA, Eden, Eldritch, Eldritch Abomination, EldritchAbomination, Elibian Nights, EN, Epicer, Erukolindo, Estra, Estratega, Faeriefruit, Fates-Blade, FE7if, FEGirls, Feier, Fiuke Bnuy, flasuban, Fuike Bnuy, FungusCaesar, FuriousHaunter, GabrielKnight, Glueseppers, Gojira, GreatDoot, Haifried, Hairfried, Hanakko, Hatsuru, HGS, HIRITO, Huichelaar, HyperGammaSpaces, IS, Its_Just_Jay, J-Treecko, JaidynReiman, Jay, Jeoger Reds, Jeorge Reds, Jey the Count, JeytheCount, Jiege, Jj09, Jotari, Kemui52, Kenpuhu, Khrene, Klokinator, Knabepicer, Knapicer, L95, Leif, Leo_Link, Lexou, Lief, LonkFC, ltranc, LucaYoshi, Luigiofthegods, Marcelfe, Marlon&Louis, MasterAwesome, Mattiator, Max Limit, MeatofJustice, MegaCowSamMan, Melia, Memae, Memai, Merpin, Metalocif, MeteorSR23, Mightyappa, Mikey_Seregon, milom, Momo, Morth, Mother 3, MrGreen, N426, NamelessX, NeoMasterZX, NightBloodKT, Norikins, Nuramon, NYZgamer3, Orihara Saki, Orihara_Saki, Peerless, Permafrost, Pikmin, Pikmin1211 4, PKLucky, Polinym, Primefusion, Pushwall, Quinnabon, RandomWizard, Rasdel, Raspberry, Rdrouyn, REALxViPerZ, ReanuKeeves7716, Redbean, Rexacuse, RiriK, RobertFPY, Roxannity, Ryn, Sable Mage, Sacred War, SaintRubenio, SALVAGED, SamirPlayz, Sax Marine, Scraiza, SD9K, Seal, Seliost1, Sephie, serif, ShadowAllyX, Shin19, Shinkuma, SHIRMER, Shtick, Shuusuke, SHYUTER, SHYUTERz, SigmanRaven, SigmaRaven, Sirknite, Sirknite031, Sirknite31, Siuloir, SkidMarc25, Sme, Smug_Mug, Snerdels, Snewping, Sphealnuke, Spud, Squaresoft, Squid1003, SSHX, SteamingTofu, Stephano, Stitch, Stormblight, StreetHero, Tanakakiri, Tarantino500, TAS20XX, TATUTA_CHANG, TBA, Tdim, Teelvade, Teraspark, TheGreatNothing, ThisThat, ThyAnarchists, TLP, ToGY, Topazlight, Tordo45, TytheBub, Ultra-Fenix, UltraFenix, UltraxBlade, Uncle Mikey, Unhooded, Unknown, valak, Velvet Kitsune, VelvetKitsune, VelvetKtsune, Vilkalizer, Vorgus, Waleed, WarPath, WhatIsAnAubin, WiiSportsRemote, Windsweep, Xenith, Yangfly Master, Yellowtoad, Yera, Yerek, Yggdra, Yikes!, Zacara'sDaydreamer, Zarg, Zeldacrafter63, ZeroXA, Zoramine, ZoramineFae
 
-== Générateur de personnage (1073 sprites) — tools/map-sprites/generateur/
+== Générateur de personnage (994 sprites) — tools/map-sprites/generateur/
   [Bards, Dancers, Suppliers, Misc] Bard (F) Fancy : RandomWizard, MeatOfJustice, Knabepicer
   [Bards, Dancers, Suppliers, Misc] Bard (M) Fancy : MeatOfJustice
   [Bards, Dancers, Suppliers, Misc] Bard (M) FE5 : ArcherBias
-  [Bards, Dancers, Suppliers, Misc] Bear (U) : AVerySheepGamer
-  [Bards, Dancers, Suppliers, Misc] Bunny (U) : Madzz
   [Bards, Dancers, Suppliers, Misc] Dancer (F) : Circleseverywhere
   [Bards, Dancers, Suppliers, Misc] Dancer (M) FE8-Style : L95
   [Bards, Dancers, Suppliers, Misc] Dancer (U) Dracodancer : Sirknite31
-  [Bards, Dancers, Suppliers, Misc] Dancer (U) FF Moogle : Warren
-  [Bards, Dancers, Suppliers, Misc] Doll (F) : FEGirls
-  [Bards, Dancers, Suppliers, Misc] Eggman (M) Egg Mobile : Saint Rubenio
-  [Bards, Dancers, Suppliers, Misc] Fish (U) : LegendofLoog
-  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, Colored Visor) : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, Secondary Visor) : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Colored plating, White Visor) : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (Gold plating, Colored Visor) : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] G5 Sentry Bot (U) (White plating, Colored Visor) : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] Gazelle (U) Stantler : Scraiza
-  [Bards, Dancers, Suppliers, Misc] Goomba (U) : Uncle Mikey
-  [Bards, Dancers, Suppliers, Misc] Goose (Honk!!) : Faeriefruit
   [Bards, Dancers, Suppliers, Misc] Hero (F) Wheelchair : Merpin
-  [Bards, Dancers, Suppliers, Misc] Horse : L95
-  [Bards, Dancers, Suppliers, Misc] Horse (16x16) : L95
-  [Bards, Dancers, Suppliers, Misc] Horse (White) : N426
-  [Bards, Dancers, Suppliers, Misc] Hound : Cygnus
-  [Bards, Dancers, Suppliers, Misc] Hound (Alt) : Cygnus
-  [Bards, Dancers, Suppliers, Misc] Ice Climbers (U) : Uncle Mikey
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (F) Queen : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Archer : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Guardsman : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) King : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Knight : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Lego Battles (M) Wizard : LB, Norikins
-  [Bards, Dancers, Suppliers, Misc] Man : non crédité
-  [Bards, Dancers, Suppliers, Misc] Muse_Gypsy (F) : Alexsplode
   [Bards, Dancers, Suppliers, Misc] Peer (M) : IS
-  [Bards, Dancers, Suppliers, Misc] Pegasus : N426
-  [Bards, Dancers, Suppliers, Misc] Pegasus (Brown) : N426
-  [Bards, Dancers, Suppliers, Misc] pegasus (Brown) : N426
-  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - Brown Armor : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - Gold Armor : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar - White Armor : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] Perfect Dark (U) Skedar -Main Color Armor : Shuusuke
-  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) : BoneManSeth
-  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) with Papers : BoneManSeth
-  [Bards, Dancers, Suppliers, Misc] Phoenix Wright (M) with Table : BoneManSeth
   [Bards, Dancers, Suppliers, Misc] Pontifex (M) : IS
   [Bards, Dancers, Suppliers, Misc] Prince (M) : EldritchAbomination
   [Bards, Dancers, Suppliers, Misc] Princess (F) : EldritchAbomination
   [Bards, Dancers, Suppliers, Misc] Queen (F) : IS
-  [Bards, Dancers, Suppliers, Misc] Queen (F) (Hat) : IS
-  [Bards, Dancers, Suppliers, Misc] Radiant Peach (F) : Uncle Mikey
-  [Bards, Dancers, Suppliers, Misc] Rat (U) : Squaresoft, RandomWizard
-  [Bards, Dancers, Suppliers, Misc] Rat (U) : The_Big_Dededester
-  [Bards, Dancers, Suppliers, Misc] Samus (F) : MeatOfJustice
-  [Bards, Dancers, Suppliers, Misc] Squire (M) Sword : Yangfly Master
   [Bards, Dancers, Suppliers, Misc] Supplier (F) Lance : N426
   [Bards, Dancers, Suppliers, Misc] Supplier (F) Unarmed : N426
-  [Bards, Dancers, Suppliers, Misc] Supplier v2 (F) Lance : N426
-  [Bards, Dancers, Suppliers, Misc] Supplier v2 (F) Unarmed : N426
-  [Bards, Dancers, Suppliers, Misc] SW (U) B1 Droid : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Engineer : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Heavy Trooper : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Medic : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Sergeant : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Sniper : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Clone Trooper : Augenis
-  [Bards, Dancers, Suppliers, Misc] SW (U) Heavy Droid : Augenis
-  [Bards, Dancers, Suppliers, Misc] Sword Maiden (F) Yuril Artwaltz : Aruka, Kenpuhu
   [Bards, Dancers, Suppliers, Misc] Tactician (M) (FE7) : IS
   [Bards, Dancers, Suppliers, Misc] Tactician (U) : IS
-  [Bards, Dancers, Suppliers, Misc] Theif and Archer (M,F) : Mage boy
-  [Bards, Dancers, Suppliers, Misc] Tortoise (U) : Dutch Introvert
-  [Bards, Dancers, Suppliers, Misc] Turret (M) Magic (Shaman) : Cardcafe, Estratega
-  [Bards, Dancers, Suppliers, Misc] Turret (U) Magical : Cardcafe, Estratega
-  [Bards, Dancers, Suppliers, Misc] Turret (U) Magical : Estratega
-  [Bards, Dancers, Suppliers, Misc] Villager (F) (Girl) : IS
-  [Bards, Dancers, Suppliers, Misc] Villager (F) (Woman) : IS
-  [Bards, Dancers, Suppliers, Misc] Villager (M) (Boy) : IS
   [Bards, Dancers, Suppliers, Misc] Villager (M) (Man) : IS
-  [Bards, Dancers, Suppliers, Misc] Weegee : Tambo
-  [Bards, Dancers, Suppliers, Misc] Woman : IS
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Barbarian (M) Axe : valak, topazlight
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Barbarian (M) Axe Alt : valak, topazlight
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Axe : Unknown
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Axe : Pikmin, Der
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Axe Bandana : Pikmin, Der, Brober
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Bow : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Lance : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (F) Hawkzerker Sword : ZoramineFae
@@ -377,26 +296,19 @@ Liste alphabétique :
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Dartzerker Sword : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkzerker Axe : NYZgamer3
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Lance : ZoramineFae
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Lizardzerker Axe : Seliost1
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Magic : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Oni Chieftain : Dora Drago
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Staff : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Sword : ZoramineFae
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (U) Axe Generic : CelestiaHeart
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe : Skitty
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe (No Handband) : Skitty, Cygnus
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) Axe 16x16 : Skitty
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (F) FE13-Style Axe : Glaceo, Skitty, blood
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored : NYZGamer3
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored : NYZgamer3
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored - Darker Clothes : Unknown
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Fix Axe : flasuban
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Sword : Rasdel
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Armored Sword 16x16 : Rasdel
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Axe : IS
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Axe 16x16 : Alusq
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Clothed Axe : Yangfly Master
-  [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) FE13-Style Axe : Glaceo
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Improved +Clothing : Flasuban
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Improved +Clothing (No Headband) : Flasuban, Yellowtoad
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Brigand (M) Sword : ZoramineFae
@@ -1063,7 +975,6 @@ Liste alphabétique :
   [Monsters - Dragons and Special] Dragon (U) Magic : L95
   [Monsters - Dragons and Special] Dragon (U) Myrrh Generic : Kemui52
   [Monsters - Dragons and Special] Dragon (U) Super : SHYUTER
-  [Monsters - Dragons and Special] Dragon Horse (U) Longma : Sphealnuke
   [Monsters - Dragons and Special] Dryad (F) : Stephano
   [Monsters - Dragons and Special] Evergrim (U) : Almirage, Jj09
   [Monsters - Dragons and Special] Fairy (U) Ogre Battle : Eldritch
@@ -1089,7 +1000,6 @@ Liste alphabétique :
   [Monsters - Dragons and Special] Living Armor Blue Flame : Sphealnuke, topazlight
   [Monsters - Dragons and Special] Living Armor Red Flame : Sphealnuke, topazlight
   [Monsters - Dragons and Special] Living Armor Red Flame 32x32 : Sphealnuke, topazlight
-  [Monsters - Dragons and Special] Living Doll (F) : DatonDemand
   [Monsters - Dragons and Special] Loot Bug (Deep Rock Galactic) : NeoMasterZX
   [Monsters - Dragons and Special] Manakete (U) : MeatOfJustice
   [Monsters - Dragons and Special] Manakete (U) FE6 edit : Dellhonne
@@ -1234,7 +1144,6 @@ Liste alphabétique :
   [Mounted - Dismounted, Monsters, Misc] Berserker (M) Lance Wolf Rider : Zoramine
   [Mounted - Dismounted, Monsters, Misc] Berserker (M) Sword Wolf Rider : Zoramine
   [Mounted - Dismounted, Monsters, Misc] Berserker (M) Unarmed Wolf Rider : Zoramine
-  [Mounted - Dismounted, Monsters, Misc] Brigand (F) Wolf Rider Axe : Zoramine
   [Mounted - Dismounted, Monsters, Misc] Brigand (F) Wolf Rider Sword : Zoramine
   [Mounted - Dismounted, Monsters, Misc] Brigand (M) Armored Wolf Rider Axe : Zoramine
   [Mounted - Dismounted, Monsters, Misc] Brigand (M) Armored Wolf Rider Sword : Zoramine
@@ -1253,8 +1162,6 @@ Liste alphabétique :
   [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Bow : ArcherBias
   [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Lance : ArcherBias
   [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword : ArcherBias
-  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword Squire-Paladin : Maiser6
-  [Mounted - Dismounted, Monsters, Misc] Dismounted (M) Sword Squire-Paladin 16x16 : Maiser6
   [Mounted - Dismounted, Monsters, Misc] Drake Rider (F) Axe : Dutch_Introvert, L95
   [Mounted - Dismounted, Monsters, Misc] Grand Mahout (U) : CamusZekeSirius, SHYUTERz, Orihara_Saki
   [Mounted - Dismounted, Monsters, Misc] Grand Mahout Edit (U) : CamusZekeSirius, SHYUTERz, Orihara_Saki, Dat
@@ -1354,7 +1261,7 @@ Liste alphabétique :
   [Mounted - Valks, MKs, Magi] Valkyrie (M) Non-Religious Staff : Der
   [Mounted - Valks, MKs, Magi] Valkyrie (U) Generic : CelestiaHeart
 
-== Personnages principaux de la série (163 sprites) — tools/map-sprites/personnages-principaux/
+== Personnages principaux de la série (161 sprites) — tools/map-sprites/personnages-principaux/
   [Bards, Dancers, Suppliers, Misc] Bard (F) Elffin : Knabepicer
   [Bards, Dancers, Suppliers, Misc] Bard (F) Nils : Knabepicer
   [Bards, Dancers, Suppliers, Misc] Bard (M) Elffin : IS
@@ -1367,8 +1274,6 @@ Liste alphabétique :
   [Bards, Dancers, Suppliers, Misc] Noble (M) Joshua : Aruka, Kenpuhu
   [Bards, Dancers, Suppliers, Misc] Peer (M) Lyon : EA
   [Bards, Dancers, Suppliers, Misc] Prince (Zephiel) : IS
-  [Bards, Dancers, Suppliers, Misc] Supplier v2 Anna (F) Lance : N426, Erukolindo, Cygnus
-  [Bards, Dancers, Suppliers, Misc] Supplier v2 Anna (F) Unarmed : N426, Erukolindo
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkeye Axe : IS
   [Infantry - (Axe) Brigs, Pirates, Zerkers] Berserker (M) Hawkeye Sword : ZoramineFae
   [Infantry - (Axe) Fighters and Warriors] Warrior (F) Camilla : SteamingTofu
@@ -1519,7 +1424,7 @@ Liste alphabétique :
   [Mounted - Valks, MKs, Magi] Mage Knight (F) Selena : Jiege
   [Mounted - Valks, MKs, Magi] Mage Knight (F) Selena : jiege
 
-== Objets, décors et poses (106 sprites) — tools/map-sprites/objets-et-poses/
+== Objets, décors et poses (105 sprites) — tools/map-sprites/objets-et-poses/
   [Bards, Dancers, Suppliers, Misc] Assassin (Leila) (Dead) Standing : IS
   [Bards, Dancers, Suppliers, Misc] Blank : non crédité
   [Bards, Dancers, Suppliers, Misc] Boat (16x32) : IS, Pushwall
@@ -1591,7 +1496,6 @@ Liste alphabétique :
   [Bards, Dancers, Suppliers, Misc] Tent : Gabrielknight
   [Bards, Dancers, Suppliers, Misc] Torch : FE7if
   [Bards, Dancers, Suppliers, Misc] Torch (Flickering) : FE7if
-  [Bards, Dancers, Suppliers, Misc] Transporter (Horseless Carriage) : BandanaSplitzzz
   [Bards, Dancers, Suppliers, Misc] Transporter (Hot Air Balloon) : Warpath
   [Bards, Dancers, Suppliers, Misc] Transporter (Tent) : IS
   [Bards, Dancers, Suppliers, Misc] Transporter (Wagon) : IS

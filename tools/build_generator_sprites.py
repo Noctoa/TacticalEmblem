@@ -17,6 +17,7 @@ Sortie (planches au format du jeu : 4 colonnes × 6 lignes de 32×32 — repos, 
   src/renderer/img/generator/sprites.js            self.GENERATOR_SPRITES = { cols, list: [{ id, label, group, credits }] }
   assets/library/personnages-principaux/<id>.png + .json   sprites de map prêts à copier dans ressources/personnages/<Nom>/
   tools/map-sprites/CREDITS.txt                    crédits (artistes et sprites)
+  tools/map-sprites/exclus.txt                     sprites à ne pas proposer dans le générateur (identifiants)
 
   python3 tools/build_generator_sprites.py
 """
@@ -78,11 +79,11 @@ def scan(category):
             e = entries.setdefault((folder, stem), {'folder': folder, 'stem': stem, 'label': label_of(stem), 'files': {}, 'credits': credits_of(stem)})
             e['files'].setdefault(kind or 'unknown', os.path.join(d, f))
     entries = list(entries.values())
-    known = set(c for e in entries for c in e['credits'])
+    known = set(c.lower() for e in entries for c in e['credits'])  # sans tenir compte des majuscules
     for e in entries:  # crédits entre parenthèses ( … ) faits de noms déjà connus
         for m in re.finditer(r'\(([^()]*)\)', e['stem']):
             parts = [p.strip() for p in m.group(1).split(',')]
-            if parts and all(p in known and not re.fullmatch(r'[MFU]', p) for p in parts):
+            if parts and all(p.lower() in known and not re.fullmatch(r'[MFU]', p) for p in parts):
                 e['credits'] += [p for p in parts if p not in e['credits']]
                 e['label'] = re.sub(r'\s*\(' + re.escape(m.group(1)) + r'\)', '', e['label']).strip()
     # « walk » seul : « stand » de la même classe (libellé plus court, mêmes crédits, même dossier)
@@ -99,6 +100,10 @@ def scan(category):
 
 
 SKIP = {'oracle-v2'}  # planche de marche mal découpée dans la source
+# sprites retirés à la main du générateur : tools/map-sprites/exclus.txt (un identifiant par ligne, # = commentaire)
+_ex = os.path.join(SRC, 'exclus.txt')
+if os.path.exists(_ex):
+    SKIP |= {l.strip() for l in open(_ex, encoding='utf-8') if l.strip() and not l.lstrip().startswith('#')}
 
 
 def rgba(path):

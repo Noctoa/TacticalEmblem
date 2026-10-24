@@ -85,7 +85,8 @@
 .cg-game .cg-chip.on { border-color: #f2d58a; }
 .cg-win button { transition: none; }
 /* sprites de map animés (FE) */
-.cg-row.cg-unused .cg-lbl::after { content: ' (remplacée par le sprite FE)'; font-size: 10px; opacity: .7; }
-.cg-row.cg-unused .cg-choice, .cg-row.cg-unused .arrow { opacity: .55; }
 .cg-pop > .cg-note { padding: 0 10px 8px; }
 .cg-pop-head select.cg-search { max-width: 220px; }
+.cg-map-duo { justify-content: space-around; gap: 4px; padding: 4px; }
+.cg-map-duo figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.cg-map-duo .cg-sprite { width: 112px; height: 112px; }

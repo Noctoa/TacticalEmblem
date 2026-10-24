@@ -202,3 +202,27 @@ test('recette : sprite FE gardé, vérifié et décrit (.json base 16, cases 32 
   const still = C.spriteMeta({ f: [1, 3, 3] });
   assert.deepEqual(still.anims.idle.frames, [0]); assert.deepEqual(still.anims.down.frames, [0, 1, 2]);
 });
+
+test('sprite de map FE recoloré avec les couleurs de la carte (palette commune GBA)', () => {
+  const px = (hex) => [...C.rgb(hex), 255];
+  const data = new Uint8ClampedArray([...px('#3850e0'), ...px('#f8f8d0'), ...px('#403838'), ...px('#808870'), ...px('#3a52e2'), 0, 0, 0, 0]);
+  const cloth = ['#d04c38', '#a03040', '#6c2034'], skin = ['#f8de8b', '#eeac5a', '#cd7b4a', '#885a41', '#604848'];
+  const r = C.normalize({ ramps: { cloth, skin } });
+  C.recolorFeSprite(data, r);
+  const at = (i) => C.hex([data[i * 4], data[i * 4 + 1], data[i * 4 + 2]]);
+  assert.equal(at(0), cloth[1]); assert.equal(at(1), skin[0]);
+  assert.equal(at(2), '#403838', 'contour gardé'); assert.equal(at(3), '#808870', 'ombre au sol gardée');
+  assert.equal(at(4), cloth[1], 'couleur presque identique : recolorée aussi');
+  assert.equal(data[23], 0, 'transparent intact');
+  // couleurs propres à la carte, et couleurs d'équipe pour le jeu
+  const m = C.normalize({ ramps: { cloth }, map: { colors: {}, ramps: { cloth: ['#40c040', '#208020', '#104010'] } } });
+  assert.deepEqual(C.feTeamColors(m).slice(1, 4), ['#40c040', '#208020', '#104010']);
+});
+
+test('sprites retirés du générateur (tools/map-sprites/exclus.txt) absents de la liste et des planches', () => {
+  const ctx = { self: {} }; vm.runInNewContext(fs.readFileSync(path.join(GEN, 'sprites.js'), 'utf8'), ctx);
+  const ids = new Set(ctx.self.GENERATOR_SPRITES.list.map(e => e.id));
+  const ex = fs.readFileSync(path.join(__dirname, '..', 'tools', 'map-sprites', 'exclus.txt'), 'utf8').split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  assert.ok(ex.length > 0);
+  for (const id of ex) { assert.ok(!ids.has(id), id); assert.ok(!fs.existsSync(path.join(GEN, 'sprites', id + '.png')), id); }
+});

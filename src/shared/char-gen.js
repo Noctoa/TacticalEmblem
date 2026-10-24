@@ -297,6 +297,42 @@
     const credits = entry && entry.credits && entry.credits.length ? ' — ' + entry.credits.join(', ') : '';
     return { type: 'mapsprite', name: name || (entry && entry.label) || 'Personnage généré', frame: [32, 32], anchor: [16, 32], base: 16, anims, source: 'FE-Repo' + credits };
   }
+  /**
+   * Palette commune des sprites de map FE GBA (camp bleu) : chaque couleur est rattachée à une teinte du générateur
+   * (indice de palette() ou fonction de la palette). Contour, ombre au sol, blanc et rouge restent tels quels.
+   */
+  const FE_MAP_COLORS = [
+    ['#18f0f8', (p) => brighter(p[15])], ['#28a0f8', 15], ['#3850e0', 16], ['#383890', 17], ['#584878', (p) => darker(p[17])], // couleurs du camp → tissu
+    ['#f8f8d0', 4], ['#b09058', 6],                                                       // peau
+    ['#d8e8f0', 9], ['#90b8e8', 10], ['#706060', 11],                                    // métal (#808870 = ombre au sol, gardée)
+    ['#f8f840', 12]];                                                                     // ornements (or)
+  const FE_KEYS = FE_MAP_COLORS.map(([c]) => rgb(c));
+  /** Couleurs du sprite de map FE recoloré avec les couleurs de la carte (liste [de, vers] en RGB). */
+  function feMapPalette(recipe) {
+    const mc = mapColors(recipe), pal = palette(mc.colors, mc.ramps);
+    return FE_MAP_COLORS.map(([, to], i) => [FE_KEYS[i], typeof to === 'number' ? pal[to] : to(pal)]);
+  }
+  /**
+   * Recolore (sur place) les pixels RGBA d'un sprite de map FE : chaque couleur proche (écart ≤ 14 par composante)
+   * d'une couleur de la palette commune prend la teinte choisie ; les autres (contour, couleurs propres) restent.
+   */
+  function recolorFeSprite(data, recipe) {
+    const map = feMapPalette(recipe), cache = new Map();
+    for (let i = 0; i < data.length; i += 4) {
+      if (!data[i + 3]) continue;
+      const key = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
+      let to = cache.get(key);
+      if (to === undefined) {
+        to = null; let best = 15;
+        for (const [from, c] of map) { const d = Math.max(Math.abs(from[0] - data[i]), Math.abs(from[1] - data[i + 1]), Math.abs(from[2] - data[i + 2])); if (d < best) { best = d; to = c; } }
+        cache.set(key, to);
+      }
+      if (to) { data[i] = to[0]; data[i + 1] = to[1]; data[i + 2] = to[2]; }
+    }
+    return data;
+  }
+  /** Couleurs d'équipe d'un sprite FE recoloré : les 5 nuances du camp devenues celles du tissu. */
+  const feTeamColors = (recipe) => feMapPalette(recipe).slice(0, 5).map(([, c]) => hex(c));
   /** Couleurs d'équipe du sprite : les nuances du tissu (recolorées en bleu / rouge / vert selon le camp). */
   function teamColors(recipe) {
     const mc = mapColors(recipe), pal = palette(mc.colors, mc.ramps);
@@ -335,5 +371,5 @@
   }
 
   return { normColors, mapColors, battlePalette, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
-    normalize, validate, random, defaults, composePortrait, composeToken, bbox, faceset, mapSprite, spriteMeta, teamColors };
+    normalize, validate, random, defaults, composePortrait, composeToken, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feTeamColors };
 });

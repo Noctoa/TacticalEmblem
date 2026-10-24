@@ -122,14 +122,22 @@ module.exports = (editor, openPlaytest) => {
       await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length >= 1`);
       result.spriteFE = await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').dataset.cgPart`);
       await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').click()`);
-      await G.until(`document.querySelector('[data-cg-row="token"]').classList.contains('cg-unused')`);
+      await G.until(`(() => { const c = document.querySelector('[data-cg-sprite]'); const d = c.getContext('2d').getImageData(0, 0, 64, 64).data; let n = 0; for (let i = 3; i < d.length; i += 4) n += d[i] ? 1 : 0; return n > 50 && !!document.querySelector('[data-cg-combat]'); })()`);
+      // les couleurs de la carte recolorent le sprite de map FE (tissu = couleurs du camp)
+      await G.js(`document.querySelector('[data-cg-tab="map"]').click()`); await wait(60);
+      assert(await G.js(`!!document.querySelector('[data-cg-sprite-note]')`), 'note carte');
+      await G.js(`document.querySelector('[data-cg-map-linked]').click()`); await wait(60);
+      await G.js(`document.querySelector('[data-cg-group="cloth"]').click()`); await wait(60);
+      await G.js(`document.querySelector('[data-cg-ramp="cloth:3"]').click()`); await wait(200);
       await wait(400); await G.shot('e_jeu_creation');
       assert(await G.js(`!document.querySelector('[data-cg-cancel]')`), 'pas d’annulation en jeu');
       await G.js(`document.querySelector('[data-cg-ok]').click()`);
       await G.until(`PlaytestState.mode === 'lobby' && !PlaytestState.busy`, 25000);
       result.jeu = await G.js(`(() => { const S = PlaytestState, u = S.db.units.find(u => u.id === 'c_eliwood'); return { nom: u.name, avatar: S.campaign.avatar && S.campaign.avatar.name, portrait: u.portrait.slice(0, 22), sprite: u.mapSprite, meta: !!S.resources.characters[u.mapSprite] }; })()`);
       assert(result.jeu.nom === 'Kael' && result.jeu.avatar === 'Kael' && result.jeu.portrait.startsWith('data:image/png') && result.jeu.sprite === 'avatar:c_eliwood' && result.jeu.meta, 'avatar : ' + JSON.stringify(result.jeu));
-      result.jeuSprite = await G.js(`(() => { const m = PlaytestState.resources.characters['avatar:c_eliwood']; return { base: m.base, frame: m.frame, source: m.source, recette: PlaytestState.campaign.avatar.recipe.sprite }; })()`);
+      result.jeuSprite = await G.js(`(() => { const m = PlaytestState.resources.characters['avatar:c_eliwood']; return { base: m.base, frame: m.frame, source: m.source, team: m.teamColors, recette: PlaytestState.campaign.avatar.recipe.sprite }; })()`);
+      const RR = require('../src/shared/char-gen');
+      assert(result.jeuSprite.team && result.jeuSprite.team[1] === RR.HAIR_RAMPS[3][0] && result.jeuSprite.team[2] === RR.HAIR_RAMPS[3][1], 'sprite FE recoloré : ' + JSON.stringify(result.jeuSprite.team));
       assert(result.jeuSprite.base === 16 && result.jeuSprite.frame[0] === 32 && /^FE-Repo/.test(result.jeuSprite.source) && result.jeuSprite.recette === result.spriteFE, 'sprite FE : ' + JSON.stringify(result.jeuSprite));
       await wait(500); await G.shot('f_camp');
       // équipe : portrait et nom
