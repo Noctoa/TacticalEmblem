@@ -64,8 +64,10 @@ module.exports = (editor, openPlaytest) => {
       await wait(200); await E.shot('c2_couleurs_carte');
       // combat : tenue de l'animation de la classe
       await pick('[data-cg-tab="battle"]');
-      assert(await E.js(`!!document.querySelector('[data-cg-battler]') && document.querySelector('[data-cg-battle-origin]').classList.contains('on')`), 'combat : aperçu, couleurs d’origine');
-      await pick('[data-cg-ramp="battle:10"]');
+      assert(await E.js(`document.querySelector('[data-cg-combat-linked]').checked && !document.querySelector('[data-cg-ramp]') && !document.querySelector('[data-cg-battler]')`), 'combat lié au portrait');
+      const combatBefore = await E.js(`document.querySelector('[data-cg-combat]').toDataURL()`);
+      await pick('[data-cg-combat-linked]'); await pick('[data-cg-group="cloth"]'); await pick('[data-cg-ramp="cloth:10"]');
+      assert(await E.js(`document.querySelector('[data-cg-combat]').toDataURL()`) !== combatBefore, 'combat : le sprite de combat change');
       await wait(200); await E.shot('c3_couleurs_combat');
       await pick('[data-cg-tab="portrait"]');
       await E.js(`document.querySelector('[data-cg-offset="face:1"]').nextElementSibling.click()`);
@@ -73,12 +75,13 @@ module.exports = (editor, openPlaytest) => {
       await wait(200); await E.shot('c_retouche');
       await E.js(`document.querySelector('[data-cg-ok]').click()`);
       await E.until(`(Editor.db().units.find(u => u.id === 'c_lyn').generator || {}).hair === 'Ninian'`, 20000);
-      result.unite = await E.js(`(() => { const u = Editor.db().units.find(u => u.id === 'c_lyn'); return { portrait: u.portrait, sprite: u.mapSprite, couleur: u.generator.colors.hair, rampes: u.generator.ramps, yeux: u.generator.colors.eyes, carte: u.generator.map, combat: u.battleColors, decalage: u.generator.offsets.face, enRessources: !!Editor.resources().characters[u.mapSprite] }; })()`);
+      result.unite = await E.js(`(() => { const u = Editor.db().units.find(u => u.id === 'c_lyn'); return { portrait: u.portrait, sprite: u.mapSprite, couleur: u.generator.colors.hair, rampes: u.generator.ramps, yeux: u.generator.colors.eyes, carte: u.generator.map, combatCouleurs: u.generator.combat, combat: u.battleColors, decalage: u.generator.offsets.face, enRessources: !!Editor.resources().characters[u.mapSprite] }; })()`);
       assert(result.unite.portrait === 'ressources/personnages/Lyn/portrait_genere.png' && result.unite.sprite === 'ressources/personnages/Lyn/map_genere' && result.unite.enRessources, 'unité : ' + JSON.stringify(result.unite));
       const R = require('../src/shared/char-gen');
       assert(result.unite.rampes.hair.join() === R.HAIR_RAMPS[120].join() && result.unite.rampes.skin.join() === R.SKIN_RAMPS[9].join(), 'dégradés : ' + JSON.stringify(result.unite.rampes));
       assert(result.unite.couleur === R.HAIR_RAMPS[120][1] && result.unite.yeux === R.HAIR_RAMPS[30][1] && result.unite.rampes.eyes.join() === R.HAIR_RAMPS[30].join() && result.unite.decalage[1] === 1, 'recette');
       assert(result.unite.carte && result.unite.carte.ramps.cloth.join() === R.HAIR_RAMPS[5].join() && !(result.unite.rampes.cloth || []).length, 'carte : ' + JSON.stringify(result.unite.carte));
+      assert(result.unite.combatCouleurs && result.unite.combatCouleurs.ramps.cloth.join() === R.HAIR_RAMPS[10].join(), 'combat : ' + JSON.stringify(result.unite.combatCouleurs));
       assert(result.unite.combat === 'custom:' + R.HAIR_RAMPS[10].join(','), 'combat : ' + result.unite.combat);
       const png = fs.readFileSync(path.join(dir, 'ressources/personnages/Lyn/portrait_genere.png'));
       assert(png.readUInt32BE(16) === 128 && png.readUInt32BE(20) === 112, 'face set 128 × 112');
@@ -114,11 +117,11 @@ module.exports = (editor, openPlaytest) => {
       await G.js(`document.querySelector('[data-cg-random]').click()`);
       // sprite de map animé tiré de la bibliothèque FE : filtre par catégorie + recherche
       await G.js(`document.querySelector('[data-cg-choose="sprite"]').click()`);
-      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 500`);
-      await G.js(`(() => { const s = document.querySelector('[data-cg-sprite-group]'); s.value = [...s.options].find(o => /Myrms and Swordmasters/.test(o.value)).value; s.dispatchEvent(new Event('change')); })()`);
-      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 5 && document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length < 200`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 100`);
+      await G.js(`(() => { const s = document.querySelector('[data-cg-sprite-group]'); s.value = [...s.options].find(o => /Personnages de la série/.test(o.value)).value; s.dispatchEvent(new Event('change')); })()`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 20 && document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length < 100`);
       await wait(300); await G.shot('e0_jeu_sprites_fe');
-      await G.js(`(() => { const s = document.querySelector('[data-cg-picker="sprite"] input.cg-search'); s.value = 'swordmaster'; s.dispatchEvent(new Event('input')); })()`);
+      await G.js(`(() => { const s = document.querySelector('[data-cg-picker="sprite"] input.cg-search'); s.value = 'eliwood'; s.dispatchEvent(new Event('input')); })()`);
       await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length >= 1`);
       result.spriteFE = await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').dataset.cgPart`);
       await G.js(`document.querySelector('[data-cg-picker="sprite"] .cg-cell').click()`);

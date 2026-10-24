@@ -75,7 +75,10 @@
     const L = layers(recipe);
     const portrait = C.composePortrait(L, recipe);
     const fs = C.faceset(portrait, L.face);
-    const token = C.composeToken(cell('token', indexOf('token', recipe.token), 64), recipe);
+    const tokenSrc = cell('token', indexOf('token', recipe.token), 64);
+    const tokPart = root.GENERATOR_PARTS.token.find(p => p.id === recipe.token), mount = { mount: !!(tokPart && tokPart.mount) }; // monture → cuir
+    const token = C.composeToken(tokenSrc, recipe, mount); // couleurs de la map (sprite de map tiré de la figurine)
+    const combatToken = C.composeToken(tokenSrc, { map: C.combatColors(recipe) }, mount); // couleurs du combat
     const entry = recipe.sprite && root.GENERATOR_PARTS.sprite && root.GENERATOR_PARTS.sprite.find(p => p.id === recipe.sprite);
     let mapOut;
     if (entry && spriteSheets[entry.id]) { // sprite FE : sa planche recolorée avec les couleurs de la carte
@@ -88,7 +91,7 @@
       mapOut = { canvas: toCanvas(map.data, map.width, map.height), meta: map.meta };
     }
     return { recipe, name, portrait: toCanvas(portrait, 96, 96), faceset: toCanvas(fs.data, fs.width, fs.height),
-      map: mapOut, token: toCanvas(token, 64, 64) };
+      map: mapOut, token: toCanvas(combatToken, 64, 64) };
   }
   async function render(recipe, opts = {}) {
     const parts = await load();
@@ -104,7 +107,7 @@
       const t = cell('sprites-thumbs', index, 32);
       cv.width = 32; cv.height = 32; if (t) cv.getContext('2d').putImageData(new ImageData(C.recolorFeSprite(t, recipe), 32, 32), 0, 0);
     } else if (kind === 'token') {
-      const t = C.composeToken(cell('token', index, 64), recipe);
+      const t = C.composeToken(cell('token', index, 64), { map: C.combatColors(recipe) }, { mount: !!(root.GENERATOR_PARTS.token[index] || {}).mount });
       cv.width = 64; cv.height = 64; cv.getContext('2d').putImageData(new ImageData(t, 64, 64), 0, 0);
     } else {
       const L = { hair: null, hairb: null, face: null, armor: null };
@@ -132,14 +135,14 @@
         const g = big.getContext('2d'); g.clearRect(0, 0, 96, 80); g.drawImage(result.portrait, 0, C.FACESET.top, 96, 80, 0, 0, 96, 80);
         sheet = result.map;
         { const g = combat.getContext('2d'); g.clearRect(0, 0, 64, 64); g.drawImage(result.token, 0, 0); }
-        for (const el of win.querySelectorAll('[data-cg-label]')) { const k = el.dataset.cgLabel, p = parts[k].find(x => x.id === recipe[k]); el.textContent = p ? p.label : (k === 'sprite' ? 'Aucun (figurine)' : 'Aucun'); }
+        for (const el of win.querySelectorAll('[data-cg-label]')) { const k = el.dataset.cgLabel, p = parts[k].find(x => x.id === recipe[k]); el.textContent = p ? p.label : (k === 'sprite' ? 'Aucun (d’après le sprite de combat)' : 'Aucun'); }
         refreshColors();
         for (const el of win.querySelectorAll('[data-cg-offset]')) { const [k, a] = el.dataset.cgOffset.split(':'); el.textContent = String(recipe.offsets[k][+a]); }
       };
       /** État des couleurs : onglet, pastilles des teintes, dégradé choisi, aperçu du combat. */
       function refreshColors() {
         for (const el of win.querySelectorAll('[data-cg-tab]')) el.classList.toggle('on', el.dataset.cgTab === cstate.tab);
-        const t = cstate.tab === 'battle' ? null : target();
+        const t = target();
         if (t) {
           const pal = C.palette(t.colors, t.ramps), eyes = C.eyePalette(t.colors, t.ramps);
           const current = (g) => (g === 'eyes' ? (eyes || pal.slice(1, 4)) : pal.slice(C.RAMP_INDEX[g], C.RAMP_INDEX[g] + C.RAMP_SIZE[g])).map(c => C.hex(c));
@@ -149,17 +152,8 @@
         }
         for (const el of win.querySelectorAll('[data-cg-ramp]')) {
           const [g, i] = el.dataset.cgRamp.split(':'), list = g === 'skin' ? C.SKIN_RAMPS : C.HAIR_RAMPS;
-          const chosen = g === 'battle' ? recipe.battle && recipe.battle.ramp : t && t.ramps && t.ramps[g];
+          const chosen = t && t.ramps && t.ramps[g];
           el.classList.toggle('on', !!(chosen && chosen.join() === list[+i].join()));
-        }
-        const bo = win.querySelector('[data-cg-battle-origin]'); if (bo) bo.classList.toggle('on', !recipe.battle);
-        if (opts.battler && battleCv.isConnected) {
-          const { meta, image } = opts.battler, g = battleCv.getContext('2d');
-          g.clearRect(0, 0, battleCv.width, battleCv.height); g.imageSmoothingEnabled = false;
-          const stance = (meta.anims && (meta.anims.stance || meta.anims.idle || Object.values(meta.anims)[0])) || { frames: [0] };
-          const img = Sprites.tinted(image, meta, C.battlePalette(recipe) || 'original');
-          const [cw, ch] = meta.cell || [96, 64], k = Math.min(2, (battleCv.width - 8) / cw, (battleCv.height - 8) / ch);
-          Sprites.drawBattlerFrame(g, meta, img, stance.frames[0] || 0, battleCv.width / 2 + ((meta.anchor || [cw / 2])[0] - cw / 2) * k, battleCv.height - 4 - (ch - (meta.anchor || [0, ch])[1]) * k, k, false);
         }
       }
       // sprite animé (marche vers le bas puis repos)
@@ -193,7 +187,7 @@
         const pop = h('div', { class: 'cg-pop', 'data-cg-picker': k }, h('div', { class: 'cg-pop-head' }, ...[h('b', {}, label), groupSel, search,
           k !== 'token' ? h('button', { class: 'cg-btn small', onclick: () => { set(k, ''); pop.remove(); } }, k === 'sprite' ? 'Aucun (d’après le sprite de combat)' : 'Aucun') : null,
           h('button', { class: 'cg-btn small', onclick: () => pop.remove() }, 'Fermer')].filter(Boolean)), grid,
-          k === 'sprite' ? h('p', { class: 'cg-note' }, 'Sprites de la communauté Fire Emblem (FE-Repo), recolorés avec les couleurs de l’onglet « Carte » (le jeu teinte ensuite le tissu selon le camp). Crédits dans l’infobulle et dans tools/map-sprites/CREDITS.txt.') : null);
+          k === 'sprite' ? h('p', { class: 'cg-note' }, 'Sprites de la communauté Fire Emblem (FE-Repo), recolorés avec les couleurs de l’onglet « Map » (le jeu teinte ensuite le tissu selon le camp). Crédits dans l’infobulle et dans tools/map-sprites/CREDITS.txt.') : null);
         const fill = () => {
           const q = search.value.trim().toLowerCase(), g = groupSel ? groupSel.value : '';
           const shown = list.filter(p => (!g || p.group === g) && (!q || p.label.toLowerCase().includes(q) || (p.credits || []).some(c => c.toLowerCase().includes(q))));
@@ -212,9 +206,9 @@
           h('button', { class: 'cg-btn arrow', title: 'Précédent', 'data-cg-prev': k, onclick: () => step(k, -1) }, '◀'),
           h('button', { class: 'cg-btn cg-choice', 'data-cg-choose': k, onclick: () => picker(k, label) }, h('span', { 'data-cg-label': k }, '')),
           h('button', { class: 'cg-btn arrow', title: 'Suivant', 'data-cg-next': k, onclick: () => step(k, 1) }, '▶'))));
-      // ---------- couleurs : portrait (face set), carte (sprite de map), combat (animation de la classe)
+      // ---------- couleurs : portrait (face set), map (sprite de map), combat (sprite de combat et tenue de l'animation de la classe)
       const cstate = { tab: 'portrait', group: 'hair' };
-      const target = () => (cstate.tab === 'map' ? recipe.map : recipe); // { colors, ramps }
+      const target = () => (cstate.tab === 'map' ? recipe.map : cstate.tab === 'battle' ? recipe.combat : recipe) || null; // { colors, ramps }
       const setColor = (g, c) => { const t = target(); t.colors[g] = c; if (t.ramps) delete t.ramps[g]; refresh(); };
       const setRamp = (g, ramp) => { const t = target(); t.ramps = Object.assign({}, t.ramps, { [g]: ramp.slice() }); t.colors[g] = ramp[1]; refresh(); };
       const gradient = (ramp) => `linear-gradient(to bottom, ${ramp.map((c, i) => `${c} ${i * 100 / ramp.length}% ${(i + 1) * 100 / ramp.length}%`).join(', ')})`;
@@ -226,26 +220,19 @@
             style: Object.assign({ background: gradient(ramp) }, pos ? { gridColumn: String(pos[0] + 1), gridRow: String(pos[1] + 1) } : {}),
             onclick: () => pick(ramp) });
         }));
-      const battleCv = h('canvas', { class: 'cg-battler', width: 112, height: 96, 'data-cg-battler': true });
       const colorBox = h('div', { class: 'cg-colorbox' });
-      const TABS = [['portrait', 'Portrait'], ['map', 'Carte'], ['battle', 'Combat']];
+      const TABS = [['portrait', 'Portrait'], ['map', 'Map'], ['battle', 'Combat']];
       const tabs = h('div', { class: 'cg-tabs' }, TABS.map(([id, label]) => h('button', { class: 'cg-tab', 'data-cg-tab': id, onclick: () => { cstate.tab = id; drawColors(); refresh(); } }, label)));
       function drawColors() {
         colorBox.replaceChildren();
-        if (cstate.tab === 'battle') {
-          colorBox.append(...[h('p', { class: 'cg-note' }, opts.battler
-            ? 'L’animation de combat est celle de la classe (ou de l’unité) : seules les couleurs de sa tenue (couleurs d’équipe) changent.'
-            : 'L’animation de combat vient de la classe : seules les couleurs de sa tenue (couleurs d’équipe) changeront. Aucun aperçu disponible ici.'),
-          h('div', { class: 'cg-row cg-battle-row' }, opts.battler ? battleCv : null,
-            h('button', { class: 'cg-btn small', 'data-cg-battle-origin': true, onclick: () => { recipe.battle = null; refresh(); } }, 'Couleurs d’origine de l’animation')),
-          rampGrid('battle', C.HAIR_RAMPS, C.HAIR_LAYOUT, (ramp) => { recipe.battle = { ramp: ramp.slice() }; refresh(); })].filter(Boolean));
-          return;
-        }
-        if (cstate.tab === 'map') {
-          colorBox.append(h('p', { class: 'cg-note', 'data-cg-sprite-note': true }, 'Ces couleurs s’appliquent ensemble au sprite de combat et au sprite de map (en jeu, le tissu prend la couleur du camp).'));
-          colorBox.append(h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', 'data-cg-map-linked': true, checked: !recipe.map,
-            onchange: (e) => { recipe.map = e.target.checked ? null : C.normColors(recipe); drawColors(); refresh(); } }), ' Mêmes couleurs que le portrait'));
-          if (!recipe.map) return;
+        if (cstate.tab !== 'portrait') {
+          const key = cstate.tab === 'map' ? 'map' : 'combat';
+          colorBox.append(h('p', { class: 'cg-note', 'data-cg-sprite-note': true }, key === 'map'
+            ? 'Ces couleurs s’appliquent au sprite de map (en jeu, le tissu prend la couleur du camp).'
+            : 'Ces couleurs s’appliquent au sprite de combat ; le tissu donne aussi la tenue de l’animation de combat de la classe.'));
+          colorBox.append(h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', ['data-cg-' + key + '-linked']: true, checked: !recipe[key],
+            onchange: (e) => { recipe[key] = e.target.checked ? null : C.normColors(recipe); drawColors(); refresh(); } }), ' Mêmes couleurs que le portrait'));
+          if (!recipe[key]) return;
         }
         const groups = C.GROUPS.filter(g => cstate.tab === 'portrait' || g.id !== 'eyes');
         if (!groups.some(g => g.id === cstate.group)) cstate.group = 'hair';

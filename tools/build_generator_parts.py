@@ -39,6 +39,11 @@ def label(name):
     return (s[:1].upper() + s[1:]).strip() + artist
 
 
+# sprites de combat montés (cheval, pégase, vouivre…) : la monture prend les teintes du cuir (CharGen.mountMask)
+MOUNTED = re.compile(r'cavalier|cavelier|paladin|bow ?knight|dark ?knight|great ?knight|mage ?knight|nomad|ranger|troubadour|valkyrie|'
+                     r'rath|astrid|falcon|pegas|wyvern|griffon|horse|eliwood ?greatlord|ephraim ?greatlord|erika ?greatlord|eirika ?greatlord', re.I)
+
+
 def sheet(files, cell):
     rows = max(1, (len(files) + COLS - 1) // COLS)
     out = Image.new('RGBA', (COLS * cell, rows * cell))
@@ -63,7 +68,7 @@ def main():
     sheet([parts['Hairb'].get(n) for n in hair_names], 96).save(os.path.join(OUT, 'hairb.png'), optimize=True)
     for kind, cell in (('Face', 96), ('Armor', 96), ('Token', 64)):
         names = sorted(parts[kind], key=key)
-        index[kind.lower()] = [{'id': n, 'label': label(n)} for n in names]
+        index[kind.lower()] = [dict({'id': n, 'label': label(n)}, **({'mount': True} if kind == 'Token' and MOUNTED.search(n) else {})) for n in names]
         sheet([parts[kind][n] for n in names], cell).save(os.path.join(OUT, kind.lower() + '.png'), optimize=True)
     with open(os.path.join(OUT, 'parts.js'), 'w', encoding='utf-8') as f:
         f.write('/* Généré par tools/build_generator_parts.py — ne pas modifier à la main. */\nself.GENERATOR_PARTS = ')

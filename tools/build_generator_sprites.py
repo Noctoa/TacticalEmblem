@@ -19,6 +19,10 @@ Sortie (planches au format du jeu : 4 colonnes × 6 lignes de 32×32 — repos, 
   tools/map-sprites/CREDITS.txt                    crédits (artistes et sprites)
   tools/map-sprites/exclus.txt                     sprites à ne pas proposer dans le générateur (identifiants)
 
+Le générateur ne propose qu'une sélection (select_sprites) : les sprites dont le nom rappelle un visage ou un sprite de
+combat du générateur (img/generator/parts.js) — un (M) et un (F) par classe, et les personnages de la série qui ont
+un visage (Eliwood, Lyn, Serra…), un par classe et par sexe.
+
   python3 tools/build_generator_sprites.py
 """
 import collections, json, os, re, shutil, unicodedata
@@ -202,13 +206,92 @@ def ids_for(entries):
     return out
 
 
+# ------------------------------------------------------------------ sélection proposée par le générateur
+# On ne garde que les sprites dont le nom rappelle un visage ou un sprite de combat du générateur (parts.js) :
+#   classes (Soldier, Paladin, Pegasus Rider…) → un sprite (M) et un (F) par classe (à défaut de (M), un (U)) ;
+#   personnages (Eliwood, Lyn, Serra…) → leurs sprites de personnages principaux, un par classe et par sexe.
+PARTS_JS = os.path.join(OUT_GEN, 'parts.js')
+NAME_FIX = {'acher': 'archer', 'cavelier': 'cavalier', 'solder': 'soldier', 'sword master': 'swordmaster', 'falco knight': 'falcon knight',
+            'axe fighter': 'fighter', 'spear fighter': 'soldier', 'light mage': 'mage', 'priestess': 'priest', 'bandit': 'brigand',
+            'guard': 'soldier', 'peasant': 'villager', 'peasant boy': 'villager', 'servant': 'villager', 'eirk': 'erk', 'erika': 'eirika',
+            'sera': 'serra', 'legualt': 'legault', 'elphin': 'elffin', 'larachel': "l'arachel", 'loyd': 'lloyd', 'guy sword master': 'guy'}
+NOT_NAMES = {'sword', 'axe', 'iscaneus', 'inscaneus', 'wyvern', 'lance'}
+BAD_VARIANT = re.compile(r'16x16|16x32|32x32|Style|Edit|Effect|Evil|Flipped|Stationary|Vacant|Bulky|\balt\b', re.I)
+WEAPON_PREF = ['Lance', 'Sword', 'Axe', 'Bow', 'Staff']
+
+
+def part_names():
+    """Noms des visages et des sprites de combat du générateur, simplifiés (« Archer Alt 2 (Iscaneus) » → archer)."""
+    txt = open(PARTS_JS, encoding='utf-8').read()
+    parts = json.loads(txt[txt.index('{'):txt.rindex('}') + 1])
+    names = set()
+    for p in parts.get('token', []) + parts.get('face', []):
+        l = re.sub(r'\(Iscaneus\)', '', p['label']).strip()
+        if not re.fullmatch(r'(Axe|Spear) Fighter.*|Sword Master.*', l):
+            l = re.sub(r'\b(Alt(ernate)?|Female|Male|Old|Young|Token|Box|casting|Greatlord|Axe|Sword|Spear|Bow|Handaxe|Staff|Levin|Fighter|Myrmidon|Halberdier)\b|\d+', ' ', l)
+        l = ' '.join(l.split()).lower()
+        l = NAME_FIX.get(l, l)
+        if l and l not in NOT_NAMES:
+            names.add(l)
+    return names
+
+
+def split_label(label):
+    """« Soldier (M) Lance » → ('Soldier', 'M', 'Lance') ; [M] accepté ; sans sexe : 'U'."""
+    m = re.match(r'^(.*?)\s*[\(\[]([MFU])[\)\]]\s*(.*)$', label)
+    return (m.group(1).strip(), m.group(2), m.group(3).strip()) if m else (label, 'U', '')
+
+
+def pick_score(e):
+    cls, g, rest = split_label(e['label'])
+    words = rest.split()
+    w = next((i for i, k in enumerate(WEAPON_PREF) if k in words), len(WEAPON_PREF))
+    return ('IS' in e['credits']) * 100 - (40 if BAD_VARIANT.search(e['label']) else 0) - 8 * len(words) - (5 if 'Generic' in words else 0) - w
+
+
+def select_sprites(gen, lib):
+    names = part_names()
+    by_class = collections.defaultdict(lambda: collections.defaultdict(list))
+    for e in gen:
+        cls, g, rest = split_label(e['label'])
+        k = cls.lower()
+        if k == 'pegasi':
+            k = 'falcon knight' if 'T2' in rest.split() else 'pegasus rider'
+        if k in names:
+            by_class[k][g].append(e)
+    chosen = []
+    for k in sorted(by_class):
+        gs = by_class[k]
+        # pas de (M) : un sprite unisexe en tient lieu s'il est d'origine (IS) ou si la classe n'a pas de (F)
+        male = gs['M'] or [e for e in gs['U'] if 'IS' in e['credits'] or not gs['F']]
+        if male:
+            chosen.append(max(male, key=pick_score))
+        if gs['F']:
+            chosen.append(max(gs['F'], key=pick_score))
+    classes = set(by_class)
+    by_char = collections.defaultdict(list)
+    for e in lib:
+        words = re.findall(r"[a-z']+", e['label'].lower())
+        hit = next((w for w in words if w in names and w not in classes), None)
+        if not hit:
+            continue
+        cls, g, rest = split_label(e['label'])
+        base = ' '.join(w for w in re.findall(r"[a-z']+", cls.lower()) if w != hit and w not in ('alt', 't1', 't2', 'custom', 'pale', 'flower', 'bulky'))
+        by_char[(hit, base, g)].append(e)
+    chars = [max(es, key=pick_score) for _, es in sorted(by_char.items())]
+    return chosen, chars
+
+
 def main():
     gen, lib = scan('generateur'), scan('personnages-principaux')
     # générateur
     sdir = os.path.join(OUT_GEN, 'sprites')
     shutil.rmtree(sdir, ignore_errors=True); os.makedirs(sdir)
     lst, thumbs = [], []
-    for e, sid in zip(gen, ids_for(gen)):
+    gen_ids, lib_ids = dict(zip(map(id, gen), ids_for(gen))), dict(zip(map(id, lib), ids_for(lib)))
+    classes, chars = select_sprites([e for e in gen if gen_ids[id(e)] not in SKIP], lib)
+    todo = [(e, gen_ids[id(e)], e['folder']) for e in classes] + [(e, lib_ids[id(e)], 'Personnages de la série') for e in chars]
+    for e, sid, group in todo:
         if sid in SKIP:
             continue
         r = convert(e)
@@ -216,8 +299,9 @@ def main():
             print('  ignoré (format inconnu) :', e['label']); continue
         img, meta, thumb, counts = r
         img.save(os.path.join(sdir, sid + '.png'), optimize=True)
-        lst.append({'id': sid, 'label': e['label'], 'group': e['folder'], 'credits': e['credits'], 'f': counts})
+        lst.append({'id': sid, 'label': e['label'], 'group': group, 'credits': e['credits'], 'f': counts})
         thumbs.append(thumb)
+    assert len({x['id'] for x in lst}) == len(lst), 'identifiants en double'
     rows = (len(thumbs) + THUMB_COLS - 1) // THUMB_COLS
     atlas = np.zeros((max(1, rows) * 32, THUMB_COLS * 32, 4), np.uint8)
     for i, t in enumerate(thumbs):
@@ -239,7 +323,8 @@ def main():
         json.dump(meta, open(os.path.join(OUT_LIB, sid + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
         nlib += 1
     write_credits()
-    print(f'générateur : {len(lst)} sprites · personnages principaux : {nlib}')
+    print(f'générateur : {len(lst)} sprites ({len(lst) - sum(x["group"] == "Personnages de la série" for x in lst)} de classes, '
+          f'{sum(x["group"] == "Personnages de la série" for x in lst)} de personnages) · personnages principaux : {nlib}')
 
 
 def write_credits():

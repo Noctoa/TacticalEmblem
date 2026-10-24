@@ -6,7 +6,8 @@
  *     colors: { skin, hair, eyes, metal, trim, cloth, leather }   couleurs '#rrggbb' (eyes '' = comme les cheveux)
  *     ramps: { hair | eyes | metal | trim | cloth | leather: [clair, base, ombre], skin: [5 nuances] }   dégradés exacts (facultatif)
  *     map: null | { colors, ramps }   couleurs propres au sprite de map (null = celles du portrait)
- *     battle: null | { ramp: [clair, base, ombre] }   tenue de l'animation de combat (null = couleurs d'origine de l'animation)
+ *     combat: null | { colors, ramps }   couleurs propres au sprite de combat (null = celles du portrait) ; son tissu
+ *                                        donne aussi la tenue (couleurs d'équipe) de l'animation de combat de la classe
  *     offsets: { hair: [dx, dy], face: [dx, dy], armor: [dx, dy] }   décalage de chaque pièce en pixels
  *     sprite: '' | id }   sprite de map animé tiré de la bibliothèque FE (img/generator/sprites.js) ; '' = la figurine
  *
@@ -131,8 +132,14 @@
   }
   /** Couleurs du sprite de map : les siennes, sinon celles du portrait. */
   const mapColors = (recipe) => (recipe && recipe.map ? recipe.map : recipe);
-  /** Palette de l'animation de combat (Palettes « custom: ») ; '' = couleurs d'origine. */
-  const battlePalette = (recipe) => (recipe && recipe.battle && rampOk(recipe.battle.ramp, 3) ? 'custom:' + recipe.battle.ramp.join(',') : '');
+  /** Couleurs du sprite de combat : les siennes, sinon celles du portrait. */
+  const combatColors = (recipe) => (recipe && recipe.combat ? recipe.combat : recipe);
+  /** Palette de l'animation de combat (Palettes « custom: ») : le tissu du sprite de combat ; '' sans recette. */
+  function battlePalette(recipe) {
+    if (!recipe || typeof recipe !== 'object') return '';
+    const cc = combatColors(recipe), pal = palette(cc.colors, cc.ramps);
+    return 'custom:' + [pal[15], pal[16], pal[17]].map(hex).join(',');
+  }
   const EMPTY_OFFSETS = () => ({ hair: [0, 0], face: [0, 0], armor: [0, 0] });
   const clampOff = (v) => Math.max(-48, Math.min(48, Math.round(Number(v) || 0)));
   /** Recette complète et valide (pièces inconnues retirées si parts est donné). */
@@ -144,7 +151,11 @@
     if (typeof r.sprite === 'string' && (!parts || !parts.sprite || parts.sprite.some(p => p.id === r.sprite))) out.sprite = r.sprite;
     Object.assign(out, normColors(r));
     if (r.map && typeof r.map === 'object') out.map = normColors(r.map);
-    if (r.battle && rampOk(r.battle.ramp, 3)) out.battle = { ramp: r.battle.ramp.map(c => hex(rgb(c))) };
+    if (r.combat && typeof r.combat === 'object') out.combat = normColors(r.combat);
+    else if (r.battle && rampOk(r.battle.ramp, 3)) { // ancienne recette : tenue de combat seule → couleurs du sprite de combat
+      const ramp = r.battle.ramp.map(c => hex(rgb(c)));
+      out.combat = normColors({ colors: Object.assign({}, out.colors, { cloth: ramp[1] }), ramps: Object.assign({}, out.ramps, { cloth: ramp }) });
+    }
     for (const k of Object.keys(out.offsets)) { const o = r.offsets && r.offsets[k]; if (Array.isArray(o)) out.offsets[k] = [clampOff(o[0]), clampOff(o[1])]; }
     return out;
   }
@@ -156,7 +167,7 @@
     if (r.sprite !== undefined && r.sprite !== '' && (typeof r.sprite !== 'string' || (parts && parts.sprite && !parts.sprite.some(p => p.id === r.sprite)))) errors.push(`Sprite de map inconnu (${r.sprite}).`);
     for (const g of GROUPS) if (r.colors && r.colors[g.id] !== undefined && !rgb(r.colors[g.id]) && !(g.optional && r.colors[g.id] === '')) errors.push(`Couleur invalide (${g.label}).`);
     for (const [k, size] of Object.entries(RAMP_SIZE)) if (r.ramps && r.ramps[k] !== undefined && !rampOk(r.ramps[k], size)) errors.push(`Nuancier invalide (${k}).`);
-    if (r.battle && !rampOk(r.battle.ramp, 3)) errors.push('Couleurs de combat invalides.');
+    if (r.combat !== undefined && r.combat !== null && typeof r.combat !== 'object') errors.push('Couleurs de combat invalides.');
     return errors;
   }
   /** Recette au hasard (rng : () => [0, 1)) ; garde les champs de keep. */
@@ -206,11 +217,51 @@
     return out;
   }
   /** Figurine 64 × 64 recolorée (RGBA). */
-  function composeToken(src, recipe) {
+  /**
+   * Monture d'un sprite de combat (cheval, pégase…) : sur les figurines montées, la crinière, la queue et la robe sont
+   * dessinées avec les teintes « cheveux ». On garde comme cheveux la mèche du cavalier (tache de teinte cheveux la plus
+   * haute, si elle est dans le haut de la figurine, et les taches collées à elle) ; le reste est la monture.
+   * Renvoie un masque (1 = pixel de la monture) de TOKEN × TOKEN.
+   */
+  function mountMask(src) {
+    const F = TOKEN, mask = new Uint8Array(F * F);
+    if (!src) return mask;
+    const isHair = (k) => src[k * 4 + 3] && Math.floor(src[k * 4] / 10) >= 1 && Math.floor(src[k * 4] / 10) <= 3;
+    let top = F, bottom = -1;
+    for (let k = 0; k < F * F; k++) if (src[k * 4 + 3]) { const y = Math.floor(k / F); if (y < top) top = y; if (y > bottom) bottom = y; }
+    if (bottom < 0) return mask;
+    // taches de teinte cheveux (8-connexité)
+    const comp = new Int32Array(F * F).fill(-1), comps = [];
+    for (let k = 0; k < F * F; k++) {
+      if (comp[k] >= 0 || !isHair(k)) continue;
+      const c = { id: comps.length, px: [], x0: F, x1: -1, y0: F, y1: -1 }, stack = [k]; comp[k] = c.id;
+      while (stack.length) {
+        const q = stack.pop(), x = q % F, y = Math.floor(q / F); c.px.push(q);
+        if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy, n = ny * F + nx;
+          if (nx >= 0 && ny >= 0 && nx < F && ny < F && comp[n] < 0 && isHair(n)) { comp[n] = c.id; stack.push(n); }
+        }
+      }
+      comps.push(c);
+    }
+    if (!comps.length) return mask;
+    const head = comps.reduce((a, c) => (c.y0 < a.y0 ? c : a));
+    const keep = new Set();
+    if (head.y0 <= top + (bottom - top) * 0.3) {
+      keep.add(head.id);
+      for (const c of comps) if (c.y0 <= head.y1 + 1 && c.x1 >= head.x0 - 2 && c.x0 <= head.x1 + 2 && c.y1 <= head.y1 + 6) keep.add(c.id);
+    }
+    for (const c of comps) if (!keep.has(c.id)) for (const q of c.px) mask[q] = 1;
+    return mask;
+  }
+  /** opts.mount : figurine montée → la monture prend les teintes du cuir au lieu de celles des cheveux. */
+  function composeToken(src, recipe, opts = {}) {
     const mc = mapColors(recipe), pal = palette(mc.colors, mc.ramps), out = new Uint8ClampedArray(TOKEN * TOKEN * 4);
     if (!src) return out;
+    const mount = opts.mount ? mountMask(src) : null;
     for (let i = 0; i < out.length; i += 4) {
-      const c = shade(pal, src[i], src[i + 3]); if (!c) continue;
+      const c = mount && mount[i / 4] ? pal[RAMP_INDEX.leather + Math.floor(src[i] / 10) - 1] : shade(pal, src[i], src[i + 3]); if (!c) continue;
       out[i] = c[0]; out[i + 1] = c[1]; out[i + 2] = c[2]; out[i + 3] = 255;
     }
     return out;
@@ -370,6 +421,6 @@
     return errors.concat(validate(a.recipe, parts));
   }
 
-  return { normColors, mapColors, battlePalette, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
-    normalize, validate, random, defaults, composePortrait, composeToken, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feTeamColors };
+  return { normColors, mapColors, combatColors, battlePalette, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
+    normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feTeamColors };
 });

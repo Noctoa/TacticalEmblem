@@ -147,7 +147,7 @@ test('yeux : couleur propre (iris dessiné en teinte « cheveux » près du blan
   assert.deepEqual(C.validate({ face: 'x', colors: { eyes: '' } }), []);
 });
 
-test('couleurs séparées : sprite de map (propres ou comme le portrait), animation de combat (tenue)', () => {
+test('couleurs séparées : sprite de map, sprite de combat et tenue de l’animation de combat', () => {
   const metal = C.HAIR_RAMPS[3], cloth = C.HAIR_RAMPS[100], mapCloth = C.HAIR_RAMPS[7], battle = C.HAIR_RAMPS[150];
   const pal = C.palette(C.DEFAULT_COLORS, { metal, cloth });
   assert.deepEqual(pal.slice(9, 12), metal.map(C.rgb)); assert.deepEqual(pal.slice(15, 18), cloth.map(C.rgb));
@@ -155,7 +155,14 @@ test('couleurs séparées : sprite de map (propres ou comme le portrait), animat
   assert.deepEqual(C.teamColors(r), mapCloth);                  // sprite de map : ses propres couleurs
   assert.deepEqual(C.teamColors(Object.assign({}, r, { map: null })), cloth); // sinon celles du portrait
   assert.equal(C.battlePalette(r), 'custom:' + battle.join(','));
-  assert.equal(C.battlePalette(C.normalize({})), '');
+  assert.equal(C.battlePalette(C.normalize({ ramps: { cloth } })), 'custom:' + cloth.join(','), 'sans couleurs de combat : le tissu du portrait');
+  assert.equal(C.battlePalette(null), '');
+  // couleurs du sprite de combat : les siennes (l'ancienne tenue « battle » y est reprise comme tissu)
+  assert.deepEqual(r.combat.ramps.cloth, battle); assert.equal(r.battle, undefined);
+  const r2 = C.normalize({ ramps: { cloth }, combat: { colors: {}, ramps: { cloth: metal } } });
+  assert.equal(C.battlePalette(r2), 'custom:' + metal.join(','));
+  const tk = new Uint8ClampedArray(64 * 64 * 4); tk[0] = 163; tk[3] = 255;
+  assert.deepEqual(Array.from(C.composeToken(tk, { map: C.combatColors(r2) }).slice(0, 3)), C.rgb(metal[1]), 'sprite de combat recoloré');
   const tok = new Uint8ClampedArray(64 * 64 * 4); tok[0] = 163; tok[3] = 255; // indice 16 : tissu de base
   assert.deepEqual(Array.from(C.composeToken(tok, r).slice(0, 3)), C.rgb(mapCloth[1]));
   // l'animation de combat : couleurs d'équipe de la planche remplacées par le dégradé, de la plus claire à la plus foncée
@@ -168,7 +175,7 @@ test('couleurs séparées : sprite de map (propres ou comme le portrait), animat
 test('bibliothèque de sprites FE : liste, planches, vignettes et crédits cohérents', () => {
   const ctx = { self: {} }; vm.runInNewContext(fs.readFileSync(path.join(GEN, 'sprites.js'), 'utf8'), ctx);
   const S = ctx.self.GENERATOR_SPRITES;
-  assert.ok(S.list.length > 500, 'des centaines de sprites');
+  assert.ok(S.list.length > 100, 'une centaine de sprites');
   const ids = new Set();
   for (const e of S.list) {
     assert.match(e.id, /^[a-z0-9-]+$/); assert.ok(!ids.has(e.id), 'id unique : ' + e.id); ids.add(e.id);
@@ -180,8 +187,16 @@ test('bibliothèque de sprites FE : liste, planches, vignettes et crédits cohé
   for (const e of S.list.slice(0, 40)) assert.deepEqual(pngSize(path.join('sprites', e.id + '.png')), [128, 192]);
   const [tw, th] = pngSize('sprites-thumbs.png');
   assert.equal(tw, S.cols * 32); assert.equal(th, Math.ceil(S.list.length / S.cols) * 32);
-  // personnages principaux mis de côté, pas dans le générateur
-  assert.ok(!S.list.some(e => /eliwood|hector|ephraim|marth|lyn\b/i.test(e.label.replace(/\S+-Style/g, ''))));
+  // sélection : un sprite (M) et un (F) au plus par classe ; personnages de la série qui ont un visage dans le générateur
+  const perClass = {};
+  for (const e of S.list.filter(e => e.group !== 'Personnages de la série')) {
+    const m = /^(.*?)\s*\(([MFU])\)\s*(.*)$/.exec(e.label), key = m[1] + (m[1] === 'Pegasi' ? m[3].split(' ')[0] : '') + ':' + (m[2] === 'F' ? 'F' : 'M');
+    assert.ok(!perClass[key], 'un seul sprite par classe et par sexe : ' + key); perClass[key] = true;
+  }
+  assert.ok(perClass['Soldier:M'] && perClass['Soldier:F'] && perClass['Paladin:M'] && perClass['Paladin:F']);
+  const chars = S.list.filter(e => e.group === 'Personnages de la série').map(e => e.label);
+  for (const n of ['Eliwood', 'Hector', 'Lyn', 'Serra']) assert.ok(chars.some(l => l.includes(n)), n);
+  assert.ok(!chars.some(l => /Marth|Celica|Edelgard/.test(l)), 'pas de personnage sans visage dans le générateur');
   const credits = fs.readFileSync(path.join(__dirname, '..', 'tools', 'map-sprites', 'CREDITS.txt'), 'utf8');
   for (const c of new Set(S.list.flatMap(e => e.credits))) assert.ok(credits.includes(c), 'crédit listé : ' + c);
 });
@@ -225,4 +240,24 @@ test('sprites retirés du générateur (tools/map-sprites/exclus.txt) absents de
   const ex = fs.readFileSync(path.join(__dirname, '..', 'tools', 'map-sprites', 'exclus.txt'), 'utf8').split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
   assert.ok(ex.length > 0);
   for (const id of ex) { assert.ok(!ids.has(id), id); assert.ok(!fs.existsSync(path.join(GEN, 'sprites', id + '.png')), id); }
+});
+
+test('sprite de combat monté : la monture prend les teintes du cuir, la mèche du cavalier garde celles des cheveux', () => {
+  const F = C.TOKEN, tok = new Uint8ClampedArray(F * F * 4);
+  const put = (x, y, idx) => { const i = (y * F + x) * 4; tok[i] = idx * 10 + 3; tok[i + 3] = 255; };
+  for (let x = 30; x < 34; x++) put(x, 10, 2);                 // cheveux du cavalier (en haut)
+  for (let y = 11; y < 20; y++) put(31, y, 16);                // corps (tissu)
+  for (let x = 20; x < 44; x++) for (let y = 30; y < 40; y++) put(x, y, 7); // cheval (peau / robe)
+  for (let x = 40; x < 46; x++) put(x, 26, 1);                 // crinière (teinte cheveux)
+  for (let y = 32; y < 42; y++) put(18, y, 3);                 // queue
+  const mask = C.mountMask(tok);
+  assert.equal(mask[10 * F + 31], 0, 'mèche du cavalier'); assert.equal(mask[26 * F + 42], 1, 'crinière'); assert.equal(mask[35 * F + 18], 1, 'queue');
+  const leather = ['#c08850', '#906030', '#603818'], r = C.normalize({ ramps: { leather, hair: ['#ff80ff', '#ff00ff', '#800080'] } });
+  const out = C.composeToken(tok, r, { mount: true }), at = (x, y) => C.hex(Array.from(out.slice((y * F + x) * 4, (y * F + x) * 4 + 3)));
+  assert.equal(at(42, 26), leather[0]); assert.equal(at(18, 35), leather[2]); assert.equal(at(31, 10), '#ff00ff');
+  assert.equal(C.hex(Array.from(C.composeToken(tok, r).slice((26 * F + 42) * 4, (26 * F + 42) * 4 + 3))), '#ff80ff', 'sans monture : cheveux');
+  // les figurines montées sont repérées par build_generator_parts.py (parts.js : mount)
+  const ctx = { self: {} }; vm.runInNewContext(fs.readFileSync(path.join(GEN, 'parts.js'), 'utf8'), ctx);
+  const tk = ctx.self.GENERATOR_PARTS.token, isM = (n) => !!(tk.find(p => p.label === n) || {}).mount;
+  assert.ok(isM('Cavalier') && isM('Paladin Female') && isM('Falcon Knight (Iscaneus)') && !isM('Soldier') && !isM('Myrmidon'));
 });
