@@ -108,7 +108,7 @@
     if (entry && spriteSheets[entry.id]) { // sprite FE : sa planche recolorée avec les couleurs de la carte
       const src = spriteSheets[entry.id], cv = document.createElement('canvas'); cv.width = src.width; cv.height = src.height;
       const g = cv.getContext('2d'); g.drawImage(src, 0, 0);
-      const px = g.getImageData(0, 0, cv.width, cv.height); C.recolorFeSprite(px.data, recipe); g.putImageData(px, 0, 0);
+      const px = g.getImageData(0, 0, cv.width, cv.height); C.recolorFeSprite(px.data, recipe, cv.width, cv.height); g.putImageData(px, 0, 0);
       mapOut = { canvas: cv, meta: Object.assign(C.spriteMeta(entry, name || 'Personnage généré'), { teamColors: C.feTeamColors(recipe) }) };
     } else {
       const map = C.mapSprite(token, { name: name || 'Personnage généré', teamColors: C.teamColors(recipe) });
@@ -139,7 +139,7 @@
     const cv = document.createElement('canvas');
     if (kind === 'sprite') {
       const t = cell('sprites-thumbs', index, 32);
-      cv.width = 32; cv.height = 32; if (t) cv.getContext('2d').putImageData(new ImageData(C.recolorFeSprite(t, recipe), 32, 32), 0, 0);
+      cv.width = 32; cv.height = 32; if (t) cv.getContext('2d').putImageData(new ImageData(C.recolorFeSprite(t, recipe, 32, 32), 32, 32), 0, 0);
     } else if (kind === 'token') {
       const t = C.composeToken(cell('token', index, 64), { map: C.combatColors(recipe) }, { mount: !!(root.GENERATOR_PARTS.token[index] || {}).mount });
       cv.width = 64; cv.height = 64; cv.getContext('2d').putImageData(new ImageData(t, 64, 64), 0, 0);

@@ -326,3 +326,25 @@ test('recette de départ : sprite de map du personnage, sinon Eliwood (comme les
   assert.deepEqual(pick(''), ['Eliwood', 'Eliwood', 'Eliwood', 'Lord', 'lord-m-eliwood-sword']);
   assert.equal(C.defaults(parts(), 'Lyn').sprite, '', 'sans bibliothèque de sprites : la figurine');
 });
+
+test('sprite de map FE : les cheveux (repérés au-dessus du visage) prennent la couleur des cheveux de la carte', () => {
+  // case 32 × 32 : contour, cheveux rouges sur 3 lignes, visage (peau claire), corps aux couleurs du camp
+  const W = 32, d = new Uint8ClampedArray(W * W * 4);
+  const put = (x, y, hex) => { const c = C.rgb(hex), i = (y * W + x) * 4; d[i] = c[0]; d[i + 1] = c[1]; d[i + 2] = c[2]; d[i + 3] = 255; };
+  for (let x = 13; x <= 18; x++) put(x, 16, '#403838');
+  for (let y = 17; y <= 19; y++) for (let x = 13; x <= 18; x++) put(x, y, y === 17 ? '#f86060' : '#e81018');
+  for (let x = 14; x <= 17; x++) put(x, 20, '#f8f8d0');
+  for (let y = 21; y <= 28; y++) for (let x = 12; x <= 19; x++) put(x, y, '#3850e0');
+  const hair = ['#ffa0ff', '#ff00ff', '#800080'], cloth = ['#f0c060', '#e07000', '#803000'];
+  const r = C.normalize({ map: { colors: { hair: '#ff00ff', cloth: '#e07000' }, ramps: { hair, cloth } } });
+  const mask = C.feHairMask(d, W, W);
+  assert.equal(mask[17 * W + 15], 1, 'cheveux'); assert.equal(mask[20 * W + 15], 0, 'visage'); assert.equal(mask[24 * W + 15], 0, 'corps');
+  C.recolorFeSprite(d, r, W, W);
+  const at = (x, y) => C.hex(Array.from(d.slice((y * W + x) * 4, (y * W + x) * 4 + 3)));
+  assert.equal(at(15, 17), hair[0], 'reflet : nuance claire'); assert.equal(at(15, 18), hair[2], 'cheveux : nuance foncée');
+  assert.equal(at(15, 24), C.hex(C.palette(r.map.colors, r.map.ramps)[16]), 'le corps garde le tissu');
+  assert.equal(at(15, 20), C.hex(C.palette(r.map.colors, r.map.ramps)[4]), 'le visage garde la peau');
+  // sans dimensions : comme avant (pas de repérage des cheveux)
+  const d2 = new Uint8ClampedArray(4); d2.set([0xe8, 0x10, 0x18, 255]); C.recolorFeSprite(d2, r);
+  assert.equal(C.hex(Array.from(d2.slice(0, 3))), '#e81018');
+});
