@@ -428,11 +428,14 @@
   /**
    * Recolore (sur place) les pixels RGBA d'un sprite de map FE : chaque couleur proche (écart ≤ 14 par composante)
    * d'une couleur de la palette commune prend la teinte choisie ; les autres (contour, couleurs propres) restent.
+   * Avec width (et height), les cheveux sont aussi repérés et prennent le dégradé « Cheveux » (recolorFeHair).
    */
-  function recolorFeSprite(data, recipe) {
+  function recolorFeSprite(data, recipe, width, height) {
     const map = feMapPalette(recipe), cache = new Map();
+    // cheveux (repérés par la place, voir feHairMask) : dégradé « Cheveux », puis le reste avec la palette commune
+    const hair = width ? recolorFeHair(data, width, height || data.length / 4 / width, recipe) : null;
     for (let i = 0; i < data.length; i += 4) {
-      if (!data[i + 3]) continue;
+      if (!data[i + 3] || (hair && hair[i / 4])) continue;
       const key = (data[i] << 16) | (data[i + 1] << 8) | data[i + 2];
       let to = cache.get(key);
       if (to === undefined) {
@@ -443,6 +446,82 @@
       if (to) { data[i] = to[0]; data[i + 1] = to[1]; data[i + 2] = to[2]; }
     }
     return data;
+  }
+  /**
+   * Cheveux d'un sprite de map FE. La palette commune des sprites GBA n'a pas de couleur « cheveux » : ils sont
+   * dessinés avec les couleurs du camp (Lyn, Hector), le rouge (Eliwood) ou l'or (blonds). On les repère donc par la
+   * place : dans chaque case de 32 × 32, les pixels colorés de la tête — au-dessus du visage (peau de la palette)
+   * et autour, ou le haut de la silhouette quand le personnage est de dos — reliés au sommet du crâne.
+   * Renvoie un masque (1 = cheveux) de la taille de l'image.
+   */
+  const FE_SKIN = ['#f8f8d0', '#b09058'].map(rgb), FE_NOT_HAIR = ['#403838', '#808870', '#f8f8f8', '#d8e8f0', '#90b8e8', '#706060', '#000000'].map(rgb);
+  const near = (r, g, b, c, tol = 14) => Math.abs(r - c[0]) <= tol && Math.abs(g - c[1]) <= tol && Math.abs(b - c[2]) <= tol;
+  function feHairMask(data, width, height, cell = 32) {
+    const mask = new Uint8Array(width * height);
+    const isLightSkin = (i) => near(data[i], data[i + 1], data[i + 2], FE_SKIN[0]);
+    const kind = (i) => { // 0 vide / contour / ombre / blanc / métal, 1 peau, 2 couleur (cheveux possibles)
+      if (data[i + 3] < 128) return 0;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      if (FE_SKIN.some(c => near(r, g, b, c))) return 1;
+      if (FE_NOT_HAIR.some(c => near(r, g, b, c, 10)) || Math.max(r, g, b) < 70) return 0;
+      return 2;
+    };
+    for (let cy = 0; cy + cell <= height; cy += cell) for (let cx = 0; cx + cell <= width; cx += cell) {
+      const K = new Uint8Array(cell * cell);
+      let top = -1, fx0 = cell, fx1 = -1, fy0 = cell, fy1 = -1;
+      for (let y = 0; y < cell; y++) for (let x = 0; x < cell; x++) {
+        const k = kind(((cy + y) * width + cx + x) * 4); K[y * cell + x] = k;
+        if (k && top < 0) top = y;
+      }
+      if (top < 0) continue;
+      // visage : la peau claire la plus haute de la silhouette (8 premières lignes ; la peau foncée sert aussi aux
+      // armures, et les mains sont plus bas)
+      for (let y = top; y < Math.min(cell, top + 8); y++) for (let x = 0; x < cell; x++) if (K[y * cell + x] === 1 && isLightSkin(((cy + y) * width + cx + x) * 4)) {
+        if (fy0 === cell) fy0 = y;
+        if (y <= fy0 + 1) { fx0 = Math.min(fx0, x); fx1 = Math.max(fx1, x); fy1 = Math.max(fy1, y); }
+      }
+      let y0, y1, x0, x1;
+      if (fx1 >= 0) { y0 = Math.max(top, fy0 - 7); y1 = Math.min(cell - 1, fy0 + 1); x0 = Math.max(0, fx0 - 2); x1 = Math.min(cell - 1, fx1 + 2); }
+      else { // de dos : le haut de la tête
+        let a = cell, b = -1; for (let x = 0; x < cell; x++) for (let y = top; y < top + 2; y++) if (K[y * cell + x]) { a = Math.min(a, x); b = Math.max(b, x); }
+        y0 = top; y1 = Math.min(cell - 1, top + 3); x0 = Math.max(0, a - 2); x1 = Math.min(cell - 1, b + 2);
+      }
+      // cheveux : pixels colorés de cette zone reliés au crâne — juste au-dessus du visage, ou le haut de la tête de dos
+      const seen = new Uint8Array(cell * cell), stack = [];
+      const [sy0, sy1, sx0, sx1] = fx1 >= 0 ? [Math.max(y0, fy0 - 4), fy0 - 1, fx0, fx1] : [y0, Math.min(y1, y0 + 1), x0, x1];
+      for (let y = sy0; y <= sy1; y++) for (let x = sx0; x <= sx1; x++) if (K[y * cell + x] === 2) { seen[y * cell + x] = 1; stack.push(y * cell + x); }
+      while (stack.length) {
+        const p = stack.pop(), x = p % cell, y = (p - x) / cell;
+        mask[(cy + y) * width + cx + x] = 1;
+        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+          const nx = x + dx, ny = y + dy, q = ny * cell + nx;
+          if (nx < x0 || nx > x1 || ny < y0 || ny > y1 || seen[q] || K[q] !== 2) continue;
+          seen[q] = 1; stack.push(q);
+        }
+      }
+    }
+    return mask;
+  }
+  /**
+   * Cheveux d'un sprite de map FE aux couleurs de la carte : les teintes trouvées dans le masque, de la plus claire à
+   * la plus foncée, prennent le dégradé « Cheveux » (3 nuances). Sur place ; à appeler avant recolorFeSprite.
+   */
+  function recolorFeHair(data, width, height, recipe) {
+    const mask = feHairMask(data, width, height), cols = new Map();
+    for (let p = 0; p < mask.length; p++) if (mask[p]) { const i = p * 4; cols.set((data[i] << 16) | (data[i + 1] << 8) | data[i + 2], 1); }
+    if (!cols.size) return mask;
+    const mc = mapColors(recipe), ramp = palette(mc.colors, mc.ramps).slice(RAMP_INDEX.hair, RAMP_INDEX.hair + 3);
+    const lum = (k) => 0.3 * (k >> 16) + 0.59 * ((k >> 8) & 255) + 0.11 * (k & 255);
+    const sorted = [...cols.keys()].sort((a, b) => lum(b) - lum(a)), to = new Map();
+    sorted.forEach((k, i) => {
+      const t = sorted.length === 1 ? 1 : i * 2 / (sorted.length - 1), a = ramp[Math.floor(t)], b = ramp[Math.ceil(t)], f = t - Math.floor(t);
+      to.set(k, a.map((v, j) => Math.round(v + (b[j] - v) * f)));
+    });
+    for (let p = 0; p < mask.length; p++) if (mask[p]) {
+      const i = p * 4, c = to.get((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+      data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2];
+    }
+    return mask;
   }
   /** Couleurs d'équipe d'un sprite FE recoloré : les 5 nuances du camp devenues celles du tissu. */
   const feTeamColors = (recipe) => feMapPalette(recipe).slice(0, 5).map(([, c]) => hex(c));
@@ -484,5 +563,5 @@
   }
 
   return { normColors, mapColors, combatColors, battlePalette, battlerColorTable, recolorBattler, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
-    normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feTeamColors };
+    normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feHairMask, recolorFeHair, feTeamColors };
 });
