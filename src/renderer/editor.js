@@ -1650,6 +1650,8 @@
       else if (Skills.isLegacyImage(sk.image)) { sk.image = Skills.upgradeImage(sk); icons++; } // anciennes icônes façon Heroes, retirées
     }
     for (const u of DB().ultimates || []) if (Skills.isLegacyImage(u.image)) { u.image = Ultimates.ICON; icons++; }
+    // icônes des armes et objets (img/items) : celles de base d'un ancien projet reçoivent la leur, d'après leur nom
+    icons += ArmoryIcons.fill(DB());
     if (icons) markDirty();
     const meta = S.project.meta, done = meta.pluginMigrations || [];
     for (const mig of PLUGIN_MIGRATIONS) {

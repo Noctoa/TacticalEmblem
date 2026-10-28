@@ -22,8 +22,11 @@
   const box = (x, y, w, hh, cls, ...children) => h('div', { class: 'rd-abs' + (cls ? ' ' + cls : ''),
     style: { left: `calc(var(--s) * ${x}px)`, top: `calc(var(--s) * ${y}px)`, width: `calc(var(--s) * ${w}px)`, height: `calc(var(--s) * ${hh}px)` } }, ...children);
 
-  function weaponIcon(type) {
-    const i = WICONS.indexOf(type);
+  /** Icône d'une arme ou d'un objet : son image (img/items, ItemIcons), sinon l'icône du type d'arme, sinon ✚. */
+  function weaponIcon(def) {
+    const own = h('span', { class: 'rd-icon' });
+    if (self.ItemIcons && ItemIcons.apply(own, def && def.image)) return own;
+    const i = WICONS.indexOf(def && def.type);
     return i < 0 ? h('span', { class: 'rd-icon rd-icon-txt' }, '✚') : h('span', { class: 'rd-icon', style: { backgroundPosition: `calc(var(--s) * ${-i * 10}px) 0` } });
   }
 
@@ -109,7 +112,7 @@
     // encadré : arme équipée
     const eq = c.eq;
     panel.append(box(169, 120, 61, 33, 'rd-boxed', eq
-      ? [h('div', { class: 'rd-boxed-title' }, weaponIcon(eq.weapon.type), h('span', {}, eq.weapon.name)),
+      ? [h('div', { class: 'rd-boxed-title' }, weaponIcon(eq.weapon), h('span', {}, eq.weapon.name)),
         h('div', { class: 'rd-boxed-sub' }, `Portée ${eq.weapon.minRange || 1}${(eq.weapon.maxRange || 1) > (eq.weapon.minRange || 1) ? '-' + eq.weapon.maxRange : ''} · ${u.inventory[eq.index].uses || '∞'}`)]
       : h('div', { class: 'rd-boxed-sub' }, 'Aucune arme équipée')));
   }
@@ -122,7 +125,7 @@
       const e = R.getEntry(G.db, slot.id), d = e ? e.def : null;
       const isW = e && e.kind === 'weapon';
       list.append(h('div', { class: 'rd-item' + (eq && eq.index === i ? ' eq' : '') },
-        isW ? weaponIcon(d.type) : h('span', { class: 'rd-icon rd-icon-txt' }, '✚'),
+        isW ? weaponIcon(d) : weaponIcon(d ? { image: d.image } : null),
         h('span', { class: 'rd-item-name' }, d ? d.name : slot.id), eq && eq.index === i ? h('i', {}, 'E') : null,
         h('b', {}, slot.uses ? String(slot.uses) : '∞')));
     });
@@ -130,7 +133,7 @@
     panel.append(box(104, 26, 124, 90, '', list));
     const w = eq && eq.weapon;
     panel.append(box(169, 120, 61, 33, 'rd-boxed', w
-      ? [h('div', { class: 'rd-boxed-title' }, weaponIcon(w.type), h('span', {}, w.name)),
+      ? [h('div', { class: 'rd-boxed-title' }, weaponIcon(w), h('span', {}, w.name)),
         h('div', { class: 'rd-boxed-sub' }, `Puis ${w.might} · Préc ${w.hit}`), h('div', { class: 'rd-boxed-sub' }, `Crit ${w.crit || 0} · Poids ${w.weight || 0}`)]
       : h('div', { class: 'rd-boxed-sub' }, 'Aucune arme équipée')));
   }

@@ -1,5 +1,6 @@
 /*
- * Pack « Armes, objets et compétences de la série Fire Emblem » : fiches (stats, prix, effets) sans aucune image.
+ * Pack « Armes, objets et compétences de la série Fire Emblem » : fiches (stats, prix, effets). Les armes et objets reçoivent
+ * l'icône de la planche img/items qui porte leur nom (armory-icons.js), sinon celle de leur type.
  * Les valeurs sont celles de l'ère GBA / Tellius quand elles existent, arrondies au moteur de Tactical Emblem.
  * Les effets que le moteur ne gère pas sont simplifiés (expliqué dans la description des compétences).
  *
@@ -8,9 +9,9 @@
  */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./skills.js') : root.Skills);
+  const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./armory-icons.js') : root.ArmoryIcons);
   if (common) module.exports = api; else root.FEArsenal = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, ArmoryIcons) {
   'use strict';
   const fold = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const slug = (s) => fold(s).replace(/ /g, '_');
@@ -275,6 +276,7 @@
         let id = PREFIX[g.kind] + slug(e.name), n = 2;
         while (list.some(x => x.id === id)) id = PREFIX[g.kind] + slug(e.name) + '_' + n++;
         const entry = Object.assign({ id }, JSON.parse(JSON.stringify(e)), { fromPack: 'fe' });
+        if (g.kind !== 'skills' && entry.image === undefined && ArmoryIcons) { const im = ArmoryIcons.defaultImage(entry); if (im) entry.image = im; }
         list.push(entry); out[g.kind]++;
       }
     }

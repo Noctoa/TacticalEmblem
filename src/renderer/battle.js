@@ -194,6 +194,13 @@
   const hudTheme = (sc) => (HUD_THEMES[sc.opts.hudTheme] ? sc.opts.hudTheme : 'gba');
   function hudScale(w, hh) { return Math.max(2, Math.min(6, Math.floor(Math.min(w / 240, hh / 170)))); }
 
+  /** Icône de l'arme dans le bandeau : son image (img/items), sinon celle de son type. */
+  function weaponGlyph(w, icon) {
+    const el = h('i', { class: 'gb-icon', style: icon >= 0 ? `--icon:${icon}` : 'display:none' });
+    if (w && self.ItemIcons && ItemIcons.apply(el, w.image)) el.style.display = '';
+    return el;
+  }
+
   function buildDom(sc) {
     const fc = sc.opts.forecast;
     const statsOf = (actor) => (actor.unit === sc.opts.att ? fc.att : fc.def);
@@ -208,7 +215,7 @@
       const row = (label, val) => h('div', { class: 'gb-row' }, h('i', { class: 'gb-label ' + label }), h('b', {}, val));
       return h('div', { class: 'b-panel gb-side ' + actor.side + ' ' + (actor.side === 'L' ? 'enemy' : actor.unit.team === 'ally' ? 'ally' : 'player') },
         h('div', { class: 'gb-weapon' },
-          h('i', { class: 'gb-icon', style: icon >= 0 ? `--icon:${icon}` : 'display:none' }),
+          weaponGlyph(w, icon),
           h('span', { class: 'gb-wname' }, sideWeapon(sc, actor))),
         h('div', { class: 'gb-hp ' + color }, hpNum, hpBar),
         h('div', { class: 'gb-stats ' + color },

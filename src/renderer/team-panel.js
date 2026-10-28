@@ -9,6 +9,8 @@
     const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
     function itemIcon(slot) {
       const e = R.getEntry(G.db, slot.id), i = e && e.kind === 'weapon' ? WICONS.indexOf(e.def.type) : -1;
+      const own = h('span', { class: 'tb-wicon' });
+      if (e && self.ItemIcons && ItemIcons.apply(own, e.def.image)) return own; // icône de l'arme / de l'objet (img/items)
       return i >= 0 ? h('span', { class: 'tb-wicon', style: { backgroundPosition: `${-i * 16}px 0` } }) : h('span', { class: 'tb-wicon txt' }, '✚');
     }
     function bust(unit) {

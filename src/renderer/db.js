@@ -81,26 +81,58 @@
   }
   /** Fenêtre de choix d'une icône de compétence : groupes en onglets, recherche, clic pour choisir. Renvoie l'id ou null. */
   function pickSkillImage(current) {
-    const groups = SkillIcons.groups(), cur = SkillIcons.parse(current);
+    return pickIcon({ title: 'Icône de la compétence', current, lib: SkillIcons, placeholder: 'Rechercher (nom, artiste)…',
+      text: (i) => i.label + ' ' + i.credits.join(' '), tip: (i) => `${i.label} — ${i.credits.join(', ')}`,
+      info: 'Icônes en pixel art de la communauté Fire Emblem (crédits dans l’infobulle et dans tools/skill-icons/CREDITS.txt).' });
+  }
+  /** Fenêtre de choix d'une icône d'arme ou d'objet (img/items). Renvoie l'id ou null. */
+  function pickItemImage(current, kind) {
+    return pickIcon({ title: kind === 'items' ? 'Icône de l’objet' : 'Icône de l’arme', current, lib: ItemIcons, placeholder: 'Rechercher (nom anglais)…',
+      text: (i) => i.label + ' ' + i.group, tip: (i) => `${i.label} — ${i.group}`, size: 40,
+      info: 'Icônes d’armes et d’objets en pixel art 16 × 16 façon Fire Emblem (sources dans tools/item-icons/).' });
+  }
+  /** Fenêtre de choix commune : lib = SkillIcons ou ItemIcons (all, groups, parse, element). */
+  function pickIcon(o) {
+    const groups = o.lib.groups(), cur = o.lib.parse(o.current);
     let group = (cur && cur.group) || '';
     return UI.modal((box, close) => {
       const grid = h('div', { class: 'skill-image-grid' });
       const tabs = h('div', { class: 'skill-image-tabs' });
-      const search = h('input', { type: 'search', placeholder: 'Rechercher (nom, artiste)…', 'data-icon-search': true, oninput: () => fill() });
+      const search = h('input', { type: 'search', placeholder: o.placeholder, 'data-icon-search': true, oninput: () => fill() });
       const fill = () => {
         const q = search.value.trim().toLowerCase();
         tabs.replaceChildren(...['', ...groups].map(g => h('button', { class: 'small' + (g === group ? ' primary' : ''), onclick: () => { group = g; fill(); } }, g || 'Toutes')));
-        grid.replaceChildren(...SkillIcons.all().filter(i => (!group || i.group === group) && (!q || (i.label + ' ' + i.credits.join(' ')).toLowerCase().includes(q))).map(i => {
-          const b = h('button', { class: 'skill-image-cell' + (i.id === current ? ' on' : ''), title: `${i.label} — ${i.credits.join(', ')}`, 'data-icon': i.id, onclick: () => close(i.id) });
-          b.append(SkillIcons.element(i.id, 48), h('small', {}, i.label)); return b;
+        grid.replaceChildren(...o.lib.all().filter(i => (!group || i.group === group) && (!q || o.text(i).toLowerCase().includes(q))).map(i => {
+          const b = h('button', { class: 'skill-image-cell' + (i.id === o.current ? ' on' : ''), title: o.tip(i), 'data-icon': i.id, onclick: () => close(i.id) });
+          b.append(o.lib.element(i.id, o.size || 48), h('small', {}, i.label)); return b;
         }));
       };
       fill();
-      box.append(h('h3', {}, 'Icône de la compétence'), search, tabs, grid,
-        h('p', { class: 'form-info' }, 'Icônes en pixel art de la communauté Fire Emblem (crédits dans l’infobulle et dans tools/skill-icons/CREDITS.txt).'),
+      box.append(h('h3', {}, o.title), search, tabs, grid, h('p', { class: 'form-info' }, o.info),
         h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Annuler')));
       setTimeout(() => search.focus(), 10);
     }, { wide: true });
+  }
+  const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
+  /** Icône d'une arme ou d'un objet : son image (img/items), sinon l'icône du type d'arme, sinon ✚. */
+  function armoryIcon(e, kind, size) {
+    const own = ItemIcons.element(e && e.image, size || 16, 'armory-icon');
+    if (own) return own;
+    const i = kind === 'weapons' ? WICONS.indexOf(e && e.type) : -1;
+    if (i < 0) return h('span', { class: 'n' }, kind === 'weapons' ? '⚔' : '✚');
+    const k = (size || 16) / 16;
+    return h('span', { class: 'armory-icon', style: { width: (size || 16) + 'px', height: (size || 16) + 'px', backgroundSize: `${128 * k}px ${16 * k}px`, backgroundPosition: `${-i * 16 * k}px 0` } });
+  }
+  /** Champ « Icône » d'une arme ou d'un objet : aperçu, choix parmi les icônes (img/items), retour à l'icône du type. */
+  function itemImageField(e, kind) {
+    const prev = h('span', { class: 'skill-image-prev' });
+    const show = () => prev.replaceChildren(armoryIcon(e, kind, 40));
+    show();
+    const set = (id) => { e.image = id; show(); change(); renderBody(); };
+    return h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Icône'),
+      h('div', { class: 'skill-image-row' }, prev,
+        h('button', { class: 'small', 'data-item-image': true, onclick: async () => { const id = await pickItemImage(e.image, kind); if (id !== null) set(id); } }, 'Choisir une icône…'),
+        ItemIcons.parse(e.image) ? h('button', { class: 'small ghost', onclick: () => set('') }, kind === 'weapons' ? 'Icône du type' : 'Retirer') : null));
   }
 
   /** Champ portrait : choix parmi les images des dossiers personnages + import dans le dossier du personnage. */
@@ -659,6 +691,7 @@
       onField: (key, w) => { if (key === 'type') { if (w.type === 'staff') delete w.inflict; else delete w.restore; } },
       fields: (w) => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'type', label: 'Type', type: 'select', options: wtypes }] },
+        { type: 'custom', render: () => itemImageField(w, 'weapons') },
         w.type === 'staff'
           ? { type: 'row', fields: [
             { key: 'heal', label: 'Soin (+ Mag)', type: 'number', min: 0, max: 99 },
@@ -695,6 +728,7 @@
       onField: (key, it) => { if (key === 'effect' && it.effect === 'key' && !it.keyType) it.keyType = 'both'; if (key === 'effect' && it.effect === 'restore' && !it.cure) it.cure = 'all'; },
       fields: (it) => [
         { key: 'name', label: 'Nom', type: 'text' },
+        { type: 'custom', render: () => itemImageField(it, 'items') },
         { type: 'row', fields: [
           { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }, { value: 'key', label: 'Ouvre une serrure' }, { value: 'restore', label: 'Soigne une altération' }] },
           ...(['heal', 'boost'].includes(it.effect) ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
@@ -903,11 +937,6 @@
    * Onglet « Armes et objets » : une seule liste, armes puis objets. Cliquer un élément ouvre sa fiche ;
    * les boutons du bas (Nouveau, Dupliquer, Supprimer) agissent sur le type affiché.
    */
-  const WICONS = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff']; // img/ui/weapon-icons.png
-  function weaponIcon(type) {
-    const i = WICONS.indexOf(type);
-    return i < 0 ? h('span', { class: 'n' }, '⚔') : h('span', { class: 'armory-icon', style: { backgroundPosition: `${-i * 16}px 0` } });
-  }
   function mergeArmoryList(body) {
     const box = body.querySelector('.db-list-items'); if (!box) return;
     box.replaceChildren();
@@ -915,7 +944,7 @@
       box.append(h('div', { class: 'db-group' }, title, h('span', {}, String(list.length))));
       list.forEach(it => box.append(h('div', { class: 'db-item' + (tab === kind && selected[kind] === it.id ? ' on' : ''), 'data-id': it.id, 'data-kind': kind,
         onclick: () => { tab = kind; selected[kind] = it.id; renderTabs(); renderBody(); } },
-        kind === 'weapons' ? weaponIcon(it.type) : h('span', { class: 'n' }, '✚'), h('span', {}, it.name), h('span', { class: 'sub' }, sub(it)))));
+        armoryIcon(it, kind), h('span', {}, it.name), h('span', { class: 'sub' }, sub(it)))));
     };
     group('weapons', 'Armes', db().weapons, TABS.weapons.sub);
     group('items', 'Objets', db().items, TABS.items.sub);

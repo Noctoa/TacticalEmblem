@@ -4,10 +4,11 @@
 (function (root, factory) {
   const node = typeof module !== 'undefined' && module.exports;
   const api = factory(node ? require('./skills.js') : root.Skills, node ? require('./promotions.js') : root.Promotions,
-    node ? require('./animations.js') : root.Animations, node ? require('./ultimates.js') : root.Ultimates);
+    node ? require('./animations.js') : root.Animations, node ? require('./ultimates.js') : root.Ultimates,
+    node ? require('./armory-icons.js') : root.ArmoryIcons);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Defaults = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Animations, Ultimates) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Animations, Ultimates, ArmoryIcons) {
   'use strict';
 
   const st = (hp, str, mag, skl, spd, lck, def, res) => ({ hp, str, mag, skl, spd, lck, def, res });
@@ -52,7 +53,8 @@
     w_fire: 560, w_lightning: 630, w_flux: 900, w_heal: 600, w_mend: 1000,
     i_vulnerary: 300, i_elixir: 3000, i_energy_ring: 8000, i_speedwing: 8000, i_master_seal: 2500, i_chest_key: 300, i_door_key: 100
   };
-  const priced = (list) => list.map(e => Object.assign(e, { price: PRICES[e.id] || 0 }));
+  // prix, et icône de la planche img/items (armory-icons.js) quand le nom en a une
+  const priced = (list) => list.map(e => { Object.assign(e, { price: PRICES[e.id] || 0 }); const im = ArmoryIcons ? ArmoryIcons.defaultImage(e) : ''; if (im) e.image = im; return e; });
 
   function weapons() {
     return priced([
