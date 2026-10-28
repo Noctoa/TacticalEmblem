@@ -1645,7 +1645,11 @@
     migrateUltimates();
     // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
     let icons = 0;
-    for (const sk of DB().skills || []) { if (sk.image === undefined && Skills.presetImage(sk.id)) { sk.image = Skills.presetImage(sk.id); icons++; } }
+    for (const sk of DB().skills || []) {
+      if (sk.image === undefined && Skills.presetImage(sk.id)) { sk.image = Skills.presetImage(sk.id); icons++; }
+      else if (Skills.isLegacyImage(sk.image)) { sk.image = Skills.upgradeImage(sk); icons++; } // anciennes icônes façon Heroes, retirées
+    }
+    for (const u of DB().ultimates || []) if (Skills.isLegacyImage(u.image)) { u.image = Ultimates.ICON; icons++; }
     if (icons) markDirty();
     const meta = S.project.meta, done = meta.pluginMigrations || [];
     for (const mig of PLUGIN_MIGRATIONS) {

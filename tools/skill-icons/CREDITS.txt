@@ -1,0 +1,196 @@
+Crédits des icônes de compétences (pixel art 16 × 16, communauté Fire Emblem / FE-Repo)
+
+Artistes (16) :
+  EldritchA (40 icônes)
+  Indogutsu Tenbuki (40 icônes)
+  Stephano (32 icônes)
+  Zane (32 icônes)
+  Jeorge Reds (24 icônes)
+  Lisandra Brave (19 icônes)
+  Augenis (16 icônes)
+  Cardcafe (14 icônes)
+  Jimi2Morrow (13 icônes)
+  Estratega (4 icônes)
+  Maximus (4 icônes)
+  Is72 (3 icônes)
+  Alice (2 icônes)
+  Mimikyudis (2 icônes)
+  ColetheOne (1 icônes)
+  FuriousHaunter (1 icônes)
+
+Icônes :
+  icon:immune-status — Immune Status [Alice] : Alice
+  icon:surefooted — Surefooted [Alice] : Alice
+  icon:crest-of-blaiddyd — Crest of Blaiddyd [Augenis] : Augenis
+  icon:crest-of-cethleann — Crest of Cethleann [Augenis] : Augenis
+  icon:crest-of-charon — Crest of Charon [Augenis] : Augenis
+  icon:crest-of-cichol — Crest of Cichol [Augenis] : Augenis
+  icon:crest-of-daphnel — Crest of Daphnel [Augenis] : Augenis
+  icon:crest-of-dominic — Crest of Dominic [Augenis] : Augenis
+  icon:crest-of-flames — Crest of Flames [Augenis] : Augenis
+  icon:crest-of-fraldarius — Crest of Fraldarius [Augenis] : Augenis
+  icon:crest-of-gautier — Crest of Gautier [Augenis] : Augenis
+  icon:crest-of-gloucester — Crest of Gloucester [Augenis] : Augenis
+  icon:crest-of-goneril — Crest of Goneril [Augenis] : Augenis
+  icon:crest-of-indech — Crest of Indech [Augenis] : Augenis
+  icon:crest-of-macuil — Crest of Macuil [Augenis] : Augenis
+  icon:crest-of-riegan — Crest of Riegan [Augenis] : Augenis
+  icon:crest-of-seiros — Crest of Seiros [Augenis] : Augenis
+  icon:crest-of-the-beast — Crest of the Beast [Augenis] : Augenis
+  icon:icon-1 — Icon 1 [Skill Icons] : Cardcafe
+  icon:icon-10 — Icon 10 [Skill Icons] : Cardcafe
+  icon:icon-11 — Icon 11 [Skill Icons] : Cardcafe
+  icon:icon-12 — Icon 12 [Skill Icons] : Cardcafe
+  icon:icon-13 — Icon 13 [Skill Icons] : Cardcafe
+  icon:icon-14 — Icon 14 [Skill Icons] : Cardcafe
+  icon:icon-2 — Icon 2 [Skill Icons] : Cardcafe
+  icon:icon-3 — Icon 3 [Skill Icons] : Cardcafe
+  icon:icon-4 — Icon 4 [Skill Icons] : Cardcafe
+  icon:icon-5 — Icon 5 [Skill Icons] : Cardcafe
+  icon:icon-6 — Icon 6 [Skill Icons] : Cardcafe
+  icon:icon-7 — Icon 7 [Skill Icons] : Cardcafe
+  icon:icon-8 — Icon 8 [Skill Icons] : Cardcafe
+  icon:icon-9 — Icon 9 [Skill Icons] : Cardcafe
+  icon:skill-icon-1 — Skill Icon 1 [ColetheOne] : ColetheOne
+  icon:animal-hunter — Animal Hunter [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:arbitration — Arbitration [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:archangel-s-feather — Archangel's Feather [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:bane-skill — Bane Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:berserk — Berserk [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:blood-reign — Blood Reign [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:bogus-hero — Bogus Hero [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:book-of-initiation — Book of Initiation [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:broken-heart — Broken Heart [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:bullpen-ace — Bullpen Ace [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:centurion — Centurion [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:charisma — Charisma [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:don-quixote — Don Quixote [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:dragon-scale — Dragon Scale [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:earth-skill — Earth Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:embodiment-of-desires — Embodiment of Desires [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:exorcist — Exorcist [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:fire-skill — Fire Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:fist-fight — Fist Fight [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:gibe-of-fallen-angel — Gibe of Fallen Angel [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:heavenly-spirit — Heavenly Spirit [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:knight-s-certificate — Knight's Certificate [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:lancer — Lancer [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:lucky-soldier — Lucky Soldier [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:mark-of-the-elite — Mark of the Elite [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:mark-of-valor — Mark of Valor [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:miracle — Miracle [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:multi-element-skill — Multi Element Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:non-elemental-skill — Non-Elemental Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:philosopher-s-stone — Philosopher's Stone [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:relix-s-emblem — Relix's Emblem [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:self-preservation — Self Preservation [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:sniper — Sniper [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:the-cycle-of-life — The Cycle of Life [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:the-pen-and-the-sword — The Pen and The Sword [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:veteran-soldier — Veteran Soldier [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:virtue-skill — Virtue Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:war-god — War God [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:water-skill — Water Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:wind-skill — Wind Skill [Tactics Ogre] : EldritchA, Indogutsu Tenbuki
+  icon:skill-1 — Skill 1 [Estratega] : Estratega
+  icon:skill-2 — Skill 2 [Estratega] : Estratega
+  icon:skill-3 — Skill 3 [Estratega] : Estratega
+  icon:skill-4 — Skill 4 [Estratega] : Estratega
+  icon:wind-god — Wind God [FuriousHaunter] : FuriousHaunter
+  icon:crit-20 — Crit +20 [Is72] : Is72
+  icon:crit-25 — Crit +25 [Is72] : Is72
+  icon:crit-30 — Crit +30 [Is72] : Is72
+  icon:icefire-blood — Icefire Blood [Jeorge Reds] : Jeorge Reds
+  icon:awakening — Awakening [Jeorge Reds] : Jeorge Reds
+  icon:axe-crit-10 — Axe Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:black-magic-crit-10 — Black Magic Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:bonus-doubler — Bonus Doubler [Jeorge Reds] : Jeorge Reds
+  icon:bow-crit-10 — Bow Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:close-counter — Close Counter [Jeorge Reds] : Jeorge Reds
+  icon:counterattack — Counterattack [Jeorge Reds] : Jeorge Reds
+  icon:dark-magic-crit-10 — Dark Magic Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:draw-back — Draw Back [Jeorge Reds] : Jeorge Reds
+  icon:fiery-blood — Fiery Blood [Jeorge Reds] : Jeorge Reds
+  icon:highwayman — Highwayman [Jeorge Reds] : Jeorge Reds
+  icon:human-virtue — Human Virtue [Jeorge Reds] : Jeorge Reds
+  icon:icy-blood — Icy Blood [Jeorge Reds] : Jeorge Reds
+  icon:immobilize — Immobilize [Jeorge Reds] : Jeorge Reds
+  icon:lance-crit-10 — Lance Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:pivot — Pivot [Jeorge Reds] : Jeorge Reds
+  icon:reposition — Reposition [Jeorge Reds] : Jeorge Reds
+  icon:shove — Shove [Jeorge Reds] : Jeorge Reds
+  icon:smite — Smite [Jeorge Reds] : Jeorge Reds
+  icon:swap — Swap [Jeorge Reds] : Jeorge Reds
+  icon:sword-crit-10 — Sword Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:vision-of-arcadia — Vision of Arcadia [Jeorge Reds] : Jeorge Reds
+  icon:white-magic-crit-10 — White Magic Crit +10 [Jeorge Reds] : Jeorge Reds
+  icon:adrenaline-junkie-blue — Adrenaline Junkie (Blue) [Jimi2Morrow] : Jimi2Morrow
+  icon:adrenaline-junkie-grey — Adrenaline Junkie (Grey) [Jimi2Morrow] : Jimi2Morrow
+  icon:barricade-rework — Barricade (Rework) [Jimi2Morrow] : Jimi2Morrow
+  icon:blue-flame-rework — Blue Flame (Rework) [Jimi2Morrow] : Jimi2Morrow
+  icon:charge-rework — Charge (Rework) [Jimi2Morrow] : Jimi2Morrow
+  icon:clinical-trial — Clinical Trial [Jimi2Morrow] : Jimi2Morrow
+  icon:critical-30 — Critical +30 [Jimi2Morrow] : Jimi2Morrow
+  icon:draconic-heir — Draconic Heir [Jimi2Morrow] : Jimi2Morrow
+  icon:dragonskin-recolor — Dragonskin (Recolor) [Jimi2Morrow] : Jimi2Morrow
+  icon:herbal-remedy — Herbal Remedy [Jimi2Morrow] : Jimi2Morrow
+  icon:perfectionist-rework-and-grey — Perfectionist (Rework and Grey) [Jimi2Morrow] : Jimi2Morrow
+  icon:perfectionist-rework-and-red — Perfectionist (Rework and Red) [Jimi2Morrow] : Jimi2Morrow
+  icon:temerity — Temerity [Jimi2Morrow] : Jimi2Morrow
+  icon:accost — Accost [FE5 Recolor] : Lisandra Brave
+  icon:adept — Adept [FE5 Recolor] : Lisandra Brave
+  icon:astra — Astra [FE5 Recolor] : Lisandra Brave
+  icon:bargain — Bargain [FE5 Recolor] : Lisandra Brave
+  icon:charm — Charm [FE5 Recolor] : Lisandra Brave
+  icon:critical — Critical [FE5 Recolor] : Lisandra Brave
+  icon:dance — Dance [FE5 Recolor] : Lisandra Brave
+  icon:follow-up — Follow-Up [FE5 Recolor] : Lisandra Brave
+  icon:great-shield — Great Shield [FE5 Recolor] : Lisandra Brave
+  icon:immortal — Immortal [FE5 Recolor] : Lisandra Brave
+  icon:luna — Luna [FE5 Recolor] : Lisandra Brave
+  icon:miracle-fe5-recolor — Miracle [FE5 Recolor] : Lisandra Brave
+  icon:nihil — Nihil [FE5 Recolor] : Lisandra Brave
+  icon:paragon — Paragon [FE5 Recolor] : Lisandra Brave
+  icon:renewal — Renewal [FE5 Recolor] : Lisandra Brave
+  icon:sol — Sol [FE5 Recolor] : Lisandra Brave
+  icon:steal — Steal [FE5 Recolor] : Lisandra Brave
+  icon:vantage — Vantage [FE5 Recolor] : Lisandra Brave
+  icon:wrath — Wrath [FE5 Recolor] : Lisandra Brave
+  icon:bushido — Bushido [Maximus] : Maximus
+  icon:competitive — Competitive [Maximus] : Maximus
+  icon:fierce-counter — Fierce Counter [Maximus] : Maximus
+  icon:salvage-blow — Salvage Blow [Maximus] : Maximus
+  icon:skill-icon-1-mimikyudis — Skill Icon 1 [Mimikyudis] : Mimikyudis
+  icon:skill-icon-2 — Skill Icon 2 [Mimikyudis] : Mimikyudis
+  icon:accost-fe4-link-arena — Accost [FE4 Link Arena] : Stephano, Zane
+  icon:adept-fe4-link-arena — Adept [FE4 Link Arena] : Stephano, Zane
+  icon:astra-fe4-link-arena — Astra [FE4 Link Arena] : Stephano, Zane
+  icon:awareness — Awareness [FE4 Link Arena] : Stephano, Zane
+  icon:bargain-1 — Bargain 1 [FE4 Link Arena] : Stephano, Zane
+  icon:bargain-2 — Bargain 2 [FE4 Link Arena] : Stephano, Zane
+  icon:charm-fe4-link-arena — Charm [FE4 Link Arena] : Stephano, Zane
+  icon:critical-fe4-link-arena — Critical [FE4 Link Arena] : Stephano, Zane
+  icon:dance-fe4-link-arena — Dance [FE4 Link Arena] : Stephano, Zane
+  icon:moonlight — Moonlight [FE4 Link Arena] : Stephano, Zane
+  icon:paragon-fe4-link-arena — Paragon [FE4 Link Arena] : Stephano, Zane
+  icon:pavise-1 — Pavise 1 [FE4 Link Arena] : Stephano, Zane
+  icon:pavise-2 — Pavise 2 [FE4 Link Arena] : Stephano, Zane
+  icon:prayer — Prayer [FE4 Link Arena] : Stephano, Zane
+  icon:pursuit — Pursuit [FE4 Link Arena] : Stephano, Zane
+  icon:remove — Remove [FE4 Link Arena] : Stephano, Zane
+  icon:shootingstar — Shootingstar [FE4 Link Arena] : Stephano, Zane
+  icon:steal-fe4-link-arena — Steal [FE4 Link Arena] : Stephano, Zane
+  icon:sun-1 — Sun 1 [FE4 Link Arena] : Stephano, Zane
+  icon:sun-2 — Sun 2 [FE4 Link Arena] : Stephano, Zane
+  icon:vantage-fe4-link-arena — Vantage [FE4 Link Arena] : Stephano, Zane
+  icon:wrath-1 — Wrath 1 [FE4 Link Arena] : Stephano, Zane
+  icon:wrath-2 — Wrath 2 [FE4 Link Arena] : Stephano, Zane
+  icon:nihil-fe5-link-arena — Nihil [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-0 — PCC 0 [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-1 — PCC 1 [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-2 — PCC 2 [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-3 — PCC 3 [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-4 — PCC 4 [FE5 Link Arena] : Stephano, Zane
+  icon:pcc-5 — PCC 5 [FE5 Link Arena] : Stephano, Zane
+  icon:renewal-fe5-link-arena — Renewal [FE5 Link Arena] : Stephano, Zane
+  icon:steal-fe5-link-arena — Steal [FE5 Link Arena] : Stephano, Zane

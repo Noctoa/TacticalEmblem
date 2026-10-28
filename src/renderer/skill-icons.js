@@ -1,24 +1,32 @@
 /*
- * Icônes de compétences façon Fire Emblem Heroes (img/skills/skills-<n>.png, index dans img/skills/index.js).
- * Une compétence peut avoir une image (champ « image » : « feh:<planche>-<case> ») ; sinon son symbole (« icon »).
+ * Icônes de compétences : pixel art 16 × 16 de la communauté Fire Emblem (img/skills/icons.png, index dans
+ * img/skills/index.js, généré par tools/build_skill_icons.py). Une compétence peut avoir une image (champ « image » :
+ * « icon:<id> ») ; sinon son symbole (« icon »). Les anciennes icônes façon Heroes (« feh:… ») n'existent plus.
  *
  *   SkillIcons.element(skill, 24)      → élément HTML (image, ou le symbole en texte)
  *   SkillIcons.draw(ctx, id, x, y, 40) → dessine l'icône sur un canvas (true si l'image est chargée)
- *   SkillIcons.all()                   → [{ id, sheet, index }] de toutes les icônes
+ *   SkillIcons.all()                   → [{ id, label, group, credits, index }] de toutes les icônes
+ *   SkillIcons.groups()                → groupes d'icônes (pour la fenêtre de choix)
  * L'identifiant « ultimate » désigne l'icône d'ultime (img/ui/ultimate/icon.png, Base de données › Ultimes).
  */
 (function (root) {
   'use strict';
-  const META = root.SKILL_ICON_SHEETS || { cell: 76, offset: 2, cols: 13, size: 1024, sheets: {} };
-  const ULT = 'img/ui/ultimate/icon.png';
-  const parse = (id) => { if (id === 'ultimate') return { ultimate: true }; const m = /^feh:(\d+)-(\d+)$/.exec(String(id || '')); return m && META.sheets[m[1]] && META.sheets[m[1]].includes(+m[2]) ? { sheet: +m[1], index: +m[2] } : null; };
-  const url = (sheet) => new URL(`img/skills/skills-${sheet}.png`, document.baseURI).href;
+  const META = root.SKILL_ICONS || { cell: 16, cols: 16, list: [] };
+  const ULT = 'img/ui/ultimate/icon.png', SHEET = 'img/skills/icons.png';
+  const byId = new Map(META.list.map((e, index) => [e.id, Object.assign({ index }, e)]));
+  const parse = (id) => {
+    if (id === 'ultimate') return { ultimate: true };
+    const m = /^icon:([a-z0-9-]+)$/.exec(String(id || ''));
+    return m && byId.has(m[1]) ? byId.get(m[1]) : null;
+  };
+  const url = (rel) => new URL(rel, document.baseURI).href;
+  const rows = () => Math.ceil(META.list.length / META.cols);
   function style(id, size) {
     const p = parse(id); if (!p) return null;
-    if (p.ultimate) return { backgroundImage: `url("${new URL(ULT, document.baseURI).href}")`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', width: size + 'px', height: size + 'px' };
+    if (p.ultimate) return { backgroundImage: `url("${url(ULT)}")`, backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center', width: size + 'px', height: size + 'px' };
     const k = size / META.cell, r = Math.floor(p.index / META.cols), c = p.index % META.cols;
-    return { backgroundImage: `url("${url(p.sheet)}")`, backgroundSize: `${META.size * k}px ${META.size * k}px`,
-      backgroundPosition: `${-(META.offset + c * META.cell) * k}px ${-(META.offset + r * META.cell) * k}px`, width: size + 'px', height: size + 'px' };
+    return { backgroundImage: `url("${url(SHEET)}")`, backgroundSize: `${META.cols * META.cell * k}px ${rows() * META.cell * k}px`,
+      backgroundPosition: `${-c * META.cell * k}px ${-r * META.cell * k}px`, imageRendering: 'pixelated', width: size + 'px', height: size + 'px' };
   }
   /** Élément d'icône d'une compétence (ou d'un identifiant d'image seul). */
   function element(skill, size, cls) {
@@ -27,30 +35,30 @@
     const el = document.createElement('span');
     el.className = 'skill-icon' + (st ? ' img' : '') + (cls ? ' ' + cls : '');
     if (st) { Object.assign(el.style, st); el.style.display = 'inline-block'; el.style.flex = 'none'; el.style.verticalAlign = 'middle'; }
-    else el.textContent = (skill && skill.icon) || '✦';
+    else el.textContent = (skill && typeof skill === 'object' && skill.icon) || '✦';
     return el;
   }
   const imgs = {};
+  const img = (key, src) => { if (!imgs[key]) { imgs[key] = new Image(); imgs[key].src = url(src); } return imgs[key]; };
   function draw(ctx, id, x, y, size) {
     const p = parse(id); if (!p) return false;
+    const sm = ctx.imageSmoothingEnabled;
     if (p.ultimate) {
-      if (!imgs.ult) { imgs.ult = new Image(); imgs.ult.src = new URL(ULT, document.baseURI).href; }
-      const im = imgs.ult; if (!im.complete || !im.naturalWidth) return false;
-      const k = size / Math.max(im.naturalWidth, im.naturalHeight), sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
+      const im = img('ult', ULT); if (!im.complete || !im.naturalWidth) return false;
+      const k = size / Math.max(im.naturalWidth, im.naturalHeight); ctx.imageSmoothingEnabled = true;
       ctx.drawImage(im, x + (size - im.naturalWidth * k) / 2, y + (size - im.naturalHeight * k) / 2, im.naturalWidth * k, im.naturalHeight * k);
       ctx.imageSmoothingEnabled = sm; return true;
     }
-    if (!imgs[p.sheet]) { imgs[p.sheet] = new Image(); imgs[p.sheet].src = url(p.sheet); }
-    const im = imgs[p.sheet]; if (!im.complete || !im.naturalWidth) return false;
+    const im = img('sheet', SHEET); if (!im.complete || !im.naturalWidth) return false;
     const r = Math.floor(p.index / META.cols), c = p.index % META.cols;
-    const sm = ctx.imageSmoothingEnabled; ctx.imageSmoothingEnabled = true;
-    ctx.drawImage(im, META.offset + c * META.cell, META.offset + r * META.cell, META.cell, META.cell, x, y, size, size);
+    ctx.imageSmoothingEnabled = false; // pixel art : agrandi sans flou
+    ctx.drawImage(im, c * META.cell, r * META.cell, META.cell, META.cell, x, y, size, size);
     ctx.imageSmoothingEnabled = sm;
     return true;
   }
-  const all = () => Object.entries(META.sheets).flatMap(([s, list]) => list.map(i => ({ id: `feh:${s}-${i}`, sheet: +s, index: i })));
-  const sheets = () => Object.keys(META.sheets).map(Number);
-  /** Précharge les planches utilisées par ces compétences. */
-  function preload(skills) { for (const s of skills || []) { const p = parse(s && s.image); if (p && !p.ultimate && !imgs[p.sheet]) { imgs[p.sheet] = new Image(); imgs[p.sheet].src = url(p.sheet); } } }
-  root.SkillIcons = { parse, element, draw, all, sheets, preload, META };
+  const all = () => META.list.map((e, index) => Object.assign({ index }, e, { id: 'icon:' + e.id }));
+  const groups = () => [...new Set(META.list.map(e => e.group))];
+  /** Précharge la planche si ces compétences ont une icône. */
+  function preload(skills) { if ((skills || []).some(s => { const p = parse(s && s.image); return p && !p.ultimate; })) img('sheet', SHEET); }
+  root.SkillIcons = { parse, element, draw, all, groups, preload, META };
 })(self);

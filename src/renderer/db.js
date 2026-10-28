@@ -51,7 +51,7 @@
 
   /** Icône d'une compétence : image façon Heroes (SkillIcons) ou son symbole. */
   const skillIcon = (s, size) => SkillIcons.element(s, size);
-  /** Champ « Icône » d'une compétence : aperçu, choix dans les planches (img/skills), retour au symbole. */
+  /** Champ « Icône » d'une compétence : aperçu, choix parmi les icônes (img/skills), retour au symbole. */
   function skillImageField(sk) {
     const prev = h('span', { class: 'skill-image-prev' });
     const show = () => prev.replaceChildren(SkillIcons.parse(sk.image) ? SkillIcons.element(sk, 44) : h('span', { class: 'muted' }, 'Aucune : le symbole est affiché'));
@@ -79,24 +79,27 @@
         h('button', { class: 'small', 'data-ultimate-image': true, onclick: async () => { const id = await pickSkillImage(u.image); if (id !== null) set(id); } }, 'Choisir une icône…'),
         u.image && u.image !== Ultimates.ICON ? h('button', { class: 'small ghost', onclick: () => set(Ultimates.ICON) }, 'Icône d’ultime') : null));
   }
-  /** Fenêtre de choix d'une icône de compétence : une planche par onglet, clic pour choisir. Renvoie l'id ou null. */
+  /** Fenêtre de choix d'une icône de compétence : groupes en onglets, recherche, clic pour choisir. Renvoie l'id ou null. */
   function pickSkillImage(current) {
-    const sheets = SkillIcons.sheets();
-    let sheet = (SkillIcons.parse(current) || {}).sheet || sheets[0];
+    const groups = SkillIcons.groups(), cur = SkillIcons.parse(current);
+    let group = (cur && cur.group) || '';
     return UI.modal((box, close) => {
       const grid = h('div', { class: 'skill-image-grid' });
       const tabs = h('div', { class: 'skill-image-tabs' });
+      const search = h('input', { type: 'search', placeholder: 'Rechercher (nom, artiste)…', 'data-icon-search': true, oninput: () => fill() });
       const fill = () => {
-        tabs.replaceChildren(...sheets.map(n => h('button', { class: 'small' + (n === sheet ? ' primary' : ''), onclick: () => { sheet = n; fill(); } }, 'Planche ' + n)));
-        grid.replaceChildren(...SkillIcons.all().filter(i => i.sheet === sheet).map(i => {
-          const b = h('button', { class: 'skill-image-cell' + (i.id === current ? ' on' : ''), title: i.id, 'data-icon': i.id, onclick: () => close(i.id) });
-          b.append(SkillIcons.element(i.id, 44)); return b;
+        const q = search.value.trim().toLowerCase();
+        tabs.replaceChildren(...['', ...groups].map(g => h('button', { class: 'small' + (g === group ? ' primary' : ''), onclick: () => { group = g; fill(); } }, g || 'Toutes')));
+        grid.replaceChildren(...SkillIcons.all().filter(i => (!group || i.group === group) && (!q || (i.label + ' ' + i.credits.join(' ')).toLowerCase().includes(q))).map(i => {
+          const b = h('button', { class: 'skill-image-cell' + (i.id === current ? ' on' : ''), title: `${i.label} — ${i.credits.join(', ')}`, 'data-icon': i.id, onclick: () => close(i.id) });
+          b.append(SkillIcons.element(i.id, 48), h('small', {}, i.label)); return b;
         }));
       };
       fill();
-      box.append(h('h3', {}, 'Icône de la compétence'), tabs, grid,
-        h('p', { class: 'form-info' }, 'Icônes façon Fire Emblem Heroes, rangées par planches. Celles qui ne servent pas encore restent disponibles pour tes compétences.'),
+      box.append(h('h3', {}, 'Icône de la compétence'), search, tabs, grid,
+        h('p', { class: 'form-info' }, 'Icônes en pixel art de la communauté Fire Emblem (crédits dans l’infobulle et dans tools/skill-icons/CREDITS.txt).'),
         h('div', { class: 'modal-actions' }, h('button', { onclick: () => close(null) }, 'Annuler')));
+      setTimeout(() => search.focus(), 10);
     }, { wide: true });
   }
 
