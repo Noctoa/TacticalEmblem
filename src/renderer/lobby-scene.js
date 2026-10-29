@@ -3,7 +3,7 @@
  *
  *   Flèches / clic      se déplacer (un clic sur un personnage ou un comptoir y va et interagit)
  *   Z / Entrée          parler au personnage en face, consulter la table des chapitres, la boutique, les lieux des plugins
- *   X / Échap           menu du camp (chapitres, boutique, sauvegarde, musique, quitter)
+ *   X / Échap           menu du camp (équipe, convoi, chapitres, boutique, sauvegarde, musique, quitter)
  *
  * Le moteur du playtest fournit le rendu de la map et des unités (api.*) ; ce module ajoute les
  * déplacements, les repères (table, boutique, « ! » des conversations) et les panneaux HTML.
@@ -206,6 +206,7 @@
     function renderPanel(focusIndex) {
       const el = panelEl();
       el.classList.toggle('team-panel', S.panel.build === teamPanel.render);
+      el.classList.toggle('convoy-panel', S.panel.build === convoyPanel.render);
       if (el.dataset.cls) el.classList.remove('plugin-panel', ...el.dataset.cls.split(' '));
       el.dataset.cls = S.panel.cls;
       if (S.panel.cls) el.classList.add('plugin-panel', ...S.panel.cls.split(' '));
@@ -299,6 +300,10 @@
       changed: () => { commit(); refreshHud(); }, openPromotion: api.openPromotion, showEvolution: api.showEvolution, sheetCtx: api.sheetCtx,
       openSettings: api.openSettings });
     function openTeam() { members(); openPanel('Équipe', teamPanel.render); }
+    // --- convoi : déposer et prendre des objets pour l'équipe (convoy-panel.js)
+    const convoyPanel = ConvoyPanel.create({ G, h, R, members, rerender, changed: () => { commit(); refreshHud(); },
+      itemIcon: (slot) => TeamPanel.parts({ G, h, R }).itemIcon(slot) });
+    function openConvoy() { members(); openPanel('Convoi', convoyPanel.render); }
     // --- lieux des plugins
     /** Contexte donné à un lieu de plugin pour construire son panneau. */
     function placeContext(p) {
@@ -389,6 +394,7 @@
       const all = Lobby.chapters(G.db, G.project.meta, G.campaign);
       api.showMenu([
         { label: 'Équipe', sub: `${members().length} personnage(s) recruté(s)`, action: () => { api.hideMenu(); openTeam(); } },
+        { label: 'Convoi', sub: `${G.convoy.length}/${G.convoyCap} objets`, action: () => { api.hideMenu(); openConvoy(); } },
         { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
         ...activePlaces().filter(p => p.menu !== false).map(p => ({ label: placeName(p), sub: typeof p.menuSub === 'function' ? p.menuSub(placeContext(p)) : '', action: () => { api.hideMenu(); openPlace(p); } })),
@@ -504,7 +510,7 @@
       if (thing) { face(x, y); refreshHint(); await interact(thing); }
     }
 
-    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openPlace: openPlaceByKey, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
+    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openConvoy, openPlace: openPlaceByKey, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
   }
 
   root.LobbyScene = { create };
