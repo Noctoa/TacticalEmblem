@@ -1,0 +1,51 @@
+Class,HP,Str,Mag,Skl,Spd,Lck,Def,Res,Mov
+Hoshido Noble,19,10,4,5,6,4,7,3,6
+Samurai,17,4,0,5,8,3,3,3,5
+Swordmaster,18,6,2,7,11,4,5,5,6
+Master of Arms,20,8,0,6,9,3,7,3,6
+Oni Savage,18,6,1,2,5,0,7,1,5
+Oni Chieftain,19,9,5,2,7,0,10,5,6
+Blacksmith,21,8,0,9,8,3,8,2,6
+Spear Fighter,17,6,0,6,6,2,5,2,5
+Spear Master,18,9,0,8,8,3,7,3,6
+Basara,20,7,5,7,7,5,7,6,6
+Diviner,15,0,4,5,6,1,1,3,5
+Onmyoji,16,0,7,6,7,2,3,6,6
+Monk,16,0,3,5,5,4,2,5,5
+Great Master,19,8,6,6,8,5,6,7,6
+Priestess,19,6,7,6,9,5,5,8,6
+Sky Knight,16,3,0,5,7,4,2,6,7
+Falcon Knight,18,5,4,6,10,5,5,9,8
+Kinshi Knight,17,4,1,9,8,5,4,7,8
+Archer,17,5,0,7,5,2,4,1,5
+Sniper,19,7,0,10,9,3,6,2,6
+Ninja,16,3,0,8,8,1,3,3,5
+Master Ninja,17,5,0,10,11,2,4,8,6
+Mechanist,18,7,0,9,7,2,6,6,7
+Apothecary,18,6,0,4,4,2,6,2,5
+Merchant,20,8,0,6,5,4,8,5,6
+Songstress,16,3,0,6,5,3,2,3,5
+Villager,17,5,0,4,5,3,4,0,5
+Nohr Prince,17,7,3,4,5,2,5,2,5
+Nohr Noble,18,8,6,4,7,2,6,6,6
+Cavalier,17,6,0,5,5,3,5,3,7
+Paladin,19,8,1,7,7,4,7,6,8
+Great Knight,21,10,0,6,6,3,10,2,7
+Knight,19,8,0,5,3,3,8,1,4
+General,22,11,0,7,3,4,12,3,5
+Fighter,19,7,0,6,6,2,4,1,5
+Berserker,24,12,0,8,9,0,5,0,6
+Mercenary,17,5,0,7,6,2,5,2,5
+Hero,20,8,0,10,8,3,7,2,6
+Bow Knight,18,6,0,8,9,3,5,6,8
+Outlaw,16,3,1,4,8,1,2,4,5
+Adventurer,17,4,6,6,10,2,3,8,6
+Wyvern Rider,17,6,0,5,4,2,7,0,7
+Wyvern Lord,19,8,0,9,6,3,10,1,8
+Malig Knight,18,7,6,6,5,0,8,6,8
+Dark Mage,16,0,6,3,3,1,3,5,5
+Sorcerer,17,0,9,4,6,1,5,8,6
+Dark Knight,19,8,6,6,5,3,8,6,8
+Troubadour,15,0,3,7,5,4,1,4,7
+Strategist,16,0,7,6,7,5,2,7,8
+Butler,18,4,5,9,8,4,5,4,6

@@ -1,0 +1,49 @@
+Class,Tier,HP,Str,Mag,Dex,Spd,Lck,Def,Res,Mov
+Myrmidon,Beginner,20,7,3,6,6,4,5,2,4
+Soldier,Beginner,20,8,3,6,6,4,5,2,4
+Fighter,Beginner,20,8,3,6,6,4,5,2,4
+Monk,Beginner,20,4,8,6,6,4,3,4,4
+Lord,Intermediate,25,9,6,10,10,8,6,3,5
+Mercenary,Intermediate,25,9,6,10,10,8,6,2,5
+Thief,Intermediate,25,9,6,11,11,8,6,2,5
+Armored Knight,Intermediate,30,9,6,7,4,8,12,1,4
+Cavalier,Intermediate,25,9,6,7,6,8,6,2,7
+Brigand,Intermediate,28,10,6,7,7,8,6,2,5
+Archer,Intermediate,25,8,6,8,7,8,5,2,5
+Brawler,Intermediate,28,9,6,7,8,8,6,1,5
+Mage,Intermediate,25,4,10,7,6,8,3,5,4
+Dark Mage,Intermediate,25,4,10,7,6,8,3,5,4
+Priest,Intermediate,25,4,9,7,6,8,3,5,4
+Pegasus Knight,Intermediate,25,8,6,7,8,8,5,4,6
+Hero,Advanced,30,17,8,12,14,10,12,8,5
+Swordmaster,Advanced,30,17,8,12,14,10,12,8,5
+Assassin,Advanced,30,17,8,12,14,10,12,8,6
+Fortress Knight,Advanced,35,17,8,12,8,10,17,7,4
+Paladin,Advanced,32,17,8,12,14,10,12,8,8
+Wyvern Rider,Advanced,30,18,8,12,14,10,12,8,7
+Warrior,Advanced,32,19,8,12,14,10,13,8,5
+Sniper,Advanced,30,17,8,12,14,10,12,8,5
+Grappler,Advanced,32,17,8,12,14,10,14,7,6
+Warlock,Advanced,30,8,17,12,14,10,12,15,4
+Dark Bishop,Advanced,30,8,17,12,14,10,12,15,4
+Bishop,Advanced,30,8,15,12,14,10,12,15,4
+Falcon Knight,Master,32,18,10,14,20,12,13,14,8
+Wyvern Lord,Master,32,18,10,14,20,12,15,12,8
+Mortal Savant,Master,32,17,17,14,16,12,14,12,6
+Great Knight,Master,34,18,10,14,10,12,17,10,7
+Bow Knight,Master,32,17,10,14,16,12,14,10,8
+Dark Knight,Master,32,10,17,14,16,12,13,15,7
+Holy Knight,Master,32,8,15,14,16,12,13,16,7
+War Master,Master,33,20,10,14,16,12,15,10,6
+Gremory,Master,32,8,17,14,16,12,13,16,5
+Trickster,Special,28,14,12,10,14,12,10,10,5
+War Monk,Special,32,17,10,10,10,10,14,11,6
+Dark Flier,Special,25,8,6,7,8,8,5,4,7
+Valkyrie,Special,20,5,10,10,9,9,9,13,6
+Enlightened One,Unique,28,17,8,12,14,10,12,10,6
+Armored Lord,Unique,38,17,8,12,6,10,17,8,5
+High Lord,Unique,30,16,7,11,13,9,13,9,5
+Wyvern Master,Unique,30,17,9,13,19,11,14,11,7
+Emperor,Unique,38,17,8,12,6,10,17,8,5
+Great Lord,Unique,35,17,8,12,14,10,14,10,6
+Barbarossa,Unique,35,18,10,14,20,12,15,12,8

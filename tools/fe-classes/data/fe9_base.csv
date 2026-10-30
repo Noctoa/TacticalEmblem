@@ -1,0 +1,41 @@
+Class,HP,Str,Mag,Skl,Spd,Lck,Def,Res,Mov,Weapons
+Ranger,18,3,1,3,4,0,5,0,6,Sword
+Lord,22,6,3,5,6,0,8,2,7,Sword
+Hero,22,6,1,9,10,0,8,2,7,Sword/Axe
+Myrmidon (M),17,4,0,5,5,0,3,0,6,Sword
+Myrmidon (F),15,3,0,5,6,0,3,1,6,Sword
+Swordmaster (M),21,5,2,7,7,0,5,2,7,Sword
+Swordmaster (F),19,4,2,7,8,0,5,3,7,Sword
+Soldier (M),20,4,0,4,4,0,4,0,6,Lance
+Soldier (F),18,2,0,4,5,0,3,1,6,Lance
+Halberdier (M),24,6,1,6,6,0,6,2,7,Lance
+Halberdier (F),22,4,1,6,7,0,5,3,7,Lance
+Fighter,24,5,0,3,3,0,3,0,6,Axe
+Warrior,30,7,1,5,4,0,5,2,7,Axe/Bow
+Archer,18,3,0,6,3,0,4,0,6,Bow
+Sniper,21,6,2,8,5,0,6,2,7,Bow
+Knight,20,5,0,2,0,0,9,0,5,Lance
+General,23,8,2,4,2,0,10,3,6,Sword/Lance
+Horse Knight (M),20,5,0,2,5,0,6,0,8,Sword/Lance/Axe/Bow
+Horse Knight (F),18,5,0,2,6,0,5,1,8,Sword/Lance/Axe/Bow
+Paladin (M),23,7,2,4,7,0,8,3,9,Sword/Lance/Axe/Bow
+Paladin (F),23,7,2,4,7,0,8,3,9,Sword/Lance/Axe/Bow
+Pegasus Knight,14,4,0,4,8,0,3,2,8,Lance
+Falcon Knight,18,6,2,6,9,0,5,5,9,Sword/Lance
+Wyvern Rider (M),20,6,0,4,3,0,8,0,8,Lance
+Wyvern Rider (F),19,6,0,4,3,0,7,1,8,Lance
+Wyvern Lord (M),25,8,1,6,5,0,10,1,9,Lance/Axe
+Wyvern Lord (F),24,8,1,6,5,0,9,2,9,Lance/Axe
+Mage (M),16,0,3,2,4,0,2,4,5,Anima
+Mage (F),16,0,3,1,5,0,1,5,5,Anima
+Sage (M),20,2,4,4,6,0,4,6,6,Anima/Staff
+Sage (F),20,2,4,3,7,0,3,7,6,Anima/Staff
+Priest,18,0,3,3,3,0,1,8,5,Staff
+Cleric,16,2,1,2,2,0,0,6,5,Staff
+Bishop (M),21,1,6,5,5,0,3,11,6,Light/Staff
+Bishop (F),19,1,5,3,6,0,2,12,6,Light/Staff
+Valkyrie,19,4,5,3,5,0,3,8,8,Sword/Staff
+Thief,16,3,0,2,9,0,2,0,7,Knife
+Assassin (M),18,5,1,5,11,0,4,2,7,Knife
+Bandit,25,5,0,2,4,0,2,0,6,Axe
+Berserker,28,8,0,5,7,0,6,0,7,Axe

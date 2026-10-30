@@ -1096,6 +1096,37 @@
     UI.toast(`${res.weapons} arme(s), ${res.items} objet(s) et ${res.skills} compétence(s) ajoutés`);
   }
 
+  /** Pack « Classes de la série Fire Emblem » : choix des jeux, ajout des classes absentes avec leurs promotions. */
+  async function openFEClasses() {
+    const rows = FEClasses.summary(db());
+    const picked = new Set();
+    const ok = await UI.modal((box, close) => {
+      const list = h('div', { class: 'fe-pack-list' });
+      const count = h('span', { class: 'muted' });
+      const refresh = () => { count.textContent = `${rows.filter(g => picked.has(g.id)).reduce((n, g) => n + g.total - g.already, 0)} classe(s) à ajouter`; };
+      for (const g of rows) {
+        const cb = h('input', { type: 'checkbox', 'data-group': g.id });
+        cb.addEventListener('change', () => { if (cb.checked) picked.add(g.id); else picked.delete(g.id); refresh(); });
+        list.append(h('label', { class: 'fe-pack-row' + (g.already >= g.total ? ' done' : '') }, cb,
+          h('span', {}, h('b', {}, `${g.name} (${g.total})`), h('small', {}, g.sample + '…' + (g.already ? ` · ${g.already} déjà dans la base` : '')))));
+      }
+      refresh();
+      box.append(h('h3', {}, 'Classes de la série'),
+        h('p', { class: 'form-info' }, 'Classes officielles avec leurs stats de base, croissances et plafonds (relevés sur Serenes Forest), armes, déplacement, palier et promotions. Chaque jeu garde son échelle (plafonds 20 sur GBA, 40 à 80 sur 3DS et Switch). Les classes sont nommées « Classe · Jeu », sans sprite : à choisir dans leur fiche. Adaptations : Force/Magie unique des GBA répartie selon la classe, dagues et poings ramenés à l’épée et à la hache, croissances de Three Houses = modificateur + taux de référence (détails : tools/build_fe_classes.py). Classes à transformation, monstres et civils non repris.'),
+        h('div', { class: 'insp-actions' },
+          h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
+          h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
+        list,
+        h('div', { class: 'modal-actions' }, count,
+          h('button', { onclick: () => close(false) }, 'Annuler'),
+          h('button', { class: 'primary', 'data-fe-classes-ok': true, onclick: () => close(true) }, 'Ajouter')));
+    }, { wide: true });
+    if (!ok || !picked.size) return;
+    const n = FEClasses.install(db(), [...picked]);
+    change(); renderBody();
+    UI.toast(`${n} classe(s) ajoutée(s)`);
+  }
+
   /** Pack « Personnages de la série Fire Emblem » : choix des jeux, puis ajout des fiches, classes et bannières. */
   async function openFEPack() {
     const rows = FEPack.summary(db());
@@ -1161,7 +1192,9 @@
       groups: roster ? () => Roster.arrange(list, db(), unitView) : null,
       toolbar: roster ? refill => rosterToolbar(unitView, refill, 'tf.unitView')
         : ['weapons', 'items', 'skills'].includes(tab) ? () => h('div', { class: 'roster-tools' },
-          h('button', { class: 'small', 'data-fe-arsenal': tab, title: 'Ajouter des fiches officielles de la série (sans images)', onclick: () => openArsenal(tab) }, '＋ De la série Fire Emblem…')) : null,
+          h('button', { class: 'small', 'data-fe-arsenal': tab, title: 'Ajouter des fiches officielles de la série (sans images)', onclick: () => openArsenal(tab) }, '＋ De la série Fire Emblem…'))
+        : tab === 'classes' ? () => h('div', { class: 'roster-tools' },
+          h('button', { class: 'small', 'data-fe-classes': true, title: 'Ajouter les classes officielles de la série (stats, croissances, plafonds, promotions)', onclick: openFEClasses }, '＋ Classes de la série…')) : null,
       onAdd: () => { const e = Object.assign({ id: Editor.uid(def.prefix, list) }, def.create()); list.push(e); selected[tab] = e.id; change(); renderBody(); },
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {

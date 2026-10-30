@@ -1,0 +1,49 @@
+Class,HP,Str,Mag,Dex,Spd,Lck,Def,Res
+Myrmidon,10,0,0,0,5,0,0,-5
+Soldier,10,0,0,5,0,0,-5,0
+Fighter,10,10,0,0,0,0,0,-5
+Monk,5,0,0,0,0,0,0,5
+Lord,20,0,0,10,0,0,0,0
+Mercenary,20,5,0,0,5,0,0,-5
+Thief,20,0,0,10,10,0,0,0
+Armored Knight,20,0,0,0,-10,0,10,-5
+Cavalier,20,5,0,5,-10,0,5,0
+Brigand,30,10,0,0,0,0,0,-5
+Archer,5,0,0,10,0,5,0,0
+Brawler,30,0,-10,10,10,0,0,-10
+Mage,5,-5,10,5,0,0,-5,5
+Dark Mage,5,-5,10,5,0,0,-5,5
+Priest,5,-5,5,5,0,0,-5,10
+Pegasus Knight,15,0,0,0,10,0,0,5
+Hero,30,10,0,0,10,0,0,-5
+Swordmaster,25,10,0,0,20,0,0,-5
+Assassin,20,0,0,20,20,0,0,0
+Fortress Knight,30,10,0,0,-10,0,15,0
+Paladin,30,10,0,5,-10,5,5,5
+Wyvern Rider,30,10,-5,0,0,0,5,-5
+Warrior,40,15,-5,0,0,0,0,0
+Sniper,10,5,0,20,0,10,0,0
+Grappler,40,10,0,10,10,0,0,0
+Warlock,10,0,10,0,0,0,-5,5
+Dark Bishop,10,0,10,0,0,0,-5,5
+Bishop,10,0,10,0,0,10,-5,5
+Falcon Knight,30,10,0,0,20,0,0,5
+Wyvern Lord,30,15,-5,0,10,0,5,0
+Mortal Savant,20,10,10,0,-10,10,0,0
+Great Knight,30,10,0,0,-10,0,5,-5
+Bow Knight,10,0,0,0,-5,0,0,0
+Dark Knight,10,5,10,0,-5,0,5,10
+Holy Knight,10,0,10,0,-5,10,5,10
+War Master,40,15,0,0,10,0,0,0
+Gremory,10,0,10,10,0,0,0,5
+Trickster,20,0,0,15,20,10,0,5
+War Monk,40,10,5,10,0,0,0,5
+Dark Flier,20,0,0,0,10,0,0,10
+Valkyrie,5,0,5,0,-5,5,5,10
+Enlightened One,20,10,10,0,0,0,5,0
+Armored Lord,20,5,5,0,0,0,5,5
+High Lord,20,5,0,5,0,0,5,0
+Wyvern Master,20,10,0,0,5,0,5,0
+Emperor,30,10,10,0,0,0,5,5
+Great Lord,30,10,0,10,0,0,5,0
+Barbarossa,30,15,0,0,10,0,5,0
