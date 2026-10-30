@@ -495,7 +495,7 @@
       for (const pl of ch[kind] || []) {
         const sel = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
         if (S.drag && S.drag.type === 'placement' && S.drag.id === pl.id && S.hover) continue;
-        drawPlacement(pl, kind, pl.x, pl.y, cs, { boss: pl.isBoss, ghost: kind === 'enemies' && (pl.eventOnly || pl.appearTurn > 0), badge: kind === 'enemies' && pl.eventOnly ? 'Év' : kind === 'enemies' && pl.appearTurn > 0 ? String(pl.appearTurn) : null });
+        drawPlacement(pl, kind, pl.x, pl.y, cs, { boss: pl.isBoss, ghost: kind === 'enemies' && (pl.eventOnly || pl.appearTurn > 0), badge: kind === 'enemies' && pl.eventOnly ? 'Év' : kind === 'enemies' && pl.appearTurn > 0 ? String(pl.appearTurn) : pl.talk && pl.talk.enabled ? '💬' : null });
         if (sel) { ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.strokeRect(pl.x * cs.w + 1, pl.y * cs.h + 1, cs.w - 2, cs.h - 2); ctx.setLineDash([]); }
       }
     }
@@ -1377,7 +1377,23 @@
     // placement sélectionné
     const pl = findPlacement(S.selected);
     if (!pl) return;
-    const onPl = (k) => { markDirty(); draw(); if (['classId', 'isBoss', 'name', 'unitId', 'appearTurn', 'level', 'colors'].includes(k)) { renderPalette(); renderInspector(); } };
+    const onPl = (k) => { markDirty(); draw(); if (['classId', 'isBoss', 'name', 'unitId', 'appearTurn', 'level', 'colors', 'talk.enabled', 'talk.joinAs'].includes(k)) { renderPalette(); renderInspector(); } };
+    // recrutement par la conversation (« Parler » en combat) : ennemis et alliés verts
+    const talkFields = (kind) => {
+      const on = !!(pl.talk && pl.talk.enabled), self = TalkRecruit.recruitId(pl, kind);
+      const units = DB().units.map(u => ({ value: u.id, label: u.name }));
+      return [{ type: 'heading', label: 'Recrutement par la conversation' },
+        { key: 'talk.enabled', label: kind === 'allies' ? 'Rejoint l’équipe du joueur si un personnage lui parle' : 'Peut être recruté si un personnage lui parle', type: 'checkbox',
+          help: 'En combat, le personnage autorisé, adjacent, a l’action « Parler » : dialogue, puis il rejoint l’équipe (et l’effectif de la campagne). Parler consomme son action.' },
+        ...(on ? [
+          kind === 'enemies' ? { key: 'talk.joinAs', label: 'Personnage qui rejoint l’équipe (fiche Unités)', type: 'select', empty: '— choisir —', options: units,
+            help: 'L’ennemi est remplacé par ce personnage (même case, même proportion de PV), avec ses stats, son inventaire et ses sprites.' } : null,
+          { key: 'talk.with', label: 'Qui peut lui parler (aucun coché = tous les personnages du joueur)', type: 'multicheck', options: units.filter(u => u.value !== self) },
+          { key: 'talk.text', label: 'Dialogue', type: 'textarea', rows: 4, placeholder: 'Lyn: Pourquoi te bats-tu pour eux ?\nNom: … Tu as raison. Je vous rejoins.', help: 'Une réplique par ligne, « Nom: texte ». Vide = un court dialogue par défaut.' }
+        ].filter(Boolean) : [])];
+    };
+    const talkErrors = () => TalkRecruit.validate({ enemies: S.selected.kind === 'enemies' ? [pl] : [], allies: S.selected.kind === 'allies' ? [pl] : [], players: ch.players }, DB())
+      .map(e => h('p', { class: 'note' }, '⚠ ' + e));
     // couleurs du sprite pour ce placement seulement (sinon celles du personnage / de la classe)
     const colorsField = { key: 'colors', label: 'Couleurs', type: 'select', empty: 'Comme le personnage / la classe', options: Palettes.MODES };
     const snapOnce = (() => { let done = false; return () => { if (!done) { snapshot('chapter', ch.id); done = true; } }; })();
@@ -1399,8 +1415,9 @@
           { value: 'ai', label: 'IA — joue seul pendant la phase alliée' }] },
         { key: 'ai', label: 'Comportement (si IA)', type: 'select', options: AIS },
         colorsField,
-        { type: 'info', text: `Position : x ${pl.x} · y ${pl.y}. La phase alliée se joue juste après la phase du joueur. Sa mort ne fait pas perdre la partie.` }
-      ], pl, ctxF), h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => DBEditor.open('units', pl.unitId) }, 'Fiche du personnage'), del)));
+        { type: 'info', text: `Position : x ${pl.x} · y ${pl.y}. La phase alliée se joue juste après la phase du joueur. Sa mort ne fait pas perdre la partie.` },
+        ...talkFields('allies')
+      ], pl, ctxF), ...talkErrors(), h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => DBEditor.open('units', pl.unitId) }, 'Fiche du personnage'), del)));
     } else if (S.selected.kind === 'players') {
       box.append(section('Unité du joueur', UI.form([
         { key: 'unitId', label: 'Personnage', type: 'select', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
@@ -1423,8 +1440,9 @@
           { key: 'isBoss', label: 'Boss', type: 'checkbox' }] },
         { key: 'eventOnly', label: 'Arrivée uniquement par événement', type: 'checkbox', help: 'Ce renfort attend une action d’événement ; le tour d’arrivée est ignoré. Il reste pris en compte par les objectifs visant les renforts.' },
         { key: 'inventory', label: 'Inventaire (vide = celui de la classe)', type: 'inventory', options: invOptions },
-        { key: 'statBonus', label: 'Bonus de stats', type: 'stats', max: 99 }
-      ], pl, ctxF),
+        { key: 'statBonus', label: 'Bonus de stats', type: 'stats', max: 99 },
+        ...talkFields('enemies')
+      ], pl, ctxF), ...talkErrors(),
       prev ? h('div', { class: 'note' }, 'Stats calculées : ' + Rules.STATS.map(k => `${Rules.STAT_LABELS[k]} ${prev[k] + ((pl.statBonus && pl.statBonus[k]) || 0)}`).join(' · ')) : null,
       h('div', { class: 'insp-actions' }, del)));
     }

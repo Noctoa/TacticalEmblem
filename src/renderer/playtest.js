@@ -212,8 +212,13 @@
     const errors = [...Mission.validate(ch, G.db, G.map), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     errors.push(...Statuses.validateDefinitions(G.db));
     errors.push(...Weather.validate(ch.weather));
+    errors.push(...TalkRecruit.validate(ch, G.db));
     if (errors.length) throw new Error(errors.join('\n'));
+    const recruitedBefore = Array.isArray(G.campaign.recruited) ? G.campaign.recruited.slice() : null;
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
+    // recrues automatiques (« Rejoint l'effectif après ») arrivées en enchaînant les actes
+    const joined = recruitedBefore ? G.campaign.recruited.filter(id => !recruitedBefore.includes(id)).map(id => (R.byId(G.db.units, id) || {}).name).filter(Boolean) : [];
+    if (joined.length) UI.toast(`Nouvelle recrue : ${joined.join(', ')}`);
     Team.recruit(G.campaign, ch.players.map(p => p.unitId));
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
@@ -329,11 +334,16 @@
       if (G.campaign.dead.includes(pl.unitId)) continue;
       const u = applyCampaign(R.makeUnitFromCharacter(c, G.db, pl, 'ally'));
       u.control = pl.control || 'player'; u.ai = pl.ai || 'aggressive'; u.convoy = false; u.isLord = false;
+      u.talk = TalkRecruit.config(pl); // recrutement par la conversation
+      if (u.talk && (G.campaign.recruited || []).includes(u.sourceId)) u.talk = null;
       G.units.push(prep(u));
     }
     for (const pl of ch.enemies) {
       const u = R.makeEnemyFromPlacement(pl, G.db, 'enemy');
       if (!u) continue;
+      // recrutement par la conversation : seulement si son personnage n'est pas déjà dans l'équipe (ou mort)
+      u.talk = TalkRecruit.config(pl);
+      if (u.talk && ((G.campaign.recruited || []).includes(u.talk.joinAs) || G.campaign.dead.includes(u.talk.joinAs) || !R.byId(G.db.units, u.talk.joinAs))) u.talk = null;
       prep(u);
       u.eventOnly = !!pl.eventOnly;
       if (pl.eventOnly || pl.appearTurn > 0) G.pending.push(u); else G.units.push(u);
@@ -977,6 +987,10 @@
     const tags = [];
     if (u.team === 'ally') tags.push(h('span', { class: 'tag ally' }, u.control === 'ai' ? 'Allié (IA)' : 'Allié'));
     if (u.convoy) tags.push(h('span', { class: 'tag convoy' }, 'Chef d\'escouade · convoi'));
+    if (u.talk && !u.talked && u.team !== 'player') {
+      const names = u.talk.with.map(id => (R.byId(G.db.units, id) || {}).name).filter(Boolean);
+      tags.push(h('span', { class: 'tag support', 'data-unit-talk': true }, '💬 Recrutable : ' + (names.length ? names.join(', ') : 'n’importe qui') + ' peut lui parler'));
+    }
     if (u.team !== 'enemy') for (const t of supportTags(u)) tags.push(h('span', { class: 'tag support' }, '♥ ' + t));
     const t = terrainOf(u);
     if (t && (Number(t.avoid) || Number(t.def))) {
@@ -1154,9 +1168,42 @@
         showMenu(tired.map(o => ({ label: o.name, sub: 'rejoue ce tour', action: () => dance(u, o) })), u, 'items');
       } });
     }
+    // parler : recrute un ennemi ou un allié adjacent (Placement › Recrutement par la conversation)
+    const talkers = TalkRecruit.partners(G.units, u);
+    if (talkers.length) items.push({ label: 'Parler', sub: talkers.map(o => o.name).join(', '), action: () => {
+      if (talkers.length === 1) return talkTo(u, talkers[0]);
+      hideMenu();
+      showMenu(talkers.map(o => ({ label: o.name, sub: o.team === 'enemy' ? 'ennemi' : 'allié', action: () => talkTo(u, o) })), u, 'items');
+    } });
     if (canUseConvoy(u)) items.push({ label: 'Convoi', sub: u.convoy ? '' : 'via ' + convoyLeader().name, action: () => openConvoy(u) });
     items.push({ label: 'Attendre', action: () => { hideMenu(); finishAction(u); } });
     showMenu(items, u, 'menu');
+  }
+
+  /** « Parler » : conversation puis l'ennemi (remplacé par son personnage) ou l'allié rejoint l'équipe. Consomme l'action. */
+  async function talkTo(u, target) {
+    hideMenu();
+    G.busy = true; G.ui = 'event';
+    try {
+      target.talked = true;
+      await playDialogue(target.talk.text.trim() || TalkRecruit.defaultText(u, target));
+      let joined = target;
+      if (target.team === 'enemy') {
+        const def = R.byId(G.db.units, target.talk.joinAs);
+        joined = prep(applyCampaign(R.makeUnitFromCharacter(def, G.db, { x: target.x, y: target.y })));
+        joined.hp = Math.max(1, Math.min(joined.stats.hp, Math.round(joined.stats.hp * target.hp / Math.max(1, target.stats.hp))));
+        G.units[G.units.indexOf(target)] = joined;
+      } else {
+        target.team = 'player'; target.control = 'player';
+      }
+      joined.done = false; joined.talk = null; joined.talked = true;
+      Team.recruit(G.campaign, [joined.sourceId]);
+      Music.se('confirm');
+      float(joined.x, joined.y, 'Rejoint l\'équipe !', '#9fe0ff', true);
+      UI.toast(`${joined.name} rejoint votre équipe et peut agir dès maintenant.`);
+      lastInfoKey = '';
+    } finally { G.busy = false; G.ui = 'idle'; }
+    await finishAction(u);
   }
 
   // ---------- ultimes (Base de données › Ultimes) ----------
@@ -2295,7 +2342,9 @@
           const map = G.project.maps.find(m => m.id === next.mapId);
           const errors = map ? [...Mission.validate(next, G.db, map), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
-          saveCampaign(); await loadChapter(next);
+          saveCampaign();
+          if (!G.campaign.cleared.includes(G.chapter.id)) G.campaign.cleared.push(G.chapter.id); // acte terminé : recrues « après cet acte »
+          await loadChapter(next);
         } }, 'Acte suivant →') : null,
         h('button', { class: (win && (G.chapter.final || G.chapter.next)) || G.lobbyOn ? '' : 'primary', onclick: restartChapter }, 'Recommencer cet acte'),
         h('button', { onclick: () => settings.open('save') }, 'Sauvegarder…'),

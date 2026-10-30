@@ -45,7 +45,10 @@
       S.hero = api.prep(api.applyCampaign(R.makeUnitFromCharacter(heroDef, G.db, { x: cfg.start.x, y: cfg.start.y })));
       S.npcs = Lobby.present(cfg, G.db, G.campaign).map(p => api.prep(api.applyCampaign(R.makeUnitFromCharacter(p.unit, G.db, { x: p.spot.x, y: p.spot.y }))));
       G.units = [S.hero, ...S.npcs];
+      // recrues automatiques (« Rejoint l'effectif après ») : annoncées à l'arrivée au camp
+      const before = Array.isArray(G.campaign.recruited) ? G.campaign.recruited.slice() : null;
       S.members = []; refreshMembers(); commit();
+      const joined = S.joined = before ? G.campaign.recruited.filter(id => !before.includes(id)).map(id => (R.byId(G.db.units, id) || {}).name).filter(Boolean) : [];
       S.facing = 'down'; S.held = []; S.moving = false;
       G.cursor = { x: S.hero.x, y: S.hero.y };
       api.buildBase(); api.resize(); api.focus(S.hero.x, S.hero.y, true);
@@ -54,6 +57,7 @@
       api.Music.bgm('lobby');
       refreshHud();
       await api.banner(cfg.name, 'ally');
+      if (joined.length) { api.Music.se('confirm'); await api.banner(`${joined.join(', ')} ${joined.length > 1 ? 'rejoignent' : 'rejoint'} l’équipe !`, 'ally'); UI.toast(`Nouvelle recrue : ${joined.join(', ')} (menu du camp › Équipe)`); }
     }
 
     function leave() {
