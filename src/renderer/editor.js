@@ -945,6 +945,7 @@
 
   function renderUnitPalette(box) {
     const ch = curChapter();
+    if (ch) for (const k of ['players', 'enemies', 'allies', 'events']) if (!Array.isArray(ch[k])) ch[k] = []; // acte créé par une ancienne version
     box.append(h('div', { class: 'section-head' }, h('h3', {}, 'Placer'),
       h('div', { class: 'head-actions' }, h('button', { class: 'mini', title: 'Base de données', html: Icons.icon('db'), onclick: () => DBEditor.open('units') }))));
     const list = h('div', { class: 'pick-list' });
@@ -968,7 +969,7 @@
       for (const g of groups) {
         if (g.label) units.append(h('div', { class: 'pick-subgroup' }, g.label));
         for (const u of g.units) {
-          const placed = ch[kind].find(p => p.unitId === u.id);
+          const placed = (ch[kind] || []).find(p => p.unitId === u.id);
           const on = S.placeTool && S.placeTool.kind === kind && S.placeTool.unitId === u.id;
           const cls = byId(DB().classes, u.classId);
           const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
@@ -1226,7 +1227,9 @@
 
   function createChapter(map, fromObjects) {
     snapshot('project');
-    const ch = { id: uid('ch_', DB().chapters), name: 'Acte ' + (DB().chapters.length + 1), mapId: map.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 }, players: [], enemies: [], events: [] };
+    const ch = { id: uid('ch_', DB().chapters), name: 'Acte ' + (DB().chapters.length + 1), mapId: map.id, objective: { type: 'rout', turns: 10, x: 0, y: 0 },
+      kind: 'story', unlock: { after: '', alive: [], from: '', to: '' }, gold: 0, goldEachClear: false, replay: true, next: '', final: false,
+      players: [], enemies: [], allies: [], events: [] };
     DB().chapters.push(ch);
     if (fromObjects) placementsFromObjects(map, ch);
     if (!S.project.meta.startChapter) S.project.meta.startChapter = ch.id;
