@@ -1209,6 +1209,10 @@
       onCopy: () => { if (!cur) return; const e = JSON.parse(JSON.stringify(cur)); e.id = Editor.uid(def.prefix, list); e.name += ' (copie)'; list.splice(list.indexOf(cur) + 1, 0, e); selected[tab] = e.id; change(); renderBody(); },
       onDelete: async () => {
         if (!cur) return;
+        if (tab === 'units') {
+          const refs = db().chapters.filter(ch => (ch.enemies || []).some(p => p.unitId === cur.id));
+          if (refs.length) return UI.alert('Personnage placé comme ennemi', 'Retire d’abord ses placements ennemis dans : ' + refs.map(ch => ch.name).join(', ') + '.');
+        }
         if (['units', 'items', 'weapons'].includes(tab)) {
           const refs = SideObjectives.references(db(), tab, cur.id);
           if (refs.length) return UI.alert('Élément utilisé par un objectif secondaire', 'Modifie d’abord ces défis : ' + refs.join(', ') + '.');

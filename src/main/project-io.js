@@ -28,6 +28,7 @@ const Animations = require('../shared/animations.js');
 const Ultimates = require('../shared/ultimates.js');
 const Weather = require('../shared/weather.js');
 const SideObjectives = require('../shared/side-objectives.js');
+const Rules = require('../shared/rules.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -108,6 +109,7 @@ function saveProject(dir, project) {
   const statusErrors = Statuses.validateDefinitions(project.db);
   if (statusErrors.length) throw new Error(statusErrors.join('\n'));
   const errors = [
+    ...(project.db.chapters || []).flatMap(ch => Rules.validateEnemyCharacters(ch, project.db)),
     ...(project.db.chapters || []).flatMap(ch => SideObjectives.validate(ch, project.db)),
     ...Skills.validateAll(project.db.skills || []),
     ...Skills.validateAssignments(project.db),

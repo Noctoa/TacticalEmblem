@@ -209,7 +209,7 @@
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     TacticalEmblem.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...R.validateEnemyCharacters(ch, G.db), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
     errors.push(...Statuses.validateDefinitions(G.db));
     errors.push(...Weather.validate(ch.weather));
     errors.push(...TalkRecruit.validate(ch, G.db));
@@ -725,8 +725,8 @@
   }
   /** Palette de l'animation de combat : couleurs choisies au générateur (fiche de l'unité) à la place des couleurs d'origine. */
   function battlePaletteOf(u) {
-    const p = Palettes.paletteFor(u.team, colorMode(u), 'battle', false), def = R.byId(G.db.units, u.sourceId);
-    return p === 'original' && u.team !== 'enemy' && def && def.battleColors ? def.battleColors : p;
+    const p = Palettes.paletteFor(u.team, colorMode(u), 'battle', false), def = R.byId(G.db.units, u.characterId || u.sourceId);
+    return p === 'original' && (u.team !== 'enemy' || u.characterId) && def && def.battleColors ? def.battleColors : p;
   }
   /** Couleurs d'une unité : placement › unité › classe › réglage du projet. */
   function colorMode(u) { return Palettes.resolveMode(u.colorsOverride, u.colors, G.settings.colors); }
@@ -871,7 +871,7 @@
   // =====================================================================
   /** mode : 'mini' (fenêtres), 'bust' (cases carrées), 'main' (dialogues). */
   function portraitEl(u, mode) {
-    const c = R.byId(G.db.units, u.sourceId);
+    const c = R.byId(G.db.units, u.characterId || u.sourceId);
     const src = (c && c.portrait) || u.portrait;
     const col = (u.team !== 'enemy' && ((c && c.color) || u.color)) || teamColor(u);
     const el = h('div', { class: 'portrait', style: { background: `linear-gradient(160deg, ${shade(col, 1.2)}, ${shade(col, 0.6)})` } });
@@ -2313,7 +2313,7 @@
   async function continueArc() {
     const next = Lobby.nextAct(G.db, G.chapter.id);
     const map = next && G.project.maps.find(m => m.id === next.mapId);
-    const errors = map ? [...Mission.validate(next, G.db, map), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+    const errors = map ? [...Mission.validate(next, G.db, map), ...R.validateEnemyCharacters(next, G.db), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
     if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
     saveCampaign();
     const gold = Lobby.completeChapter(G.campaign, G.chapter);
@@ -2351,7 +2351,7 @@
         win && !G.lobbyOn && G.chapter.next && R.byId(G.db.chapters, G.chapter.next) ? h('button', { class: 'primary', onclick: async () => {
           const next = R.byId(G.db.chapters, G.chapter.next);
           const map = G.project.maps.find(m => m.id === next.mapId);
-          const errors = map ? [...Mission.validate(next, G.db, map), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
+          const errors = map ? [...Mission.validate(next, G.db, map), ...R.validateEnemyCharacters(next, G.db), ...SideObjectives.validate(next, G.db), ...Deployment.validate(next, G.db, map), ...Villages.validate(next, G.db, map), ...Locks.validate(next, G.db, map)] : ["Map de l'acte suivant introuvable."];
           if (errors.length) return UI.alert('Acte suivant invalide', errors.join('\n'));
           saveCampaign();
           if (!G.campaign.cleared.includes(G.chapter.id)) G.campaign.cleared.push(G.chapter.id); // acte terminé : recrues « après cet acte »

@@ -41,7 +41,7 @@
 
   function portrait(u, ctx) {
     const { G, R } = ctx;
-    const def = R.byId(G.db.units, u.sourceId), src = (def && def.portrait) || u.portrait;
+    const def = R.byId(G.db.units, u.characterId || u.sourceId), src = (def && def.portrait) || u.portrait;
     const frame = box(8, 4, 78, 71, 'rd-portrait');
     if (!src) { frame.append(h('span', { class: 'rd-initial' }, u.name.slice(0, 1))); return frame; }
     const face = Faces.element(Render.readyImage(ctx.baseUrl, src), Render.imageUrl(ctx.baseUrl, src), 'main');
@@ -73,7 +73,7 @@
   /** Taux de croissance (%) : ceux de l'unité, sinon de son personnage, sinon de sa classe. */
   function growthsOf(u, ctx) {
     const { G, R } = ctx;
-    const def = R.byId(G.db.units, u.sourceId), cl = R.byId(G.db.classes, u.classId);
+    const def = R.byId(G.db.units, u.characterId || u.sourceId), cl = R.byId(G.db.classes, u.classId);
     return Object.assign({}, cl && cl.growths, def && def.growths, u.growths);
   }
   function statsPage(u, ctx, panel, growths, toggle) {

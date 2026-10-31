@@ -220,25 +220,39 @@
   }
 
   function makeEnemyFromPlacement(pl, db, team) {
-    const cls = byId(db.classes, pl.classId);
+    const character = pl.unitId ? byId(db.units, pl.unitId) : null;
+    if (pl.unitId && !character) return null;
+    const cls = byId(db.classes, character ? character.classId : pl.classId);
     if (!cls) return null;
-    const level = pl.level || 1;
-    const stats = statsFromClass(cls, level);
+    const level = (character ? character.level : pl.level) || 1;
+    const stats = character ? Object.fromEntries(STATS.map(k => [k, character.stats?.[k] || 0])) : statsFromClass(cls, level);
     if (pl.statBonus) for (const k of STATS) stats[k] += pl.statBonus[k] || 0;
-    let inv = pl.inventory && pl.inventory.length ? pl.inventory : (cls.defaultInventory || []);
+    const inv = pl.inventory && pl.inventory.length ? pl.inventory : character ? character.inventory || [] : cls.defaultInventory || [];
+    const skillSource = character ? { ...character, ...Object.fromEntries(['personalSkill', 'learnedSkills', 'equippedSkills'].filter(k => pl[k] !== undefined).map(k => [k, pl[k]])) } : pl;
     return {
-      uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || cls.name,
-      classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, cls.growths || {}),
-      ...Skills.initialLoadout(Object.assign({}, pl, { level }), cls, db.skills),
-      inventory: buildInventory(inv, db), mov: cls.mov, moveType: cls.moveType,
+      uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || character?.name || cls.name,
+      ...(character ? { characterId: character.id, ...ultimateOf(character, db) } : {}),
+      classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, character ? character.growths || {} : cls.growths || {}),
+      ...Skills.initialLoadout(Object.assign({}, skillSource, { level }), cls, db.skills),
+      inventory: buildInventory(inv, db), mov: cls.mov + (character?.movBonus || 0), moveType: cls.moveType,
       crossWater: Movement.classCrossesWater(cls),
-      isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
+      isLord: false, convoy: false, isBoss: !!pl.isBoss, portrait: pl.portrait || character?.portrait || '', ai: pl.ai || 'aggressive',
       ...(typeof pl.pillageVillages === 'boolean' ? { pillageVillages: pl.pillageVillages } : {}),
       appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop, gold: Math.max(0, Math.floor(Number(pl.gold) || 0)),
-      mapSprite: pl.mapSprite || cls.mapSprite || '', battler: pl.battler || cls.battler || '',
-      colors: pl.colors || cls.colors || '',
+      mapSprite: pl.mapSprite || character?.mapSprite || cls.mapSprite || '', battler: pl.battler || character?.battler || cls.battler || '',
+      colors: character ? character.colors || cls.colors || '' : pl.colors || cls.colors || '', colorsOverride: pl.colors || '',
       x: pl.x, y: pl.y, done: false
     };
+  }
+
+  function validateEnemyCharacters(ch, db) {
+    const errors = [];
+    for (const pl of ch.enemies || []) if (pl.unitId !== undefined && pl.unitId !== '') {
+      const character = typeof pl.unitId === 'string' && byId(db.units, pl.unitId);
+      if (!character) errors.push(`${pl.name || pl.id} : personnage ennemi introuvable.`);
+      else if (!byId(db.classes, character.classId)) errors.push(`${character.name} : classe du personnage ennemi introuvable.`);
+    }
+    return errors;
   }
 
   // ---------- déplacement ----------
@@ -972,7 +986,7 @@
     STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
     AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
-    attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement,
+    attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement, validateEnemyCharacters,
     moveCost, reachable, perceivedContext, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
     forecast, resolveCombat, estimateCombat, phaseRecovery, combatExp, staffExp, gainExp, planEnemy,
     SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,

@@ -384,12 +384,12 @@
   }
   function tokenLabel(pl, kind) {
     if (kind === 'players' || kind === 'allies') { const u = byId(DB().units, pl.unitId); return u ? u.name : '?'; }
-    return pl.name || ((byId(DB().classes, pl.classId) || {}).name) || '?';
+    return pl.name || (byId(DB().units, pl.unitId) || {}).name || ((byId(DB().classes, pl.classId) || {}).name) || '?';
   }
 
   /** Chemin du sprite de map d'un placement : surcharge de l'unité/placement, sinon celui de la classe. */
   function spritePathOf(pl, kind) {
-    if (kind === 'players' || kind === 'allies') {
+    if (kind === 'players' || kind === 'allies' || pl.unitId) {
       const u = byId(DB().units, pl.unitId); if (!u) return '';
       const c = byId(DB().classes, u.classId);
       return u.mapSprite || (c && c.mapSprite) || '';
@@ -404,7 +404,7 @@
   function paletteOf(pl, kind) {
     const settings = (S.project.meta.settings || {}).colors;
     let unitColors = '', clsColors = '';
-    if (kind === 'players' || kind === 'allies') {
+    if (kind === 'players' || kind === 'allies' || pl.unitId) {
       const u = byId(DB().units, pl.unitId); const c = u && byId(DB().classes, u.classId);
       unitColors = u && u.colors; clsColors = c && c.colors;
     } else { const c = byId(DB().classes, pl.classId); clsColors = c && c.colors; }
@@ -675,8 +675,9 @@
           ch[kind].push(pl); S.selected = { kind, id: pl.id };
         }
       } else {
-        const cls = byId(DB().classes, S.placeTool.classId);
-        const pl = { id: uid('e', ch.enemies), name: cls ? cls.name : 'Ennemi', classId: S.placeTool.classId, level: S.placeTool.level || 1, x: c.x, y: c.y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [] };
+        const character = byId(DB().units, S.placeTool.unitId);
+        const cls = byId(DB().classes, character ? character.classId : S.placeTool.classId);
+        const pl = { id: uid('e', ch.enemies), name: character ? character.name : cls ? cls.name : 'Ennemi', classId: cls?.id || S.placeTool.classId, level: character?.level || S.placeTool.level || 1, x: c.x, y: c.y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [], ...(character ? { unitId: character.id } : {}) };
         ch.enemies.push(pl); S.selected = { kind: 'enemies', id: pl.id };
       }
       renderInspector(); renderPalette(); draw();
@@ -973,10 +974,10 @@
           const on = S.placeTool && S.placeTool.kind === kind && S.placeTool.unitId === u.id;
           const cls = byId(DB().classes, u.classId);
           const meta = charMeta(u.mapSprite || (cls && cls.mapSprite));
-          const team = kind === 'players' ? 'player' : 'ally';
+          const team = kind === 'players' ? 'player' : kind === 'enemies' ? 'enemy' : 'ally';
           units.append(h('div', { class: 'pick' + (on ? ' on' : ''), 'data-pick-unit': kind + ':' + u.id, onclick: () => { S.placeTool = on ? null : { kind, unitId: u.id }; renderPalette(); } },
             meta ? Sprites.icon(S.baseUrl, meta, iconPalette(team, u.colors, cls && cls.colors), 24) : h('span', { class: 'token ' + team, style: kind === 'players' ? { background: u.color || '' } : {} }, u.name.slice(0, 1)),
-            h('span', {}, u.name), h('span', { class: 'meta' }, placed ? (kind === 'players' ? 'placé ' : 'allié ') + placed.x + ',' + placed.y : (kind === 'players' && cls ? cls.name : ''))));
+            h('span', {}, u.name), h('span', { class: 'meta' }, placed ? ({ players: 'placé ', allies: 'allié ', enemies: 'ennemi ' }[kind]) + placed.x + ',' + placed.y : (cls ? cls.name : ''))));
         }
       }
       if (DB().units.length && !groups.some(g => g.units.length)) units.append(h('p', { class: 'note' }, 'Aucun personnage ne correspond.'));
@@ -986,6 +987,7 @@
       section('Unités du joueur', 'players');
       if (!DB().units.length) units.append(h('p', { class: 'note' }, 'Aucune unité. Crée tes personnages dans la base de données.'));
       section('Alliés (unités vertes)', 'allies');
+      section('Ennemis — personnages', 'enemies');
     };
     search.addEventListener('input', () => { paletteView.query = search.value; fill(); });
     sort.addEventListener('change', () => {
@@ -1402,7 +1404,7 @@
         charMeta(spritePathOf(pl, kind)) ? Sprites.icon(S.baseUrl, charMeta(spritePathOf(pl, kind)), paletteOf(pl, kind), 24)
           : h('span', { class: 'token ' + ({ players: 'player', allies: 'ally' }[kind] || (pl.isBoss ? 'boss' : 'enemy')), style: kind === 'players' ? { background: tokenColor(pl, kind) } : {} }, tokenLabel(pl, kind).slice(0, 1)),
         kind === 'allies' ? h('span', { class: 'turn ally' }, 'allié') : null,
-        h('span', {}, tokenLabel(pl, kind) + (kind === 'enemies' ? ` Nv ${pl.level}` : '')),
+        h('span', {}, tokenLabel(pl, kind) + (kind === 'enemies' ? ` Nv ${(byId(DB().units, pl.unitId) || {}).level || pl.level}` : '')),
         kind === 'enemies' && pl.appearTurn > 0 ? h('span', { class: 'turn' }, 'T' + pl.appearTurn) : null,
         h('span', { class: 'pos' }, `${pl.x},${pl.y}`));
     };
@@ -1476,16 +1478,19 @@
         { type: 'info', text: `Position : x ${pl.x} · y ${pl.y}` }
       ], pl, ctxF), h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => DBEditor.open('units', pl.unitId) }, 'Fiche du personnage'), del)));
     } else {
-      const cls = byId(DB().classes, pl.classId);
-      const prev = cls ? Rules.statsFromClass(cls, pl.level || 1) : null;
+      const character = byId(DB().units, pl.unitId);
+      const cls = byId(DB().classes, character ? character.classId : pl.classId);
+      const prev = character ? character.stats : cls ? Rules.statsFromClass(cls, pl.level || 1) : null;
       box.append(section(pl.isBoss ? 'Boss' : 'Ennemi', UI.form([
+        { key: 'unitId', label: 'Personnage de la base', type: 'select', empty: '— ennemi générique (classe) —', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
+        character ? { type: 'info', text: `${character.name} · ${cls?.name || 'Classe introuvable'} · Nv ${character.level || 1}. Stats, compétences, portrait et sprites issus de sa fiche. L’ennemi est indépendant de l’équipe du joueur.` } : null,
         { key: 'name', label: 'Nom', type: 'text' },
-        { type: 'row', fields: [
+        !character ? { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: DB().classes.map(c => ({ value: c.id, label: c.name })) },
-          { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40, compact: true }] },
+          { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40, compact: true }] } : null,
         { key: 'ai', label: 'Comportement', type: 'select', options: AIS },
         { type: 'custom', render: enemy => {
-          const current = byId(DB().classes, enemy.classId), setting = { enabled: typeof enemy.pillageVillages === 'boolean' ? enemy.pillageVillages : Villages.classPillages(current) };
+          const current = byId(DB().classes, character ? character.classId : enemy.classId), setting = { enabled: typeof enemy.pillageVillages === 'boolean' ? enemy.pillageVillages : Villages.classPillages(current) };
           return UI.form([{ key: 'enabled', label: 'Piller les villages ouverts en priorité', type: 'checkbox' }], setting,
             { onChange: () => { ctxF.onChange('pillageVillages'); enemy.pillageVillages = setting.enabled; } });
         } },
@@ -1495,10 +1500,14 @@
           { key: 'appearTurn', label: 'Arrive au tour', type: 'number', min: 0, max: 99, help: '0 = présent dès le début. Sinon : renfort qui apparaît au début de la phase ennemie de ce tour.' },
           { key: 'isBoss', label: 'Boss', type: 'checkbox' }] },
         { key: 'eventOnly', label: 'Arrivée uniquement par événement', type: 'checkbox', help: 'Ce renfort attend une action d’événement ; le tour d’arrivée est ignoré. Il reste pris en compte par les objectifs visant les renforts.' },
-        { key: 'inventory', label: 'Inventaire (vide = celui de la classe)', type: 'inventory', options: invOptions },
+        { key: 'inventory', label: character ? 'Inventaire (vide = celui du personnage)' : 'Inventaire (vide = celui de la classe)', type: 'inventory', options: invOptions },
         { key: 'statBonus', label: 'Bonus de stats', type: 'stats', max: 99 },
         ...talkFields('enemies')
-      ], pl, ctxF), ...talkErrors(),
+      ].filter(Boolean), pl, { onChange: k => {
+        if (k === 'unitId') { const u = byId(DB().units, pl.unitId); if (u) Object.assign(pl, { classId: u.classId, level: u.level || 1, name: u.name, inventory: [] }); }
+        ctxF.onChange(k);
+      } }), ...talkErrors(),
+      character ? h('button', { class: 'small', onclick: () => DBEditor.open('units', character.id) }, 'Fiche du personnage') : null,
       prev ? h('div', { class: 'note' }, 'Stats calculées : ' + Rules.STATS.map(k => `${Rules.STAT_LABELS[k]} ${prev[k] + ((pl.statBonus && pl.statBonus[k]) || 0)}`).join(' · ')) : null,
       h('div', { class: 'insp-actions' }, del)));
     }

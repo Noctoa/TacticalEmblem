@@ -91,7 +91,7 @@
           if (!Number.isInteger(a.uses) || a.uses < 0 || a.uses > 999) bad('utilisations de récompense invalides.');
           if (a.unitId && !known(a.unitId)) bad('destinataire introuvable.');
         }
-        if (a.type === 'reinforcement' && !(ch.enemies || []).some(u => u.id === a.target && (u.eventOnly || u.appearTurn > 0) && (db.classes || []).some(c => c.id === u.classId))) bad('choisis un renfort placé sur la map (arrivée par événement ou par tour).');
+        if (a.type === 'reinforcement' && !(ch.enemies || []).some(u => u.id === a.target && (u.eventOnly || u.appearTurn > 0) && (db.classes || []).some(c => c.id === (u.unitId ? (db.units || []).find(d => d.id === u.unitId)?.classId : u.classId)))) bad('choisis un renfort placé sur la map (arrivée par événement ou par tour).');
         if (a.type === 'door' && (!interaction('door', a.target) || typeof a.open !== 'boolean')) bad('porte ou état invalide.');
         if (a.type === 'objective') {
           if (!a.objective || typeof a.objective !== 'object') bad('objectif manquant.');
