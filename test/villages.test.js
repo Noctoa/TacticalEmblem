@@ -3,6 +3,7 @@ const { test } = require('node:test'), assert = require('node:assert/strict');
 const fs = require('node:fs'), os = require('node:os'), path = require('node:path');
 const V = require('../src/shared/villages'), D = require('../src/shared/defaults'), R = require('../src/shared/rules');
 const C = require('../src/shared/campaign'), io = require('../src/main/project-io');
+const Side = require('../src/shared/side-objectives'), Scenario = require('../src/shared/scenario');
 function fixture() {
   const p = D.sampleProject('Villages'), db = p.db, ch = db.chapters[0], map = p.maps.find(m => m.id === ch.mapId);
   const village = { id: 'v_test', name: 'Village du pont', x: 3, y: 3, script: 'Villageois: Merci !', reward: { gold: 120, itemId: 'w_iron_sword', uses: 7 }, allowedUnits: [] };
@@ -98,4 +99,129 @@ test('visites sauvegardées : compatibilité, détection des doublons et référ
   assert.ok(V.visited(restored.campaign, ch, village));
   saved.campaign.villageVisits.push(saved.campaign.villageVisits[0]); assert.throws(() => C.validate(saved), /Visites de villages invalides/);
   saved.campaign.villageVisits = [{}]; assert.throws(() => C.validate(saved), /Visites de villages invalides/);
+});
+
+function raidFixture() {
+  const f = fixture();
+  f.enemy = R.makeEnemyFromPlacement({ id: 'raider', classId: 'brigand', x: 1, y: 3, level: 1, ai: 'aggressive' }, f.db);
+  f.state.units.push(f.enemy); f.state.ruined = new Set(); f.unit.x = 0; f.unit.y = 0;
+  f.ctx = { width: 10, height: 8, terrainAt: () => ({ cost: { foot: 1 } }), unitAt: (x, y) => f.state.units.find(u => !u.dead && u.hp > 0 && u.x === x && u.y === y) };
+  return f;
+}
+test('pillards : classes par défaut et importées, réglages de classe/placement, sommeil et équipes', () => {
+  const f = raidFixture(); assert.equal(V.canPillage(f.enemy, f.db), true);
+  for (const id of ['brigand', 'pirate', 'fe7_brigand', 'fe6_pirate', 'fe16_brigand']) assert.equal(V.classPillages({ id }), true);
+  assert.equal(V.classPillages({ id: 'fighter' }), false);
+  const cls = f.db.classes.find(c => c.id === 'brigand'); cls.pillageVillages = false;
+  assert.equal(V.canPillage(f.enemy, f.db), false); f.enemy.pillageVillages = true; assert.equal(V.canPillage(f.enemy, f.db), true);
+  f.enemy.pillageVillages = false; cls.pillageVillages = true; assert.equal(V.canPillage(f.enemy, f.db), false);
+  delete f.enemy.pillageVillages;
+  for (const change of [{ hp: 0 }, { dead: true }, { team: 'player' }, { team: 'ally' }, { statuses: { sleep: { turns: 2 } } }]) assert.equal(V.canPillage({ ...f.enemy, ...change }, f.db), false);
+  assert.equal(V.canPillage({ ...f.enemy, statuses: { silence: { turns: 2 } } }, f.db), true);
+  assert.equal(R.makeEnemyFromPlacement({ id: 'safe', classId: 'brigand', x: 0, y: 0, pillageVillages: false }, f.db).pillageVillages, false);
+});
+test('pillage : case exacte, village ouvert, aucune récompense ni recrue, pas de double pillage', () => {
+  const f = raidFixture(); f.village.recruitUnitId = 'c_cloud';
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, f.state, f.db).ok, false);
+  Object.assign(f.enemy, { x: f.village.x, y: f.village.y });
+  const inventory = JSON.stringify(f.enemy.inventory);
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, f.state, f.db).ok, true);
+  assert.equal(V.status(f.ch, f.village, f.state), 'ruined'); assert.equal(f.state.campaign.gold, 0);
+  assert.equal(f.state.campaign.recruited, undefined); assert.equal(f.state.visited.size, 0); assert.equal(JSON.stringify(f.enemy.inventory), inventory);
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, f.state, f.db).ok, false);
+  assert.equal(f.state.campaign.villageRuins.length, 1);
+  Object.assign(f.unit, { x: f.village.x, y: f.village.y });
+  assert.match(V.offer(f.ch, f.village, f.unit, f.state, f.db).error, /pillé/);
+  assert.equal(V.claim(f.ch, f.village, f.unit, f.state, f.db).ok, false);
+});
+test('un village visité est protégé, et le créateur peut interdire le pillage', () => {
+  const f = raidFixture(); Object.assign(f.unit, { x: 3, y: 3 });
+  V.claim(f.ch, f.village, f.unit, f.state, f.db); Object.assign(f.enemy, { x: 3, y: 3 });
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, f.state, f.db).ok, false);
+  assert.equal(V.status(f.ch, f.village, f.state), 'visited');
+  f.state.visited.clear(); f.state.campaign.villageVisits = []; f.village.raidable = false;
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, f.state, f.db).ok, false);
+  assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx), null);
+});
+test('IA : village prioritaire, trajet sur plusieurs tours, action de pillage et immobile respecté', () => {
+  const f = raidFixture(); const before = JSON.stringify([f.enemy, f.ch, f.state.campaign]);
+  const near = V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx);
+  assert.equal(near.action, 'pillage'); assert.deepEqual(near.moveTo, { x: 3, y: 3 });
+  assert.equal(JSON.stringify([f.enemy, f.ch, f.state.campaign]), before);
+  f.enemy.mov = 1; const far = V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx);
+  assert.equal(far.action, 'move'); assert.deepEqual(far.moveTo, { x: 2, y: 3 });
+  f.enemy.ai = 'stationary'; assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx), null);
+  Object.assign(f.enemy, { x: 3, y: 3 }); assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx).action, 'pillage');
+});
+test('IA : terrain infranchissable, portes, village occupé et coût du climat', () => {
+  const f = raidFixture(); f.enemy.mov = 2;
+  f.ctx.weather = { type: 'snow', intensity: 3, tactical: true };
+  assert.deepEqual(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx).moveTo, { x: 2, y: 3 });
+  f.ctx.terrainAt = (x, y) => ({ cost: { foot: x === 2 ? 99 : 1 } });
+  assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx), null);
+  f.ctx.terrainAt = () => ({ cost: { foot: 1 } }); delete f.ctx.weather;
+  Object.assign(f.unit, { x: 3, y: 3 }); assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx), null);
+  f.unit.team = 'enemy'; assert.equal(V.planRaid(f.enemy, f.ch, f.state, f.db, f.ctx), null);
+});
+test('ruines : checkpoint annule le pillage ; sauvegarde de campagne le conserve ; rejeu explicite restaure le village', () => {
+  const f = raidFixture(), checkpoint = C.checkpoint(f.ch.id, f.state.campaign, [], {});
+  Object.assign(f.enemy, { x: 3, y: 3 }); V.pillage(f.ch, f.village, f.enemy, f.state, f.db);
+  const save = C.checkpoint('@lobby', f.state.campaign, [], {}), restored = C.restore(JSON.parse(JSON.stringify(save)), {});
+  const next = { ...f.state, ...restored, ruined: new Set() };
+  assert.equal(V.ruined(f.ch, f.village, next), true);
+  const reset = { ...next, ...C.restore(checkpoint, {}) }; assert.equal(V.ruined(f.ch, f.village, reset), false);
+  f.village.repeatOnReplay = true; assert.equal(V.ruined(f.ch, f.village, next), false);
+  assert.equal(V.pillage(f.ch, f.village, f.enemy, next, f.db).ok, true); assert.equal(V.ruined(f.ch, f.village, next), true);
+  assert.equal(next.campaign.villageRuins.length, 1);
+  save.campaign.villageRuins.push(save.campaign.villageRuins[0]); assert.throws(() => C.validate(save), /pillés/);
+});
+test('apparences : remplacement de plusieurs cases et calques, coordonnées locales du tileset et projet intact', () => {
+  const f = raidFixture(), ts = f.db.tilesets[0];
+  f.map.tilesets[0].firstgid = 101;
+  const patch = { tilesetId: ts.id, tileX: 3, tileY: 4, width: 3, height: 2, offsetX: -1, offsetY: -1 };
+  f.village.appearance = { ruined: patch, visited: { ...patch, tileY: 5 } };
+  assert.deepEqual(V.validate(f.ch, f.db, f.map), []);
+  const before = JSON.stringify(f.map); f.state.ruined.add(f.village.id);
+  const visual = V.visualMap(f.map, f.ch, f.state, f.db);
+  assert.notEqual(visual, f.map); assert.equal(JSON.stringify(f.map), before);
+  const i = 2 * f.map.width + 2;
+  assert.equal(visual.layers[0].data[i], 101 + 4 * ts.columns + 3);
+  assert.equal(visual.layers[0].data[i + f.map.width + 2], 101 + 5 * ts.columns + 5);
+  assert.equal(visual.layers[1].data[i], 0); assert.equal(visual.layers[2].data[i], 0);
+  f.state.ruined.clear(); f.state.visited.add(f.village.id);
+  assert.equal(V.visualMap(f.map, f.ch, f.state, f.db).layers[0].data[i], 101 + 5 * ts.columns + 3);
+  f.state.visited.clear(); assert.equal(V.visualMap(f.map, f.ch, f.state, f.db), f.map);
+});
+test('ruines sans bloc : le décor intact est supprimé ; le terrain est actualisé sans changer la grille du projet', () => {
+  const f = raidFixture(), base = { id: 'wall' }; f.state.ruined.add(f.village.id);
+  const index = 3 * f.map.width + 3, original = JSON.stringify(f.map);
+  const out = V.visualMap(f.map, f.ch, f.state, f.db);
+  assert.equal(out.layers[2].data[index], 0); assert.ok(out.layers[0].data[index]);
+  assert.equal(V.terrainAt(f.ch, f.db, 3, 3, f.state, base).id, 'plain');
+  assert.equal(V.terrainAt(f.ch, f.db, 2, 3, f.state, base), base);
+  assert.equal(JSON.stringify(f.map), original);
+});
+test('validation des blocs et des réglages de pillage avant écriture ; références de terrain et tileset', () => {
+  const f = raidFixture(), patch = { tilesetId: 'ts_village', tileX: 0, tileY: 0, width: 2, height: 2, offsetX: 0, offsetY: -1 };
+  f.village.appearance = { ruined: patch }; f.village.ruinedTerrainId = 'plain';
+  assert.deepEqual(V.validate(f.ch, f.db, f.map), []);
+  for (const change of [{ tileX: -1 }, { tileY: 99 }, { width: 0 }, { width: 17 }, { height: 0 }, { offsetX: -99 }, { offsetY: 99 }, { tileX: 15 }, { tileY: .5 }, { tilesetId: 'missing' }]) {
+    const ch = JSON.parse(JSON.stringify(f.ch)); Object.assign(ch.villages[0].appearance.ruined, change); assert.ok(V.validate(ch, f.db, f.map).length, JSON.stringify(change));
+  }
+  assert.ok(V.references(f.db, 'tilesets', 'ts_village').length); assert.ok(V.references(f.db, 'terrains', 'plain').length);
+  f.enemy.pillageVillages = 'oui'; f.ch.enemies.push(f.enemy); assert.ok(V.validate(f.ch, f.db, f.map).length);
+  delete f.enemy.pillageVillages;
+  f.village.raidable = 'oui'; assert.ok(V.validate(f.ch, f.db, f.map).length); delete f.village.raidable;
+  f.village.ruinedTerrainId = 'wall'; assert.ok(V.validate(f.ch, f.db, f.map).length);
+});
+test('village pillé : objectif secondaire échoué immédiatement et déclencheur distinct de la visite', () => {
+  const f = raidFixture(); f.ch.secondaryObjectives = [{ id: 'save', type: 'village', target: f.village.id }];
+  f.state.ruinedVillages = f.state.ruined;
+  Object.assign(f.enemy, { x: 3, y: 3 }); V.pillage(f.ch, f.village, f.enemy, f.state, f.db);
+  const result = Side.advance(f.ch, f.state); assert.equal(result.save.status, 'failed');
+  const event = { id: 'burnt', trigger: { type: 'villagePillaged', target: f.village.id }, actions: [] };
+  f.ch.events = [event]; assert.deepEqual(Scenario.validate(f.ch, f.db, f.map), []);
+  assert.equal(Scenario.matches(event, 'villagePillaged', { target: f.village.id }), true);
+  assert.equal(Scenario.matches(event, 'village', { target: f.village.id }), false);
+  assert.equal(Scenario.matches(event, 'villagePillaged', { target: 'other' }), false);
 });

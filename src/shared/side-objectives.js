@@ -82,6 +82,7 @@
         if (ob.type === 'chest') done = !!state.openedChests?.has(ob.target) || (!ob.repeatOnReplay && (state.campaign.chestVisits || []).some(v => v.chapterId === ch.id && v.chestId === ob.target));
         if (ob.type === 'flag') done = (state.campaign.scenario?.flags?.[ob.flag] === true) === ob.value;
         status = expired ? 'failed' : done ? 'success' : final ? 'failed' : 'pending';
+        if (ob.type === 'village' && !done && (state.ruinedVillages?.has(ob.target) || (!(ch.villages || []).find(v => v.id === ob.target)?.repeatOnReplay && (state.campaign.villageRuins || []).some(v => v.chapterId === ch.id && v.villageId === ob.target)))) status = 'failed';
       }
       next[ob.id] = { status, turn };
     }

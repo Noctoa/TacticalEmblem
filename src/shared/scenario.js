@@ -9,7 +9,7 @@
   const TRIGGERS = [
     ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
     ['area', 'Un joueur ou allié termine son action dans une zone'], ['chest', 'Coffre ouvert'], ['door', 'Porte ouverte'],
-    ['village', 'Village visité'], ['condition', 'Dès que les conditions sont remplies'], ['victory', 'Victoire']
+    ['village', 'Village visité'], ['villagePillaged', 'Village pillé'], ['condition', 'Dès que les conditions sont remplies'], ['victory', 'Victoire']
   ].map(([value, label]) => ({ value, label }));
   // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
   const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'],
@@ -43,12 +43,12 @@
     if (type === 'turn') return tr.turn === data.turn;
     if (type === 'death') return !!data.unit && (tr.target === data.unit.sourceId || (data.unit.team !== 'enemy' && tr.target === 'unit:' + data.unit.sourceId));
     if (type === 'area') { const u = data.unit; return !!u && u.team !== 'enemy' && u.x >= tr.x && u.y >= tr.y && u.x < tr.x + (tr.w || 1) && u.y < tr.y + (tr.h || 1); }
-    if (['chest', 'door', 'village'].includes(type)) return tr.target === data.target;
+    if (['chest', 'door', 'village', 'villagePillaged'].includes(type)) return tr.target === data.target;
     return true;
   }
   function validate(ch, db, map) {
     const errors = [], seen = new Set(), point = (x, y) => Number.isInteger(x) && Number.isInteger(y) && x >= 0 && y >= 0 && x < map.width && y < map.height;
-    const known = id => (db.units || []).some(u => u.id === id), interaction = (type, id) => (ch[{ chest: 'chests', door: 'doors', village: 'villages' }[type]] || []).some(o => o.id === id);
+    const known = id => (db.units || []).some(u => u.id === id), interaction = (type, id) => (ch[{ chest: 'chests', door: 'doors', village: 'villages', villagePillaged: 'villages' }[type]] || []).some(o => o.id === id);
     if (ch.events !== undefined && !Array.isArray(ch.events)) return ['Événements : une liste est attendue.'];
     for (const e of list(ch)) {
       if (!e || typeof e !== 'object') { errors.push('Événement invalide.'); continue; }
@@ -60,7 +60,7 @@
       if (tr.type === 'turn' && (!Number.isInteger(tr.turn) || tr.turn < 1 || tr.turn > 999)) bad('tour invalide.');
       if (tr.type === 'death' && !(ch.enemies || []).some(u => u.id === tr.target) && !(typeof tr.target === 'string' && tr.target.startsWith('unit:') && known(tr.target.slice(5)))) bad('unité vaincue introuvable.');
       if (tr.type === 'area' && (!point(tr.x, tr.y) || !Number.isInteger(tr.w || 1) || !Number.isInteger(tr.h || 1) || (tr.w || 1) < 1 || (tr.h || 1) < 1 || !point(tr.x + (tr.w || 1) - 1, tr.y + (tr.h || 1) - 1))) bad('zone hors de la map.');
-      if (['chest', 'door', 'village'].includes(tr.type) && !interaction(tr.type, tr.target)) bad('interaction de déclenchement introuvable.');
+      if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type) && !interaction(tr.type, tr.target)) bad('interaction de déclenchement introuvable.');
       const c = e.conditions;
       if (c !== undefined && (!c || typeof c !== 'object' || Array.isArray(c))) bad('conditions invalides.');
       else if (c) {

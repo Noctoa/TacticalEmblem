@@ -661,6 +661,11 @@
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'dance', label: 'Danse : action « Danser », un allié adjacent qui a déjà joué rejoue ce tour', type: 'checkbox' },
         { type: 'custom', render: cls => {
+          const model = { enabled: Villages.classPillages(cls) };
+          return UI.form([{ key: 'enabled', label: 'Ennemis de cette classe : piller les villages ouverts en priorité', type: 'checkbox' }], model,
+            { onChange: () => { cls.pillageVillages = model.enabled; change(); } });
+        } },
+        { type: 'custom', render: cls => {
           const tmp = { effectiveTypes: cls.effectiveTypes || [cls.moveType] };
           return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: mtypes }], tmp,
             { onChange: () => { cls.effectiveTypes = tmp.effectiveTypes; change(); } });
@@ -1211,7 +1216,7 @@
           const locks = Locks.references(db(), tab, cur.id);
           if (locks.length) return UI.alert('Élément utilisé par un coffre ou une porte', 'Modifie d’abord ces interactions : ' + locks.join(', ') + '.');
         }
-        if (['units', 'items', 'weapons'].includes(tab)) {
+        if (['units', 'items', 'weapons', 'terrains'].includes(tab)) {
           const villages = Villages.references(db(), tab, cur.id);
           if (villages.length) return UI.alert('Élément utilisé par un village', 'Modifie d’abord ces villages : ' + villages.join(', ') + '.');
         }
@@ -1429,6 +1434,8 @@
       },
       onDelete: async () => {
         if (!ts) return;
+        const refs = Villages.references(db(), 'tilesets', ts.id);
+        if (refs.length) return UI.alert('Tileset utilisé par un village', 'Modifie d’abord les apparences de : ' + refs.join(', ') + '.');
         const used = Editor.project().maps.filter(m => m.tilesets.some(r => r.tilesetId === ts.id));
         if (!(await UI.confirm(`Supprimer « ${ts.name} » ?` + (used.length ? `\nUtilisé par ${used.length} map(s) : leurs tiles disparaîtront.` : ''), { danger: true, ok: 'Supprimer' }))) return;
         list.splice(list.indexOf(ts), 1); change(); renderBody();

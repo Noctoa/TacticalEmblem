@@ -7,7 +7,8 @@
     const S = { members: [], plan: [], focus: '', onStart: null, onCancel: null, formation: null, sheet: false };
     const parts = () => TeamPanel.parts(api);
     const panel = () => document.querySelector('#preparation');
-    const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
+    const villageState = () => ({ campaign: G.campaign, visited: G.visitedVillages || new Set(), ruined: G.ruinedVillages || new Set() });
+    const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), Villages.terrainAt(G.chapter, G.db, x, y, villageState(), G.terrains[G.tgrid[y * G.map.width + x]] || null));
     function close() { closeFormation(); panel().classList.add('hidden'); panel().innerHTML = ''; document.body.classList.remove('in-preparation'); }
     function open(members, saved, onStart, onCancel) {
       Object.assign(S, { members, onStart, onCancel, plan: Deployment.initial(G.chapter, G.db, members, terrainAt, saved) });
@@ -44,7 +45,8 @@
       const scale = Math.min(2, 580 / (map.width * map.tileWidth), previewHeight / (map.height * map.tileHeight));
       canvas.width = Math.ceil(map.width * map.tileWidth * scale); canvas.height = Math.ceil(map.height * map.tileHeight * scale);
       const ctx = canvas.getContext('2d'), tw = map.tileWidth * scale, th = map.tileHeight * scale;
-      ctx.imageSmoothingEnabled = false; Render.drawMap(ctx, map, { scale, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+      ctx.imageSmoothingEnabled = false; Render.drawMap(ctx, Villages.visualMap(map, ch, villageState(), G.db), { scale, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+      VillageVisuals.draw(ctx, map, ch, villageState(), scale);
       const scouts = S.plan.map(p => ({ ...p, team: 'player', hp: 1 })).concat(G.units.filter(u => u.team === 'ally'));
       const visible = Weather.visibleTiles(ch.weather, scouts, 'player', map.width, map.height);
       if (visible !== null) {
@@ -57,7 +59,7 @@
         ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.strokeRect(p.x * tw + 1, p.y * th + 1, tw - 2, th - 2);
         ctx.font = `bold ${Math.max(8, Math.min(15, th * .65))}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(text, (p.x + .5) * tw, (p.y + .5) * th);
       };
-      for (const v of Villages.list(ch)) marker(v, '#987328', Villages.visited(G.campaign, ch, v) && !v.repeatOnReplay ? '✓' : 'V');
+      for (const v of Villages.list(ch)) { const kind = Villages.status(ch, v, villageState()); marker(v, kind === 'ruined' ? '#763b35' : '#987328', { open: 'V', visited: '✓', ruined: '×' }[kind]); }
       for (const kind of Locks.lists) for (const object of Locks.list(ch, kind)) marker(object, '#925a2c', kind === 'chests' ? 'C' : 'P');
       for (const e of ch.enemies || []) if (!e.eventOnly && !(e.appearTurn > 0) && Weather.canSee(visible, e)) marker(e, '#a13232', e.isBoss ? '★' : '');
       for (const a of ch.allies || []) if (!ch.players.some(p => p.unitId === a.unitId) && !G.campaign.dead.includes(a.unitId)) marker(a, '#258344', 'A');

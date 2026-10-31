@@ -224,7 +224,7 @@
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
     Object.assign(G, { weather: Weather.normalize(ch.weather), turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
-      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), openedChests: new Set(), openedDoors: new Set(),
+      reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), ruinedVillages: new Set(), openedChests: new Set(), openedDoors: new Set(),
       secondaryProgress: {}, secondaryFinal: null, secondaryTurn: null, secondaryPaid: new Set(), secondaryRewardPending: false, secondaryExpanded: true });
     scenarioRunner = Scenario.createRunner(ch, { state: () => G, action: scenarioRuntime.action, blocked: (ev, error) => UI.toast(`${ev.name || ev.id} : ${error}`, 'error') });
     hideMenu(); hideForecast();
@@ -315,7 +315,9 @@
     const b = base.getContext('2d');
     b.imageSmoothingEnabled = false;
     b.fillStyle = '#14161b'; b.fillRect(0, 0, base.width, base.height);
-    Render.drawMap(b, m, { scale: 1, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+    const chapter = G.mode === 'lobby' ? { villages: [] } : G.chapter;
+    Render.drawMap(b, Villages.visualMap(m, chapter, villageState(), G.db), { scale: 1, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+    VillageVisuals.draw(b, m, chapter, villageState());
   }
 
   function setupUnits() {
@@ -389,7 +391,8 @@
   }
   const unitVisible = u => !!u && (u.team !== 'enemy' || tileVisible(u.x, u.y));
   const visibleUnitAt = (x, y) => { const u = unitAt(x, y); return unitVisible(u) ? u : null; };
-  const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(), G.terrains[G.tgrid[y * G.map.width + x]] || null);
+  const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(),
+    G.mode === 'lobby' ? G.terrains[G.tgrid[y * G.map.width + x]] || null : Villages.terrainAt(G.chapter, G.db, x, y, villageState(), G.terrains[G.tgrid[y * G.map.width + x]] || null));
   const terrainOf = (u) => terrainAt(u.x, u.y);
   /** Fond de combat du terrain d'une unité (image déjà chargée) ou null. */
   const battlebackOf = (u) => { const t = terrainOf(u); return t && t.battleback ? Render.readyImage(G.baseUrl, t.battleback) : null; };
@@ -666,7 +669,7 @@
     ctx.closePath(); ctx.fill();
   }
 
-  function villageState() { return { campaign: G.campaign, visited: G.visitedVillages || new Set(), convoy: G.convoy, capacity: G.convoyCap, units: G.units }; }
+  function villageState() { return { campaign: G.campaign, visited: G.visitedVillages || new Set(), ruined: G.ruinedVillages || new Set(), convoy: G.convoy, capacity: G.convoyCap, units: G.units }; }
   function lockState() { return { campaign: G.campaign, openedChests: G.openedChests || new Set(), openedDoors: G.openedDoors || new Set(), convoy: G.convoy, capacity: G.convoyCap }; }
   function drawLocks() {
     for (const kind of Locks.lists) for (const object of Locks.list(G.chapter, kind)) {
@@ -693,10 +696,10 @@
   }
   function drawVillages() {
     for (const village of Villages.list(G.chapter)) {
-      const [px, py, w, hh] = tileRect(village.x, village.y), closed = Villages.closed(G.chapter, village, villageState());
+      const [px, py, w, hh] = tileRect(village.x, village.y), kind = Villages.status(G.chapter, village, villageState()), closed = kind !== 'open';
       ctx.strokeStyle = closed ? '#88948d' : '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(px + 2, py + 2, w - 4, hh - 4);
-      ctx.fillStyle = closed ? '#45554b' : '#7e5c19'; ctx.fillRect(px + w - 17, py + 1, 16, 16);
-      ctx.fillStyle = '#fff0c0'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(closed ? '✓' : 'V', px + w - 9, py + 9);
+      ctx.fillStyle = kind === 'ruined' ? '#763b35' : closed ? '#45554b' : '#7e5c19'; ctx.fillRect(px + w - 17, py + 1, 16, 16);
+      ctx.fillStyle = '#fff0c0'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(kind === 'ruined' ? '×' : closed ? '✓' : 'V', px + w - 9, py + 9);
     }
   }
 
@@ -898,7 +901,8 @@
     tw.innerHTML = '';
     if (t) tw.append(...[h('div', { class: 't-name' }, t.name), h('div', { class: 't-row' }, h('span', {}, 'DÉF'), String(t.def)), h('div', { class: 't-row' }, h('span', {}, 'ESQ'), String(t.avoid)), t.heal ? h('div', { class: 't-row' }, h('span', {}, 'SOIN'), t.heal + '%') : null].filter(Boolean));
     const village = G.chapter && Villages.at(G.chapter, c.x, c.y);
-    if (village) tw.append(h('div', { class: 't-name' }, village.name || 'Village'), h('div', { class: 't-row' }, Villages.closed(G.chapter, village, villageState()) ? 'Déjà visité' : 'Action : Visiter'));
+    if (village) tw.append(h('div', { class: 't-name' }, village.name || 'Village'), h('div', { class: 't-row' },
+      { open: 'Action : Visiter', visited: 'Village fermé — sauvé', ruined: 'Village pillé — récompense perdue' }[Villages.status(G.chapter, village, villageState())]));
     for (const kind of Locks.lists) {
       const object = G.chapter && Locks.at(G.chapter, kind, c.x, c.y);
       if (object) tw.append(h('div', { class: 't-name' }, object.name), h('div', { class: 't-row' }, Locks.opened(G.chapter, kind, object, lockState()) ? 'Ouvert' : kind === 'doors' ? 'Ouvrir depuis une case adjacente' : 'Action : Ouvrir le coffre'));
@@ -1791,7 +1795,7 @@
           messages.push(`${info.name} rejoint votre équipe et peut agir dès maintenant.`);
         } else messages.push(info.kind === 'already' ? `${info.name} fait déjà partie de votre équipe.` : `${info.name} ne peut plus rejoindre votre équipe.`);
       }
-      applyDebugMove(); lastInfoKey = ''; refreshDanger();
+      buildBase(); applyDebugMove(); lastInfoKey = ''; refreshDanger();
       Music.se('confirm');
       await UI.alert(village.name || 'Village visité', messages.length ? messages.join('\n') : 'La visite est terminée.');
       await runEvents('village', { target: village.id, unit: visitor });
@@ -2141,7 +2145,7 @@
       const e = list.find(u => !acted.has(u) && !u.done && !u.dead && u.hp > 0 && Statuses.canAct(u));
       if (!e) break;
       acted.add(e);
-      let plan = R.planEnemy(e, foesFn(), ropts());
+      let plan = Villages.planRaid(e, G.chapter, villageState(), G.db, rctx()) || R.planEnemy(e, foesFn(), ropts());
       e.done = true;
       if (!plan) continue;
       if (unitVisible(e)) { focus(e.x, e.y); setCursor(e.x, e.y, true); }
@@ -2156,7 +2160,14 @@
         finally { e.ai = previous; }
         if (!plan) continue;
       }
-      if (plan.action === 'staff') {
+      if (plan.action === 'pillage') {
+        if (Villages.pillage(G.chapter, plan.village, e, villageState(), G.db).ok) {
+          buildBase(); lastInfoKey = ''; refreshDanger();
+          float(e.x, e.y, 'Village pillé !', '#ff9a8a');
+          UI.toast(`${plan.village.name || 'Village'} a été pillé. Sa récompense est perdue.`, 'error');
+          await runEvents('villagePillaged', { target: plan.village.id, unit: e });
+        }
+      } else if (plan.action === 'staff') {
         await performStaff(e, plan.target, plan.weaponIndex);
       } else if (plan.action === 'item') {
         await performItem(e, plan.itemIndex);

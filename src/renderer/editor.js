@@ -1484,6 +1484,11 @@
           { key: 'classId', label: 'Classe', type: 'select', options: DB().classes.map(c => ({ value: c.id, label: c.name })) },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40, compact: true }] },
         { key: 'ai', label: 'Comportement', type: 'select', options: AIS },
+        { type: 'custom', render: enemy => {
+          const current = byId(DB().classes, enemy.classId), setting = { enabled: typeof enemy.pillageVillages === 'boolean' ? enemy.pillageVillages : Villages.classPillages(current) };
+          return UI.form([{ key: 'enabled', label: 'Piller les villages ouverts en priorité', type: 'checkbox' }], setting,
+            { onChange: () => { ctxF.onChange('pillageVillages'); enemy.pillageVillages = setting.enabled; } });
+        } },
         colorsField,
         { key: 'gold', label: 'Bourse (or ramassé quand il est vaincu)', type: 'number', min: 0, max: 99999 },
         { type: 'row', fields: [

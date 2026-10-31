@@ -12,7 +12,7 @@
       api.change(); if ((dynamic || []).includes(key)) redraw();
     } });
     const targets = options(db.units, u => u.name).map(o => ({ ...o, value: 'unit:' + o.value })).concat(options(ch.enemies));
-    const interactions = type => options(ch[{ chest: 'chests', door: 'doors', village: 'villages' }[type]]);
+    const interactions = type => options(ch[{ chest: 'chests', door: 'doors', village: 'villages', villagePillaged: 'villages' }[type]]);
     const flagHelp = 'Nom interne : commence par une lettre ; lettres, chiffres et _ uniquement. Absent = faux. Conservé entre les actes après victoire.';
     function defaults(type) {
       const plug = Scenario.pluginAction(type);
@@ -82,7 +82,7 @@
         if (tr.type === 'turn') card.append(fields([{ key: 'turn', label: 'Tour', type: 'number', min: 1, max: 999 }], tr));
         if (tr.type === 'death') card.append(fields([{ key: 'target', label: 'Unité vaincue', type: 'select', empty: '— choisir —', options: targets }], tr));
         if (tr.type === 'area') card.append(fields(['x', 'y', 'w', 'h'].map(k => ({ key: k, label: { x: 'Zone X', y: 'Zone Y', w: 'Largeur', h: 'Hauteur' }[k], type: 'number', min: ['w', 'h'].includes(k) ? 1 : 0, max: 499 })), tr));
-        if (['chest', 'door', 'village'].includes(tr.type)) card.append(fields([{ key: 'target', label: 'Interaction', type: 'select', empty: '— choisir —', options: interactions(tr.type) }], tr));
+        if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type)) card.append(fields([{ key: 'target', label: 'Interaction', type: 'select', empty: '— choisir —', options: interactions(tr.type) }], tr));
         if (tr.type === 'condition') card.append(h('p', { class: 'form-info' }, 'Évalué après les événements et actions, avant le résultat de mission. Sans « une seule fois », attend que les conditions deviennent fausses puis vraies pour se répéter.'));
         card.append(h('div', { class: 'form-heading' }, 'Conditions (toutes nécessaires)'),
           UI.form([{ key: 'present', label: 'Personnages vivants et déployés', type: 'multicheck', options: options(db.units) }], c, { onChange: () => { ev.conditions = c; api.change(); } }));

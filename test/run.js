@@ -207,9 +207,10 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   }
   for (const u of q.db.units) if (u.portrait) assert.ok(fs.existsSync(path.join(dir, u.portrait)), u.portrait); // les personnages à invoquer n'ont pas de portrait
   // ressources par défaut sur un projet converti : rien en double, seuls les effets sonores, les fonds de combat
-  // et les planches d'animations (absents de l'ancienne version) arrivent
+  // les planches d'animations et les nouveaux tilesets (absents de l'ancienne version) arrivent.
+  // village.png était déjà présent et vient d'être converti.
   const count = d => fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', d), { recursive: true }).filter(f => /\.(png|wav)$/.test(f)).length;
-  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, count('sons') + count('fonds-combat') + count('animations'));
+  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, count('sons') + count('fonds-combat') + count('animations') + count('tilesets') - 1);
   // réouverture : plus rien à convertir
   assert.ok(!io.loadProject(dir).migration);
 });
