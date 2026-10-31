@@ -1421,7 +1421,7 @@
     body.append(listPanel(list, ts && ts.id, {
       sub: (t) => `${t.tileWidth}px`,
       onAdd: async () => {
-        const rel = await tf.importTilesetImage(Editor.dir()); if (!rel) return;
+        const rel = await Editor.pickTilesetImage(); if (!rel) return;
         const img = await Render.loadImage(Editor.baseUrl(), rel);
         if (!img) return UI.alert('Image illisible', rel);
         const t = { id: Editor.uid('ts_', list), name: rel.split('/').pop().replace(/\.\w+$/, ''), image: rel, tileWidth: 32, tileHeight: 32, margin: 0, spacing: 0, imageWidth: img.width, imageHeight: img.height, tileTerrain: {} };

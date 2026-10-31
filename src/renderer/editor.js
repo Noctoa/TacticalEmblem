@@ -781,6 +781,43 @@
   const palCanvas = document.createElement('canvas');
   const pctx = palCanvas.getContext('2d');
   let palDrag = null;
+  // zoom de la palette de tiles (Ctrl+molette ou boutons − / +) ; 0 = automatique (×2 pour les petits tilesets)
+  const PAL_ZOOMS = [0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8];
+  let palZoom = 0;
+  try { palZoom = Number(localStorage.getItem('tf.paletteZoom')) || 0; } catch (e) { /* stockage indisponible */ }
+  const autoPalZoom = (img) => (img.width <= 140 ? 2 : 1);
+  /** Change le zoom de la palette en gardant le point (px, py) du canevas sous le curseur (ou le centre). */
+  function setPalZoom(next, anchor) {
+    const ts = tsOf(S.paletteTs); const img = ts && Render.readyImage(S.baseUrl, ts.image); if (!img) return;
+    const scroll = palCanvas.parentElement;
+    const old = Number(palCanvas.dataset.scale) || 1;
+    next = Math.max(PAL_ZOOMS[0], Math.min(PAL_ZOOMS[PAL_ZOOMS.length - 1], next));
+    if (next === old) return;
+    const ax = anchor ? anchor.x : (scroll ? scroll.clientWidth / 2 : 0), ay = anchor ? anchor.y : (scroll ? scroll.clientHeight / 2 : 0);
+    const ix = scroll ? (scroll.scrollLeft + ax) / old : 0, iy = scroll ? (scroll.scrollTop + ay) / old : 0;
+    palZoom = next;
+    try { localStorage.setItem('tf.paletteZoom', String(palZoom)); } catch (e) { /* stockage indisponible */ }
+    sizePalette(img);
+    if (scroll) { scroll.scrollLeft = ix * next - ax; scroll.scrollTop = iy * next - ay; }
+    const label = document.querySelector('[data-pal-zoom-label]'); if (label) label.textContent = Math.round(next * 100) + ' %';
+  }
+  function stepPalZoom(dir, anchor) {
+    const cur = Number(palCanvas.dataset.scale) || 1;
+    const next = dir > 0 ? PAL_ZOOMS.find(z => z > cur + 1e-6) : [...PAL_ZOOMS].reverse().find(z => z < cur - 1e-6);
+    if (next) setPalZoom(next, anchor);
+  }
+  function sizePalette(img) {
+    const scale = palZoom || autoPalZoom(img);
+    palCanvas.width = Math.round(img.width * scale); palCanvas.height = Math.round(img.height * scale);
+    palCanvas.dataset.scale = scale;
+    drawPalette();
+  }
+  palCanvas.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey) return; // molette seule : défilement normal
+    e.preventDefault();
+    const r = palCanvas.parentElement.getBoundingClientRect();
+    stepPalZoom(e.deltaY < 0 ? 1 : -1, { x: e.clientX - r.left, y: e.clientY - r.top });
+  }, { passive: false });
 
   function renderPalette() {
     const box = $('#palette'); box.innerHTML = '';
@@ -798,9 +835,15 @@
     sel.addEventListener('change', () => { S.paletteTs = sel.value; S.brush = { tilesetId: sel.value, x: 0, y: 0, w: 1, h: 1 }; renderPalette(); });
     const add = h('button', { class: 'mini', title: 'Importer une image de tileset', html: Icons.icon('plus'), onclick: quickImportTileset });
     const edit = h('button', { class: 'mini', title: 'Terrains du tileset (base de données)', html: Icons.icon('terrain'), onclick: () => DBEditor.open('tilesets', S.paletteTs) });
+    const zoomLabel = h('button', { class: 'mini pal-zoom-label', 'data-pal-zoom-label': true, title: 'Zoom automatique (Ctrl+molette sur la palette pour zoomer)',
+      onclick: () => { palZoom = 0; try { localStorage.removeItem('tf.paletteZoom'); } catch (e) { /* stockage indisponible */ } renderPalette(); } }, '');
+    const zoom = h('div', { class: 'pal-zoom' },
+      h('button', { class: 'mini', title: 'Dézoomer la palette (Ctrl+molette)', 'data-pal-zoom': '-1', onclick: () => stepPalZoom(-1) }, '−'),
+      zoomLabel,
+      h('button', { class: 'mini', title: 'Zoomer la palette (Ctrl+molette)', 'data-pal-zoom': '1', onclick: () => stepPalZoom(1) }, '+'));
     box.append(
       h('div', { class: 'section-head' }, h('h3', {}, 'Tileset'), h('div', { class: 'head-actions' }, edit, add)),
-      tss.length ? h('div', { class: 'palette-tools' }, sel) : ''
+      tss.length ? h('div', { class: 'palette-tools' }, sel, zoom) : ''
     );
     const ts = tsOf(S.paletteTs);
     const scroll = h('div', { class: 'palette-scroll' });
@@ -808,11 +851,9 @@
     if (!ts) { scroll.append(h('div', { class: 'palette-empty' }, 'Aucun tileset. Importe une image ou une map Tiled.')); return; }
     const img = Render.readyImage(S.baseUrl, ts.image);
     if (!img) { Render.loadImage(S.baseUrl, ts.image).then(i => { if (i) renderPalette(); else scroll.append(h('div', { class: 'palette-empty' }, 'Image introuvable : ' + ts.image)); }); return; }
-    const scale = img.width <= 140 ? 2 : 1;
-    palCanvas.width = img.width * scale; palCanvas.height = img.height * scale;
-    palCanvas.dataset.scale = scale;
     scroll.append(palCanvas);
-    drawPalette();
+    sizePalette(img);
+    zoomLabel.textContent = Math.round((Number(palCanvas.dataset.scale) || 1) * 100) + ' %';
   }
 
   function drawPalette() {
@@ -860,8 +901,15 @@
   });
   window.addEventListener('mouseup', () => { palDrag = null; });
 
+  /** Image d'un nouveau tileset : fenêtre de choix (images du projet ou de l'ordinateur, avec recherche). */
+  async function pickTilesetImage() {
+    const r = await rescanResources();
+    const files = ((r || S.project.resources || {}).tilesets || []).slice();
+    return FilePicker.pickImage({ title: 'Image du nouveau tileset', kind: 'tilesets', dir: S.dir, baseUrl: S.baseUrl, files,
+      used: new Set(DB().tilesets.map(t => t.image)) });
+  }
   async function quickImportTileset() {
-    const rel = await safe(() => tf.importTilesetImage(S.dir)); if (!rel) return;
+    const rel = await pickTilesetImage(); if (!rel) return;
     const img = await Render.loadImage(S.baseUrl, rel);
     if (!img) return UI.alert('Image illisible', rel);
     const m = curMap();
@@ -1562,7 +1610,7 @@
     placeVillage: chapterId => { selectChapter(chapterId); setMode('units'); S.placeTool = { kind: 'villages' }; S.selected = null; renderAll(); UI.toast('Clique une case pour placer un village.'); },
     selectVillage: (chapterId, villageId) => { selectChapter(chapterId); setMode('units'); S.selected = { kind: 'villages', id: villageId }; S.placeTool = null; renderAll(); },
     refresh: async () => { await Render.preloadTilesets(S.baseUrl, DB().tilesets); renderAll(); },
-    selectChapter, playtest, open: cmdOpen, rescanResources, resources: () => S.project.resources, reloadPlugins
+    selectChapter, playtest, open: cmdOpen, rescanResources, pickTilesetImage, resources: () => S.project.resources, reloadPlugins
   };
 
   // ---------- plugins ----------

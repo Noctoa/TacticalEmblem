@@ -34,7 +34,8 @@ npm test
 - crayon, rectangle, remplissage, gomme, pipette (B / R / F / E / I) ; clic droit = pipette
 - calques : ajout, suppression, ordre, visibilité, renommage (double-clic), option pour atténuer les autres
 - redimensionnement, duplication, Ctrl+Z / Ctrl+Y, Ctrl+molette pour zoomer, molette centrale pour se déplacer
-- import d'une image de tileset directement depuis la palette
+- zoom de la palette de tiles : boutons − / + au-dessus de la palette ou Ctrl+molette sur la palette (de 50 % à 800 %, retenu sur ce poste) ; clic sur le pourcentage = zoom automatique
+- import d'une image de tileset directement depuis la palette (bouton +) ou depuis Base de données › Terrains et tilesets › Nouveau : une fenêtre de choix montre en vignettes les images déjà rangées dans `ressources/tilesets` (recherche par nom, celles qui servent déjà de tileset sont marquées et masquables) et, onglet **Sur l'ordinateur**, un navigateur avec raccourcis (Bureau, Documents, Images, Téléchargements, disques), chemin modifiable (on peut y coller un chemin) et recherche par nom dans le dossier et tous ses sous-dossiers, sans accents ni majuscules. Le dernier dossier ouvert est retenu ; l'image choisie est copiée dans `ressources/tilesets`. Le bouton « Explorateur Windows… » ouvre la boîte de dialogue habituelle dans le dossier affiché
 
 **Terrain** (F2) — Chaque case prend le terrain de son tile (défini dans Base de données › Terrains et tilesets). On peut peindre une surcharge case par case quand un tile sert à plusieurs choses.
 
@@ -549,6 +550,8 @@ src/shared/fe-classes.js   pack des classes officielles (données : fe-classes-d
 src/shared/fe-pack.js      pack de personnages de la série (fiches, classes, bannières) — testé dans test/fe-pack.test.js
 src/shared/plugins.js      plugins : fiches plugin.json, liens vers la base — testé dans test/plugins.test.js
 src/main/plugins-io.js     plugins fournis (plugins/), installation / désinstallation dans un projet
+src/main/file-browser.js   navigateur de fichiers de la fenêtre de choix d'image (dossiers, recherche, copie) — testé dans test/file-browser.test.js
+src/renderer/file-picker.js  fenêtre de choix d'une image (images du projet, ordinateur)
 src/renderer/title-screen.js  écran titre du jeu (Jouer, Crédits, Quitter)
 src/renderer/plugin-runtime.js  scripts des plugins (TacticalEmblem.register / on), chargés dans l'éditeur et le jeu
 src/shared/extensions.js   points d'extension des plugins (onglets, champs, actions, lieux du camp, récompenses…)

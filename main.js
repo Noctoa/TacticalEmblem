@@ -8,6 +8,7 @@ const Layout = require('./src/main/resources-layout.js');
 const campaignIO = require('./src/main/campaign-io.js');
 const { importTiled } = require('./src/main/tiled.js');
 const pluginsIO = require('./src/main/plugins-io.js');
+const files = require('./src/main/file-browser.js');
 
 const ASSETS = path.join(__dirname, 'assets');
 const BUNDLED_PLUGINS = path.join(__dirname, 'plugins'); // plugins fournis avec l'application
@@ -204,6 +205,24 @@ function importAsset(sub) {
   };
 }
 handle('tileset:importImage', importAsset(io.DIRS.tilesets));
+// navigateur de fichiers intégré (fenêtre « Choisir un tileset »)
+const fileKinds = { tilesets: io.DIRS.tilesets };
+handle('files:places', () => [['Bureau', 'desktop'], ['Documents', 'documents'], ['Images', 'pictures'], ['Téléchargements', 'downloads']]
+  .map(([label, key]) => { try { const p = app.getPath(key); return fs.existsSync(p) ? { label, path: p } : null; } catch (e) { return null; } }).filter(Boolean)
+  .concat(files.places(app.getPath('home')))
+  .filter((p, i, all) => all.findIndex(o => path.resolve(o.path).toLowerCase() === path.resolve(p.path).toLowerCase()) === i));
+handle('files:list', (e, dir) => Object.assign(files.list(dir, files.IMAGE_EXTS), { sep: path.sep }));
+handle('files:search', (e, root, query) => files.search(root, query, files.IMAGE_EXTS));
+handle('files:import', (e, dir, src, kind) => {
+  const sub = fileKinds[kind]; if (!sub) throw new Error('Type de fichier inconnu : ' + kind);
+  return files.copyInto(dir, src, sub);
+});
+handle('files:native', async (e, defaultPath) => {
+  const res = await dialog.showOpenDialog(editorWin || BrowserWindow.getFocusedWindow(), {
+    title: 'Choisir une image', defaultPath: defaultPath || undefined, properties: ['openFile'], filters: [{ name: 'Images', extensions: files.IMAGE_EXTS }]
+  });
+  return res.canceled || !res.filePaths.length ? null : res.filePaths[0];
+});
 // portrait : rangé dans le dossier du personnage (ressources/personnages/<Nom>/)
 handle('portrait:import', importAsset((dir, owner) => io.DIRS.characters + '/' + Layout.safeName(owner || 'Portraits')));
 handle('resources:scan', (e, dir) => io.scanResources(dir));

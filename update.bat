@@ -103,13 +103,26 @@ rem ===========================================================================
 :build
 echo.
 echo === 3/4  Compilation de l'exécutable (npm run dist^)
+rem  Windows (antivirus, indexation, éditeur de code ouvert sur le dossier) verrouille parfois un fichier
+rem  que electron-builder vient de copier (erreur EBUSY ... default_app.asar) : on nettoie et on réessaie.
+set "TRY=0"
+:build_try
+set /a TRY+=1
+call :clean_unpacked
 call npm run dist
-if errorlevel 1 (
+if not errorlevel 1 goto :build_ok
+if %TRY% GEQ 3 (
   echo.
-  echo La compilation a échoué. Si le message parle d'un fichier utilisé, ferme %APPNAME%
-  echo puis relance ce script.
+  echo La compilation a échoué 3 fois. Si le message parle d'un fichier "busy or locked" :
+  echo   - ferme %APPNAME%, ton éditeur de code (VS Code, IntelliJ^) et l'Explorateur ouvert sur dist,
+  echo   - ou redémarre le PC, puis relance ce script.
   goto :fail
 )
+echo.
+echo Fichier verrouillé ou erreur de compilation : nouvel essai dans 5 secondes (%TRY%/3^)...
+timeout /t 5 /nobreak >nul
+goto :build_try
+:build_ok
 echo.
 echo Nouvel exécutable :
 for %%F in ("%APPNAME% *.exe") do echo   %%~nxF
@@ -141,3 +154,17 @@ exit /b 0
 echo.
 pause
 exit /b 1
+
+rem --- supprime les dossiers de compilation laissés par un essai précédent (win-unpacked, win-unpacked.tmp)
+:clean_unpacked
+for %%D in ("dist\win-unpacked.tmp" "dist\win-unpacked") do (
+  if exist "%%~D" (
+    rmdir /s /q "%%~D" >nul 2>&1
+    if exist "%%~D" (
+      timeout /t 2 /nobreak >nul
+      rmdir /s /q "%%~D" >nul 2>&1
+    )
+    if exist "%%~D" echo Attention : impossible de supprimer %%~D (un fichier est encore utilisé^).
+  )
+)
+exit /b 0
