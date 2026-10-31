@@ -1,9 +1,10 @@
 /* Promotions : transitions, compatibilité des anciennes classes et application atomique. */
 (function (root, factory) {
-  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills);
+  const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
+    typeof module !== 'undefined' && module.exports ? require('./movement.js') : root.Movement);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Promotions = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Movement) {
   'use strict';
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
   const byId = (list, id) => (list || []).find(entry => entry.id === id);
@@ -26,6 +27,7 @@
     for (const item of db.items || []) if (item.effect === 'promotion' && (!Number.isInteger(item.uses) || item.uses < 1 || item.uses > 99)) errors.push(`Objet ${item.name || item.id} : un objet de promotion doit avoir de 1 à 99 utilisations.`);
     for (const cls of db.classes || []) {
       const prefix = `Classe ${cls.name || cls.id} : `;
+      if (cls.crossWater !== undefined && typeof cls.crossWater !== 'boolean') errors.push(prefix + 'la traversée de l’eau doit être activée ou désactivée.');
       if (cls.tier !== undefined && (!Number.isInteger(cls.tier) || cls.tier < 0 || cls.tier > 9)) errors.push(prefix + 'le palier doit être un entier de 0 à 9.');
       if (cls.effectiveTypes !== undefined && (!Array.isArray(cls.effectiveTypes) || cls.effectiveTypes.some(t => !['foot', 'horse', 'armor', 'flier'].includes(t)))) errors.push(prefix + 'catégories d’efficacité invalides.');
       if (cls.promotions !== undefined && !Array.isArray(cls.promotions)) { errors.push(prefix + 'les promotions doivent être une liste.'); continue; }
@@ -90,7 +92,7 @@
     const option = options(unit, db, itemIndex).find(o => o.row.classId === destinationId);
     if (!option || !option.available) return { ok: false, error: option ? option.reasons.join(' ') : 'Promotion indisponible.' };
     const before = effectiveLevel(unit, db), result = preview(unit, option, db), next = clone(unit);
-    Object.assign(next, { classId: option.target.id, ...result });
+    Object.assign(next, { classId: option.target.id, crossWater: Movement.classCrossesWater(option.target), ...result });
     delete next.gains;
     next.effectiveLevel = Math.max(before, next.level + Math.max(0, (Number(option.target.tier) || 1) - 1) * 20);
     const character = byId(db.units, unit.sourceId) || {};

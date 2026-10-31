@@ -19,13 +19,16 @@ module.exports = (editor, openPlaytest) => {
       const ch = p.db.chapters[0], map = p.maps.find(m => m.id === ch.mapId);
       Object.assign(map, { width: 15, height: 9, terrain: Array(135).fill('plain') });
       map.layers.forEach((l, i) => l.data = Array(135).fill(i ? 0 : 18));
+      for (let y = 0; y < map.height; y++) { map.terrain[y * 15 + 7] = 'water'; map.layers[0].data[y * 15 + 7] = 82; }
+      p.db.classes.push({ ...p.db.classes.find(c => c.id === 'brigand'), id: 'fe7_pirate', name: 'Pirate', promotions: [] });
+      p.db.units.find(u => u.id === 'c_lyn').classId = 'fe7_pirate';
       for (const pos of [[2, 4], [8, 3], [6, 6]]) { const i = pos[1] * 15 + pos[0]; map.layers[2].data[i] = 27; map.terrain[i] = 'village'; }
-      Object.assign(ch, { players: [{ id: 'p1', unitId: 'c_eliwood', x: 2, y: 4 }, { id: 'p2', unitId: 'c_lyn', x: 2, y: 5 }], allies: [],
+      Object.assign(ch, { players: [{ id: 'p1', unitId: 'c_eliwood', x: 2, y: 4 }, { id: 'p2', unitId: 'c_lyn', x: 6, y: 4 }], allies: [],
         requiredUnits: ['c_eliwood'], objective: { type: 'survive', turns: 99 }, gold: 0, orbs: 0, final: false, chests: [], doors: [],
         villages: [{ id: 'saved', name: 'Village sauvé', x: 2, y: 4, reward: { gold: 50 } },
           { id: 'ruin', name: 'Village de l’est', x: 8, y: 3, reward: { gold: 700, itemId: 'i_vulnerary', uses: 3 }, recruitUnitId: 'c_cloud' },
           { id: 'repeat', name: 'Village reconstruit', x: 6, y: 6, reward: { gold: 400 }, repeatOnReplay: true }],
-        enemies: [{ id: 'raider', classId: 'brigand', name: 'Pillard de l’est', level: 1, x: 7, y: 3, ai: 'aggressive' },
+        enemies: [{ id: 'raider', classId: 'brigand', name: 'Pillard de l’est', level: 1, x: 6, y: 3, ai: 'aggressive' },
           { id: 'south', classId: 'brigand', name: 'Pillard du sud', level: 1, x: 6, y: 5, ai: 'aggressive' },
           { id: 'boss', classId: 'brigand', name: 'Guetteur', level: 1, x: 13, y: 1, ai: 'stationary', isBoss: true }],
         secondaryObjectives: [{ id: 'visit', type: 'village', target: 'ruin', reward: { gold: 500 } }],
@@ -58,6 +61,12 @@ module.exports = (editor, openPlaytest) => {
       const mapMenu = wc => js(wc, `PlaytestState.cursor = { x: 0, y: 0 }; document.querySelector('#game').dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true }))`);
       const state = `({ campaign: PlaytestState.campaign, visited: PlaytestState.visitedVillages, ruined: PlaytestState.ruinedVillages })`;
       const first = await start('Détente'), wc = first.wc; await depart(wc); await begin(wc);
+      await js(wc, `(() => { const u = PlaytestState.units.find(u => u.sourceId === 'c_lyn'); PlaytestState.cursor = { x: u.x, y: u.y }; document.querySelector('#game').dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true })); })()`);
+      assert.equal(await js(wc, `PlaytestState.reach.get('7,4').cost`), 2);
+      await js(wc, `PlaytestState.cursor = { x: 8, y: 4 }; document.querySelector('#game').dispatchEvent(new MouseEvent('mousedown', { button: 0, bubbles: true }))`);
+      await until(wc, `PlaytestState.ui === 'menu' && !PlaytestState.busy`);
+      assert.equal(await js(wc, `PlaytestState.units.find(u => u.sourceId === 'c_lyn').x`), 8);
+      await js(wc, `document.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true })); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }))`);
       const initialGold = await js(wc, 'PlaytestState.campaign.gold');
       const playRound = async () => {
         await menu(wc, 'c_eliwood'); await action(wc, 'Visiter'); await until(wc, `!!document.querySelector('.modal-back')`); await click(wc, '.modal-actions button', 'OK'); await until(wc, `!PlaytestState.busy`);

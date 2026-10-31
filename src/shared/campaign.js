@@ -6,10 +6,11 @@
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
   const api = factory(common ? require('./skills.js') : root.Skills, common ? require('./scenario.js') : root.Scenario,
-    common ? require('./extensions.js') : root.Extensions, common ? require('./side-objectives.js') : root.SideObjectives);
+    common ? require('./extensions.js') : root.Extensions, common ? require('./side-objectives.js') : root.SideObjectives,
+    common ? require('./movement.js') : root.Movement);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Campaign = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions, SideObjectives) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions, SideObjectives, Movement) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
   const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
@@ -42,6 +43,7 @@
     const saved = campaign.units[unit.sourceId];
     if (saved) for (const k of fields()) if (saved[k] !== undefined) unit[k] = clone(saved[k]);
     const cls = db.classes.find(c => c.id === unit.classId);
+    unit.crossWater = Movement.classCrossesWater(cls);
     const character = db.units.find(c => c.id === unit.sourceId) || {};
     unit.mapSprite = character.mapSprite || (cls && cls.mapSprite) || '';
     unit.battler = character.battler || (cls && cls.battler) || '';

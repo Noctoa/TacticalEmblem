@@ -83,7 +83,7 @@
     function walkable(x, y) {
       if (x < 0 || y < 0 || x >= G.map.width || y >= G.map.height) return false;
       if (npcAt(x, y)) return false;
-      const cost = R.moveCost(api.terrainAt(x, y), S.hero.moveType);
+      const cost = R.moveCost(api.terrainAt(x, y), S.hero.moveType, undefined, S.hero);
       return Number.isFinite(cost) && cost < R.IMPASSABLE;
     }
     /** Ce avec quoi on peut interagir sur une case : { kind: 'npc' | 'board' | 'shop' | 'place', unit?, place? }. */

@@ -661,6 +661,11 @@
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'dance', label: 'Danse : action « Danser », un allié adjacent qui a déjà joué rejoue ce tour', type: 'checkbox' },
         { type: 'custom', render: cls => {
+          const model = { enabled: Movement.classCrossesWater(cls) };
+          return UI.form([{ key: 'enabled', label: 'Traverser l’eau (coût par défaut : 2, hors climat)', type: 'checkbox' }], model,
+            { onChange: () => { cls.crossWater = model.enabled; change(); } });
+        } },
+        { type: 'custom', render: cls => {
           const model = { enabled: Villages.classPillages(cls) };
           return UI.form([{ key: 'enabled', label: 'Ennemis de cette classe : piller les villages ouverts en priorité', type: 'checkbox' }], model,
             { onChange: () => { cls.pillageVillages = model.enabled; change(); } });

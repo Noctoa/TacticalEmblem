@@ -7,10 +7,11 @@
   const api = factory(typeof module !== 'undefined' && module.exports ? require('./skills.js') : root.Skills,
     typeof module !== 'undefined' && module.exports ? require('./promotions.js') : root.Promotions,
     typeof module !== 'undefined' && module.exports ? require('./statuses.js') : root.Statuses,
-    typeof module !== 'undefined' && module.exports ? require('./weather.js') : root.Weather);
+    typeof module !== 'undefined' && module.exports ? require('./weather.js') : root.Weather,
+    typeof module !== 'undefined' && module.exports ? require('./movement.js') : root.Movement);
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Rules = api;
-})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses, Weather) {
+})(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses, Weather, Movement) {
   'use strict';
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
@@ -203,6 +204,7 @@
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
       ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
+      crossWater: Movement.classCrossesWater(cls),
       isLord: !!ch.isLord, portrait: ch.portrait || '', color: ch.color || '',
       ...ultimateOf(ch, db),
       mapSprite: ch.mapSprite || (cls && cls.mapSprite) || '', battler: ch.battler || (cls && cls.battler) || '',
@@ -229,6 +231,7 @@
       classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, cls.growths || {}),
       ...Skills.initialLoadout(Object.assign({}, pl, { level }), cls, db.skills),
       inventory: buildInventory(inv, db), mov: cls.mov, moveType: cls.moveType,
+      crossWater: Movement.classCrossesWater(cls),
       isLord: false, isBoss: !!pl.isBoss, portrait: pl.portrait || '', ai: pl.ai || 'aggressive',
       ...(typeof pl.pillageVillages === 'boolean' ? { pillageVillages: pl.pillageVillages } : {}),
       appearTurn: pl.appearTurn || 0, dropLast: !!pl.drop, gold: Math.max(0, Math.floor(Number(pl.gold) || 0)),
@@ -239,9 +242,10 @@
   }
 
   // ---------- déplacement ----------
-  function moveCost(terrain, moveType, weather) {
+  function moveCost(terrain, moveType, weather, unit) {
     const c = terrain && terrain.cost && terrain.cost[moveType];
-    const base = (c === undefined || c === null || c === '') ? 1 : Number(c);
+    let base = (c === undefined || c === null || c === '') ? 1 : Number(c);
+    if (terrain?.id === 'water' && moveType !== 'flier' && Movement.crossesWater(unit) && (c == null || c === '' || base >= IMPASSABLE)) base = 2;
     return base >= IMPASSABLE ? base : Math.min(IMPASSABLE - 1, base + Weather.movePenalty(weather, moveType));
   }
 
@@ -263,7 +267,7 @@
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nx = cur.x + dx, ny = cur.y + dy;
         if (nx < 0 || ny < 0 || nx >= ctx.width || ny >= ctx.height) continue;
-        const c = moveCost(ctx.terrainAt(nx, ny), unit.moveType, ctx.weather);
+        const c = moveCost(ctx.terrainAt(nx, ny), unit.moveType, ctx.weather, unit);
         if (c >= IMPASSABLE) continue;
         const nc = cur.cost + c;
         if (nc > limit) continue;

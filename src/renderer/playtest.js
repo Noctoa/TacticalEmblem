@@ -2256,7 +2256,7 @@
   }
 
   function freeSpotNear(x, y, u) {
-    const ok = (a, b) => a >= 0 && b >= 0 && a < G.map.width && b < G.map.height && !unitAt(a, b) && R.moveCost(terrainAt(a, b), u.moveType) < R.IMPASSABLE;
+    const ok = (a, b) => a >= 0 && b >= 0 && a < G.map.width && b < G.map.height && !unitAt(a, b) && R.moveCost(terrainAt(a, b), u.moveType, G.weather, u) < R.IMPASSABLE;
     if (ok(x, y)) return { x, y };
     for (let r = 1; r < 6; r++) for (let dx = -r; dx <= r; dx++) for (let dy = -r; dy <= r; dy++) {
       if (Math.abs(dx) + Math.abs(dy) !== r) continue;

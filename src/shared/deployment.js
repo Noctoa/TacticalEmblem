@@ -35,7 +35,7 @@
   }
   function canPlace(ch, unit, point, terrainAt) {
     if (!unit || !slots(ch).some(p => same(p, point))) return false;
-    const cost = R.moveCost(terrainAt(point.x, point.y), unit.moveType);
+    const cost = R.moveCost(terrainAt(point.x, point.y), unit.moveType, undefined, unit);
     return Number.isFinite(cost) && cost < R.IMPASSABLE;
   }
   function errors(ch, db, members, plan, terrainAt) {

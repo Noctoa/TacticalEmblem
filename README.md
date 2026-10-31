@@ -204,6 +204,8 @@ Règles façon GBA : triangle des armes (épée › hache › lance, anima › l
 
 **Terrains** — Chaque terrain donne un bonus d'esquive et de défense au défenseur, plus un coût de déplacement par type d'unité : forêt (+20 esq, +1 déf), buisson (+10 esq), fourré (+40 esq, +1 déf, interdit aux cavaliers et blindés), fort (+20 esq, +2 déf, soin 20 %)… Le bonus de la case occupée s'affiche sous l'unité en jeu, et il est déjà compté dans les prévisions de combat.
 
+**Brigands et Pirates sur l’eau** — Ces classes, y compris leurs variantes importées de la série, traversent le terrain **Eau** à 2 points de déplacement par case par défaut. Cela s’applique aux personnages du joueur et aux ennemis, aux trajets, aux attaques de l’IA, à la zone de danger et aux pillages. La case d’eau peut aussi servir de position de départ ou d’arrivée d’un renfort de cette classe. Les murs, portes fermées et unités adverses restent bloquants ; le climat ajoute ses pénalités habituelles. Un coût d’eau déjà traversable réglé dans le projet reste respecté. Dans **Classes**, **Traverser l’eau** permet d’activer ou désactiver cette aptitude pour chaque classe. Elle est recalculée après promotion ou chargement d’une ancienne sauvegarde selon la classe actuelle, indépendamment du réglage de pillage.
+
 **Musique** — `ressources/musiques` (musiques en boucle) et `ressources/jingles`. Système › Musique : une piste par phase (joueur, alliée, ennemie) et des jingles pour la montée de niveau, la victoire et le game over. Touche M en jeu pour couper.
 
 **Paramètres en jeu (Échap)** — Une fenêtre à onglets, au camp comme en chapitre (Échap annule d'abord une sélection ou un menu en cours ; X et le clic droit restent « annuler ») :
