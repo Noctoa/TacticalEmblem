@@ -600,6 +600,9 @@
           volume: 0.6,
           playerPhase: 'ressources/musiques/Winning_Road.mp3', allyPhase: 'ressources/musiques/Winning_Road.mp3', enemyPhase: 'ressources/musiques/Advance.mp3',
           levelUp: 'ressources/jingles/Level_Up.mp3', gameOver: 'ressources/jingles/Game_Over.mp3', victory: '',
+          // musiques de combat (pendant les animations) : Fire Emblem 5
+          battlePlayer: 'ressources/musiques/FE5/FE5 - Applying Justice ~ Attack.ogg', battleEnemy: 'ressources/musiques/FE5/FE5 - Applying Justice ~ Defense.ogg',
+          battleBoss: 'ressources/musiques/FE5/FE5 - Applying Justice ~ Boss Battle.ogg',
           se: defaultSounds()
         }
       },

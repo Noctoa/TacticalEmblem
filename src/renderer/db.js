@@ -1164,8 +1164,11 @@
     }, { wide: true });
     if (!ok || !picked.size) return;
     const n = FEClasses.install(db(), [...picked]);
+    // sprites fournis par les plugins installés (ex. « Fire Emblem 7 — Unités génériques ») : champs vides seulement
+    let linked = 0;
+    try { linked = Plugins.applyLinks(db(), Plugins.mergeLinks(Plugins.enabled(Editor.project().meta, await installedPlugins())), { has: Plugins.hasIn(res()) }).classes; } catch (e) { console.error('[plugins] liens des classes', e); }
     change(); renderBody();
-    UI.toast(`${n} classe(s) ajoutée(s)`);
+    UI.toast(`${n} classe(s) ajoutée(s)` + (linked ? ` · ${linked} sprite(s) relié(s) par les plugins` : ''));
   }
 
   /** Pack « Personnages de la série Fire Emblem » : choix des jeux, puis ajout des fiches, classes et bannières. */
@@ -1597,6 +1600,16 @@
         { key: 'next', label: 'Acte suivant (jeu sans lobby)', type: 'select', empty: '— aucun —', options: () => db().chapters.filter(c => c.id !== ch.id).map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },
         { key: 'final', label: "Dernier acte : la victoire ouvre l'épilogue", type: 'checkbox' }] },
       { type: 'info', text: "Sans lobby, « Acte suivant » enchaîne les actes. Avec le lobby, l'ordre vient des chapitres (la liste à gauche). Les niveaux, objets, convoi, affinités et morts sont conservés d'un acte à l'autre." },
+      { type: 'heading', label: "Musique de l'acte (vide : celle du projet, Système › Musique)" },
+      { type: 'row', fields: [
+        { key: 'music.playerPhase', label: 'Phase joueur', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') },
+        { key: 'music.allyPhase', label: 'Phase alliée', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') },
+        { key: 'music.enemyPhase', label: 'Phase ennemie', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') }] },
+      { type: 'row', fields: [
+        { key: 'music.battlePlayer', label: 'Combat (joueur)', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') },
+        { key: 'music.battleEnemy', label: 'Combat (ennemi)', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') },
+        { key: 'music.battleBoss', label: 'Combat (boss)', type: 'select', empty: '— projet —', options: () => audioOpts('bgm') },
+        { key: 'music.victory', label: 'Victoire', type: 'select', empty: '— projet —', options: () => audioOpts('me') }] },
       { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
         inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
@@ -2437,6 +2450,11 @@
         { key: 'audio.levelUp', label: 'Montée de niveau', type: 'select', empty: '— aucun —', options: () => audioOpts('me') },
         { key: 'audio.victory', label: 'Victoire', type: 'select', empty: '— aucun —', options: () => audioOpts('me') },
         { key: 'audio.gameOver', label: 'Game over', type: 'select', empty: '— aucun —', options: () => audioOpts('me') }] },
+      { type: 'row', fields: [
+        { key: 'audio.battlePlayer', label: 'Combat : le joueur attaque', type: 'select', empty: '— musique de la map —', options: () => audioOpts('bgm') },
+        { key: 'audio.battleEnemy', label: "Combat : l'ennemi attaque", type: 'select', empty: '— musique de la map —', options: () => audioOpts('bgm') },
+        { key: 'audio.battleBoss', label: 'Combat contre un boss', type: 'select', empty: '— musique de la map —', options: () => audioOpts('bgm') }] },
+      { type: 'info', text: "Musiques de combat : jouées pendant les animations de combat, puis la musique de la map reprend là où elle en était. Chaque acte peut remplacer ces musiques (Base de données › Chapitres › Musique de l'acte). Les musiques Fire Emblem fournies sont rangées par jeu (FE3, FE4, FE5, FE9, FE10, FE12, FE13)." },
       { key: 'audio.volume', label: 'Volume général du jeu (0 à 1) — le joueur règle ensuite musique, jingles et effets dans les paramètres (Échap)', type: 'number', min: 0, max: 1, step: 0.05 },
       { type: 'heading', label: 'Effets sonores (ressources/sons)' },
       { type: 'custom', render: (meta) => {

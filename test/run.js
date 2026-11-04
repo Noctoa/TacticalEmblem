@@ -112,7 +112,8 @@ test('création / sauvegarde / rechargement', () => {
   assert.strictEqual(p.db.units.filter(u => u.convoy).map(u => u.name).join(), 'Eliwood');
   assert.ok(p.meta.convoy.items.length > 0);
   for (const k of ['playerPhase', 'enemyPhase', 'levelUp', 'gameOver']) assert.ok(fs.existsSync(path.join(dir, p.meta.audio[k])), k);
-  assert.ok(p.resources.bgm.length === 2 && p.resources.me.length === 2);
+  assert.ok(p.resources.bgm.length === 2 + 63 && p.resources.me.length === 2 + 7); // + musiques Fire Emblem (FE3…FE13, jingles FE5)
+  for (const k of ['battlePlayer', 'battleEnemy', 'battleBoss']) assert.ok(p.resources.bgm.includes(p.meta.audio[k]), k);
   assert.ok(p.resources.bgm.every(f => f.startsWith('ressources/musiques/')));
   const ch = p.db.chapters[0];
   assert.strictEqual(ch.allies.length, 1);
@@ -210,7 +211,9 @@ test('migration des ressources img/ + audio/ vers ressources/', () => {
   // les planches d'animations et les nouveaux tilesets (absents de l'ancienne version) arrivent.
   // village.png était déjà présent et vient d'être converti.
   const count = d => fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', d), { recursive: true }).filter(f => /\.(png|wav)$/.test(f)).length;
-  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, count('sons') + count('fonds-combat') + count('animations') + count('tilesets') - 1);
+  // musiques Fire Emblem (sous-dossiers FE*) et leur fichier de crédits
+  const fe = ['musiques', 'jingles'].reduce((n, d) => n + fs.readdirSync(path.join(__dirname, '..', 'assets', 'default', 'ressources', d), { recursive: true }).filter(f => /^FE\d+[\\/].*\.ogg$|CREDITS/.test(f)).length, 0);
+  assert.strictEqual(io.installDefaults(dir, path.join(__dirname, '..', 'assets')).added, count('sons') + count('fonds-combat') + count('animations') + count('tilesets') - 1 + fe);
   // réouverture : plus rien à convertir
   assert.ok(!io.loadProject(dir).migration);
 });

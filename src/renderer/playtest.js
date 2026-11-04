@@ -232,6 +232,7 @@
     if (G.mode === 'lobby') lobby.leave();
     G.mode = 'chapter';
     G.chapter = ch;
+    try { Music.setOverrides(ch.music); } catch (e) { /* sans son */ }
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     TacticalEmblem.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
@@ -1996,6 +1997,9 @@
     const animate = G.settings.battleAnims !== false && battlerOf(att) && battlerOf(def);
     if (animate) {
       document.body.classList.add('in-battle');
+      // musique de combat (Système › Musique ou l'acte) : boss, ennemi qui attaque, ou joueur qui attaque
+      const endBattleMusic = Music.battle(att.isBoss || def.isBoss ? 'battleBoss' : att.team === 'enemy' ? 'battleEnemy' : 'battlePlayer');
+      try {
       await BattleScene.play({
         weather: G.settings.weatherEffects !== false ? G.weather : undefined,
         baseUrl: G.baseUrl, battlerOf, att, def, hp0, strikes: res.strikes, forecast: res.forecast, distance,
@@ -2008,6 +2012,7 @@
         animations: G.db.animations || [],
         animationFor: (u, s) => attackAnimation(u, u === att ? wAtt : u === def ? wDef : (R.equipped(u, G.db) || {}).weapon, s)
       });
+      } finally { endBattleMusic(); }
       document.body.classList.remove('in-battle');
       lastInfoKey = '';
       for (const u of [att, def]) if (u.hp <= 0) await killUnit(u, true);

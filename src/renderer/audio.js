@@ -9,7 +9,7 @@
  */
 (function (root) {
   'use strict';
-  let baseUrl = '', cfg = {}, current = '', bgmEl = null, meEl = null, fadeTimer = null;
+  let baseUrl = '', cfg = {}, overrides = {}, current = '', bgmEl = null, meEl = null, fadeTimer = null, battleEl = null;
   const M = { muted: false, volumes: { music: 1, me: 1, se: 1 } };
   const SE_KEYS = [
     ['cursor', 'Curseur'], ['confirm', 'Valider'], ['cancel', 'Annuler'],
@@ -40,10 +40,36 @@
   }
 
   M.setup = function (b, c) { baseUrl = b; cfg = c || {}; };
+  /** Musiques propres à un acte ({ playerPhase, allyPhase, enemyPhase, battlePlayer… }) ; vide = celles du projet. */
+  M.setOverrides = function (o) { overrides = {}; for (const [k, v] of Object.entries(o || {})) if (v) overrides[k] = v; };
+  const track = (k) => overrides[k] || cfg[k] || '';
+  M.track = track;
+
+  /**
+   * Musique de combat (battlePlayer, battleEnemy, battleBoss) : met la musique de la map en pause et la reprend là où
+   * elle en était. Renvoie la fonction qui termine le combat (sans musique réglée : rien ne change).
+   */
+  M.battle = function (keyName) {
+    const path = track(keyName);
+    if (!path) return () => {};
+    if (battleEl) { battleEl.pause(); battleEl = null; }
+    const map = bgmEl;
+    if (map) fade(map, 0, 250, () => map.pause());
+    const el = battleEl = new Audio(url(path)); el.loop = true; el.volume = vol('music');
+    safePlay(el);
+    return function end() {
+      if (battleEl !== el) return;
+      battleEl = null;
+      const v0 = el.volume, t0 = performance.now();
+      const step = () => { const k = Math.min(1, (performance.now() - t0) / 300); el.volume = v0 * (1 - k); if (k < 1) requestAnimationFrame(step); else el.pause(); };
+      step();
+      if (map && map === bgmEl && !(meEl && !meEl.paused)) { map.volume = 0; safePlay(map); fade(map, vol('music'), 500); }
+    };
+  };
 
   /** Joue la BGM associée à une clé de configuration (playerPhase, allyPhase, enemyPhase, lobby…). */
   M.bgm = function (keyName) {
-    const path = cfg[keyName] || '';
+    const path = track(keyName);
     if (path === current && bgmEl) { if (bgmEl.paused && !(meEl && !meEl.paused)) safePlay(bgmEl); return; }
     current = path;
     const start = () => {
@@ -58,7 +84,7 @@
 
   /** Jingle : coupe la BGM, puis la reprend (sauf resume: false). */
   M.me = function (keyName, opts) {
-    const path = cfg[keyName]; if (!path) return;
+    const path = track(keyName); if (!path) return;
     opts = opts || {};
     if (meEl) meEl.pause();
     if (bgmEl) bgmEl.pause();
@@ -69,7 +95,7 @@
   };
 
   M.victory = function () {
-    if (cfg.victory) { M.me('victory', { resume: false }); return; }
+    if (track('victory')) { M.me('victory', { resume: false }); return; }
     if (bgmEl) fade(bgmEl, 0, 1200, () => { if (bgmEl) bgmEl.pause(); });
   };
 
@@ -104,6 +130,7 @@
   function apply() {
     if (bgmEl) bgmEl.volume = vol('music');
     if (meEl) meEl.volume = vol('me');
+    if (battleEl) battleEl.volume = vol('music');
   }
   M.setVolume = function (channel, value) { M.volumes[channel] = clamp(value); persist(); apply(); };
   M.setMuted = function (on) { M.muted = !!on; persist(); apply(); };
@@ -112,6 +139,6 @@
     UI.toast(M.muted ? 'Son coupé (M)' : 'Son activé (M)');
   };
 
-  M.state = () => ({ current, playing: !!(bgmEl && !bgmEl.paused), muted: M.muted, volumes: Object.assign({}, M.volumes), vol: { music: vol('music'), me: vol('me'), se: vol('se') } });
+  M.state = () => ({ current, battle: !!battleEl, overrides: Object.assign({}, overrides), playing: !!(bgmEl && !bgmEl.paused), muted: M.muted, volumes: Object.assign({}, M.volumes), vol: { music: vol('music'), me: vol('me'), se: vol('se') } });
   root.Music = M;
 })(self);

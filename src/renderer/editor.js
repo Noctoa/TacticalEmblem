@@ -1769,6 +1769,21 @@
     if (added.length) UI.toast(`Animations d'attaque : ${added.length} animation(s) d'exemple ajoutée(s) (Base de données › Animations).`);
   }
   /**
+   * Musiques Fire Emblem (ressources/musiques/FE3…FE13 et ressources/jingles/FE5) : copiées une seule fois dans un
+   * ancien projet, sans toucher aux fichiers existants ni aux musiques déjà choisies.
+   */
+  async function migrateMusic() {
+    const meta = S.project.meta;
+    if ((meta.pluginMigrations || []).includes('musiques-fe')) return;
+    meta.pluginMigrations = [...(meta.pluginMigrations || []), 'musiques-fe'];
+    markDirty();
+    try {
+      const r = await tf.installDefaultResources(S.dir, ['dir:musiques', 'dir:jingles']);
+      if (r && r.resources) S.project.resources = r.resources;
+      if (r && r.added) UI.toast(`Musiques Fire Emblem ajoutées : ${r.added} piste(s) (Système › Musique, ou la musique de chaque acte).`);
+    } catch (e) { console.error('[musiques]', e); }
+  }
+  /**
    * Ultimes (Base de données › Ultimes) : un ancien projet reçoit, une seule fois, les ultimes d'exemple
    * (sans les attribuer : chaque personnage garde « aucun ultime » tant qu'on ne lui en choisit pas).
    */
@@ -1808,6 +1823,7 @@
     if (S.project.meta.credits === Defaults.OLD_SAMPLE_CREDITS) { S.project.meta.credits = Defaults.SAMPLE_CREDITS; markDirty(); }
     await migrateBattlebacks();
     await migrateAnimations();
+    await migrateMusic();
     migrateUltimates();
     // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
     let icons = 0;

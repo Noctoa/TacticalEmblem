@@ -1,0 +1,128 @@
+{
+ "type": "battler",
+ "name": "Berserker — FE7",
+ "facing": "left",
+ "cell": [
+  130,
+  97
+ ],
+ "anchor": [
+  81,
+  96
+ ],
+ "columns": 12,
+ "count": 29,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    0,
+    5
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 3,
+   "approach": [
+    0,
+    2
+   ]
+  },
+  "critical": {
+   "frames": [
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    6
+   ],
+   "durations": [
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    75,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 7,
+   "approach": [
+    4,
+    6
+   ],
+   "retreat": [
+    16,
+    18
+   ]
+  },
+  "ranged": {
+   "frames": [
+    20,
+    25,
+    26,
+    20,
+    27,
+    28,
+    20
+   ],
+   "durations": [
+    60,
+    60,
+    60,
+    60,
+    60,
+    60,
+    60
+   ],
+   "hit": 2
+  }
+ },
+ "source": "Fire Emblem GBA — battle sprites (The Spriters Resource)"
+}
