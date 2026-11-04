@@ -96,3 +96,4 @@
 .cg-gender { min-width: 86px; }
 .cg-game .cg-btn.cg-gender.on { background: #c9a14a; color: #1a1408; border-color: #e0bd6a; }
 .cg-class-note { color: #dfe4f0; font-size: 12px; }
+.cg-btn.cg-gender:disabled { opacity: .35; cursor: not-allowed; }

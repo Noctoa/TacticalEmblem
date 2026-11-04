@@ -181,7 +181,7 @@
     await applyAvatar();
     // unités déjà affichées (camp, équipe) : nouveau nom, portrait et sprites
     for (const u of [...(G.units || []), ...((lobby && lobby.state && lobby.state.members) || [])]) if (u.sourceId === def.id) {
-      Object.assign(u, { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battler: def.battler, battleColors: def.battleColors });
+      Object.assign(u, { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battler: def.battler, battleColors: def.battleColors, gender: def.gender });
     }
     return true;
   }
@@ -204,8 +204,9 @@
       await Promise.all([Render.loadImage(G.baseUrl, face), Render.loadImage(G.baseUrl, sheet)]);
       const key = 'avatar:' + def.id;
       G.resources.characters[key] = Object.assign({}, r.map.meta, { image: sheet, owner: a.name || def.name });
-      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battleColors: def.battleColors, battler: def.battler } };
+      G.avatar = { unitId: def.id, from: def.name, to: a.name || def.name, original: { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battleColors: def.battleColors, battler: def.battler, gender: def.gender } };
       Object.assign(def, { name: G.avatar.to, portrait: face, mapSprite: key, battleColors: CharGen.battlePalette(r.recipe) || undefined });
+      const sex = a.gender || r.recipe.gender; if (sex === 'm' || sex === 'f') def.gender = sex === 'f' ? 'femme' : 'homme'; // genre choisi au générateur
       if (r.battler) { // animation de combat FE du sprite de combat
         const bimg = r.battler.canvas.toDataURL('image/png'), arrow = r.battler.arrow ? r.battler.arrow.toDataURL('image/png') : null;
         await Promise.all([Render.loadImage(G.baseUrl, bimg), arrow ? Render.loadImage(G.baseUrl, arrow) : null]);
@@ -2017,6 +2018,8 @@
 
   async function grantExp(u, xp, reason) {
     if (u.level >= G.settings.maxLevel) return;
+    const mult = R.expMultiplier(u, G.db, G.settings); // classes de palier 0 (recrues) : EXP doublée ou triplée
+    if (mult > 1) { xp = R.expFor(u, xp, G.db, G.settings); reason = [reason, `Recrue ×${mult}`].filter(Boolean).join(', '); }
     float(u.x, u.y, `+${xp} EXP` + (reason ? ` (${reason})` : ''), '#c5a7ff');
     const ups = R.gainExp(u, xp, G.db, Math.random, G.settings);
     await sleep(500);

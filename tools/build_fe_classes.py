@@ -180,6 +180,8 @@ META = {
         'Melusine': ('A', 'fl', 2, []), 'Enchanter': ('S', 'f', 2, []), 'Mage Cannoneer': ('B', 'f', 2, []),
     },
 }
+FEMALE_GBA = {'Pegasus Knight', 'Falcoknight', 'Falcon Knight', 'Troubadour', 'Valkyrie', 'Cleric', 'Dancer'}
+MALE_GBA = {'Monk', 'Priest', 'Bard'}
 DANCE = {('fe6', 'Dancer'), ('fe6', 'Bard'), ('fe7', 'Dancer'), ('fe7', 'Bard'), ('fe8', 'Dancer'), ('fe13', 'Dancer'), ('fe14', 'Songstress'), ('fe17', 'Dancer')}
 GBA_MAGIC = re.compile(r'^(Mage|Sage|Monk|Cleric|Priest|Bishop|Shaman|Druid|Troubadour|Valkyri[ea]|Archsage|Dark Druid|Pupil|Summoner|Mage Knight|Necromancer)( \(|$)')
 FE10_FILL = {'Light Mage': 'Fire Mage', 'Light Sage': 'Fire Sage', 'Light Priestess': 'Arch Sage', 'Trueblade': 'Swordmaster', 'Summoner': 'Druid'}
@@ -251,6 +253,11 @@ def main():
             entry = {'id': f'{gid}_{slug(name)}', 'name': f'{name} · {gid.upper()}', 'game': gid, 'source': name,
                      'moveType': MV[move], 'mov': mov, 'weapons': [W[w] for w in weapons.split()], 'base': b, 'growths': gr, 'caps': cp, 'tier': tier, 'promoteTo': promos}
             if (gid, re.sub(r' \((M|F)\)$', '', name)) in DANCE: entry['dance'] = True
+            # genre : variantes (M) / (F), et classes d'un seul genre dans les jeux GBA et Tellius
+            g = re.search(r' \((M|F)\)$', name)
+            if g: entry['gender'] = 'homme' if g.group(1) == 'M' else 'femme'
+            elif family in ('gba',) and name in FEMALE_GBA: entry['gender'] = 'femme'
+            elif family in ('gba',) and name in MALE_GBA: entry['gender'] = 'homme'
             classes.append(entry)
         # promotions : noms → ids (variante * : même (M)/(F) si elle existe)
         by_source = {c['source']: c for c in classes}

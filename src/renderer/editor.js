@@ -491,6 +491,19 @@
       ctx.fillStyle = 'rgba(227,168,59,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
       ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1, y * cs.h + 1, cs.w - 2, cs.h - 2);
     }
+    // cases de départ libres (préparatifs) : carré bleu numéroté à la suite des personnages placés
+    const extra = Deployment.extraSlots(ch);
+    if (extra.length) {
+      const on = Deployment.enabled(ch);
+      ctx.save(); ctx.globalAlpha = on ? 1 : 0.45;
+      extra.forEach((p, i) => {
+        ctx.fillStyle = 'rgba(56,120,232,.28)'; ctx.fillRect(p.x * cs.w, p.y * cs.h, cs.w, cs.h);
+        ctx.strokeStyle = '#6fa3ff'; ctx.lineWidth = 2; ctx.setLineDash([4, 3]); ctx.strokeRect(p.x * cs.w + 2, p.y * cs.h + 2, cs.w - 4, cs.h - 4); ctx.setLineDash([]);
+        ctx.fillStyle = '#dbe8ff'; ctx.font = `bold ${Math.max(9, Math.round(cs.h * 0.38))}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(ch.players.length + i + 1), p.x * cs.w + cs.w / 2, p.y * cs.h + cs.h / 2);
+      });
+      ctx.restore();
+    }
     for (const kind of [...INTERACTIONS, 'enemies', 'allies', 'players']) {
       for (const pl of ch[kind] || []) {
         const sel = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
@@ -630,6 +643,20 @@
       ch.objective.x = c.x; ch.objective.y = c.y; S.picking = null;
       renderInspector(); draw(); return;
     }
+    if (S.placeTool && S.placeTool.kind === 'deploySlots') { // cases de départ libres : clic = ajouter / retirer, clic droit = retirer
+      const slotsList = (ch.deployment && Array.isArray(ch.deployment.slots)) ? ch.deployment.slots : [];
+      const at = slotsList.findIndex(p => p.x === c.x && p.y === c.y);
+      if (e.button !== 2 && at < 0) {
+        if (ch.players.some(p => p.x === c.x && p.y === c.y)) return UI.toast('Un personnage est déjà placé ici : c’est une case de départ.');
+        if (ch.enemies.some(p => p.x === c.x && p.y === c.y && !p.eventOnly && !(p.appearTurn > 0)) || (ch.allies || []).some(p => p.x === c.x && p.y === c.y)) return UI.toast('Une unité occupe cette case.');
+      }
+      if (e.button === 2 && at < 0) return;
+      snapshot('chapter', ch.id);
+      const next = at >= 0 ? slotsList.filter((p, i) => i !== at) : slotsList.concat({ x: c.x, y: c.y });
+      ch.deployment = Object.assign({}, ch.deployment || {}, { slots: next });
+      if ((ch.deployment.limit || 0) > Deployment.slots(ch).length) ch.deployment.limit = Deployment.slots(ch).length;
+      markDirty(); renderInspector(); renderPalette(); draw(); return;
+    }
     const interactionTool = S.placeTool && INTERACTIONS.includes(S.placeTool.kind);
     const objectAt = interactionTool && (ch[S.placeTool.kind] || []).find(v => v.x === c.x && v.y === c.y);
     let hit = interactionTool ? (objectAt ? { kind: S.placeTool.kind, pl: objectAt } : null) : placementAt(ch, c.x, c.y);
@@ -668,6 +695,7 @@
         const kind = S.placeTool.kind, other = kind === 'players' ? 'allies' : 'players';
         ch[other] = ch[other].filter(p => p.unitId !== S.placeTool.unitId);
         const existing = ch[kind].find(p => p.unitId === S.placeTool.unitId);
+        if (kind === 'players' && ch.deployment && Array.isArray(ch.deployment.slots)) ch.deployment.slots = ch.deployment.slots.filter(p => p.x !== c.x || p.y !== c.y); // la case du personnage reste une case de départ
         if (existing) { existing.x = c.x; existing.y = c.y; S.selected = { kind, id: existing.id }; }
         else {
           const pl = kind === 'players' ? { id: uid('p', ch.players), unitId: S.placeTool.unitId, x: c.x, y: c.y }
@@ -954,6 +982,9 @@
     list.append(h('div', { class: 'pick-group' }, 'Interactions'), h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === 'villages' ? ' on' : ''), 'data-place-village': true,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === 'villages' ? null : { kind: 'villages' }; renderPalette(); } },
       h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, 'Village'), h('span', { class: 'meta' }, 'cliquer pour placer')));
+    list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === 'deploySlots' ? ' on' : ''), 'data-place-slot': true,
+      onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === 'deploySlots' ? null : { kind: 'deploySlots' }; renderPalette(); renderInspector(); draw(); } },
+      h('span', { class: 'token', style: { background: '#2859a8' } }, '+'), h('span', {}, 'Case de départ'), h('span', { class: 'meta' }, `${Deployment.extraSlots(ch).length} libre(s) · clic : ajouter / retirer`)));
     for (const kind of ['chests', 'doors']) list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === kind ? ' on' : ''), 'data-place-lock': kind,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === kind ? null : { kind }; renderPalette(); } },
       h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, interactionLabel(kind)), h('span', { class: 'meta' }, 'cliquer pour placer')));
@@ -1414,6 +1445,24 @@
     box.append(section(`Placements — ${ch.players.length} joueur · ${ch.allies.length} allié · ${ch.enemies.length} ennemi`,
       (ch.players.length + ch.allies.length + ch.enemies.length) ? list : h('p', { class: 'muted' }, 'Choisis une unité à gauche puis clique sur la map.'),
       m.objects.some(o => objectKind(o)) ? h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => { snapshot('chapter', ch.id); const n = placementsFromObjects(m, ch); UI.toast(n + ' placement(s) importé(s)'); renderAll(); } }, `Importer les objets Tiled (${m.objects.filter(o => objectKind(o)).length})`)) : null));
+
+    // déploiement : nombre de participants et cases de départ libres (Deployment)
+    {
+      const dep = ch.deployment || {}, total = Deployment.slots(ch).length, extra = Deployment.extraSlots(ch).length;
+      const model = { enabled: Deployment.enabled(ch), limit: dep.limit || 0 };
+      const setDep = () => { snapshot('chapter', ch.id); ch.deployment = Object.assign({}, ch.deployment || {}, { enabled: model.enabled, limit: Math.max(0, Math.min(total, model.limit | 0)) }); markDirty(); renderInspector(); draw(); };
+      const tool = S.placeTool && S.placeTool.kind === 'deploySlots';
+      box.append(section('Déploiement',
+        UI.form([
+          { key: 'enabled', label: 'Le joueur choisit son équipe avant l’acte (préparatifs)', type: 'checkbox' },
+          { key: 'limit', label: `Nombre maximum d’unités (0 = toutes les cases : ${total})`, type: 'number', min: 0, max: total }
+        ], model, { onChange: setDep }),
+        h('p', { class: 'muted', 'data-deploy-summary': true }, `${total} case(s) de départ : ${ch.players.length} personnage(s) placé(s) + ${extra} case(s) libre(s). Le joueur complète avec ses autres recrues.`),
+        h('div', { class: 'insp-actions' },
+          h('button', { class: 'small' + (tool ? ' primary' : ''), 'data-place-slot-btn': true, onclick: () => { S.placeTool = tool ? null : { kind: 'deploySlots' }; renderPalette(); renderInspector(); draw(); if (!tool) UI.toast('Clique des cases de la map pour ajouter (ou retirer) des cases de départ. Clic droit : retirer.'); } }, tool ? 'Terminer' : 'Poser des cases de départ'),
+          extra ? h('button', { class: 'small ghost', onclick: () => { snapshot('chapter', ch.id); ch.deployment = Object.assign({}, ch.deployment, { slots: [] }); if ((ch.deployment.limit || 0) > Deployment.slots(ch).length) ch.deployment.limit = 0; markDirty(); renderInspector(); draw(); } }, 'Retirer les cases libres') : null),
+        ...Deployment.validate(ch, DB(), m).map(e => h('p', { class: 'note' }, '⚠ ' + e))));
+    }
 
     box.append(section('Villages',
       h('div', { class: 'placement-list' }, (ch.villages || []).map(v => h('div', { class: 'placement' + (S.selected && S.selected.kind === 'villages' && S.selected.id === v.id ? ' on' : ''),

@@ -1,4 +1,9 @@
-/* Sélection et placement avant bataille, sans modifier les placements du projet. */
+/*
+ * Sélection et placement avant bataille, sans modifier les placements du projet.
+ * Cases de départ = cases des personnages joueur placés + cases libres (deployment.slots : [{ x, y }], posées dans
+ * l'éditeur) : la limite de participants peut ainsi dépasser le nombre de personnages placés, et le joueur complète
+ * avec ses autres recrues.
+ */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
   const api = factory(common ? require('./mission.js') : root.Mission, common ? require('./rules.js') : root.Rules);
@@ -6,7 +11,12 @@
 })(typeof self !== 'undefined' ? self : this, function (Mission, R) {
   'use strict';
   const enabled = ch => !ch.deployment || ch.deployment.enabled !== false;
-  const slots = ch => (ch.players || []).map(p => ({ x: p.x, y: p.y, colors: p.colors || '' }));
+  const extraSlots = ch => (ch.deployment && Array.isArray(ch.deployment.slots) ? ch.deployment.slots : []).filter(p => p && Number.isInteger(p.x) && Number.isInteger(p.y));
+  const slots = ch => {
+    const list = (ch.players || []).map(p => ({ x: p.x, y: p.y, colors: p.colors || '' }));
+    for (const p of extraSlots(ch)) if (!list.some(q => q.x === p.x && q.y === p.y)) list.push({ x: p.x, y: p.y, colors: '' });
+    return list;
+  };
   const limit = ch => (ch.deployment && ch.deployment.limit) || slots(ch).length;
   const allied = ch => new Set((ch.allies || []).filter(p => !(ch.players || []).some(q => q.unitId === p.unitId)).map(p => p.unitId));
   const forced = (ch, db) => [...new Set([...(ch.deployment && ch.deployment.forcedUnits || []), ...Mission.required(ch, db).filter(id => !allied(ch).has(id))])];
@@ -17,9 +27,10 @@
     if (cfg !== undefined && (!cfg || typeof cfg !== 'object' || Array.isArray(cfg))) return ['Préparatifs : réglages invalides.'];
     if (cfg && cfg.enabled !== undefined && typeof cfg.enabled !== 'boolean') errors.push('Préparatifs : activation invalide.');
     if (cfg && cfg.limit !== undefined && (!Number.isInteger(cfg.limit) || cfg.limit < 0 || cfg.limit > slots(ch).length)) errors.push('Préparatifs : limite supérieure au nombre de cases ou invalide.');
+    if (cfg && cfg.slots !== undefined && (!Array.isArray(cfg.slots) || cfg.slots.some(p => !p || !Number.isInteger(p.x) || !Number.isInteger(p.y)))) errors.push('Préparatifs : cases de départ libres invalides.');
     if (cfg && cfg.forcedUnits !== undefined && (!Array.isArray(cfg.forcedUnits) || cfg.forcedUnits.some(id => !(ch.players || []).some(p => p.unitId === id)) || new Set(cfg.forcedUnits).size !== cfg.forcedUnits.length)) errors.push('Préparatifs : unités imposées absentes des placements joueur ou en double.');
     if (errors.length || !enabled(ch)) return errors;
-    if (!slots(ch).length) errors.push('Préparatifs : place au moins un personnage joueur sur la map pour définir les cases de départ.');
+    if (!slots(ch).length) errors.push('Préparatifs : place au moins un personnage joueur ou une case de départ sur la map.');
     const points = new Set(), ids = new Set();
     for (const p of ch.players || []) {
       if (!db.units.some(u => u.id === p.unitId) || ids.has(p.unitId)) errors.push('Préparatifs : personnage joueur introuvable ou placé plusieurs fois.');
@@ -28,6 +39,14 @@
       const key = p.x + ',' + p.y;
       if (points.has(key)) errors.push('Préparatifs : plusieurs cases de départ se superposent.');
       points.add(key);
+      if ((ch.enemies || []).some(e => !e.eventOnly && !(e.appearTurn > 0) && same(e, p)) || (ch.allies || []).some(a => allied(ch).has(a.unitId) && same(a, p))) errors.push('Préparatifs : une case de départ est occupée par un ennemi ou un allié.');
+    }
+    const seen = new Set();
+    for (const p of extraSlots(ch)) {
+      const key = p.x + ',' + p.y;
+      if (p.x < 0 || p.y < 0 || p.x >= map.width || p.y >= map.height) errors.push('Préparatifs : case de départ hors de la map.');
+      if (seen.has(key)) errors.push('Préparatifs : plusieurs cases de départ se superposent.'); // sur un personnage placé : simple doublon ignoré
+      seen.add(key);
       if ((ch.enemies || []).some(e => !e.eventOnly && !(e.appearTurn > 0) && same(e, p)) || (ch.allies || []).some(a => allied(ch).has(a.unitId) && same(a, p))) errors.push('Préparatifs : une case de départ est occupée par un ennemi ou un allié.');
     }
     if (forced(ch, db).length > limit(ch)) errors.push('Préparatifs : la limite est inférieure au nombre de personnages imposés ou à protéger.');
@@ -94,5 +113,5 @@
     const destination = slots(ch).find(p => same(p, point)), origin = slots(ch).find(p => same(p, from));
     return { ok: true, plan: plan.map(p => p === from ? { unitId: id, ...destination } : p === target ? { unitId: p.unitId, ...origin } : { ...p }) };
   }
-  return { enabled, slots, limit, forced, eligible, validate, canPlace, errors, arrange, initial, toggle, move };
+  return { enabled, slots, extraSlots, limit, forced, eligible, validate, canPlace, errors, arrange, initial, toggle, move };
 });

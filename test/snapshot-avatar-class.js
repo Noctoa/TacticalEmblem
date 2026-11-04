@@ -54,6 +54,20 @@ module.exports = (editor, openPlaytest) => {
       assert(all.length > tokens.length * 3, 'case décochée : ' + all.length);
       await wait(200); await E.shot('a_editeur');
       await E.js(`document.querySelector('[data-cg-cancel]').click()`);
+      // classe réservée à un genre : Classes › Lame-Seigneur « Réservée à : Hommes » → avertissement sur Lyn, générateur imposé
+      await E.js(`DBEditor.open('classes', 'blade_lord')`);
+      await E.until(`[...document.querySelectorAll('#db-body .field')].some(f => /Réservée à/.test(f.textContent))`);
+      await E.js(`(() => { const f = [...document.querySelectorAll('#db-body .field')].find(f => /Réservée à/.test(f.textContent)); const s = f.querySelector('select'); s.value = 'homme'; s.dispatchEvent(new Event('change')); })()`);
+      await E.until(`Editor.db().classes.find(c => c.id === 'blade_lord').gender === 'homme'`);
+      await E.js(`DBEditor.open('units', 'c_lyn')`);
+      await E.until(`!!document.querySelector('[data-gender-warning]')`);
+      result.avertissement = await E.js(`document.querySelector('[data-gender-warning]').textContent`);
+      await E.js(`document.querySelector('[data-generator-open]').click()`);
+      await E.until(`!!document.querySelector('.cg-win [data-cg-gender-lock]')`, 20000);
+      result.verrou = await E.js(`[...document.querySelectorAll('[data-cg-gender]')].map(b => b.dataset.cgGender + (b.disabled ? '-' : '') + (b.classList.contains('on') ? '*' : ''))`);
+      assert(result.verrou.join() === 'm*,f-,-', 'genre imposé : ' + result.verrou);
+      await wait(200); await E.shot('a2_verrou_genre');
+      await E.js(`document.querySelector('[data-cg-cancel]').click()`);
       await E.js(`DBEditor.close()`);
 
       // ---- jeu : création du protagoniste (cavalier) : genre, sprites à cheval obligatoires

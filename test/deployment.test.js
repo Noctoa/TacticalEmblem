@@ -139,3 +139,22 @@ test('tous les actes de démonstration ont une sélection et des cases de dépar
     assert.deepEqual(D.errors(ch, p.db, members, D.initial(ch, p.db, members, terrain), terrain), [], ch.id);
   }
 });
+test('cases de départ libres : limite au-delà des personnages placés, réservistes déployés dessus', () => {
+  const { ch, db, members, map, terrain } = fixture();
+  ch.deployment = { limit: 4, forcedUnits: [], slots: [{ x: 5, y: 2 }, { x: 6, y: 2 }] };
+  assert.deepEqual(D.validate(ch, db, map), []);
+  assert.equal(D.slots(ch).length, 5); assert.equal(D.limit(ch), 4);
+  const plan = D.initial(ch, db, members, terrain);
+  assert.equal(plan.length, 4);
+  assert.ok(plan.some(p => p.unitId === 'c_cloud'), 'réserviste ajouté : ' + JSON.stringify(plan));
+  assert.ok(plan.every(p => D.slots(ch).some(s => s.x === p.x && s.y === p.y)));
+  assert.deepEqual(D.errors(ch, db, members, plan, terrain), []);
+  // case libre sur un personnage placé : ignorée ; doublon, hors map, sur un ennemi : erreurs
+  ch.deployment.slots.push({ x: 2, y: 2 }); assert.equal(D.slots(ch).length, 5); assert.deepEqual(D.validate(ch, db, map), []);
+  ch.deployment.slots.push({ x: 5, y: 2 }); assert.ok(D.validate(ch, db, map).some(e => /superposent/.test(e)));
+  ch.deployment.slots = [{ x: map.width, y: 0 }]; assert.ok(D.validate(ch, db, map).some(e => /hors de la map/.test(e)));
+  ch.deployment = { limit: 6, slots: [{ x: 5, y: 2 }] }; assert.ok(D.validate(ch, db, map).some(e => /limite supérieure/.test(e)));
+  // sans personnage placé, des cases libres suffisent
+  ch.players = []; ch.requiredUnits = []; ch.deployment = { slots: [{ x: 5, y: 2 }, { x: 6, y: 2 }] };
+  assert.deepEqual(D.validate(ch, db, map), []); assert.equal(D.initial(ch, db, members, terrain).length, 2);
+});

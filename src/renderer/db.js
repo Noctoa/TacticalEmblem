@@ -629,6 +629,8 @@
         { type: 'row', fields: [
           { key: 'gender', label: 'Genre', type: 'select', empty: '—', options: [{ value: 'homme', label: 'Homme' }, { value: 'femme', label: 'Femme' }, { value: 'autre', label: 'Autre' }] },
           { key: 'protagonist', label: "Personnage principal (choisit son partenaire à l'épilogue)", type: 'checkbox' }] },
+        { type: 'custom', render: (u) => { const box = h('div', { 'data-gender-warning-box': true }); box.refill = () => { const cls = byId(db().classes, u.classId);
+          box.replaceChildren(...(Rules.classGenderOk(cls, u.gender) ? [] : [h('p', { class: 'note warn', 'data-gender-warning': true }, `${cls.name} : ${Rules.genderLockText(cls).toLowerCase()} Change la classe ou le genre.`)])); }; box.refill(); return box; } },
         { key: 'ending', label: 'Fin en solo (épilogue)', type: 'textarea', rows: 2, placeholder: 'Ce que devient le personnage s\'il finit seul.' },
         { type: 'custom', render: unitSupportsField },
         { type: 'heading', label: 'Stats de base' },
@@ -658,6 +660,8 @@
           { key: 'moveType', label: 'Type de déplacement', type: 'select', options: mtypes },
           { key: 'mov', label: 'Déplacement', type: 'number', min: 1, max: 15 },
           { key: 'tier', label: 'Palier (0 : recrue, 1 : base, 2 : promue…)', type: 'number', min: 0, max: 9 }] },
+        { key: 'gender', label: 'Réservée à', type: 'select', empty: '— tous les genres —', options: Rules.GENDER_LOCKS,
+          help: 'Un personnage de l’autre genre (champ Genre de sa fiche, ou genre choisi au générateur pour le protagoniste) ne peut pas y être promu, et le générateur impose ce genre. Sans genre renseigné, pas de blocage.' },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'dance', label: 'Danse : action « Danser », un allié adjacent qui a déjà joué rejoue ce tour', type: 'checkbox' },
         { type: 'custom', render: cls => {
@@ -1328,6 +1332,7 @@
         if (k === 'name') { pane.querySelector('h2').firstChild.textContent = cur.name; refreshListLabels(body, list); }
         if (tab === 'units' && ['name', 'series', 'classId'].includes(k)) { const box = body.querySelector('.db-list-items'); if (box && box.refill) box.refill(); }
         if (def.onField) def.onField(k, cur);
+        if (tab === 'units' && (k === 'gender' || k === 'classId')) { const w = pane.querySelector('[data-gender-warning-box]'); if (w && w.refill) w.refill(); }
         if (tab === 'skills') {
           pane.querySelector('.skill-summary').textContent = Skills.describe(cur);
           pane.querySelector('.skill-symbol.big').replaceChildren(skillIcon(cur, 40));
@@ -1633,13 +1638,13 @@
     for (const error of Locks.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
   }
   function renderDeployment(pane, ch) {
-    const model = { enabled: Deployment.enabled(ch), limit: (ch.deployment || {}).limit || 0, forcedUnits: ((ch.deployment || {}).forcedUnits || []).slice() };
+    const model = { enabled: Deployment.enabled(ch), limit: (ch.deployment || {}).limit || 0, forcedUnits: ((ch.deployment || {}).forcedUnits || []).slice(), slots: Deployment.extraSlots(ch).map(p => ({ x: p.x, y: p.y })) };
     pane.append(UI.form([
       { type: 'heading', label: 'Préparatifs et déploiement' },
       { key: 'enabled', label: 'Choisir l’équipe avant cet acte', type: 'checkbox' },
-      { key: 'limit', label: 'Nombre maximum de participants (0 = toutes les cases de départ)', type: 'number', min: 0, max: ch.players.length },
+      { key: 'limit', label: 'Nombre maximum de participants (0 = toutes les cases de départ)', type: 'number', min: 0, max: Deployment.slots(ch).length },
       { key: 'forcedUnits', label: 'Personnages imposés en plus de ceux à protéger', type: 'multicheck', options: [...new Set([...ch.players.map(p => p.unitId), ...model.forcedUnits])].map(id => ({ value: id, label: uName(id) + (ch.players.some(p => p.unitId === id) ? '' : ' (placement manquant)') })) },
-      { type: 'info', text: 'Les placements joueur (F3) définissent les cases de départ et les personnages recrutés au lancement de l’acte. Les recrues en réserve peuvent prendre leur place. Les personnages à protéger sont toujours imposés ; les alliés verts restent fixes. Désactiver ce choix conserve les placements scénarisés.' }
+      { type: 'info', text: 'Les placements joueur (F3) et les cases de départ libres (F3 › Case de départ, ou panneau Déploiement) définissent les cases où l’équipe commence ; la limite peut dépasser le nombre de personnages placés : le joueur complète avec ses autres recrues. Les recrues en réserve peuvent aussi prendre la place des personnages placés. Les personnages à protéger sont toujours imposés ; les alliés verts restent fixes. Désactiver ce choix conserve les placements scénarisés.' }
     ], model, { onChange: () => { ch.deployment = model; change(); } }));
     const map = Editor.project().maps.find(m => m.id === ch.mapId);
     if (map) for (const error of Deployment.validate(ch, db(), map)) pane.append(h('p', { class: 'note' }, '⚠ ' + error));
@@ -2359,6 +2364,8 @@
         { key: 'settings.triangleDmg', label: 'Triangle : bonus dégâts', type: 'number', min: 0, max: 10 },
         { key: 'settings.triangleHit', label: 'Triangle : bonus précision', type: 'number', min: 0, max: 50 },
         { key: 'settings.maxLevel', label: 'Niveau max', type: 'number', min: 1, max: 99 }] },
+      { key: 'settings.traineeExp', label: 'EXP des classes de palier 0 (recrues) : multiplicateur', type: 'number', min: 1, max: 3, compact: true,
+        help: 'Comme dans les jeux officiels, une recrue (classe de palier 0 : Recrue, Apprenti, Novice…) gagne 2 ou 3 fois plus d’EXP qu’une classe de base. 1 = comme les autres. L’EXP reste plafonnée à 100 par action.' },
       { type: 'info', text: 'Triangle : Épée › Hache › Lance › Épée, Anima › Lumière › Ténèbres › Anima. Dégâts = (For ou Mag) + Puissance − (Déf ou Rés) − bonus terrain.' },
       { type: 'heading', label: 'Overkill' },
       { type: 'row', fields: [

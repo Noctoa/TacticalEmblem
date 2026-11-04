@@ -165,6 +165,9 @@
       const mounts = C.classMounts(opts.cls);
       const fstate = { gender: opts.gender || C.recipeGender(recipe, parts), byClass: !!mounts };
       if (fstate.gender !== 'm' && fstate.gender !== 'f' && fstate.gender !== '') fstate.gender = 'm';
+      // classe réservée à un genre (classe.gender) : genre imposé
+      const lock = opts.cls && opts.cls.gender === 'femme' ? 'f' : opts.cls && opts.cls.gender === 'homme' ? 'm' : '';
+      if (lock) fstate.gender = lock;
       const filters = () => ({ gender: fstate.gender, mounts: fstate.byClass ? mounts : null });
       const allowed = (k) => C.allowedParts(k, parts, filters());
       const keepGender = () => { if (fstate.gender) recipe.gender = fstate.gender; else delete recipe.gender; };
@@ -240,7 +243,9 @@
         const mountText = mounts ? mounts.map(m => C.MOUNTS[m]).join(' ou ') : '';
         filterBox.replaceChildren(h('div', { class: 'cg-row', 'data-cg-row': 'gender' }, h('span', { class: 'cg-lbl' }, 'Genre'),
           ...[...C.GENDERS, ...(opts.strict ? [] : [['', 'Tous']])].map(([g, label]) => h('button', { class: 'cg-btn small cg-gender' + (fstate.gender === g ? ' on' : ''), 'data-cg-gender': g,
-            onclick: () => { fstate.gender = g; refit(); } }, g === 'm' ? '♂ ' + label : g === 'f' ? '♀ ' + label : label))),
+            disabled: !!lock && g !== lock, title: lock && g !== lock ? `${opts.cls.name} : classe réservée aux ${lock === 'f' ? 'femmes' : 'hommes'}` : '',
+            onclick: () => { if (lock && g !== lock) return; fstate.gender = g; refit(); } }, g === 'm' ? '♂ ' + label : g === 'f' ? '♀ ' + label : label)),
+          lock ? h('span', { class: 'cg-class-note', 'data-cg-gender-lock': lock }, `réservée aux ${lock === 'f' ? 'femmes' : 'hommes'} (${opts.cls.name})`) : null),
         mounts ? h('div', { class: 'cg-row cg-class-row', 'data-cg-class': mounts.join(',') }, h('span', { class: 'cg-lbl' }, 'Classe'),
           opts.strict ? h('span', { class: 'cg-class-note' }, `${opts.cls.name} : sprites ${mountText}`)
             : h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', checked: fstate.byClass, 'data-cg-by-class': true,

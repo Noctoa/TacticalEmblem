@@ -55,6 +55,7 @@
     debugMenu: true, // onglet Debug dans les paramètres du playtest
     overkill: true,  // après le coup fatal, l'attaquant finit ses coups : les dégâts en trop sont affichés
     overkillExp: 30, // EXP en plus quand l'overkill dépasse une 2e fois les PV max de la cible (0 = pas de bonus)
+    traineeExp: 2,   // multiplicateur de l'EXP gagnée par les classes de palier 0 (recrues), comme dans les jeux officiels (1 à 3)
     colors: 'map', // couleurs des sprites : 'map' (équipe sur la map, origine en combat), 'team', 'original'
     aiDifficulty: 'normal'
   };
@@ -200,7 +201,7 @@
     for (const k of STATS) stats[k] = (ch.stats && ch.stats[k] !== undefined) ? ch.stats[k] : 0;
     return {
       uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
-      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp,
+      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp, gender: ch.gender || '',
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
       ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
@@ -801,6 +802,30 @@
     return clamp(10 + Math.max(0, 10 - level), 1, 100);
   }
 
+  /** Multiplicateur d'EXP de la classe de l'unité : palier 0 (recrue) → réglage traineeExp (1 à 3), sinon 1. */
+  function expMultiplier(unit, db, settings) {
+    const cls = byId((db && db.classes) || [], unit && unit.classId);
+    if (!cls || Number(cls.tier) !== 0 || cls.tier === '' || cls.tier === undefined) return 1;
+    const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
+    return clamp(Number(s.traineeExp) || 1, 1, 3);
+  }
+  /** EXP réellement gagnée (multiplicateur des recrues), entre 1 et 100. */
+  function expFor(unit, amount, db, settings) {
+    const m = expMultiplier(unit, db, settings);
+    return m === 1 ? amount : clamp(Math.round(amount * m), 1, 100);
+  }
+  /**
+   * Classe réservée à un genre (classe.gender : 'homme' | 'femme') : refusée seulement à l'autre genre ; un personnage
+   * sans genre (ou « autre ») n'est pas bloqué.
+   */
+  const GENDER_LOCKS = [{ value: 'homme', label: 'Hommes' }, { value: 'femme', label: 'Femmes' }];
+  function classGenderOk(cls, gender) {
+    const lock = cls && cls.gender;
+    if (lock !== 'homme' && lock !== 'femme') return true;
+    return !(gender === 'homme' || gender === 'femme') || gender === lock;
+  }
+  const genderLockText = (cls) => (cls && cls.gender === 'femme' ? 'Classe réservée aux femmes.' : cls && cls.gender === 'homme' ? 'Classe réservée aux hommes.' : '');
+
   /** Ajoute l'exp ; renvoie les montées de niveau et les compétences nouvellement apprises. */
   function gainExp(unit, amount, db, rng, settings) {
     const s = Object.assign({}, DEFAULT_SETTINGS, settings || {});
@@ -983,6 +1008,7 @@
   }
 
   return {
+    expMultiplier, expFor, GENDER_LOCKS, classGenderOk, genderLockText,
     STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
     AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
