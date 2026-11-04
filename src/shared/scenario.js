@@ -8,7 +8,7 @@
   'use strict';
   const TRIGGERS = [
     ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
-    ['area', 'Un joueur ou allié termine son action dans une zone'], ['chest', 'Coffre ouvert'], ['door', 'Porte ouverte'],
+    ['area', 'Une unité termine son action dans une zone'], ['chest', 'Coffre ouvert'], ['door', 'Porte ouverte'],
     ['village', 'Village visité'], ['villagePillaged', 'Village pillé'], ['condition', 'Dès que les conditions sont remplies'], ['victory', 'Victoire']
   ].map(([value, label]) => ({ value, label }));
   // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
@@ -37,12 +37,27 @@
     return (c.flags || []).every(f => flag(state.campaign, f.key) === f.value) &&
       (c.present || []).every(id => state.units.some(u => u.team !== 'enemy' && u.sourceId === id && !u.dead && u.hp > 0));
   }
+  /*
+   * Qui déclenche une zone (trigger.who) : '' = joueur ou allié (comme avant), 'player', 'ally', 'enemy', 'any',
+   * 'unit:<id de personnage>' (joueur, allié ou personnage placé en ennemi) ou 'enemy:<id de placement ennemi>'.
+   */
+  const AREA_WHO = [['', 'Une unité du joueur ou un allié'], ['player', 'Une unité du joueur'], ['ally', 'Un allié (vert)'],
+    ['enemy', 'Un ennemi'], ['any', 'N’importe quelle unité']].map(([value, label]) => ({ value, label }));
+  function unitMatches(who, u) {
+    if (!u) return false;
+    if (!who) return u.team !== 'enemy';
+    if (who === 'any') return true;
+    if (who === 'player' || who === 'ally' || who === 'enemy') return u.team === who;
+    if (who.startsWith('unit:')) return (u.team !== 'enemy' ? u.sourceId : u.characterId) === who.slice(5);
+    if (who.startsWith('enemy:')) return u.team === 'enemy' && u.sourceId === who.slice(6);
+    return false;
+  }
   function matches(ev, type, data) {
     const tr = ev.trigger || {};
     if (tr.type !== type) return false;
     if (type === 'turn') return tr.turn === data.turn;
     if (type === 'death') return !!data.unit && (tr.target === data.unit.sourceId || (data.unit.team !== 'enemy' && tr.target === 'unit:' + data.unit.sourceId));
-    if (type === 'area') { const u = data.unit; return !!u && u.team !== 'enemy' && u.x >= tr.x && u.y >= tr.y && u.x < tr.x + (tr.w || 1) && u.y < tr.y + (tr.h || 1); }
+    if (type === 'area') { const u = data.unit; return !!u && unitMatches(tr.who, u) && u.x >= tr.x && u.y >= tr.y && u.x < tr.x + (tr.w || 1) && u.y < tr.y + (tr.h || 1); }
     if (['chest', 'door', 'village', 'villagePillaged'].includes(type)) return tr.target === data.target;
     return true;
   }
@@ -59,6 +74,8 @@
       for (const k of ['once', 'campaignOnce']) if (e[k] !== undefined && typeof e[k] !== 'boolean') bad('fréquence invalide.');
       if (tr.type === 'turn' && (!Number.isInteger(tr.turn) || tr.turn < 1 || tr.turn > 999)) bad('tour invalide.');
       if (tr.type === 'death' && !(ch.enemies || []).some(u => u.id === tr.target) && !(typeof tr.target === 'string' && tr.target.startsWith('unit:') && known(tr.target.slice(5)))) bad('unité vaincue introuvable.');
+      if (tr.type === 'area' && tr.who !== undefined && !(typeof tr.who === 'string' && (AREA_WHO.some(o => o.value === tr.who)
+        || (tr.who.startsWith('unit:') && known(tr.who.slice(5))) || (tr.who.startsWith('enemy:') && (ch.enemies || []).some(e => e.id === tr.who.slice(6)))))) bad('unité qui déclenche la zone introuvable.');
       if (tr.type === 'area' && (!point(tr.x, tr.y) || !Number.isInteger(tr.w || 1) || !Number.isInteger(tr.h || 1) || (tr.w || 1) < 1 || (tr.h || 1) < 1 || !point(tr.x + (tr.w || 1) - 1, tr.y + (tr.h || 1) - 1))) bad('zone hors de la map.');
       if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type) && !interaction(tr.type, tr.target)) bad('interaction de déclenchement introuvable.');
       const c = e.conditions;
@@ -148,5 +165,5 @@
     }
     return { run, pending: () => progress.size > 0 };
   }
-  return { TRIGGERS, ACTIONS, actionTypes, pluginAction, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
+  return { TRIGGERS, AREA_WHO, unitMatches, ACTIONS, actionTypes, pluginAction, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
 });

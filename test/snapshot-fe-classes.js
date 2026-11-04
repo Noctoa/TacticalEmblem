@@ -30,7 +30,7 @@ module.exports = (editor) => {
       await js(`document.querySelector('[data-fe-classes]').click()`);
       await until(`!!document.querySelector('[data-fe-classes-ok]')`);
       result.jeux = await js(`[...document.querySelectorAll('.fe-pack-row b')].map(b => b.textContent)`);
-      assert(result.jeux.length === 9, 'jeux : ' + result.jeux);
+      assert(result.jeux.length === 10, 'jeux : ' + result.jeux);
       await js(`['fe7', 'fe13'].forEach(id => { const cb = document.querySelector('.fe-pack-row input[data-group="' + id + '"]'); cb.checked = true; cb.dispatchEvent(new Event('change')); })`);
       result.compte = await js(`document.querySelector('.modal-actions .muted').textContent`);
       await wait(200); await shot('a_choix');

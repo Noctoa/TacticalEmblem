@@ -112,6 +112,22 @@
       W('Physique', 'staff', 0, 100, 0, 6, 1, 5, 15, 3750, { heal: 10 }),
       W('Rétablissement', 'staff', 0, 100, 0, 8, 1, 3, 10, 0, { heal: 30 })
     ] },
+    // armes des monstres de The Sacred Stones (incassables, invendables) ; griffes et crocs : type « Arme de monstre »
+    { id: 'monsters', name: 'Armes de monstres (FE8)', list: [
+      W('Griffe pourrie', 'monster', 7, 80, 0, 8, 1, 1, 0, 0),
+      W('Griffe fétide', 'monster', 12, 75, 0, 10, 1, 1, 0, 0),
+      W('Griffe empoisonnée', 'monster', 6, 65, 0, 10, 1, 1, 0, 0, { inflict: { id: 'poison', chance: 100, turns: 3 } }),
+      W('Serre mortelle', 'monster', 10, 60, 0, 12, 1, 1, 0, 0, { inflict: { id: 'poison', chance: 100, turns: 3 } }),
+      W('Croc ardent', 'monster', 5, 90, 0, 5, 1, 1, 0, 0),
+      W('Croc infernal', 'monster', 13, 80, 0, 8, 1, 1, 0, 0),
+      W('Souffle maudit', 'monster', 10, 100, 0, 0, 1, 2, 0, 0, { image: 'item:dark-breath' }),
+      W('Lumière démoniaque', 'monster', 15, 60, 0, 0, 1, 3, 0, 0, { magic: true }),
+      W('Ravageur', 'monster', 15, 85, 10, 0, 1, 1, 0, 0),
+      W('Œil maléfique', 'dark', 7, 85, 0, 6, 1, 2, 0, 0),
+      W('Œil écarlate', 'dark', 14, 70, 5, 13, 1, 2, 0, 0),
+      W('Déferlante démoniaque', 'dark', 11, 80, 0, 10, 1, 2, 0, 0),
+      W('Tir des ombres', 'dark', 13, 70, 5, 20, 3, 10, 5, 0)
+    ] },
     { id: 'legendary', name: 'Armes légendaires', list: [
       W('Falchion', 'sword', 16, 90, 10, 5, 1, 1, 0, 0, { effective: ['flier'] }),
       W('Durandal', 'sword', 17, 90, 0, 16, 1, 1, 0, 0),
@@ -266,6 +282,26 @@
       already: g.list.filter(e => existing(db, g.kind, e.name)).length, sample: g.list.slice(0, 4).map(e => e.name).join(', ') }));
   }
 
+  /** Ajoute (si absentes) les armes de la série nommées ; renvoie leurs ids dans la base (nom inconnu : ignoré). */
+  function installWeapons(db, names) {
+    const out = [];
+    db.weapons = db.weapons || [];
+    for (const name of names || []) {
+      let w = (db.weapons || []).find(x => fold(x.name) === fold(name));
+      if (!w) {
+        const e = WEAPON_GROUPS.flatMap(g => g.list).find(x => fold(x.name) === fold(name));
+        if (!e) continue;
+        let id = 'w_fe_' + slug(e.name), n = 2;
+        while (db.weapons.some(x => x.id === id)) id = 'w_fe_' + slug(e.name) + '_' + n++;
+        w = Object.assign({ id }, JSON.parse(JSON.stringify(e)), { fromPack: 'fe' });
+        if (w.image === undefined && ArmoryIcons) { const im = ArmoryIcons.defaultImage(w); if (im) w.image = im; }
+        if (w.rank === undefined && ArmoryIcons && ArmoryIcons.officialRank) { const r = ArmoryIcons.officialRank(w.name); if (r) w.rank = r; }
+        db.weapons.push(w);
+      }
+      out.push(w.id);
+    }
+    return out;
+  }
   /** Ajoute les fiches absentes des groupes choisis. */
   function install(db, groupIds) {
     const out = { weapons: 0, items: 0, skills: 0 };
@@ -277,6 +313,7 @@
         while (list.some(x => x.id === id)) id = PREFIX[g.kind] + slug(e.name) + '_' + n++;
         const entry = Object.assign({ id }, JSON.parse(JSON.stringify(e)), { fromPack: 'fe' });
         if (g.kind !== 'skills' && entry.image === undefined && ArmoryIcons) { const im = ArmoryIcons.defaultImage(entry); if (im) entry.image = im; }
+        if (g.kind === 'weapons' && entry.rank === undefined && ArmoryIcons && ArmoryIcons.officialRank) { const r = ArmoryIcons.officialRank(entry.name); if (r) entry.rank = r; } // niveau d'arme officiel
         list.push(entry); out[g.kind]++;
       }
     }
@@ -284,5 +321,5 @@
   }
 
   const total = (kind) => GROUPS.filter(g => !kind || g.kind === kind).reduce((n, g) => n + g.list.length, 0);
-  return { WEAPON_GROUPS, ITEM_GROUPS, SKILL_GROUPS, GROUPS, summary, install, total, fold };
+  return { WEAPON_GROUPS, ITEM_GROUPS, SKILL_GROUPS, GROUPS, summary, install, installWeapons, total, fold };
 });

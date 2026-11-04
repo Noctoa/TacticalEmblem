@@ -15,8 +15,14 @@ promotions) et ramène chaque jeu aux 8 stats du moteur :
   - FE10 : quelques classes sans croissances relevées reprennent celles de la classe la plus proche de leur lignée.
 Les armes absentes du moteur sont ramenées au type le plus proche : dagues, couteaux, shurikens → épée ; massues → hache ;
 naginata → lance ; yumi → arc ; poings / arts → hache ; parchemins et tomes → anima (tomes de Nohr et noirs → ténèbres).
-Classes non reprises : transformations (laguz, manaketes, taguels, kitsune, loups), monstres, civils, transporteurs,
+Classes non reprises : transformations (laguz, manaketes, taguels, kitsune, loups), civils, transporteurs,
 classes uniques de boss.
+
+Monstres de The Sacred Stones (groupe « fe8m ») : stats de base, plafonds et croissances de classe relevés sur
+Fire Emblem Wiki (fireemblemwiki.org, pages de chaque classe) ; griffes, crocs et souffles → type « Arme de monstre »,
+yeux et sorts des Mogall / Gorgones → ténèbres ; « kit » = armes de départ (pack d'armes, installées au besoin) ;
+catégorie d'efficacité « Monstre » (et « Dragon » pour le Draco Zombie). Non repris : Pierre (pétrification),
+bonus de stats des armes du Roi Démon, défense ignorée par le Souffle maudit.
 """
 import csv, json, os, re
 
@@ -224,6 +230,48 @@ def meta_for(game, name):
     return m.get(base)
 
 
+# ---------------------------------------------------------------- monstres de The Sacred Stones (fireemblemwiki.org)
+# nom : (base PV For Mag Tec Vit Cha Déf Rés, plafonds, croissances, Dép, armes, déplacement, palier, promotions, kit)
+MONSTERS = [
+    ('Revenant', (25, 2, 0, 0, 0, 0, 0, 0), (60, 20, 20, 20, 20, 30, 20, 20), (95, 50, 0, 30, 20, 10, 10, 13), 4, 'M', 'f', 1, ['Entombed'], ['Griffe pourrie']),
+    ('Entombed', (35, 3, 0, 0, 1, 0, 0, 0), (60, 25, 25, 22, 21, 30, 24, 22), (85, 40, 0, 25, 17, 50, 10, 13), 5, 'M', 'f', 2, [], ['Griffe fétide']),
+    ('Bonewalker', (20, 4, 0, 2, 3, 0, 3, 0), (60, 20, 20, 20, 20, 30, 20, 20), (80, 50, 0, 30, 20, 10, 30, 15), 5, 'S L', 'f', 1, ['Wight'], ['Épée de fer']),
+    ('Bonewalker (arc)', (18, 4, 0, 3, 2, 0, 3, 0), (60, 20, 20, 20, 20, 30, 20, 20), (70, 35, 0, 40, 32, 10, 15, 15), 5, 'B', 'f', 1, ['Wight (arc)'], ['Arc de fer']),
+    ('Wight', (21, 7, 0, 5, 6, 0, 5, 2), (60, 24, 24, 28, 26, 30, 22, 23), (65, 25, 0, 25, 20, 10, 15, 22), 6, 'S L', 'f', 2, [], ["Épée d'acier"]),
+    ('Wight (arc)', (21, 6, 0, 6, 5, 0, 5, 2), (60, 25, 25, 30, 28, 30, 25, 23), (65, 30, 0, 30, 20, 10, 15, 20), 6, 'B', 'f', 2, [], ["Arc d'acier"]),
+    ('Mogall', (15, 0, 2, 1, 2, 0, 2, 4), (60, 20, 20, 20, 20, 30, 20, 20), (50, 0, 45, 32, 30, 30, 10, 28), 5, 'D', 'fl', 1, ['Arch Mogall'], ['Œil maléfique']),
+    ('Arch Mogall', (17, 0, 6, 3, 3, 0, 3, 7), (60, 29, 29, 26, 26, 30, 20, 29), (45, 0, 55, 30, 25, 30, 10, 38), 6, 'D', 'fl', 2, [], ['Œil écarlate']),
+    ('Gargoyle', (19, 6, 0, 3, 6, 0, 6, 0), (60, 20, 20, 20, 20, 30, 20, 20), (80, 45, 0, 35, 35, 10, 25, 15), 6, 'L', 'fl', 1, ['Deathgoyle'], ['Lance de fer']),
+    ('Deathgoyle', (23, 8, 0, 5, 8, 0, 9, 1), (60, 27, 27, 25, 23, 30, 28, 22), (70, 40, 0, 30, 25, 10, 20, 17), 7, 'L', 'fl', 2, [], ["Lance d'acier"]),
+    ('Bael', (25, 6, 0, 3, 3, 0, 6, 1), (60, 30, 30, 28, 26, 30, 26, 22), (82, 50, 0, 30, 20, 15, 18, 13), 5, 'M', 'f', 1, ['Elder Bael'], ['Griffe empoisonnée']),
+    ('Elder Bael', (36, 8, 0, 5, 5, 0, 9, 4), (60, 30, 30, 28, 26, 30, 26, 22), (85, 45, 0, 25, 20, 10, 21, 17), 6, 'M', 'f', 2, [], ['Serre mortelle']),
+    ('Mauthe Doog', (16, 4, 0, 10, 10, 0, 2, 0), (60, 20, 20, 20, 20, 30, 20, 20), (70, 35, 0, 45, 45, 30, 15, 10), 7, 'M', 'f', 1, ['Gwyllgi'], ['Croc ardent']),
+    ('Gwyllgi', (21, 6, 0, 12, 12, 0, 5, 2), (60, 24, 24, 20, 30, 30, 22, 23), (65, 28, 0, 35, 35, 25, 16, 22), 8, 'M', 'f', 2, [], ['Croc infernal']),
+    ('Tarvos', (21, 6, 0, 2, 5, 0, 7, 0), (60, 20, 20, 20, 20, 30, 20, 20), (80, 35, 0, 40, 28, 10, 15, 15), 7, 'A', 'h', 1, ['Maelduin'], ['Hache de fer']),
+    ('Maelduin', (25, 8, 0, 4, 7, 0, 9, 3), (80, 25, 25, 26, 24, 30, 25, 25), (75, 30, 0, 30, 18, 10, 13, 20), 8, 'A B', 'h', 2, [], ["Hache d'acier", 'Arc de fer']),
+    ('Gorgon Egg', (50, 0, 0, 0, 0, 0, 10, 10), (60, 30, 30, 30, 30, 30, 30, 30), (100, 0, 0, 0, 0, 0, 0, 0), 1, '', 'f', 1, ['Gorgon'], []),
+    ('Gorgon', (19, 0, 8, 3, 4, 0, 5, 7), (60, 29, 29, 26, 26, 30, 21, 28), (45, 0, 60, 30, 25, 30, 10, 40), 6, 'D', 'f', 2, [], ['Déferlante démoniaque', 'Tir des ombres']),
+    ('Cyclops', (40, 8, 0, 5, 6, 0, 13, 0), (60, 29, 29, 29, 28, 30, 30, 25), (95, 30, 0, 35, 25, 10, 24, 25), 5, 'A', 'f', 2, [], ["Hache d'acier"]),
+    ('Draco Zombie', (53, 1, 0, 0, 1, 0, 0, 3), (100, 50, 50, 50, 50, 30, 50, 50), (85, 35, 0, 20, 20, 25, 30, 10), 5, 'M', 'f', 2, [], ['Souffle maudit']),
+    ('Phantom', (1, 5, 0, 2, 4, 0, 0, 0), (60, 20, 20, 20, 20, 30, 0, 0), (0, 55, 0, 35, 45, 50, 15, 15), 5, 'A', 'f', 1, [], ['Hache de fer']),
+    ('Demon King', (60, 23, 0, 20, 18, 0, 25, 25), (120, 50, 50, 50, 50, 30, 50, 50), (95, 40, 0, 30, 20, 25, 20, 20), 2, 'M D', 'f', 2, [], ['Lumière démoniaque', 'Ravageur']),
+]
+WM = dict(W, M='monster')
+
+
+def monster_group():
+    classes, by = [], {}
+    for name, b, cp, gr, mov, weapons, move, tier, promos, kit in MONSTERS:
+        st = lambda t: dict(zip(STATS, t))
+        e = {'id': 'fe8_' + slug(name), 'name': f'{name} · FE8', 'game': 'fe8m', 'source': name, 'moveType': MV[move], 'mov': mov,
+             'weapons': [WM[w] for w in weapons.split()], 'base': st(b), 'growths': st(gr), 'caps': st(cp), 'tier': tier,
+             'promoteTo': promos, 'kit': kit, 'monster': True,
+             'effectiveTypes': ['monster', 'dragon'] if name == 'Draco Zombie' else ['monster', MV[move]]}
+        classes.append(e); by[name] = e
+    for c in classes: c['promotions'] = [by[p]['id'] for p in c.pop('promoteTo') if p in by]
+    return {'id': 'fe8m', 'name': 'FE8 — Monstres (The Sacred Stones)', 'classes': classes}
+
+
 def main():
     games = []
     for gid, gname, family in GAMES:
@@ -275,6 +323,8 @@ def main():
         if missing: print(f'  {gid}: classes ignorées (non reprises) : {", ".join(missing)}')
         games.append({'id': gid, 'name': gname, 'classes': classes})
         print(f'{gid}: {len(classes)} classes')
+    games.append(monster_group())
+    print(f'fe8m: {len(games[-1]["classes"])} classes (monstres)')
     with open(OUT, 'w', encoding='utf-8') as fh:
         fh.write('// Généré par tools/build_fe_classes.py depuis tools/fe-classes/data (Serenes Forest) — ne pas modifier à la main.\n')
         fh.write('(function (root) {\n  const DATA = ' + json.dumps(games, ensure_ascii=False, separators=(',', ':')) + ';\n')

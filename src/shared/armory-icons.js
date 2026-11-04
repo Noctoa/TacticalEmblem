@@ -5,6 +5,7 @@
  *
  *   defaultImage(entry) → icône d'une arme / d'un objet de base d'après son nom (ou '')
  *   fill(db)            → donne leur icône aux armes et objets de base qui n'ont pas encore de champ « image »
+ *   officialRank(nom)   → niveau d'arme officiel (E…A) d'une arme de la série, ou '' ; fillRanks(db) → l'applique aux armes sans niveau
  */
 (function (root, factory) {
   const api = factory();
@@ -53,5 +54,29 @@
     }
     return n;
   }
-  return { NAMES, isImage, defaultImage, fill, fold };
+  /**
+   * Niveaux officiels (ère GBA) des armes de la série, d'après leur nom : utilisés par le pack d'armes et par le
+   * bouton « Niveaux officiels » des armes. Les armes légendaires et personnelles n'en ont pas.
+   */
+  const OFFICIAL_RANKS = (() => {
+    const t = {
+      E: "Épée de bronze|Épée de fer|Épée fine|Lance de bronze|Lance de fer|Lance fine|Javelot|Hache de bronze|Hache de fer|Hachette|Hache du bûcheron|Arc de bronze|Arc de fer|Feu|Éclair|Soin|Épée courte",
+      D: "Épée d'acier|Estoc anti-armure|Tueuse de cheval|Wo Dao|Lance d'acier|Lance anti-cheval|Hache d'acier|Marteau|Hallebarde|Arc d'acier|Arc long|Baliste|Tonnerre|Vent|Lueur|Flux|Guérison",
+      C: "Lame tueuse|Lame du tonnerre|Lame du vent|Lame de feu|Lance tueuse|Lance courte|Lance de feu|Hache tueuse|Hache-éclair|Arc court|Arc tueur|Elfeu|Divine|Nosferatu|Miasme|Luna|Récupération|Physique",
+      B: "Épée brave|Lance brave|Épieu|Hache brave|Arc brave|Bolganone|Météore|Purge|Éclipse",
+      A: "Épée d'argent|Lame runique|Lance d'argent|Hache d'argent|Tomahawk|Arc d'argent|Fimbulvetr|Excalibur|Aura|Fenrir|Rétablissement"
+    };
+    const f = fold;
+    const map = {};
+    for (const [rank, names] of Object.entries(t)) for (const n of names.split('|')) map[f(n)] = rank;
+    return { map, fold: f };
+  })();
+  const officialRank = (name) => OFFICIAL_RANKS.map[OFFICIAL_RANKS.fold(name)] || '';
+  /** Donne leur niveau officiel aux armes de la série qui n'en ont pas (champ rank absent) ; renvoie le nombre. */
+  function fillRanks(db) {
+    let n = 0;
+    for (const w of (db && db.weapons) || []) if (w.rank === undefined) { const r = officialRank(w.name); if (r) { w.rank = r; n++; } }
+    return n;
+  }
+  return { NAMES, isImage, defaultImage, fill, fold, officialRank, fillRanks };
 });

@@ -38,6 +38,7 @@ function duel(weapon, setup) {
   const w = p.db.weapons.find(x => x.name === weapon);
   const a = R.makeUnitFromCharacter(p.db.units.find(u => u.id === 'c_eliwood'), p.db, { x: 0, y: 0 });
   a.inventory = [{ id: w.id, uses: w.uses }];
+  a.wexp = { [w.type]: R.MAX_WEXP }; // niveau S : l'arme reste maniable quel que soit son niveau requis
   const b = R.makeEnemyFromPlacement({ id: 'e', classId: 'brigand', level: 1, x: 1, y: 0 }, p.db);
   Object.assign(b.stats, { hp: 80, spd: 0, def: 5, res: 0 }); b.hp = 80;
   if (setup) setup(a, b, p.db, w);

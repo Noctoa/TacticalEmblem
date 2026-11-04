@@ -575,6 +575,7 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 .rd-panel button, .rd-panel .rd-list { pointer-events: auto; }
 .rd-tabs { display: flex; gap: calc(var(--s) * 2px); align-items: center; }
 .rd-tab { font: inherit; font-size: calc(var(--s) * 7px); padding: 0 calc(var(--s) * 3px); height: calc(var(--s) * 11px); line-height: calc(var(--s) * 11px); border: calc(var(--s) * .5px) solid rgba(242, 213, 138, .35); border-radius: calc(var(--s) * 2px); background: rgba(0, 0, 0, .25); color: #c9dde0; cursor: pointer; }
+.rd-tabs .rd-tab { padding: 0 calc(var(--s) * 2px); flex: none; }
 .rd-tab.on { background: #e8c873; color: #2a1a08; border-color: #f2d58a; }
 .rd-row { display: flex; align-items: flex-end; justify-content: space-between; gap: calc(var(--s) * 2px); white-space: nowrap; }
 .rd-lbl { color: #f0d488; font-weight: 600; font-size: calc(var(--s) * 7.5px); }
@@ -788,3 +789,16 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 .rd-ult-box { width: calc(var(--s) * 9px); height: calc(var(--s) * 9px); }
 .rd-ult-box > .skill-icon { transform: scale(calc(var(--s) * 0.28)); }
 .rd-ultimate .rd-sup b { color: #ffb3f0; }
+
+/* fiche : page Armes (niveaux d'armes E à S, jauge vers le niveau suivant) */
+.rd-wrank { display: grid; grid-template-columns: calc(var(--s) * 10px) calc(var(--s) * 9px) 1fr; align-items: center; gap: calc(var(--s) * 3px); padding: 0 calc(var(--s) * 2px); border-bottom: calc(var(--s) * .5px) solid rgba(8, 24, 24, .8); }
+.rd-wrank.off { opacity: .35; }
+.rd-wrank-letter { font-weight: 700; font-size: calc(var(--s) * 9px); color: #f0d488; text-align: center; }
+.rd-wrank-letter.s { color: #8ff09c; }
+.rd-wrank-bar { height: calc(var(--s) * 2.5px); background: rgba(0, 0, 0, .45); border-radius: calc(var(--s) * 1px); overflow: hidden; }
+.rd-wrank-bar i { display: block; height: 100%; background: linear-gradient(90deg, #e9b949, #ffe08a); }
+.rd-sup-box .rd-sup b { min-width: calc(var(--s) * 10px); text-align: right; }
+.rd-boxed b.rd-req { color: #f0d488; }
+/* boutique d'une map de combat (même fenêtre que le convoi) */
+#convoy .bshop-item b { display: inline-flex; align-items: center; gap: 4px; }
+#convoy [data-shop-gold] { display: inline-flex; align-items: center; gap: 4px; color: #f2d58a; }

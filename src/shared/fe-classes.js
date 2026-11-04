@@ -10,9 +10,10 @@
  */
 (function (root, factory) {
   const common = typeof module !== 'undefined' && module.exports;
-  const api = factory(common ? require('./fe-classes-data.js') : root.FE_CLASSES_DATA, common ? require('./promotions.js') : root.Promotions);
+  const api = factory(common ? require('./fe-classes-data.js') : root.FE_CLASSES_DATA, common ? require('./promotions.js') : root.Promotions,
+    common ? require('./fe-arsenal.js') : root.FEArsenal);
   if (common) module.exports = api; else root.FEClasses = api;
-})(typeof self !== 'undefined' ? self : this, function (DATA, Promotions) {
+})(typeof self !== 'undefined' ? self : this, function (DATA, Promotions, FEArsenal) {
   'use strict';
   const GAMES = DATA || [];
   const byId = (list, id) => (list || []).find(e => e.id === id);
@@ -40,8 +41,10 @@
         if (byId(db.classes, c.id)) continue;
         const e = clone(c);
         const promos = e.promotions || [];
-        delete e.source; delete e.game;
-        Object.assign(e, { promotesTo: '', promotions: [], defaultInventory: starter(db, e.weapons), mapSprite: '', battler: '', fromPack: 'fe-classes', promoteIds: promos });
+        // monstres : armes de départ nommées (griffes, crocs…), ajoutées depuis le pack d'armes si elles manquent
+        const kit = e.kit && e.kit.length && FEArsenal && FEArsenal.installWeapons ? FEArsenal.installWeapons(db, e.kit) : null;
+        delete e.source; delete e.game; delete e.kit;
+        Object.assign(e, { promotesTo: '', promotions: [], defaultInventory: kit && kit.length ? kit : e.kit === undefined && e.monster && !e.weapons.length ? [] : starter(db, e.weapons), mapSprite: '', battler: '', fromPack: 'fe-classes', promoteIds: promos });
         db.classes.push(e); added.push(e);
       }
     }

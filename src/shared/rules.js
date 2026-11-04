@@ -30,8 +30,11 @@
     { id: 'anima', name: 'Anima' },
     { id: 'light', name: 'Lumière' },
     { id: 'dark', name: 'Ténèbres' },
-    { id: 'staff', name: 'Bâton' }
+    { id: 'staff', name: 'Bâton' },
+    { id: 'monster', name: 'Arme de monstre' } // griffes, crocs, souffles des monstres (hors triangle des armes)
   ];
+  /** Catégories des armes efficaces : types de déplacement, plus monstres et dragons (classe.effectiveTypes). */
+  const EFFECT_CATEGORIES = MOVE_TYPES.map(m => ({ id: m.id, name: m.name })).concat([{ id: 'monster', name: 'Monstre' }, { id: 'dragon', name: 'Dragon' }]);
   const MAGIC_TYPES = ['anima', 'light', 'dark'];
   // a bat b
   const TRIANGLE = { sword: 'axe', axe: 'lance', lance: 'sword', anima: 'light', light: 'dark', dark: 'anima' };
@@ -135,8 +138,58 @@
 
   function canWield(unit, weapon, db) {
     const cls = byId(db.classes, unit.classId);
-    return !!(cls && weapon && !Statuses.blockedWeapon(unit, weapon) && (cls.weapons || []).includes(weapon.type));
+    return !!(cls && weapon && !Statuses.blockedWeapon(unit, weapon) && (cls.weapons || []).includes(weapon.type) && meetsRank(unit, weapon));
   }
+
+  // ---------- niveaux d'armes (maîtrise) ----------
+  /*
+   * Comme dans les Fire Emblem GBA : chaque type d'arme a un niveau E < D < C < B < A < S, tiré de l'EXP d'arme
+   * (unit.wexp[type]) : E dès 1, D 31, C 71, B 121, A 181, S 251. Une arme peut exiger un niveau (weapon.rank) ; sans
+   * niveau, elle reste utilisable par tous ceux qui manient son type. Chaque combat où l'unité touche avec l'arme (ou
+   * chaque bâton utilisé) donne weapon.wexp points (1 par défaut). Les ennemis ignorent les niveaux.
+   */
+  const RANKS = ['E', 'D', 'C', 'B', 'A', 'S'];
+  const RANK_WEXP = { E: 1, D: 31, C: 71, B: 121, A: 181, S: 251 };
+  const MAX_WEXP = RANK_WEXP.S;
+  function rankOfWexp(v) { let r = 'E'; for (const k of RANKS) if ((Number(v) || 0) >= RANK_WEXP[k]) r = k; return r; }
+  const wexpOf = (unit, type) => Math.max(1, Number(unit && unit.wexp && unit.wexp[type]) || 1);
+  const rankOf = (unit, type) => rankOfWexp(wexpOf(unit, type));
+  function meetsRank(unit, weapon) {
+    if (!weapon || !RANK_WEXP[weapon.rank] || !unit || unit.team === 'enemy' || unit.ignoreRanks) return true;
+    return wexpOf(unit, weapon.type) >= RANK_WEXP[weapon.rank];
+  }
+  /** Progression vers le niveau suivant : { rank, next, value, from, to, ratio } (ratio 1 au niveau S). */
+  function rankProgress(unit, type) {
+    const v = wexpOf(unit, type), rank = rankOfWexp(v), i = RANKS.indexOf(rank), next = RANKS[i + 1] || '';
+    const from = RANK_WEXP[rank], to = next ? RANK_WEXP[next] : from;
+    return { rank, next, value: v, from, to, ratio: next ? Math.max(0, Math.min(1, (v - from) / (to - from))) : 1 };
+  }
+  /**
+   * EXP d'arme de départ d'un personnage : niveau choisi sur sa fiche (weaponRanks : { sword: 'C' }), au moins E pour
+   * chaque type de sa classe, et assez pour manier les armes de son inventaire de départ.
+   */
+  function initialWexp(ch, cls, db) {
+    const out = {};
+    for (const type of (cls && cls.weapons) || []) out[type] = Math.max(1, RANK_WEXP[(ch.weaponRanks || {})[type]] || 1);
+    for (const slot of ch.inventory || []) {
+      const w = byId((db && db.weapons) || [], typeof slot === 'string' ? slot : slot && slot.id);
+      if (w && RANK_WEXP[w.rank] && out[w.type] !== undefined) out[w.type] = Math.max(out[w.type], RANK_WEXP[w.rank]);
+    }
+    for (const [type, letter] of Object.entries(ch.weaponRanks || {})) if (RANK_WEXP[letter] && out[type] === undefined) out[type] = RANK_WEXP[letter];
+    return out;
+  }
+  /** Ajoute l'EXP d'arme d'une utilisation ; renvoie { type, rank } si le niveau monte, sinon null. */
+  function gainWexp(unit, weapon, amount) {
+    if (!unit || !weapon || unit.team === 'enemy') return null;
+    const gain = amount !== undefined ? amount : (weapon.wexp !== undefined && weapon.wexp !== '' ? Number(weapon.wexp) : 1);
+    if (!(gain > 0)) return null;
+    unit.wexp = Object.assign({}, unit.wexp);
+    const before = rankOf(unit, weapon.type);
+    unit.wexp[weapon.type] = Math.min(MAX_WEXP, wexpOf(unit, weapon.type) + gain);
+    const after = rankOf(unit, weapon.type);
+    return after !== before ? { type: weapon.type, rank: after } : null;
+  }
+
 
   /** Armes offensives utilisables (pas les bâtons), dans l'ordre de l'inventaire. */
   function attackWeapons(unit, db) {
@@ -201,7 +254,7 @@
     for (const k of STATS) stats[k] = (ch.stats && ch.stats[k] !== undefined) ? ch.stats[k] : 0;
     return {
       uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
-      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp, gender: ch.gender || '',
+      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp, gender: ch.gender || '', wexp: initialWexp(ch, cls, db),
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
       ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
@@ -1008,8 +1061,9 @@
   }
 
   return {
+    RANKS, RANK_WEXP, MAX_WEXP, rankOfWexp, wexpOf, rankOf, meetsRank, rankProgress, initialWexp, gainWexp,
     expMultiplier, expFor, GENDER_LOCKS, classGenderOk, genderLockText,
-    STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
+    STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, EFFECT_CATEGORIES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
     AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,
     attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement, validateEnemyCharacters,

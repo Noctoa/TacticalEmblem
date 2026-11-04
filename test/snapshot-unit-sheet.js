@@ -57,6 +57,17 @@ module.exports = (editor, openPlaytest) => {
       result.competences = await js(`[...document.querySelectorAll('#unit-sheet .rd-item')].map(r => r.textContent)`);
       assert(result.competences.some(t => /Précision/.test(t)) && result.competences.some(t => /Luna/.test(t)), 'compétences : ' + result.competences);
       await wait(300); await shot('c_competences');
+      // page Armes : niveaux d'armes (épée D à 70/71 : jauge presque pleine) et affinités
+      await js(`H.wexp = Object.assign({}, H.wexp, { sword: 70 })`);
+      await key('Down');
+      await until(`document.querySelector('#unit-sheet .rd-sheet').dataset.page === 'ranks'`);
+      result.armes = await js(`Object.fromEntries([...document.querySelectorAll('#unit-sheet [data-sheet-rank]')].map(b => [b.dataset.sheetRank, b.textContent]))`);
+      assert(result.armes.sword === 'D' && result.armes.lance === '–' && Object.keys(result.armes).length === 8, 'niveaux d’armes : ' + JSON.stringify(result.armes));
+      result.jauge = await js(`document.querySelector('#unit-sheet [data-sheet-rank="sword"]').parentElement.querySelector('.rd-wrank-bar i').style.width`);
+      assert(parseFloat(result.jauge) > 95, 'jauge : ' + result.jauge);
+      await wait(300); await shot('c2_armes');
+      await key('Up');
+      await until(`document.querySelector('#unit-sheet .rd-sheet').dataset.page === 'skills'`);
       // 3. unité suivante (→, même page)
       await key('Right');
       result.suivant = await js(`document.querySelector('#unit-sheet .rd-name').textContent`);

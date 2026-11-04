@@ -36,7 +36,7 @@ module.exports = (win, openPlaytest) => {
           for (const u of G.units) if (u !== h && u !== b) { u.x = u.rx = 0; u.y = u.ry = u.team === 'enemy' ? 0 : 14; }
           h.x = h.rx = 7; h.y = h.ry = 9; b.x = b.rx = 8; b.y = b.ry = 9;
           Object.assign(h.stats, { str: 28, skl: 30, spd: 30, lck: 30 });
-          Object.assign(b.stats, { def: 0, spd: 0, hp: 18 }); b.hp = 18; window.__exp0 = h.exp; window.__lv0 = h.level;
+          Object.assign(b.stats, { def: 0, spd: 0, hp: 18 }); b.hp = 18; window.__exp0 = h.exp; window.__lv0 = h.level; h.wexp = Object.assign({}, h.wexp, { axe: 30 });
           G.cursor = { x: 7, y: 9 }; })()`);
         const key = async k => { wc.sendInputEvent({ type: 'keyDown', keyCode: k }); wc.sendInputEvent({ type: 'keyUp', keyCode: k }); await wait(150); };
         await key('Z'); await until(`PlaytestState.ui === 'moving'`);
@@ -52,6 +52,8 @@ module.exports = (win, openPlaytest) => {
         await until(`!PlaytestState.busy`);
         result[tag] = await js(`(() => { const h = PlaytestState.units.find(u => u.name === 'Hector'); return { exp: [window.__lv0, window.__exp0, h.level, h.exp], brigandMort: !PlaytestState.units.some(u => u.team === 'enemy' && !u.isBoss && u.x === 8 && u.y === 9 && !u.dead) }; })()`);
         result[tag].shots = shots.length;
+        result[tag].wexp = await js(`PlaytestState.units.find(u => u.name === 'Hector').wexp.axe`);
+        if (result[tag].wexp !== 31) errs.push(tag + ' : EXP d’arme ' + result[tag].wexp + ' (31 attendu : niveau D)');
         pw.close(); await wait(500);
       };
       await run('anim', true);

@@ -82,6 +82,10 @@
         if (tr.type === 'turn') card.append(fields([{ key: 'turn', label: 'Tour', type: 'number', min: 1, max: 999 }], tr));
         if (tr.type === 'death') card.append(fields([{ key: 'target', label: 'Unité vaincue', type: 'select', empty: '— choisir —', options: targets }], tr));
         if (tr.type === 'area') card.append(fields(['x', 'y', 'w', 'h'].map(k => ({ key: k, label: { x: 'Zone X', y: 'Zone Y', w: 'Largeur', h: 'Hauteur' }[k], type: 'number', min: ['w', 'h'].includes(k) ? 1 : 0, max: 499 })), tr));
+        if (tr.type === 'area') card.append(fields([{ key: 'who', label: 'Déclenché par', type: 'select', options: () => Scenario.AREA_WHO.concat(
+          (db.units || []).map(u => ({ value: 'unit:' + u.id, label: 'Personnage : ' + u.name })),
+          (ch.enemies || []).map(e => ({ value: 'enemy:' + e.id, label: 'Ennemi placé : ' + (e.name || e.id) + ` (${e.x}, ${e.y})` }))),
+          help: 'Par défaut, une unité du joueur ou un allié. Un ennemi ou un allié vert peut aussi déclencher l’événement en terminant son déplacement dans la zone.' }], tr));
         if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type)) card.append(fields([{ key: 'target', label: 'Interaction', type: 'select', empty: '— choisir —', options: interactions(tr.type) }], tr));
         if (tr.type === 'condition') card.append(h('p', { class: 'form-info' }, 'Évalué après les événements et actions, avant le résultat de mission. Sans « une seule fois », attend que les conditions deviennent fausses puis vraies pour se répéter.'));
         card.append(h('div', { class: 'form-heading' }, 'Conditions (toutes nécessaires)'),

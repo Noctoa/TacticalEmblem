@@ -65,7 +65,7 @@
     if (!Number.isInteger(s.hpThreshold) || s.hpThreshold < 1 || s.hpThreshold > 100) errors.push('Le seuil de PV doit être compris entre 1 et 100 %.');
     if (!['always', 'fixed', 'skl', 'lck'].includes(s.activation) || (spec && !spec.proc && s.activation !== 'always')) errors.push('Déclenchement incompatible avec cet effet.');
     if (!Number.isInteger(s.chance) || s.chance < 0 || s.chance > 100) errors.push('La probabilité doit être comprise entre 0 et 100 %.');
-    if (!['', 'sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff'].includes(s.weaponType)) errors.push('Type d’arme inconnu.');
+    if (!['', 'sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff', 'monster'].includes(s.weaponType)) errors.push('Type d’arme inconnu.');
     if (typeof s.adjacentAlly !== 'boolean') errors.push('La condition d’adjacence est invalide.');
     if (!Number.isInteger(s.range) || s.range < 1 || s.range > 10) errors.push('Le rayon doit être compris entre 1 et 10 cases.');
     return errors;

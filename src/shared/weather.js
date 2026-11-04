@@ -29,9 +29,11 @@
     const v = normalize(value), name = TYPES.find(t => t.value === v.type).label;
     return v.type === 'none' ? name : name + ' · ' + INTENSITIES[v.intensity - 1].label.toLowerCase();
   }
+  /** Brouillard : au-delà de 5 cases (léger), 4 (modéré) ou 3 (fort) des unités de son camp, on ne voit plus rien (toujours actif). */
+  const FOG_VISION = [5, 4, 3];
   function effects(value) {
     const v = normalize(value), active = v.tactical && v.type !== 'none';
-    return { vision: active && ['fog', 'sand'].includes(v.type) ? [6, 4, 3][v.intensity - 1] : null,
+    return { vision: v.type === 'fog' ? FOG_VISION[v.intensity - 1] : active && v.type === 'sand' ? [6, 4, 3][v.intensity - 1] : null,
       avoid: active && v.type === 'fog' ? v.intensity * 5 : 0,
       movement: active && ['sand', 'snow'].includes(v.type) ? v.intensity : 0 };
   }
@@ -42,6 +44,7 @@
   }
   function describe(value) {
     const v = normalize(value), e = effects(v);
+    if (v.type === 'fog' && !v.tactical) return `Vue partagée : ${e.vision} cases. Les ennemis hors de vue sont cachés.`;
     if (!v.tactical || v.type === 'none') return 'Ambiance visuelle uniquement.';
     const view = e.vision ? `Vue partagée : ${e.vision} cases. Les ennemis hors de vue sont cachés.` : '';
     if (e.avoid) return `Esquive +${e.avoid} points pour les deux camps. ${view}`;
@@ -71,5 +74,5 @@
     return visible;
   }
   function canSee(visible, unit) { return !!unit && (visible === null || visible.has(unit.x + ',' + unit.y)); }
-  return { TYPES, INTENSITIES, normalize, validate, label, effects, movePenalty, describe, summary, visibleTiles, canSee };
+  return { TYPES, INTENSITIES, FOG_VISION, normalize, validate, label, effects, movePenalty, describe, summary, visibleTiles, canSee };
 });

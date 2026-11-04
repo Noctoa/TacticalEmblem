@@ -29,7 +29,7 @@
       const prefix = `Classe ${cls.name || cls.id} : `;
       if (cls.crossWater !== undefined && typeof cls.crossWater !== 'boolean') errors.push(prefix + 'la traversée de l’eau doit être activée ou désactivée.');
       if (cls.tier !== undefined && (!Number.isInteger(cls.tier) || cls.tier < 0 || cls.tier > 9)) errors.push(prefix + 'le palier doit être un entier de 0 à 9.');
-      if (cls.effectiveTypes !== undefined && (!Array.isArray(cls.effectiveTypes) || cls.effectiveTypes.some(t => !['foot', 'horse', 'armor', 'flier'].includes(t)))) errors.push(prefix + 'catégories d’efficacité invalides.');
+      if (cls.effectiveTypes !== undefined && (!Array.isArray(cls.effectiveTypes) || cls.effectiveTypes.some(t => !['foot', 'horse', 'armor', 'flier', 'monster', 'dragon'].includes(t)))) errors.push(prefix + 'catégories d’efficacité invalides.');
       if (cls.promotions !== undefined && !Array.isArray(cls.promotions)) { errors.push(prefix + 'les promotions doivent être une liste.'); continue; }
       const seen = new Set();
       for (const row of branches(cls, db)) {

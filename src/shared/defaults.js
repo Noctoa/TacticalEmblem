@@ -54,7 +54,8 @@
     i_vulnerary: 300, i_elixir: 3000, i_energy_ring: 8000, i_speedwing: 8000, i_master_seal: 2500, i_chest_key: 300, i_door_key: 100
   };
   // prix, et icône de la planche img/items (armory-icons.js) quand le nom en a une
-  const priced = (list) => list.map(e => { Object.assign(e, { price: PRICES[e.id] || 0 }); const im = ArmoryIcons ? ArmoryIcons.defaultImage(e) : ''; if (im) e.image = im; return e; });
+  const priced = (list) => list.map(e => { Object.assign(e, { price: PRICES[e.id] || 0 }); const im = ArmoryIcons ? ArmoryIcons.defaultImage(e) : ''; if (im) e.image = im;
+    const rank = ArmoryIcons && e.type && ArmoryIcons.officialRank ? ArmoryIcons.officialRank(e.name) : ''; if (rank) e.rank = rank; return e; }); // niveau d'arme officiel
 
   function weapons() {
     return priced([

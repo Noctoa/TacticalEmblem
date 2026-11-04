@@ -235,7 +235,7 @@
     G.map = G.project.maps.find(m => m.id === ch.mapId);
     TacticalEmblem.emit('chapter:start', { chapter: ch });
     if (!G.map) throw new Error(`La map du chapitre « ${ch.name} » est introuvable.`);
-    const errors = [...Mission.validate(ch, G.db, G.map), ...R.validateEnemyCharacters(ch, G.db), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map)];
+    const errors = [...Mission.validate(ch, G.db, G.map), ...R.validateEnemyCharacters(ch, G.db), ...SideObjectives.validate(ch, G.db), ...Deployment.validate(ch, G.db, G.map), ...Villages.validate(ch, G.db, G.map), ...Locks.validate(ch, G.db, G.map), ...Locks.validateKeys(G.db), ...Scenario.validate(ch, G.db, G.map), ...BattleShops.validate(ch, G.db, G.map), ...BattleTalks.validate(ch, G.db)];
     errors.push(...Statuses.validateDefinitions(G.db));
     errors.push(...Weather.validate(ch.weather));
     errors.push(...TalkRecruit.validate(ch, G.db));
@@ -249,7 +249,7 @@
     G.checkpoint = Campaign.checkpoint(ch.id, G.campaign, G.convoy, G.sup);
     document.title = `Playtest — ${Lobby.actLabel(G.db, ch.id)}`;
     G.tgrid = R.buildTerrainGrid(G.map, G.db.tilesets, G.project.meta.defaultTerrain || 'plain');
-    Object.assign(G, { weather: Weather.normalize(ch.weather), turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), lost: [], sel: null,
+    Object.assign(G, { weather: Weather.normalize(ch.weather), turn: 1, phase: 'player', ui: 'idle', over: false, busy: false, victoryStarted: false, fired: new Set(), battleTalksDone: new Set(), lost: [], sel: null,
       reach: null, atk: null, staffRange: null, enemyView: null, dangerSet: null, menu: null, targets: [], wList: [], seized: [], visitedVillages: new Set(), ruinedVillages: new Set(), openedChests: new Set(), openedDoors: new Set(),
       secondaryProgress: {}, secondaryFinal: null, secondaryTurn: null, secondaryPaid: new Set(), secondaryRewardPending: false, secondaryExpanded: true });
     scenarioRunner = Scenario.createRunner(ch, { state: () => G, action: scenarioRuntime.action, blocked: (ev, error) => UI.toast(`${ev.name || ev.id} : ${error}`, 'error') });
@@ -617,6 +617,7 @@
     drawFog();
     const list = G.units.filter(u => (!u.dead || u.alpha > 0) && unitVisible(u)).sort((a, b) => a.ry - b.ry);
     for (const u of list) drawUnit(u, t);
+    if (G.mode === 'chapter' || G.mode === 'preparation') drawShops(); // pastille « $ » au-dessus des unités
     if (G.mode !== 'lobby' && G.settings.weatherEffects !== false) {
       const x = Math.max(0, -V.camX), y = Math.max(0, -V.camY);
       WeatherFX.draw(ctx, G.weather, { x, y, width: Math.min(V.w, G.map.width * TW() - V.camX) - x,
@@ -642,7 +643,8 @@
     const revealed = new Set(G.combatReveal ? G.units.filter(u => G.combatReveal.has(u.uid)).map(u => key(u.x, u.y)) : []);
     const x0 = Math.max(0, Math.floor(V.camX / TW())), y0 = Math.max(0, Math.floor(V.camY / TH()));
     const x1 = Math.min(G.map.width, Math.ceil((V.camX + V.w) / TW())), y1 = Math.min(G.map.height, Math.ceil((V.camY + V.h) / TH()));
-    ctx.fillStyle = 'rgba(10,18,30,.62)';
+    // brouillard : les cases hors de vue disparaissent dans une brume épaisse ; sable : voile sombre
+    ctx.fillStyle = Weather.normalize(G.weather).type === 'fog' ? 'rgba(205,214,220,.86)' : 'rgba(10,18,30,.62)';
     for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) if (!visible.has(key(x, y)) && !revealed.has(key(x, y))) {
       const [px, py, w, hh] = tileRect(x, y); ctx.fillRect(px, py, w + .5, hh + .5);
     }
@@ -1167,6 +1169,8 @@
       const offer = Villages.offer(G.chapter, village, u, villageState(), G.db);
       items.push({ label: 'Visiter', sub: offer.ok ? village.name || 'Village' : offer.error, disabled: !offer.ok, action: () => visitVillage(u, village) });
     }
+    const shop = u.team === 'player' && BattleShops.at(G.chapter, u.x, u.y);
+    if (shop) items.push({ label: 'Boutique', sub: shop.name || 'Marchand', action: () => openShop(u, shop) });
     if (Mission.canSeize(G.chapter, G.db, u) && !G.seized.includes(key(u.x, u.y))) items.push({ label: 'Prendre', action: () => { hideMenu(); seize(u); } });
     const targets = attackTargetsFrom(u);
     if (targets.length) items.push({ label: 'Attaquer', action: () => openTargets(u, targets, 'target') });
@@ -1401,6 +1405,66 @@
     };
     render();
     el.classList.remove('hidden');
+  }
+  /**
+   * Boutique d'une map de combat (BattleShops) : acheter pour l'unité (son inventaire, sinon le convoi s'il y a de la
+   * place) et vendre ses objets, avec l'or de la campagne. Ne termine pas le tour (X : retour au menu d'action).
+   */
+  function openShop(u, shop) {
+    hideMenu();
+    G.ui = 'convoy';
+    const el = $('#convoy');
+    const kind = (def) => def.type ? (R.WEAPON_TYPES.find(t => t.id === def.type) || {}).name || def.type : 'Objet';
+    const render = () => {
+      el.innerHTML = '';
+      const gold = G.campaign.gold || 0, full = u.inventory.length >= 5, convoyFree = G.convoy.length < G.convoyCap;
+      const buy = (it) => {
+        const r = Lobby.buy(G.campaign, G.db, it.id);
+        if (!r.ok) return UI.toast(r.error);
+        if (!full) u.inventory.push(r.slot); else G.convoy.push(r.slot);
+        Music.se('confirm'); UI.toast(`${it.def.name} acheté${full ? ' (envoyé au convoi)' : ''}`);
+        lastInfoKey = ''; render();
+      };
+      const sell = async (i) => {
+        const slot = u.inventory[i], e = R.getEntry(G.db, slot.id), amount = e ? Lobby.sellPrice(e.def, slot.uses) : 0;
+        if (!amount) return;
+        const r = Lobby.sell(G.campaign, G.db, slot);
+        if (!r.ok) return UI.toast(r.error);
+        u.inventory.splice(i, 1); Music.se('confirm'); UI.toast(`+${r.amount} or`);
+        lastInfoKey = ''; render();
+      };
+      const stock = BattleShops.stock(shop, G.db);
+      const buyCol = h('div', { class: 'cv-col' }, h('h4', {}, 'Acheter'),
+        h('div', { class: 'cv-scroll' }, stock.length ? stock.map(it => {
+          const blocked = gold < it.price ? 'or insuffisant' : full && !convoyFree ? 'inventaire et convoi pleins' : '';
+          return h('button', { class: 'cv-item bshop-item', disabled: !!blocked, title: blocked, 'data-shop-buy': it.id, onmousedown: (e) => { e.stopPropagation(); buy(it); } },
+            h('span', {}, it.def.name), h('small', {}, kind(it.def) + (it.def.uses ? ` · ${it.def.uses}` : '')), h('b', {}, UI.money(it.price, UI.GOLD_ICON, 'Or')));
+        }) : h('p', { class: 'cv-empty' }, 'Le marchand n’a rien à vendre.')));
+      const sellCol = h('div', { class: 'cv-col' }, h('h4', {}, `Vendre — ${u.name} ${u.inventory.length}/5`),
+        u.inventory.length ? u.inventory.map((slot, i) => {
+          const e = R.getEntry(G.db, slot.id), amount = e ? Lobby.sellPrice(e.def, slot.uses) : 0;
+          return h('button', { class: 'cv-item bshop-item', disabled: !amount, 'data-shop-sell': String(i), onmousedown: (ev) => { ev.stopPropagation(); sell(i); } },
+            h('span', {}, e ? e.def.name : slot.id), h('small', {}, `${e ? kind(e.def) : ''} · ${slot.uses || '∞'}`), h('b', {}, amount ? UI.money(amount, UI.GOLD_ICON, 'Or') : 'invendable'));
+        }) : h('p', { class: 'cv-empty' }, 'Inventaire vide'));
+      el.append(...[h('div', { class: 'cv-head' }, h('h3', {}, shop.name || 'Boutique'), h('span', { 'data-shop-gold': true }, UI.money(gold, UI.GOLD_ICON, 'Or'))),
+        h('div', { class: 'cv-cols' }, buyCol, sellCol),
+        full ? h('p', { class: 'cv-empty' }, convoyFree ? 'Inventaire plein : les achats vont au convoi.' : 'Inventaire et convoi pleins : vends un objet pour acheter.') : null,
+        h('div', { class: 'cv-foot' }, h('button', { onmousedown: (e) => { e.stopPropagation(); closeConvoy(); } }, 'Retour (X)'))].filter(Boolean));
+    };
+    render();
+    el.classList.remove('hidden');
+  }
+  /** Marqueurs des boutiques sur la map de combat. */
+  function drawShops() {
+    for (const s of BattleShops.list(G.chapter)) {
+      if (!tileVisible(s.x, s.y)) continue;
+      const [px, py, w, hh] = tileRect(s.x, s.y), r = Math.max(7, Math.min(w, hh) * 0.3);
+      const cx = px + w - r - 2, cy = py + r + 2;
+      ctx.fillStyle = 'rgba(24,18,8,.85)'; ctx.strokeStyle = '#e9c46a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#ffe08a'; ctx.font = `bold ${Math.round(r * 1.3)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('$', cx, cy + 1);
+    }
   }
   function closeConvoy() {
     $('#convoy').classList.add('hidden');
@@ -1743,7 +1807,7 @@
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
     if (healRun) await healRun.done;
-    if (u.team !== 'enemy') await grantExp(u, R.staffExp(u, G.db));
+    if (u.team !== 'enemy') { await grantExp(u, R.staffExp(u, G.db)); await grantWexp(u, st.weapon); }
     return true;
   }
 
@@ -1905,7 +1969,19 @@
     try { return await performCombat(att, aIndex, def, ultimate); }
     finally { G.combatReveal = null; lastInfoKey = ''; refreshDanger(); }
   }
+  /** Dialogue de combat (BattleTalks) entre un personnage et un ennemi, une fois par tentative. */
+  async function battleTalk(att, def) {
+    const player = att.team === 'player' ? att : def.team === 'player' ? def : null, enemy = att.team === 'enemy' ? att : def.team === 'enemy' ? def : null;
+    if (!player || !enemy || !G.chapter) return;
+    const pl = (G.chapter.enemies || []).find(e => e.id === enemy.sourceId);
+    const talk = BattleTalks.find(pl, player, player === att, G.battleTalksDone || (G.battleTalksDone = new Set()));
+    if (!talk) return;
+    G.battleTalksDone.add(BattleTalks.key(pl, talk, player));
+    focus(enemy.x, enemy.y);
+    await playDialogue(talk.text);
+  }
   async function performCombat(att, aIndex, def, ultimate) {
+    await battleTalk(att, def);
     const hp0 = { [att.uid]: att.hp, [def.uid]: def.hp };
     const wAtt = wOf(att.inventory[aIndex]);
     const eqDef = R.equipped(def, G.db); const wDef = eqDef ? eqDef.weapon : null;
@@ -2007,6 +2083,7 @@
       const bonus = res.overkill && res.overkill.by === pl.uid ? res.overkill.bonus : 0; // overkill qui dépasse une 2e fois les PV
       const xp = R.combatExp(pl, foe, res.dealt[side], foe.hp <= 0, G.db, bonus);
       await grantExp(pl, xp, bonus ? 'Overkill' : '');
+      if (res.dealt[side] || foe.hp <= 0) await grantWexp(pl, pl === att ? wAtt : wDef); // maîtrise : l'arme a touché
     }
     if (res.duo && res.duo.partner.hp > 0 && res.duo.partner.team !== 'enemy') {
       const last = res.strikes.filter(s => !s.overkillStrike).pop();
@@ -2016,6 +2093,17 @@
     return res;
   }
 
+  /** EXP d'arme (niveaux E à S) ; annonce le nouveau niveau. */
+  async function grantWexp(u, weapon) {
+    if (!weapon || u.hp <= 0) return;
+    const up = R.gainWexp(u, weapon);
+    if (!up) return;
+    const type = (R.WEAPON_TYPES.find(t => t.id === up.type) || {}).name || up.type;
+    float(u.x, u.y, `${type} : niveau ${up.rank} !`, '#ffd76b');
+    try { Music.me('levelUp'); } catch (e) { /* sans son */ }
+    UI.toast(`${u.name} — maîtrise ${type.toLowerCase()} : niveau ${up.rank}`);
+    await sleep(700);
+  }
   async function grantExp(u, xp, reason) {
     if (u.level >= G.settings.maxLevel) return;
     const mult = R.expMultiplier(u, G.db, G.settings); // classes de palier 0 (recrues) : EXP doublée ou triplée
@@ -2478,7 +2566,7 @@
     try { await scenarioRunner.run(type, data); }
     finally { G.busy = busy; G.ui = ui; lastInfoKey = ''; refreshDanger(); updateObjective(); }
   }
-  async function areaEvents(u) { if (u.team !== 'enemy') await runEvents('area', { unit: u }); }
+  async function areaEvents(u) { if (u && !u.dead) await runEvents('area', { unit: u }); } // zone : le déclencheur choisi (Scenario.unitMatches) peut être un ennemi ou un allié
 
   function speakerUnit(name) {
     const n = name.trim().toLowerCase();

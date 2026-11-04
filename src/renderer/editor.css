@@ -403,3 +403,8 @@
 .fp-info { display: flex; gap: 10px; align-items: baseline; font-size: 12px; min-height: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .fp-info .muted { overflow: hidden; text-overflow: ellipsis; }
 .fp-grow { flex: 1; }
+/* niveaux d'armes de départ (fiche d'unité) */
+.weapon-ranks .wr-row { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+.weapon-ranks .wr-cell { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.weapon-ranks .wr-cell select { width: 52px; }
+.battle-talk { border-top: 1px solid var(--line-2); padding-top: 8px; margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }

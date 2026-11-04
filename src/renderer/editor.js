@@ -22,8 +22,8 @@
   const byId = Rules.byId;
   function uid(prefix, list) { let i = list.length + 1; while (list.some(e => e.id === prefix + i)) i++; return prefix + i; }
   const clone = (o) => JSON.parse(JSON.stringify(o));
-  const INTERACTIONS = ['villages', 'chests', 'doors'];
-  const interactionLabel = kind => ({ villages: 'Village', chests: 'Coffre', doors: 'Porte' }[kind]);
+  const INTERACTIONS = ['villages', 'chests', 'doors', 'shops'];
+  const interactionLabel = kind => ({ villages: 'Village', chests: 'Coffre', doors: 'Porte', shops: 'Boutique' }[kind]);
   const norm = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   async function safe(fn) {
@@ -418,7 +418,7 @@
       ctx.fillStyle = 'rgba(242,196,106,.25)'; ctx.fillRect(x * cs.w, y * cs.h, cs.w, cs.h);
       ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 2, y * cs.h + 2, cs.w - 4, cs.h - 4);
       ctx.fillStyle = '#fff0c0'; ctx.font = `bold ${Math.max(10, cs.h * .45)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText({ villages: 'V', chests: 'C', doors: 'P' }[kind], (x + .5) * cs.w, (y + .5) * cs.h); return;
+      ctx.fillText({ villages: 'V', chests: 'C', doors: 'P', shops: '$' }[kind], (x + .5) * cs.w, (y + .5) * cs.h); return;
     }
     const meta = charMeta(spritePathOf(pl, kind));
     const img = meta && Render.readyImage(S.baseUrl, meta.image);
@@ -684,8 +684,10 @@
       snapshot('chapter', ch.id);
       if (interactionTool) {
         const kind = S.placeTool.kind, objects = ch[kind] || (ch[kind] = []);
-        const object = { id: kind + '_' + crypto.randomUUID(), name: interactionLabel(kind), x: c.x, y: c.y, script: '', allowedUnits: [] };
-        if (kind !== 'doors') Object.assign(object, { reward: { gold: 0, itemId: '', uses: 0 }, repeatOnReplay: false });
+        const object = kind === 'shops' ? { id: 'shop_' + crypto.randomUUID(), name: 'Marchand', x: c.x, y: c.y, stock: [] }
+          : { id: kind + '_' + crypto.randomUUID(), name: interactionLabel(kind), x: c.x, y: c.y, script: '', allowedUnits: [] };
+        if (kind === 'shops') { /* boutique : nom et stock */ }
+        else if (kind !== 'doors') Object.assign(object, { reward: { gold: 0, itemId: '', uses: 0 }, repeatOnReplay: false });
         if (kind === 'villages') object.recruitUnitId = '';
         else Object.assign(object, { locked: true, allowLockpick: true, keyItemId: '' });
         if (kind === 'doors') object.openTerrainId = (DB().terrains.find(t => t.id === 'floor') || DB().terrains.find(t => Rules.moveCost(t, 'foot') < Rules.IMPASSABLE) || {}).id || '';
@@ -757,7 +759,7 @@
       const ch = curChapter(); const pl = findPlacement({ kind: d.kind, id: d.id });
       const hit = placementAt(ch, S.hover.x, S.hover.y);
       const interaction = INTERACTIONS.map(kind => ({ kind, pl: (ch[kind] || []).find(v => v.x === S.hover.x && v.y === S.hover.y) })).find(entry => entry.pl);
-      const occ = INTERACTIONS.includes(d.kind) ? (interaction || (d.kind === 'doors' ? hit : null)) : hit && !['villages', 'chests'].includes(hit.kind) ? hit : null;
+      const occ = INTERACTIONS.includes(d.kind) ? (interaction || (d.kind === 'doors' ? hit : null)) : hit && !['villages', 'chests', 'shops'].includes(hit.kind) ? hit : null;
       if (pl && (!occ || occ.pl === pl)) {
         snapshot('chapter', ch.id);
         pl.x = S.hover.x; pl.y = S.hover.y;
@@ -985,9 +987,9 @@
     list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === 'deploySlots' ? ' on' : ''), 'data-place-slot': true,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === 'deploySlots' ? null : { kind: 'deploySlots' }; renderPalette(); renderInspector(); draw(); } },
       h('span', { class: 'token', style: { background: '#2859a8' } }, '+'), h('span', {}, 'Case de départ'), h('span', { class: 'meta' }, `${Deployment.extraSlots(ch).length} libre(s) · clic : ajouter / retirer`)));
-    for (const kind of ['chests', 'doors']) list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === kind ? ' on' : ''), 'data-place-lock': kind,
+    for (const kind of ['chests', 'doors', 'shops']) list.append(h('button', { class: 'pick' + (S.placeTool && S.placeTool.kind === kind ? ' on' : ''), 'data-place-lock': kind,
       onclick: () => { S.placeTool = S.placeTool && S.placeTool.kind === kind ? null : { kind }; renderPalette(); } },
-      h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, interactionLabel(kind)), h('span', { class: 'meta' }, 'cliquer pour placer')));
+      h('span', { class: 'token', style: { background: '#987328' } }, { chests: 'C', doors: 'P', shops: '$' }[kind]), h('span', {}, interactionLabel(kind)), h('span', { class: 'meta' }, 'cliquer pour placer')));
     // Personnages : recherche et tri (nom, classe, arme, série) communs aux unités du joueur et aux alliés
     const units = h('div', { class: 'pick-units' });
     const tools = h('div', { class: 'roster-tools' });
@@ -1470,10 +1472,10 @@
         h('span', { class: 'token', style: { background: '#987328' } }, 'V'), h('span', {}, v.name || 'Village'), h('span', { class: 'pos' }, `${v.x},${v.y}`)))),
       h('button', { class: 'small', onclick: () => { S.placeTool = { kind: 'villages' }; renderPalette(); UI.toast('Clique une case de la map pour placer le village.'); } }, 'Placer un village')));
 
-    for (const kind of ['chests', 'doors']) box.append(section(kind === 'chests' ? 'Coffres' : 'Portes',
+    for (const kind of ['chests', 'doors', 'shops']) box.append(section({ chests: 'Coffres', doors: 'Portes', shops: 'Boutiques' }[kind],
       h('div', { class: 'placement-list' }, (ch[kind] || []).map(o => h('div', { class: 'placement' + (S.selected && S.selected.kind === kind && S.selected.id === o.id ? ' on' : ''),
         'data-lock-select': o.id, onclick: () => { S.selected = { kind, id: o.id }; renderInspector(); draw(); } },
-        h('span', { class: 'token', style: { background: '#987328' } }, kind === 'chests' ? 'C' : 'P'), h('span', {}, o.name || interactionLabel(kind)), h('span', { class: 'pos' }, `${o.x},${o.y}`)))),
+        h('span', { class: 'token', style: { background: '#987328' } }, { chests: 'C', doors: 'P', shops: '$' }[kind]), h('span', {}, o.name || interactionLabel(kind)), h('span', { class: 'pos' }, `${o.x},${o.y}`)))),
       h('button', { class: 'small', onclick: () => { S.placeTool = { kind }; renderPalette(); UI.toast('Clique une case pour placer : ' + interactionLabel(kind)); } }, 'Placer : ' + interactionLabel(kind))));
 
     // placement sélectionné
@@ -1505,6 +1507,17 @@
       box.append(section('Village sélectionné', VillageFields.form(pl, DB(), m, { beforeChange: () => snapshot('chapter', ch.id), onChange: key => { markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
         h('div', { class: 'insp-actions' }, del)));
       for (const error of Villages.validate(ch, DB(), m)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
+    } else if (S.selected.kind === 'shops') {
+      // boutique d'une map de combat (BattleShops) : nom, case, articles vendus (prix des fiches)
+      const items = DB().weapons.map(w => ({ value: w.id, label: `⚔ ${w.name} · ${w.price || 0} or` })).concat(DB().items.map(i => ({ value: i.id, label: `✚ ${i.name} · ${i.price || 0} or` })));
+      box.append(section('Boutique', UI.form([
+        { key: 'name', label: 'Nom', type: 'text' },
+        { type: 'row', fields: [{ key: 'x', label: 'X', type: 'number', min: 0, max: m.width - 1 }, { key: 'y', label: 'Y', type: 'number', min: 0, max: m.height - 1 }] },
+        { key: 'stock', label: 'Articles vendus', type: 'multicheck', options: items },
+        { type: 'info', text: 'En bataille, une unité du joueur qui s’arrête sur cette case a l’action « Boutique » : acheter (dans son inventaire, ou le convoi s’il est plein) et vendre ses objets avec l’or de la campagne. Cela ne termine pas son tour. Un article sans prix (Base de données) n’est pas proposé.' }
+      ], pl, { onChange: key => { snapOnce(); markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
+        h('div', { class: 'insp-actions' }, del)));
+      for (const error of BattleShops.validate(ch, DB(), m)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
     } else if (['chests', 'doors'].includes(S.selected.kind)) {
       box.append(section(interactionLabel(S.selected.kind), LockFields.form(pl, S.selected.kind, DB(), m, { beforeChange: () => snapshot('chapter', ch.id), onChange: key => { markDirty(); draw(); if (['name', 'x', 'y'].includes(key)) renderInspector(); } }),
         h('div', { class: 'insp-actions' }, del)));
@@ -1556,12 +1569,33 @@
         if (k === 'unitId') { const u = byId(DB().units, pl.unitId); if (u) Object.assign(pl, { classId: u.classId, level: u.level || 1, name: u.name, inventory: [] }); }
         ctxF.onChange(k);
       } }), ...talkErrors(),
+      battleTalksField(pl, ch),
       character ? h('button', { class: 'small', onclick: () => DBEditor.open('units', character.id) }, 'Fiche du personnage') : null,
       prev ? h('div', { class: 'note' }, 'Stats calculées : ' + Rules.STATS.map(k => `${Rules.STAT_LABELS[k]} ${prev[k] + ((pl.statBonus && pl.statBonus[k]) || 0)}`).join(' · ')) : null,
       h('div', { class: 'insp-actions' }, del)));
     }
   }
 
+  /** Dialogues de combat d'un ennemi (BattleTalks) : un par personnage (ou générique), avant le combat. */
+  function battleTalksField(pl, ch) {
+    const box = h('div', { class: 'battle-talks', 'data-battle-talks': pl.id });
+    const units = DB().units.map(u => ({ value: u.id, label: u.name }));
+    const fill = () => {
+      const list = pl.battleTalks || [];
+      box.replaceChildren(h('div', { class: 'form-heading' }, 'Dialogues de combat'),
+        h('p', { class: 'form-info' }, 'Joués juste avant le combat, une fois par tentative, quand le personnage choisi affronte cet ennemi. Plusieurs personnages peuvent avoir chacun leur dialogue ; sans personnage coché, le dialogue sert à tous les autres (réplique du boss).'),
+        ...list.map((t, i) => h('div', { class: 'battle-talk', 'data-battle-talk': String(i) }, UI.form([
+          { key: 'with', label: 'Avec (aucun coché = tous les personnages)', type: 'multicheck', options: units },
+          { key: 'when', label: 'Quand', type: 'select', options: [{ value: 'attack', label: 'Le personnage attaque cet ennemi' }, { value: 'any', label: 'Combat entre eux, quel que soit l’attaquant' }] },
+          { key: 'text', label: 'Dialogue', type: 'textarea', rows: 4, placeholder: 'Lyn: Tu ne passeras pas !\nBrigand: Ha ! Une gamine des plaines…' }
+        ], t, { onChange: () => { snapshot('chapter', ch.id); markDirty(); } }),
+        h('button', { class: 'small danger', onclick: () => { snapshot('chapter', ch.id); pl.battleTalks.splice(i, 1); if (!pl.battleTalks.length) delete pl.battleTalks; markDirty(); fill(); } }, 'Retirer ce dialogue'))),
+        h('button', { class: 'small', 'data-battle-talk-add': true, onclick: () => { snapshot('chapter', ch.id); (pl.battleTalks || (pl.battleTalks = [])).push({ id: 'bt_' + crypto.randomUUID().slice(0, 8), with: [], when: 'attack', text: '' }); markDirty(); fill(); } }, 'Ajouter un dialogue de combat'),
+        ...BattleTalks.validate({ enemies: [pl] }, DB()).map(e => h('p', { class: 'note' }, '⚠ ' + e)));
+    };
+    fill();
+    return box;
+  }
   function invOptions() {
     return DB().weapons.map(w => ({ value: w.id, label: '⚔ ' + w.name })).concat(DB().items.map(i => ({ value: i.id, label: '✚ ' + i.name })));
   }
@@ -1785,6 +1819,9 @@
     // icônes des armes et objets (img/items) : celles de base d'un ancien projet reçoivent la leur, d'après leur nom
     icons += ArmoryIcons.fill(DB());
     if (icons) markDirty();
+    // niveaux d'armes officiels (E…A) pour les armes de la série qui n'ont pas encore de niveau (champ « rank » absent)
+    const ranked = ArmoryIcons.fillRanks ? ArmoryIcons.fillRanks(DB()) : 0;
+    if (ranked) { markDirty(); UI.toast(`${ranked} arme(s) de la série ont reçu leur niveau requis officiel (Base de données › Armes).`); }
     const meta = S.project.meta, done = meta.pluginMigrations || [];
     for (const mig of PLUGIN_MIGRATIONS) {
       if (done.includes(mig.id)) continue;

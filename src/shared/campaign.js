@@ -13,7 +13,7 @@
 })(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions, SideObjectives, Movement) {
   'use strict';
   const clone = value => JSON.parse(JSON.stringify(value));
-  const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel'];
+  const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel', 'wexp'];
   // champs d'unité gardés d'un acte à l'autre : ceux du noyau + ceux des plugins (Extensions « unitField » : 'nom')
   // « merges » (fusions du plugin Invocations) est gardé même plugin désactivé : les fusions ne sont jamais appliquées deux fois
   const fields = () => CORE_FIELDS.concat(['merges'], Extensions ? Extensions.list('unitField').filter(f => typeof f === 'string') : []);

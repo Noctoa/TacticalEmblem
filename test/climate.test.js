@@ -18,7 +18,8 @@ function fixture() {
 }
 
 test('climat : les anciennes ambiances restent visuelles, activation explicite et validation', () => {
-  assert.deepEqual(W.effects({ type: 'fog' }), { vision: null, avoid: 0, movement: 0 });
+  assert.deepEqual(W.effects({ type: 'fog' }), { vision: 4, avoid: 0, movement: 0 }); // brouillard (modéré par défaut) : vue limitée, toujours
+  assert.deepEqual(W.effects({ type: 'sand' }), { vision: null, avoid: 0, movement: 0 });
   assert.deepEqual(W.effects({ type: 'snow', intensity: 3, tactical: false }), W.effects());
   assert.deepEqual(W.validate(weather('snow')), []);
   assert.ok(W.validate({ ...weather('snow'), tactical: 'true' }).length);
@@ -92,7 +93,7 @@ test('neige : l’IA utilise le même budget de déplacement que le joueur', () 
 
 test('brouillard : rayon par intensité, distance en cases et vision partagée joueur/alliés', () => {
   const f = fixture(); f.a.x = 3; f.a.y = 3;
-  for (const [i, radius] of [[1, 6], [2, 4], [3, 3]]) {
+  for (const [i, radius] of [[1, 5], [2, 4], [3, 3]]) {
     const v = W.visibleTiles(weather('fog', i), [f.a], 'player', 20, 20);
     assert.ok(v.has((3 + radius) + ',3')); assert.equal(v.has((4 + radius) + ',3'), false);
     assert.equal(v.has((3 + radius) + ',4'), false); assert.equal(v.has('-1,3'), false);
@@ -106,15 +107,16 @@ test('brouillard : aucun éclaireur ennemi ne révèle la carte au joueur ; unit
   const f = fixture(); f.b.x = 10;
   assert.equal(W.canSee(W.visibleTiles(weather('fog', 3), f.units, 'player', 12, 8), f.b), false);
   f.a.hp = 0; assert.equal(W.visibleTiles(weather('fog', 3), f.units, 'player', 12, 8).size, 0);
-  assert.equal(W.visibleTiles({ type: 'fog' }, f.units, 'player', 12, 8), null);
+  assert.equal(W.visibleTiles({ type: 'sand' }, f.units, 'player', 12, 8), null);
+  assert.equal(W.visibleTiles({ type: 'fog' }, [f.a], 'player', 12, 8).has('11,' + f.a.y), f.a.x >= 6); // brouillard sans effets tactiques : vue limitée quand même
 });
 
 test('brouillard : les cases d’un adversaire caché ne trahissent pas sa position', () => {
-  const f = fixture(); f.a.y = f.b.y = 0; f.b.x = 5; f.a.mov = 8;
+  const f = fixture(); f.a.x = 0; f.a.y = f.b.y = 0; f.b.x = 7; f.a.mov = 10;
   Object.assign(f.ctx, { height: 1, weather: weather('fog', 3) });
   const perceived = R.perceivedContext(f.a, f.ctx, f.units);
-  assert.equal(perceived.unitAt(5, 0), null); assert.equal(R.reachable(f.a, f.ctx).has('5,0'), false);
-  assert.equal(R.reachable(f.a, perceived).has('7,0'), true);
+  assert.equal(perceived.unitAt(7, 0), null); assert.equal(R.reachable(f.a, f.ctx).has('7,0'), false);
+  assert.equal(R.reachable(f.a, perceived).has('9,0'), true);
   f.b.x = 2; assert.equal(R.perceivedContext(f.a, f.ctx, f.units).unitAt(2, 0), f.b);
 });
 

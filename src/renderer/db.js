@@ -13,6 +13,7 @@
   const db = () => Editor.db();
   const wtypes = Rules.WEAPON_TYPES.map(t => ({ value: t.id, label: t.name }));
   const mtypes = Rules.MOVE_TYPES.map(t => ({ value: t.id, label: t.name }));
+  const etypes = Rules.EFFECT_CATEGORIES.map(t => ({ value: t.id, label: t.name })); // efficacité : déplacements + monstres, dragons
   const classOpts = () => db().classes.map(c => ({ value: c.id, label: c.name }));
   const statsNoHp = Rules.STATS;
   const uName = (id) => { const u = byId(db().units, id); return u ? u.name : '?'; };
@@ -167,6 +168,26 @@
    * pièces, les écrit dans ressources/personnages/<Nom>/ et les attribue à l'unité ; la recette reste dans
    * u.generator pour retoucher le personnage plus tard.
    */
+  /** Niveaux d'armes de départ (E à S) pour les types d'armes de la classe ; l'inventaire de départ reste toujours maniable. */
+  function weaponRanksField(u) {
+    const box = h('div', { class: 'field weapon-ranks', 'data-weapon-ranks': true });
+    box.refill = () => {
+      const cls = byId(db().classes, u.classId), types = (cls && cls.weapons) || [];
+      const ranks = u.weaponRanks || {};
+      box.replaceChildren(h('span', { class: 'field-label' }, 'Niveaux d’armes de départ'),
+        types.length ? h('div', { class: 'wr-row' }, types.map(t => {
+          const sel = h('select', { 'data-weapon-rank': t, onchange: () => {
+            u.weaponRanks = Object.assign({}, u.weaponRanks); if (sel.value && sel.value !== 'E') u.weaponRanks[t] = sel.value; else delete u.weaponRanks[t];
+            if (!Object.keys(u.weaponRanks).length) delete u.weaponRanks; change(); } },
+          Rules.RANKS.map(r => h('option', { value: r }, r)));
+          sel.value = ranks[t] || 'E';
+          return h('label', { class: 'wr-cell' }, h('span', {}, (Rules.WEAPON_TYPES.find(w => w.id === t) || {}).name || t), sel);
+        })) : h('p', { class: 'muted' }, 'Sa classe ne manie aucune arme.'),
+        h('p', { class: 'form-info' }, 'Les armes de son inventaire de départ restent maniables même si leur niveau requis est plus haut. En jeu, chaque combat où l’arme touche fait progresser le niveau (E 1 · D 31 · C 71 · B 121 · A 181 · S 251).'));
+    };
+    box.refill();
+    return box;
+  }
   function generatorField(u) {
     const box = h('div', { class: 'gen-field' });
     const run = async () => {
@@ -612,6 +633,7 @@
         { type: 'row', fields: [
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
+        { type: 'custom', render: weaponRanksField },
         { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par acte)', type: 'checkbox' },
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
@@ -676,7 +698,7 @@
         } },
         { type: 'custom', render: cls => {
           const tmp = { effectiveTypes: cls.effectiveTypes || [cls.moveType] };
-          return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: mtypes }], tmp,
+          return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: etypes }], tmp,
             { onChange: () => { cls.effectiveTypes = tmp.effectiveTypes; change(); } });
         } },
         { type: 'custom', render: promotionField },
@@ -700,12 +722,17 @@
     },
     weapons: {
       label: 'Armes', list: () => db().weapons, prefix: 'w_',
-      sub: (w) => (Rules.WEAPON_TYPES.find(t => t.id === w.type) || {}).name,
+      sub: (w) => ((Rules.WEAPON_TYPES.find(t => t.id === w.type) || {}).name || '') + (w.rank ? ' · ' + w.rank : ''),
       create: () => ({ name: 'Nouvelle arme', type: 'sword', might: 5, hit: 80, crit: 0, weight: 5, minRange: 1, maxRange: 1, uses: 40, effective: [], heal: 0 }),
       onField: (key, w) => { if (key === 'type') { if (w.type === 'staff') delete w.inflict; else delete w.restore; } },
       fields: (w) => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'type', label: 'Type', type: 'select', options: wtypes }] },
         { type: 'custom', render: () => itemImageField(w, 'weapons') },
+        { type: 'row', fields: [
+          { key: 'rank', label: 'Niveau requis', type: 'select', empty: '— aucun (tous) —', options: Rules.RANKS.map(r => ({ value: r, label: r })),
+            help: 'Niveau d’arme minimum (E < D < C < B < A < S) pour la manier, comme dans les Fire Emblem. Les ennemis l’ignorent.' },
+          { key: 'wexp', label: 'EXP d’arme par utilisation', type: 'number', min: 0, max: 20, placeholder: '1',
+            help: 'Gagnée à chaque combat où l’arme touche (ou chaque utilisation d’un bâton). Vide = 1. Seuils : D 31, C 71, B 121, A 181, S 251.' }] },
         w.type === 'staff'
           ? { type: 'row', fields: [
             { key: 'heal', label: 'Soin (+ Mag)', type: 'number', min: 0, max: 99 },
@@ -721,7 +748,7 @@
           { key: 'minRange', label: 'Portée min', type: 'number', min: 1, max: 15 },
           { key: 'maxRange', label: 'Portée max', type: 'number', min: 1, max: 15 },
           { key: 'uses', label: 'Utilisations', type: 'number', min: 0, max: 99, help: '0 = incassable' }] },
-        w.type === 'staff' ? null : { key: 'effective', label: 'Efficace contre (×3)', type: 'multicheck', options: mtypes },
+        w.type === 'staff' ? null : { key: 'effective', label: 'Efficace contre (×3)', type: 'multicheck', options: etypes },
         w.type === 'staff' ? null : { type: 'row', fields: [
           { key: 'brave', label: 'Brave : chaque attaque frappe deux fois', type: 'checkbox' },
           { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
@@ -1126,7 +1153,7 @@
       }
       refresh();
       box.append(h('h3', {}, 'Classes de la série'),
-        h('p', { class: 'form-info' }, 'Classes officielles avec leurs stats de base, croissances et plafonds (relevés sur Serenes Forest), armes, déplacement, palier et promotions. Chaque jeu garde son échelle (plafonds 20 sur GBA, 40 à 80 sur 3DS et Switch). Les classes sont nommées « Classe · Jeu », sans sprite : à choisir dans leur fiche. Adaptations : Force/Magie unique des GBA répartie selon la classe, dagues et poings ramenés à l’épée et à la hache, croissances de Three Houses = modificateur + taux de référence (détails : tools/build_fe_classes.py). Classes à transformation, monstres et civils non repris.'),
+        h('p', { class: 'form-info' }, 'Classes officielles avec leurs stats de base, croissances et plafonds (relevés sur Serenes Forest), armes, déplacement, palier et promotions. Chaque jeu garde son échelle (plafonds 20 sur GBA, 40 à 80 sur 3DS et Switch). Les classes sont nommées « Classe · Jeu », sans sprite : à choisir dans leur fiche. Adaptations : Force/Magie unique des GBA répartie selon la classe, dagues et poings ramenés à l’épée et à la hache, croissances de Three Houses = modificateur + taux de référence (détails : tools/build_fe_classes.py). Le groupe « Monstres (FE8) » ajoute les morts-vivants et monstres de The Sacred Stones (Revenant, Bonewalker, Mogall, Gargoyle, Bael, Mauthe Doog, Tarvos, Gorgone, Cyclope, Draco Zombie, Roi Démon…) avec leurs griffes, crocs et sorts (type « Arme de monstre » ou ténèbres, ajoutés au besoin) et la catégorie d’efficacité « Monstre ». Classes à transformation et civils non repris.'),
         h('div', { class: 'insp-actions' },
           h('button', { class: 'small', onclick: () => { rows.forEach(g => picked.add(g.id)); list.querySelectorAll('input').forEach(i => { i.checked = true; }); refresh(); } }, 'Tout cocher'),
           h('button', { class: 'small', onclick: () => { picked.clear(); list.querySelectorAll('input').forEach(i => { i.checked = false; }); refresh(); } }, 'Tout décocher')),
@@ -1332,6 +1359,7 @@
         if (k === 'name') { pane.querySelector('h2').firstChild.textContent = cur.name; refreshListLabels(body, list); }
         if (tab === 'units' && ['name', 'series', 'classId'].includes(k)) { const box = body.querySelector('.db-list-items'); if (box && box.refill) box.refill(); }
         if (def.onField) def.onField(k, cur);
+        if (tab === 'units' && k === 'classId') { const w = pane.querySelector('[data-weapon-ranks]'); if (w && w.refill) w.refill(); }
         if (tab === 'units' && (k === 'gender' || k === 'classId')) { const w = pane.querySelector('[data-gender-warning-box]'); if (w && w.refill) w.refill(); }
         if (tab === 'skills') {
           pane.querySelector('.skill-summary').textContent = Skills.describe(cur);

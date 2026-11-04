@@ -1,7 +1,8 @@
 /*
  * Fiche de personnage façon Fire Emblem : Radiant Dawn (fond img/ui/radiant/status.png, 240 × 160 px affichés
  * à l'échelle entière --s) : portrait, nom sur le parchemin, classe / niveau / PV sur le bois, sprite de map,
- * et trois pages à droite (Stats, Objets, Compétences).
+ * et quatre pages à droite (Stats, Objets, Compétences, Armes : niveaux d'armes E à S et affinités, comme la page
+ * « Weapon and support level » des Fire Emblem GBA).
  *
  *   UnitSheet.element(unit, ctx, { page, scale })  → élément (fiche intégrée, ex. l'équipe au camp)
  *   UnitSheet.open(unit, ctx, { list })            → fiche plein écran (map) ; ↑ ↓ : personnage suivant, ← → : page,
@@ -11,7 +12,7 @@
 (function (root) {
   'use strict';
   const { h } = UI;
-  const PAGES = [['stats', 'Stats'], ['items', 'Objets'], ['skills', 'Compétences']];
+  const PAGES = [['stats', 'Stats'], ['items', 'Objets'], ['skills', 'Compétences'], ['ranks', 'Armes']];
   const W = 240, H = 160;
   // positions dans l'image de fond (pixels de la planche)
   const BARS = [35, 53, 68, 84, 100, 116, 132, 147];   // traits des stats (colonne de gauche)
@@ -164,7 +165,40 @@
       sup.length ? sup.slice(0, 3).map(p => h('div', { class: 'rd-boxed-sub rd-sup' }, h('span', {}, p.name), h('b', {}, p.rank))) : h('div', { class: 'rd-boxed-sub' }, 'Aucune')));
   }
 
-  /** Fiche d'une unité (élément). opts.page : 'stats' | 'items' | 'skills' ; opts.scale : taille d'un pixel (sinon --s du parent). */
+  /** Niveaux d'armes (E à S, jauge vers le niveau suivant) des 8 types, puis les affinités. */
+  const TYPE_ICONS = { sword: 'iron-sword', lance: 'iron-lance', axe: 'iron-axe', bow: 'iron-bow', anima: 'fire', light: 'lightning', dark: 'fenrir', staff: 'heal' };
+  /** Icône d'un type d'arme : celle de l'arme de fer (img/items), sinon la petite icône du type. */
+  function typeIcon(type) {
+    const own = h('span', { class: 'rd-icon' });
+    if (self.ItemIcons && ItemIcons.apply(own, 'item:' + TYPE_ICONS[type])) return own;
+    return h('span', { class: 'rd-icon', style: { backgroundPosition: `calc(var(--s) * ${-WICONS.indexOf(type) * 10}px) 0` } });
+  }
+  function ranksPage(u, ctx, panel) {
+    const { G, R } = ctx;
+    const cl = R.byId(G.db.classes, u.classId) || {}, usable = cl.weapons || [];
+    WICONS.forEach((type, i) => {
+      const col = i < 4 ? 0 : 1, row = i % 4, x = 104 + col * 64, y = 27 + row * 15;
+      const can = usable.includes(type) && u.team !== 'enemy';
+      const pr = R.rankProgress ? R.rankProgress(u, type) : { rank: 'E', ratio: 0, value: 1, to: 31, next: 'D' };
+      const name = (R.WEAPON_TYPES.find(t => t.id === type) || {}).name || type;
+      panel.append(box(x, y, 60, 13, 'rd-wrank' + (can ? '' : ' off'), typeIcon(type),
+        h('b', { class: 'rd-wrank-letter' + (can && pr.rank === 'S' ? ' s' : ''), 'data-sheet-rank': type, title: can ? `${name} : niveau ${pr.rank}` + (pr.next ? ` (${pr.value}/${pr.to} pour ${pr.next})` : ' (maximum)') : `${name} : non maniée` }, can ? pr.rank : '–'),
+        h('span', { class: 'rd-wrank-bar' }, can ? h('i', { style: { width: (pr.ratio * 100) + '%' } }) : null)));
+    });
+    // encadré : arme équipée, progression de son type
+    const eq = R.equipped(u, G.db), w = eq && eq.weapon;
+    const ep = w && R.rankProgress ? R.rankProgress(u, w.type) : null;
+    panel.append(box(169, 120, 61, 33, 'rd-boxed', w
+      ? [h('div', { class: 'rd-boxed-title' }, weaponIcon(w), h('span', {}, w.name)),
+        h('div', { class: 'rd-boxed-sub rd-sup' }, h('span', {}, 'Requis'), h('b', { class: 'rd-req' }, w.rank || '–')),
+        h('div', { class: 'rd-boxed-sub rd-sup' }, h('span', {}, ep.next ? `Vers ${ep.next}` : 'Niveau max'), h('b', { class: 'rd-req' }, ep.next ? `${ep.value}/${ep.to}` : 'S'))]
+      : h('div', { class: 'rd-boxed-sub' }, 'Aucune arme équipée')));
+    const sup = (ctx.supportsOf ? ctx.supportsOf(u) : []) || [];
+    panel.append(box(104, 90, 62, 63, 'rd-boxed rd-sup-box', h('div', { class: 'rd-boxed-title' }, h('span', {}, '♥ Affinités')),
+      sup.length ? sup.slice(0, 5).map(p => h('div', { class: 'rd-boxed-sub rd-sup', 'data-sheet-support': p.name }, h('span', {}, p.name), h('b', {}, p.rank || '–'))) : h('div', { class: 'rd-boxed-sub' }, 'Aucune')));
+  }
+
+  /** Fiche d'une unité (élément). opts.page : 'stats' | 'items' | 'skills' | 'ranks' ; opts.scale : taille d'un pixel (sinon --s du parent). */
   function element(u, ctx, opts = {}) {
     const state = { page: PAGES.some(p => p[0] === opts.page) ? opts.page : 'stats', growths: !!opts.growths };
     const el = h('div', { class: 'rd-sheet', 'data-unit-sheet': u.uid || u.sourceId || '' });
@@ -188,6 +222,7 @@
         onclick: (e) => { e.stopPropagation(); state.page = id; render(); } }, label))));
       if (state.page === 'stats') statsPage(u, ctx, panel, state.growths, () => el.toggleGrowths());
       else if (state.page === 'items') itemsPage(u, ctx, panel);
+      else if (state.page === 'ranks') ranksPage(u, ctx, panel);
       else skillsPage(u, ctx, panel);
       el.append(panel);
     };
