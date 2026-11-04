@@ -175,7 +175,7 @@
       // aperçu de l'animation de combat (celle de l'unité, sinon de sa classe) pour les couleurs de combat
       const cls = byId(db().classes, u.classId), bKey = u.battler || (cls && cls.battler), bMeta = bKey && res().battlers[bKey];
       const bImg = bMeta ? await Render.loadImage(Editor.baseUrl(), bMeta.image) : null;
-      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name,
+      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name, cls,
         battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null }); }
       catch (e) { return UI.alert('Générateur indisponible', e.message); }
       if (!r) return;
@@ -2308,7 +2308,7 @@
     for (const k of ['overkill', 'overkillExp', 'aiDifficulty']) if (st[k] === undefined) st[k] = Rules.DEFAULT_SETTINGS[k];
     Editor.project().meta.title = Object.assign({ subtitle: '', background: '', music: '', newGameMode: 'classic' }, Editor.project().meta.title || {});
     if (typeof Editor.project().meta.credits !== 'string') Editor.project().meta.credits = '';
-    if (self.CharGen) Editor.project().meta.avatar = Object.assign({ enabled: false, unitId: '', rename: true }, Editor.project().meta.avatar || {}, { unitId: CharGen.avatarConfig(Editor.project().meta, db()).unitId });
+    if (self.CharGen) Editor.project().meta.avatar = Object.assign({ enabled: false, unitId: '', rename: true, camp: true }, Editor.project().meta.avatar || {}, { unitId: CharGen.avatarConfig(Editor.project().meta, db()).unitId });
     // sections des plugins (Extensions « system » : { label, prepare(meta), fields(meta) })
     const pluginSections = Extensions.list('system').flatMap(sec => {
       try { if (typeof sec.prepare === 'function') sec.prepare(Editor.project().meta); return [{ type: 'heading', label: sec.label }, ...(sec.fields(Editor.project().meta) || [])]; }
@@ -2337,6 +2337,7 @@
       { type: 'row', fields: [
         { key: 'avatar.unitId', label: 'Personnage concerné', type: 'select', options: () => db().units.map(u => ({ value: u.id, label: u.name + (u.protagonist ? ' (personnage principal)' : '') })) },
         { key: 'avatar.rename', label: 'Le joueur choisit aussi son nom', type: 'checkbox' }] },
+      { key: 'avatar.camp', label: 'Le joueur peut retoucher son protagoniste au camp (menu du camp › Apparence)', type: 'checkbox' },
       { type: 'info', text: 'Le portrait, le sprite de map et le nom choisis remplacent ceux du personnage pendant toute la partie (sauvegardés avec elle). Dans les dialogues, son nom d’origine est remplacé par le nom choisi ; {héros} s’écrit aussi pour le nommer. Ses statistiques, sa classe et son animation de combat restent celles de sa fiche ; ses pièces et couleurs de départ sont celles du générateur de sa fiche (Unités), s’il en a.' },
       { type: 'row', fields: [
         { key: 'startChapter', label: 'Acte de départ', type: 'select', empty: '—', options: () => db().chapters.map(c => ({ value: c.id, label: Lobby.actLabel(db(), c.id) })) },

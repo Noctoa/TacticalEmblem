@@ -2,7 +2,11 @@
  * Fenêtre du générateur de personnage (éditeur : fiche d'une unité ; jeu : création du protagoniste).
  * Calculs dans shared/char-gen.js ; pièces dans img/generator (tools/build_generator_parts.py).
  *
- *   CharGenUI.open({ recipe, name, askName, title, game, cancel: true }) → Promise<null | {
+ *   CharGenUI.open({ recipe, name, askName, title, game, cancel: true, cls, strict }) → Promise<null | {
+ *     cls : classe du personnage ({ name, moveType }) : seuls les sprites de combat et de map de sa monture sont proposés
+ *     (à cheval, Pégase, vouivre, armure, à pied ; voir CharGen.classMounts). strict (jeu) : obligatoire et la recette
+ *     est ajustée dès l'ouverture ; sinon (éditeur) une case permet de tout afficher. Le genre choisi (recipe.gender)
+ *     filtre toutes les pièces.
  *     recipe, name, faceset: canvas 128×112, portrait: canvas 96×96, map: { canvas, meta } }>
  *   CharGenUI.render(recipe, { name }) → Promise<même résultat sans fenêtre> (jeu : recette sauvegardée)
  *   CharGenUI.load() → Promise<parts> (planches chargées ; parts.sprite = bibliothèque de sprites FE)
@@ -157,6 +161,15 @@
     return load().then(parts => new Promise((resolve) => {
       let recipe = C.normalize(opts.recipe || C.defaults(parts, opts.name), parts);
       let name = opts.name || '';
+      // genre et monture : filtres des pièces proposées
+      const mounts = C.classMounts(opts.cls);
+      const fstate = { gender: opts.gender || C.recipeGender(recipe, parts), byClass: !!mounts };
+      if (fstate.gender !== 'm' && fstate.gender !== 'f' && fstate.gender !== '') fstate.gender = 'm';
+      const filters = () => ({ gender: fstate.gender, mounts: fstate.byClass ? mounts : null });
+      const allowed = (k) => C.allowedParts(k, parts, filters());
+      const keepGender = () => { if (fstate.gender) recipe.gender = fstate.gender; else delete recipe.gender; };
+      keepGender();
+      if (opts.strict || !opts.recipe) recipe = C.normalize(C.fitRecipe(recipe, parts, filters()), parts);
       const back = h('div', { class: 'cg-back' + (opts.game ? ' cg-game' : '') });
       const win = h('div', { class: 'cg-win', role: 'dialog', 'aria-label': opts.title || 'Générateur de personnage' });
       back.append(win);
@@ -214,13 +227,33 @@
       };
       requestAnimationFrame(tick);
       const set = (k, v) => { recipe[k] = v; if (k === 'token' && v) loadBattler(v).then(() => { if (back.isConnected) refresh(); }); if (k === 'sprite') { drawColors(); if (v && !spriteSheets[v]) loadSprite(v).then(() => { if (back.isConnected) refresh(); }); } refresh(); };
+      /** Genre ou filtre de classe changé : pièces hors filtre remplacées, planches rechargées. */
+      const refit = () => {
+        keepGender();
+        recipe = C.normalize(C.fitRecipe(recipe, parts, filters()), parts);
+        if (recipe.sprite && !spriteSheets[recipe.sprite]) loadSprite(recipe.sprite).then(() => { if (back.isConnected) refresh(); });
+        loadBattler(recipe.token).then(() => { if (back.isConnected) refresh(); });
+        drawFilters(); refresh();
+      };
+      const filterBox = h('div', { class: 'cg-section cg-filters' });
+      function drawFilters() {
+        const mountText = mounts ? mounts.map(m => C.MOUNTS[m]).join(' ou ') : '';
+        filterBox.replaceChildren(h('div', { class: 'cg-row', 'data-cg-row': 'gender' }, h('span', { class: 'cg-lbl' }, 'Genre'),
+          ...[...C.GENDERS, ...(opts.strict ? [] : [['', 'Tous']])].map(([g, label]) => h('button', { class: 'cg-btn small cg-gender' + (fstate.gender === g ? ' on' : ''), 'data-cg-gender': g,
+            onclick: () => { fstate.gender = g; refit(); } }, g === 'm' ? '♂ ' + label : g === 'f' ? '♀ ' + label : label))),
+        mounts ? h('div', { class: 'cg-row cg-class-row', 'data-cg-class': mounts.join(',') }, h('span', { class: 'cg-lbl' }, 'Classe'),
+          opts.strict ? h('span', { class: 'cg-class-note' }, `${opts.cls.name} : sprites ${mountText}`)
+            : h('label', { class: 'cg-check' }, h('input', { type: 'checkbox', checked: fstate.byClass, 'data-cg-by-class': true,
+              onchange: (e) => { fstate.byClass = e.target.checked; refit(); } }), ` Seulement les sprites ${mountText} (${opts.cls.name})`)) : null);
+      }
+      drawFilters();
       const step = (k, d) => {
-        const list = k === 'hair' ? parts.hair.filter(p => p.front) : parts[k];
+        const list = allowed(k);
         const i = list.findIndex(p => p.id === recipe[k]);
         set(k, list[(i + d + list.length) % list.length].id);
       };
       const picker = (k, label) => {
-        const list = k === 'hair' ? parts.hair.filter(p => p.front) : parts[k];
+        const list = allowed(k);
         const grid = h('div', { class: 'cg-grid' + (k === 'sprite' ? ' cg-grid-sprites' : '') });
         const search = h('input', { type: 'search', class: 'cg-search', placeholder: 'Rechercher…', 'aria-label': 'Rechercher une pièce' });
         // sprites FE : un filtre par catégorie (dossiers d'origine) et les crédits en infobulle
@@ -305,6 +338,7 @@
         const errs = C.validate(recipe, parts);
         if (opts.askName && !name.trim()) errs.unshift('Donne un nom à ton personnage.');
         if (errs.length) { UI.toast(errs[0]); return; }
+        if (opts.strict) { keepGender(); recipe = C.normalize(C.fitRecipe(recipe, parts, filters()), parts); }
         result = build(recipe, name.trim());
         close(Object.assign(result, { recipe: C.normalize(recipe, parts), name: name.trim() }));
       };
@@ -318,9 +352,12 @@
         h('div', { class: 'cg-body' },
           h('div', { class: 'cg-preview' }, h('div', { class: 'cg-frame' }, big), h('div', { class: 'cg-map cg-map-duo' }, h('figure', {}, combat, h('small', {}, 'Sprite de combat')), h('figure', {}, sprite, h('small', {}, 'Sprite de map'))),
             nameInput ? h('label', { class: 'cg-name-row' }, h('span', {}, 'Nom'), nameInput) : null,
-            h('button', { class: 'cg-btn', 'data-cg-random': true, onclick: () => { recipe = C.normalize(Object.assign(C.random(parts), { sprite: recipe.sprite }), parts); refresh(); loadBattler(recipe.token).then(() => { if (back.isConnected) refresh(); }); } }, '🎲 Aléatoire'),
+            h('button', { class: 'cg-btn', 'data-cg-random': true, onclick: () => {
+              const rnd = Object.assign(C.random(parts), { sprite: recipe.sprite }), pick = (k) => { const l = allowed(k); return l.length ? l[Math.floor(Math.random() * l.length)].id : rnd[k]; };
+              for (const k of ['hair', 'face', 'armor', 'token']) rnd[k] = pick(k);
+              recipe = C.normalize(rnd, parts); refit(); } }, '🎲 Aléatoire'),
             h('button', { class: 'cg-btn', 'data-cg-random-colors': true, onclick: () => { recipe.colors = C.random(parts).colors; refresh(); } }, '🎨 Couleurs au hasard')),
-          h('div', { class: 'cg-controls' }, partRows, colorRows, offRows)),
+          h('div', { class: 'cg-controls' }, filterBox, partRows, colorRows, offRows)),
         h('div', { class: 'cg-foot' }, h('small', {}, 'Pièces : FE Character Creator (TheFlyingMinotaur) et la communauté Fire Emblem · nuanciers de cheveux et de peau : Blade (corps : AK).'),
           opts.cancel !== false ? h('button', { class: 'cg-btn', 'data-cg-cancel': true, onclick: () => close(null) }, 'Annuler') : null,
           h('button', { class: 'cg-btn primary', 'data-cg-ok': true, onclick: confirm }, opts.okLabel || 'Valider')));

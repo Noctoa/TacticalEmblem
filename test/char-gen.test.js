@@ -102,7 +102,7 @@ test('sprite de map : 6 animations × 4 images de 64, pieds au centre, miroir, c
 
 test('protagoniste du joueur : réglage, renommage dans les textes, validation', () => {
   const db = { units: [{ id: 'c_lyn', name: 'Lyn' }, { id: 'c_eliwood', name: 'Eliwood', protagonist: true }] };
-  assert.deepEqual(C.avatarConfig({}, db), { enabled: false, unitId: 'c_eliwood', rename: true });
+  assert.deepEqual(C.avatarConfig({}, db), { enabled: false, unitId: 'c_eliwood', rename: true, camp: true });
   assert.equal(C.avatarConfig({ avatar: { enabled: true }, lobby: { heroId: 'c_lyn' } }, db).unitId, 'c_lyn');
   assert.equal(C.avatarConfig({ avatar: { enabled: true, unitId: 'absent' } }, { units: [] }).enabled, false);
   assert.equal(C.renameText('Eliwood: Lyn, regarde ! — Eliwood ?', 'Eliwood', 'Kael'), 'Kael: Lyn, regarde ! — Kael ?');
@@ -347,4 +347,56 @@ test('sprite de map FE : les cheveux (repérés au-dessus du visage) prennent la
   // sans dimensions : comme avant (pas de repérage des cheveux)
   const d2 = new Uint8ClampedArray(4); d2.set([0xe8, 0x10, 0x18, 255]); C.recolorFeSprite(d2, r);
   assert.equal(C.hex(Array.from(d2.slice(0, 3))), '#e81018');
+});
+
+function fullParts() {
+  const ctx = { self: {} };
+  for (const f of ['parts.js', 'sprites.js', 'battlers.js']) vm.runInNewContext(fs.readFileSync(path.join(GEN, f), 'utf8'), ctx);
+  const P = ctx.self.GENERATOR_PARTS; P.sprite = ctx.self.GENERATOR_SPRITES.list; P.battlers = ctx.self.GENERATOR_BATTLERS;
+  return P;
+}
+test('genre des pièces : portraits d’après le personnage FE, sprites d’après -m- / -f-, pièces neutres pour les deux', () => {
+  const P = fullParts(), sex = (k, id) => C.partSex(k, P[k].find(p => p.id === id), P);
+  assert.equal(sex('hair', 'Lyn'), 'f'); assert.equal(sex('face', 'Hector'), 'm'); assert.equal(sex('armor', 'Peasant4'), '');
+  assert.equal(sex('token', 'ArcherFemale'), 'f'); assert.equal(sex('token', 'Archer'), 'm'); assert.equal(sex('token', 'General'), '');
+  assert.equal(sex('sprite', 'archer-f'), 'f'); assert.equal(sex('sprite', 'paladin-m-lance'), 'm'); assert.equal(sex('sprite', 'wyvern-knight-u-lance'), '');
+  for (const k of ['hair', 'face', 'armor']) {
+    const f = C.allowedParts(k, P, { gender: 'f' }), m = C.allowedParts(k, P, { gender: 'm' });
+    assert.ok(f.length > 30 && m.length > 100, k);
+    assert.ok(!f.some(p => C.partSex(k, p, P) === 'm') && !m.some(p => C.partSex(k, p, P) === 'f'), k);
+  }
+});
+test('monture : sprites de combat et de map selon la classe (cheval, Pégase, vouivre, armure, à pied)', () => {
+  const P = fullParts();
+  assert.deepEqual(C.classMounts({ name: 'Cavalier', moveType: 'horse' }), ['horse']);
+  assert.deepEqual(C.classMounts({ name: 'Chevalier Pégase', moveType: 'flier' }), ['pegasus']);
+  assert.deepEqual(C.classMounts({ name: 'Wyvern Rider · FE8', moveType: 'flier' }), ['wyvern']);
+  assert.deepEqual(C.classMounts({ name: 'Volant', moveType: 'flier' }), ['pegasus', 'wyvern']);
+  assert.deepEqual(C.classMounts({ name: 'Chevalier', moveType: 'armor' }), ['armor']);
+  assert.deepEqual(C.classMounts({ name: 'Mage', moveType: 'foot' }), ['foot']);
+  assert.equal(C.classMounts(null), null);
+  const ids = (k, f) => C.allowedParts(k, P, f).map(p => p.id);
+  const cav = { gender: 'm', mounts: ['horse'] };
+  assert.ok(ids('token', cav).includes('Cavalier') && !ids('token', cav).includes('Archer') && !ids('token', cav).includes('PaladinFemale'));
+  assert.ok(ids('sprite', cav).includes('paladin-m-lance') && !ids('sprite', cav).includes('lord-m-sword-generic'));
+  assert.ok(ids('sprite', { gender: 'f', mounts: ['pegasus'] }).every(id => /^pegasi/.test(id)));
+  assert.ok(ids('token', { gender: 'm', mounts: ['wyvern'] }).every(id => /^Wyvern/.test(id)));
+  // Pégase masculin : aucun sprite de combat masculin → la monture prime sur le genre
+  assert.equal(ids('token', { gender: 'm', mounts: ['pegasus'] }).join(), 'FalconKnightIscaneus');
+  const foot = ids('token', { gender: 'f', mounts: ['foot'] });
+  assert.ok(foot.includes('MageFemale') && !foot.includes('Valkyrie') && !foot.includes('Knight'));
+});
+test('recette ajustée : équivalent de l’autre genre ou première pièce permise, genre gardé', () => {
+  const P = fullParts();
+  const r = C.normalize({ hair: 'Hector', face: 'Hector', armor: 'Hector', token: 'Archer', sprite: 'archer-m', gender: 'f' }, P);
+  assert.equal(r.gender, 'f'); assert.deepEqual(C.validate(r, P), []);
+  const f = C.fitRecipe(r, P, { gender: 'f', mounts: null });
+  assert.equal(f.token, 'ArcherFemale'); assert.equal(f.sprite, 'archer-f');
+  for (const k of ['hair', 'face', 'armor']) assert.notEqual(C.partSex(k, P[k].find(p => p.id === f[k]), P), 'm');
+  const cav = C.fitRecipe(r, P, { gender: 'm', mounts: ['horse'] });
+  assert.equal(C.partMount('token', P.token.find(p => p.id === cav.token), P), 'horse');
+  assert.equal(C.partMount('sprite', P.sprite.find(p => p.id === cav.sprite), P), 'horse');
+  assert.equal(C.recipeGender({ token: 'MageFemale' }, P), 'f');
+  assert.deepEqual(C.validate(Object.assign({}, r, { gender: 'x' }), P), ['Genre invalide.']);
+  assert.equal(C.avatarConfig({ avatar: { enabled: true, unitId: 'a' } }, { units: [{ id: 'a' }] }).camp, true);
 });

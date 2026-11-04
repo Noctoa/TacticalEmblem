@@ -394,11 +394,25 @@
     // ------------------------------------------------------------------
     // Menu du camp, sauvegarde
     // ------------------------------------------------------------------
+    /** Générateur du protagoniste au camp (Système › Protagoniste créé par le joueur › modifiable au camp). */
+    function avatarAtCamp() {
+      if (!self.CharGen || !self.CharGenUI || !api.editAvatar) return false;
+      const meta = G.project.meta, cfg = CharGen.avatarConfig(meta, G.db);
+      return cfg.enabled && (meta.avatar || {}).camp !== false;
+    }
+    async function openAvatar() {
+      if (G.busy) return;
+      G.busy = true; G.ui = 'lobbypanel';
+      let changed = false;
+      try { changed = await api.editAvatar(); } finally { G.busy = false; G.ui = 'idle'; }
+      if (changed) { commit(); refreshHud(); UI.toast('Apparence mise à jour.'); }
+    }
     function openMenu() {
       const all = Lobby.chapters(G.db, G.project.meta, G.campaign);
       api.showMenu([
         { label: 'Équipe', sub: `${members().length} personnage(s) recruté(s)`, action: () => { api.hideMenu(); openTeam(); } },
         { label: 'Convoi', sub: `${G.convoy.length}/${G.convoyCap} objets`, action: () => { api.hideMenu(); openConvoy(); } },
+        avatarAtCamp() ? { label: 'Apparence', sub: 'générateur du protagoniste', action: () => { api.hideMenu(); openAvatar(); } } : null,
         { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
         ...activePlaces().filter(p => p.menu !== false).map(p => ({ label: placeName(p), sub: typeof p.menuSub === 'function' ? p.menuSub(placeContext(p)) : '', action: () => { api.hideMenu(); openPlace(p); } })),
@@ -514,7 +528,7 @@
       if (thing) { face(x, y); refreshHint(); await interact(thing); }
     }
 
-    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openConvoy, openPlace: openPlaceByKey, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
+    return { enabled, enter, leave, key, keyup, click, drawOverlay, refreshHud, closePanel, openMenu, openTeam, openConvoy, openAvatar, openPlace: openPlaceByKey, commit, get active() { return G.mode === 'lobby'; }, get state() { return S; } };
   }
 
   root.LobbyScene = { create };

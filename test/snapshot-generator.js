@@ -49,7 +49,7 @@ module.exports = (editor, openPlaytest) => {
       await E.until(`/^Aucun/.test(document.querySelector('[data-cg-label="sprite"]').textContent)`);
       // choisir des cheveux dans la grille, une couleur, décaler le visage
       await E.js(`document.querySelector('[data-cg-choose="hair"]').click()`);
-      await E.until(`document.querySelectorAll('[data-cg-picker="hair"] .cg-cell').length > 100`);
+      await E.until(`document.querySelectorAll('[data-cg-picker="hair"] .cg-cell').length > 50`);
       await E.js(`(() => { const s = document.querySelector('[data-cg-picker="hair"] .cg-search'); s.value = 'ninian'; s.dispatchEvent(new Event('input')); })()`);
       await E.until(`document.querySelectorAll('[data-cg-picker="hair"] .cg-cell').length === 1`);
       await wait(200); await E.shot('b_grille');
@@ -143,9 +143,11 @@ module.exports = (editor, openPlaytest) => {
       await G.js(`document.querySelector('[data-cg-random]').click()`);
       // sprite de map animé tiré de la bibliothèque FE : filtre par catégorie + recherche
       await G.js(`document.querySelector('[data-cg-choose="sprite"]').click()`);
-      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 100`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 40`); // seigneur masculin : sprites à pied, masculins ou neutres
+      result.spritesProposes = await G.js(`[...document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell')].map(c => c.dataset.cgPart)`);
+      assert(!result.spritesProposes.some(id => /^(paladin|cavalier|pegasi|wyvern|general|knight-)|-f(-|$)/.test(id)), 'sprites hors classe ou hors genre : ' + result.spritesProposes.filter(id => /^(paladin|cavalier|pegasi|wyvern|general|knight-)|-f(-|$)/.test(id)));
       await G.js(`(() => { const s = document.querySelector('[data-cg-sprite-group]'); s.value = [...s.options].find(o => /Personnages de la série/.test(o.value)).value; s.dispatchEvent(new Event('change')); })()`);
-      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 20 && document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length < 100`);
+      await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length > 3 && document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length < ${result.spritesProposes.length}`);
       await wait(300); await G.shot('e0_jeu_sprites_fe');
       await G.js(`(() => { const s = document.querySelector('[data-cg-picker="sprite"] input.cg-search'); s.value = 'eliwood'; s.dispatchEvent(new Event('input')); })()`);
       await G.until(`document.querySelectorAll('[data-cg-picker="sprite"] .cg-cell').length >= 1`);

@@ -91,3 +91,8 @@
 .cg-map-duo figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .cg-map-duo .cg-sprite { width: 112px; height: 112px; }
 .cg-map-duo .cg-combat { width: 128px; height: 112px; }
+/* genre et classe (filtres des pièces) */
+.cg-filters .cg-row { flex-wrap: wrap; }
+.cg-gender { min-width: 86px; }
+.cg-game .cg-btn.cg-gender.on { background: #c9a14a; color: #1a1408; border-color: #e0bd6a; }
+.cg-class-note { color: #dfe4f0; font-size: 12px; }

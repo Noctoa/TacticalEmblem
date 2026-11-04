@@ -10,6 +10,7 @@
  *                                        métal, ornements et cuir de son animation (recolorBattler) ; son tissu donne la
  *                                        tenue (couleurs d'équipe) de cette animation ou de celle de la classe
  *     offsets: { hair: [dx, dy], face: [dx, dy], armor: [dx, dy] }   décalage de chaque pièce en pixels
+ *     gender: 'm' | 'f' (facultatif) : genre choisi, filtre les pièces proposées (partSex)
  *     sprite: '' | id }   sprite de map animé tiré de la bibliothèque FE (img/generator/sprites.js) ; '' = la figurine
  *
  * Les pièces sont « indexées » : la composante rouge / 10 d'un pixel donne la teinte (voir SHADES). La
@@ -183,6 +184,7 @@
     const ok = (list, id) => (typeof id === 'string' && (!parts || !id || (list || []).some(p => p.id === id)) ? id : '');
     const out = { hair: ok(parts && parts.hair, r.hair), face: ok(parts && parts.face, r.face), armor: ok(parts && parts.armor, r.armor),
       token: ok(parts && parts.token, r.token), colors: {}, offsets: EMPTY_OFFSETS(), sprite: '' };
+    if (r.gender === 'm' || r.gender === 'f') out.gender = r.gender;
     if (typeof r.sprite === 'string' && (!parts || !parts.sprite || parts.sprite.some(p => p.id === r.sprite))) out.sprite = r.sprite;
     Object.assign(out, normColors(r));
     if (r.map && typeof r.map === 'object') out.map = normColors(r.map);
@@ -203,6 +205,7 @@
     for (const g of GROUPS) if (r.colors && r.colors[g.id] !== undefined && !rgb(r.colors[g.id]) && !(g.optional && r.colors[g.id] === '')) errors.push(`Couleur invalide (${g.label}).`);
     for (const [k, size] of Object.entries(RAMP_SIZE)) if (r.ramps && r.ramps[k] !== undefined && !rampOk(r.ramps[k], size)) errors.push(`Nuancier invalide (${k}).`);
     if (r.combat !== undefined && r.combat !== null && typeof r.combat !== 'object') errors.push('Couleurs de combat invalides.');
+    if (r.gender !== undefined && r.gender !== '' && r.gender !== 'm' && r.gender !== 'f') errors.push('Genre invalide.');
     return errors;
   }
   /** Recette au hasard (rng : () => [0, 1)) ; garde les champs de keep. */
@@ -531,20 +534,139 @@
     return [pal[15], pal[16], pal[17]].map(hex);
   }
 
+  // ------------------------------------------------------------- genre et monture des pièces
+  /*
+   * Genre d'une pièce : 'm', 'f' ou '' (les deux). Portrait (cheveux, visage, tenue) : d'après le personnage FE dont
+   * la pièce porte le nom ; sprite de combat et de map : d'après leur identifiant (-m- / -f- / -u-).
+   * Monture : 'foot', 'armor', 'horse', 'pegasus', 'wyvern' ou 'other' (dragon…), pour n'offrir que les sprites qui
+   * vont avec la classe du personnage (un cavalier est à cheval, un chevalier Pégase sur un Pégase…).
+   */
+  const FEMALE_PARTS = new Set(('Amelia Anna Brunnya Cath Cecilia Celina Clarine Dorothy Echidna Eleanora Erika Fae Farina Fiora Fir Florina '
+    + 'GuinevereYoung Gwendolyn Habit Hellene Idunn IdunnHood Igrene Isadora Juno Karla LArachel Larum Leila Lilina Limstella Louise Lute Lyn '
+    + 'Maggie Marisa Melady Myrrh Natasha Neimi Ninian Nino PegasusRider PegasusRider2 PegasusRiderToken FalcoKnight Priscilla Rebecca Sera '
+    + 'Shanna Sigune Sonia Sophia Sue Syrene Tana Tethys Thea Ursula Vaida Vanessa').split(' '));
+  const NEUTRAL_PARTS = new Set(('AugerersHood AugerersHoodSmall Bug Guard Hat Peasant1 Peasant4 Peasant5 Peasant6 Peasant7 Peasant9 Peasant10 '
+    + 'Peasant11 Peasant12 Peasant13 Peasant14 Peasant15 Peasant16 Peasant17 Peasant18 Peasant19 Peasant20 Peasant21 PeasantHood PeasantHood2 '
+    + 'Sage Servant1 Teifling2 Tiefling1 Tiefling2 Tiefling3 Undercut Iscaneus Inscaneus89').split(' '));
+  const GENDERS = [['m', 'Masculin'], ['f', 'Féminin']];
+  const MOUNTS = { foot: 'à pied', armor: 'en armure', horse: 'à cheval', pegasus: 'sur un Pégase', wyvern: 'sur une vouivre', other: 'autre' };
+  const sexOf = (id) => { const m = /(^|-)(m|f|u)(-|$)/.exec(String(id || '')); return m ? (m[2] === 'u' ? '' : m[2]) : null; };
+  const battlerOf = (parts, tokenId) => ((parts && parts.battlers && parts.battlers.tokens) || {})[tokenId] || '';
+  function partSex(kind, p, parts) {
+    if (!p) return '';
+    if (kind === 'token') {
+      if (NEUTRAL_PARTS.has(p.id)) return '';
+      if (/female/i.test(p.id) || FEMALE_PARTS.has(p.id)) return 'f';
+      const s = sexOf(battlerOf(parts, p.id));
+      return s === null ? (/^(lyn|lilina|erika|lucia|ninian|dancer|cleric|troubadour|valkyrie|falcon|priestess|mia|nephenee|tharja|lucina|astrid|mageknight$)/i.test(p.id) ? 'f' : 'm') : s;
+    }
+    if (kind === 'sprite') { const s = sexOf(p.id); return s === null ? (/-f$|^robin-f/.test(p.id) ? 'f' : 'm') : s; }
+    if (NEUTRAL_PARTS.has(p.id)) return '';
+    return FEMALE_PARTS.has(p.id) ? 'f' : 'm';
+  }
+  function partMount(kind, p, parts) {
+    if (!p) return 'foot';
+    if (kind === 'token') {
+      const b = battlerOf(parts, p.id), id = p.id.toLowerCase();
+      if (/wyvern|^w[kl]-/.test(id + ' ' + b)) return 'wyvern';
+      if (/falcon|pegasus|^peg-/.test(id + ' ' + b)) return 'pegasus';
+      if (p.mount) return 'horse';
+      if (/^(general|knight)-/.test(b) || /^(general|knight)/.test(id)) return 'armor';
+      return 'foot';
+    }
+    if (kind === 'sprite') {
+      const id = p.id, g = String(p.group || '');
+      if (/^dragon-/.test(id)) return 'other';
+      if (/Pegs, Wyverns/.test(g)) return /wyvern|griffon/.test(id) ? 'wyvern' : 'pegasus';
+      if (/^Mounted/.test(g)) return 'horse';
+      if (/Knights, Generals, Armors/.test(g)) return 'armor';
+      if (/^Personnages/.test(g)) {
+        if (/infantry/.test(id)) return 'foot';
+        if (/knight-lord|great-lord-m-ephraim|great-lord-f-eirika|^ranger-|^paladin-|^cavalier-/.test(id)) return 'horse';
+        if (/^(general|knight)-/.test(id)) return 'armor';
+      }
+      return 'foot';
+    }
+    return '';
+  }
+  /**
+   * Montures permises par une classe (null = toutes) : déplacement à cheval → cheval, en armure → armure, volant →
+   * Pégase ou vouivre selon le nom de la classe (les deux si le nom ne le dit pas), à pied → à pied.
+   */
+  function classMounts(cls) {
+    if (!cls || !cls.moveType) return null;
+    const name = String((cls.name || '') + ' ' + (cls.id || '')).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    if (cls.moveType === 'horse') return ['horse'];
+    if (cls.moveType === 'armor') return ['armor'];
+    if (cls.moveType === 'flier') {
+      if (/wyvern|vouivre|wyverne|dragon|griffon|griffin|drake|draco/.test(name)) return ['wyvern'];
+      if (/pegas|pegase|falcon|faucon|seraph|sky knight|ciel|aile|pegasus/.test(name)) return ['pegasus'];
+      return ['pegasus', 'wyvern'];
+    }
+    if (cls.moveType === 'foot') return ['foot'];
+    return null;
+  }
+  /**
+   * Pièces proposées : filtres = { gender: 'm' | 'f' | '', mounts: [..] | null }. Les pièces du portrait ne dépendent
+   * que du genre. Sans résultat pour ce genre (ex. Pégase masculin), on garde la monture et on oublie le genre.
+   */
+  function allowedParts(kind, parts, filters) {
+    const f = filters || {};
+    let list = (parts && parts[kind]) || [];
+    if (kind === 'hair') list = list.filter(p => p.front);
+    const mountOk = (p) => !f.mounts || (kind !== 'token' && kind !== 'sprite') || f.mounts.includes(partMount(kind, p, parts));
+    const sexOk = (p) => { if (!f.gender) return true; const s = partSex(kind, p, parts); return !s || s === f.gender; };
+    const both = list.filter(p => mountOk(p) && sexOk(p));
+    if (both.length) return both;
+    const mounted = list.filter(mountOk);
+    return mounted.length ? mounted : list;
+  }
+  /** Genre d'une recette : son choix, sinon celui du sprite de combat, sinon du sprite de map, sinon des cheveux. */
+  function recipeGender(r, parts) {
+    if (r && (r.gender === 'm' || r.gender === 'f')) return r.gender;
+    const by = (kind) => { const p = r && r[kind] && ((parts && parts[kind]) || []).find(x => x.id === r[kind]); return p ? partSex(kind, p, parts) : ''; };
+    return by('token') || by('sprite') || by('hair') || 'm';
+  }
+  /**
+   * Recette ajustée aux filtres : chaque pièce hors filtre est remplacée par son équivalent de l'autre genre
+   * (archer-m → archer-f), sinon par la première pièce permise. Le sprite de map vide (« d'après le sprite de combat »)
+   * reste permis. Renvoie une nouvelle recette.
+   */
+  function fitRecipe(recipe, parts, filters) {
+    const r = JSON.parse(JSON.stringify(recipe || {}));
+    for (const kind of ['hair', 'face', 'armor', 'token', 'sprite']) {
+      if (kind === 'sprite' && (!r.sprite || !(parts && parts.sprite && parts.sprite.length))) continue;
+      const ok = allowedParts(kind, parts, filters);
+      if (!ok.length || ok.some(p => p.id === r[kind])) continue;
+      if (!r[kind] && kind !== 'token') continue; // « aucune » pièce : rien à remplacer
+      const twin = (id) => {
+        if (kind === 'token') {
+          const b = battlerOf(parts, id), other = b.replace(/(^|-)(m|f)(-|$)/, (all, a, s, z) => a + (s === 'm' ? 'f' : 'm') + z);
+          return ok.find(p => other !== b && battlerOf(parts, p.id) === other) || ok.find(p => p.id === String(id).replace(/(Female)?$/, 'Female')) || null;
+        }
+        if (kind === 'sprite') { const other = String(id).replace(/(^|-)(m|f)(-|$)/, (all, a, s, z) => a + (s === 'm' ? 'f' : 'm') + z); return ok.find(p => p.id === other) || null; }
+        return null;
+      };
+      const pick = twin(r[kind]) || (kind === 'hair' || kind === 'face' || kind === 'armor' ? ok[Math.floor(ok.length / 2)] : ok[0]);
+      r[kind] = pick ? pick.id : r[kind];
+    }
+    return r;
+  }
+
   // ------------------------------------------------------------- protagoniste créé par le joueur
   /**
    * Réglage du projet (meta.avatar) : { enabled, unitId, rename }. Personnage par défaut : le héros du camp,
    * sinon le premier personnage principal, sinon la première unité.
    */
   function avatarConfig(meta, db) {
-    const a = Object.assign({ enabled: false, unitId: '', rename: true }, (meta && meta.avatar) || {});
+    const a = Object.assign({ enabled: false, unitId: '', rename: true, camp: true }, (meta && meta.avatar) || {});
     const units = (db && db.units) || [];
     const has = (id) => units.some(u => u.id === id);
     if (!has(a.unitId)) {
       const hero = meta && meta.lobby && meta.lobby.heroId;
       a.unitId = has(hero) ? hero : ((units.find(u => u.protagonist) || units[0] || {}).id || '');
     }
-    a.enabled = !!a.enabled && !!a.unitId; a.rename = a.rename !== false;
+    a.enabled = !!a.enabled && !!a.unitId; a.rename = a.rename !== false; a.camp = a.camp !== false;
     return a;
   }
   /** Remplace le nom d'origine par le nom choisi (mots entiers) et {héros} / {hero} par le nom du protagoniste. */
@@ -562,6 +684,6 @@
     return errors.concat(validate(a.recipe, parts));
   }
 
-  return { normColors, mapColors, combatColors, battlePalette, battlerColorTable, recolorBattler, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
+  return { GENDERS, MOUNTS, FEMALE_PARTS, partSex, partMount, classMounts, allowedParts, recipeGender, fitRecipe, normColors, mapColors, combatColors, battlePalette, battlerColorTable, recolorBattler, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
     normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feHairMask, recolorFeHair, feTeamColors };
 });

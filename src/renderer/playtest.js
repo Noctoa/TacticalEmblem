@@ -155,10 +155,35 @@
       const cls = R.byId(G.db.classes, def.classId), bMeta = G.resources.battlers[def.battler || (cls && cls.battler)];
       const bImg = bMeta && Render.readyImage(G.baseUrl, bMeta.image);
       r = await CharGenUI.open({ game: true, cancel: false, askName: cfg.rename, name: def.name, recipe: def.generator, battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null,
-        title: 'Ton protagoniste', subtitle: cfg.rename ? 'Choisis son nom et son apparence' : def.name, okLabel: 'Commencer l’aventure' });
+        cls, strict: true, title: 'Ton protagoniste', subtitle: cfg.rename ? 'Choisis son nom, son genre et son apparence' : def.name, okLabel: 'Commencer l’aventure' });
     } catch (e) { console.error('[générateur]', e); UI.toast('Générateur de personnage indisponible : ' + e.message, 'error'); }
-    if (r) G.campaign.avatar = { unitId: def.id, name: cfg.rename ? r.name : def.name, recipe: r.recipe };
+    if (r) G.campaign.avatar = { unitId: def.id, name: cfg.rename ? r.name : def.name, recipe: r.recipe, gender: r.recipe.gender || CharGen.recipeGender(r.recipe, self.GENERATOR_PARTS) };
     await applyAvatar();
+  }
+  /**
+   * Camp : le joueur retouche son protagoniste (apparence, genre et, si permis, nom). La classe actuelle (après une
+   * promotion) décide des sprites proposés. Renvoie true si quelque chose a changé.
+   */
+  async function editAvatar() {
+    const cfg = self.CharGen ? CharGen.avatarConfig(G.project.meta, G.db) : { enabled: false };
+    const def = cfg.enabled && R.byId(G.db.units, cfg.unitId);
+    if (!def || !self.CharGenUI) return false;
+    const live = (G.units || []).find(u => u.sourceId === def.id);
+    const cls = R.byId(G.db.classes, (live && live.classId) || def.classId);
+    const a = G.campaign.avatar || {};
+    let r = null;
+    try {
+      r = await CharGenUI.open({ game: true, cancel: true, askName: cfg.rename, name: a.name || def.name, recipe: a.recipe || (G.avatar ? null : def.generator), cls, strict: true,
+        title: 'Apparence', subtitle: cfg.rename ? 'Nom, genre et apparence de ton protagoniste' : (a.name || def.name), okLabel: 'Valider' });
+    } catch (e) { console.error('[générateur]', e); UI.toast('Générateur de personnage indisponible : ' + e.message, 'error'); return false; }
+    if (!r) return false;
+    G.campaign.avatar = { unitId: def.id, name: cfg.rename ? r.name : (a.name || def.name), recipe: r.recipe, gender: r.recipe.gender || CharGen.recipeGender(r.recipe, self.GENERATOR_PARTS) };
+    await applyAvatar();
+    // unités déjà affichées (camp, équipe) : nouveau nom, portrait et sprites
+    for (const u of [...(G.units || []), ...((lobby && lobby.state && lobby.state.members) || [])]) if (u.sourceId === def.id) {
+      Object.assign(u, { name: def.name, portrait: def.portrait, mapSprite: def.mapSprite, battler: def.battler, battleColors: def.battleColors });
+    }
+    return true;
   }
   /** Applique (ou retire) le protagoniste de la campagne : nom, portrait et sprite de map de son personnage. */
   async function applyAvatar() {
@@ -2654,7 +2679,7 @@
   const lobby = LobbyScene.create({
     G, h, R, $, Music, dir: params.get('dir'), defaultHelp,
     hideMenu, hideForecast, showMenu, buildBase, resize, focus, prep, applyCampaign, terrainAt, animateMove, playDialogue,
-    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl, sheetCtx
+    float, banner, loadChapter, sTaken, tileRect, TW, TH, openSettings: tab => settings.open(tab), openPromotion, showEvolution, portrait: portraitEl, sheetCtx, editAvatar
   });
   window.PlaytestLobby = lobby;
   window.PlaytestDebug = { checkEnd, killUnit, mapAnims: () => mapAnims.filter(r => r.active).length, arrowTiles: (path) => path.map((p, i) => arrowTile(path, i)) }; // scénarios de test automatisés
