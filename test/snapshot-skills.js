@@ -65,7 +65,7 @@ module.exports = (editor, openPlaytest) => {
       await edit('Chance de déclenchement (%)', 25);
       await edit('État des PV du porteur', 'below');
       await edit('Seuil (% des PV maximum)', 40);
-      await edit('Description du créateur (facultative)', 'Une fiche créée et conservée depuis l’interface.');
+      await edit('Description (affichée en jeu)', 'Une fiche créée et conservée depuis l’interface.');
       assert.match(await js(`document.querySelector('.skill-summary').textContent`), /35 %/);
       assert.match(await js(`document.querySelector('.skill-summary').textContent`), /≤ 40 %/);
       assert.equal(await js(`document.querySelector('.skill-validation').textContent`), '');

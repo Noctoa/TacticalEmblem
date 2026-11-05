@@ -55,3 +55,23 @@ test('pack de classes : variantes (M) / (F) et classes d’un seul genre des GBA
   assert.equal(by('Pegasus Knight').gender, 'femme'); assert.equal(by('Monk').gender, 'homme');
   assert.ok(!by('Soldier').gender && !by('Thief').gender);
 });
+
+test('genre asexué : verrou de classe, genre des monstres, insensibles aux charmes', () => {
+  const R = require('../src/shared/rules');
+  const FC = require('../src/shared/fe-classes');
+  const mon = { id: 'm', gender: 'asexue' };
+  assert.equal(R.classGenderOk(mon, 'asexue'), true);
+  assert.equal(R.classGenderOk(mon, 'homme'), false);
+  assert.equal(R.classGenderOk(mon, ''), true);
+  assert.equal(R.classGenderOk({ gender: 'femme' }, 'asexue'), false);
+  assert.match(R.genderLockText(mon), /asexués/);
+  assert.ok(R.GENDERS.some(g => g.value === 'asexue'));
+  const g = FC.GAMES.find(x => x.id === 'fe8m');
+  assert.equal(g.classes.find(c => c.source === 'Revenant').gender, 'asexue');
+  assert.equal(g.classes.find(c => c.source === 'Gorgon').gender, 'femme');
+  const db = { classes: [mon], units: [] };
+  assert.equal(R.genderOf({}, mon), 'asexue');
+  assert.equal(R.charmImmune({ classId: 'm' }, db), true);
+  assert.equal(R.charmImmune({ classId: 'm', gender: 'femme' }, db), false);
+  assert.equal(R.charmImmune({ classId: 'm', charmImmune: false }, db), false);
+});

@@ -133,7 +133,16 @@
       case 'textarea':
         input = h('textarea', { rows: f.rows || 4, placeholder: f.placeholder || '', spellcheck: false });
         input.value = val || '';
-        input.addEventListener('input', () => change(input.value));
+        { const area = input; area.addEventListener('input', () => change(area.value)); area.addEventListener('change', () => { if (area.value !== (getPath(obj, f.key) || '')) change(area.value); }); }
+        // dialogues : éditeur réplique par réplique (dialogue-editor.js), sinon bouton « ＋ Texte » (outil Textes)
+        if (f.texts !== false && (f.texts || /dialogue|conversation/i.test(f.label || '')) && root.UI && root.UI.dialogueEditor) {
+          input = root.UI.dialogueEditor(input, { speakers: typeof f.speakers === 'function' ? f.speakers(obj) : f.speakers, empty: f.placeholder ? 'Aucune réplique. Exemple : ' + f.placeholder.split('\n')[0] : '' });
+        } else if (f.texts !== false && (f.texts || /dialogue|conversation/i.test(f.label || '')) && root.UI && root.UI.textPicker) {
+          const ta = input;
+          input = h('div', { class: 'with-text-ref' }, ta, h('button', { class: 'small ghost text-ref-btn', type: 'button', 'data-text-ref-btn': true,
+            title: 'Insérer un texte de l’outil Textes (référence @fichier#id, remplacée en jeu par le texte dans la langue du joueur)',
+            onclick: () => root.UI.textPicker(ta) }, '＋ Texte'));
+        }
         break;
       case 'number':
         input = h('input', { type: 'number', min: f.min, max: f.max, step: f.step || 1 });

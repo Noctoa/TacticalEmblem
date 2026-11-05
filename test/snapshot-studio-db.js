@@ -51,6 +51,46 @@ module.exports = (editor) => {
         await wait(700); await shot(n);
       }
       assert(await js(`document.body.dataset.view === 'system'`), 'vue système');
+      // onglet Son : écouter une musique, l'utiliser comme musique de phase ennemie
+      await js(`document.querySelector('#db-tabs button[data-tab="sounds"]').click()`);
+      await until(`!!document.querySelector('[data-sound]')`);
+      result.sons = await js(`document.querySelectorAll('[data-sound]').length`);
+      assert(result.sons >= 70, 'sons : ' + result.sons);
+      await js(`[...document.querySelectorAll('[data-sound]')].find(e => e.dataset.sound.includes('Boss Battle')).click()`); await wait(300);
+      await js(`document.querySelector('.snd-big').click()`); await wait(1500);
+      result.lecture = await js(`!!document.querySelector('.snd-big.on')`);
+      result.usage = await js(`[...document.querySelectorAll('.snd-usage li')].map(l => l.textContent)`);
+      assert(result.usage.some(u => /boss/.test(u)), 'usage : ' + result.usage);
+      await js(`document.querySelector('[data-sound-assign="enemyPhase"]').click()`); await wait(300);
+      assert(await js(`Editor.project().meta.audio.enemyPhase.includes('Boss Battle')`), 'affectation');
+      await shot('k_son');
+      await js(`document.querySelector('.snd-big').click()`);
+      // animations : rendu en combat
+      await js(`document.querySelector('#db-tabs button[data-tab="animations"]').click()`);
+      await until(`!!document.querySelector('[data-anim-scene]')`);
+      await js(`[...document.querySelectorAll('#db-body .db-item')].find(e => e.textContent.includes('Feu')).click()`);
+      await until(`!!document.querySelector('[data-anim-scene-play]')`);
+      await wait(800);
+      await js(`document.querySelector('[data-anim-scene-play]').click()`);
+      await until(`document.querySelector('[data-anim-scene-play]').classList.contains('on')`);
+      await wait(450); await shot('l_animation');
+      await until(`!document.querySelector('[data-anim-scene-play]').classList.contains('on')`, 15000);
+      // affinités (Données)
+      await js(`document.querySelector('#db-tabs button[data-tab="supports"]').click()`);
+      await until(`!!document.querySelector('.hero-pair')`);
+      await wait(400); await shot('m_affinites');
+      // descriptions affichées en jeu : armes, objets, compétences, classes
+      result.descriptions = {};
+      for (const t of ['weapons', 'items', 'skills', 'classes']) {
+        await js(`DBEditor.open('${t}')`); await wait(300);
+        result.descriptions[t] = await js(`[...document.querySelectorAll('#db-body .field-label')].some(l => /Description \\(affichée en jeu\\)/.test(l.textContent))`);
+        assert(result.descriptions[t], 'description : ' + t);
+      }
+      await js(`document.querySelector('#db-tabs button[data-tab="weapons"]').click()`); await wait(300);
+      await js(`(() => { const a = [...document.querySelectorAll('#db-body .field')].find(f => /Description \\(affichée/.test(f.textContent)).querySelector('textarea'); a.value = 'Une épée de fer, simple et fiable.'; a.dispatchEvent(new Event('input')); a.dispatchEvent(new Event('change')); })()`); await wait(300);
+      result.arme = await js(`(() => { const w = Editor.db().weapons.find(w => w.description); return w && w.description; })()`);
+      assert(result.arme === 'Une épée de fer, simple et fiable.', 'description enregistrée : ' + result.arme);
+      await wait(200); await shot('n_description');
       // liste épinglée
       await js(`document.querySelector('#db-tabs button[data-tab="units"]').click()`); await wait(300);
       await js(`document.querySelector('.studio-pin').click()`);

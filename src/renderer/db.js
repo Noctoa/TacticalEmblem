@@ -471,6 +471,7 @@
   // ------------------------------------------------------------------
   // Définition des onglets « liste + fiche »
   // ------------------------------------------------------------------
+  const unitNames = new WeakMap();
   const TABS = {
     skills: {
       label: 'Compétences', list: () => db().skills, prefix: 'skill_',
@@ -485,7 +486,7 @@
             { key: 'name', label: 'Nom', type: 'text', live: true },
             { key: 'icon', label: 'Symbole (1 à 6 caractères, si pas d’icône)', type: 'text', placeholder: '✦' }] },
           { type: 'custom', render: (sk) => skillImageField(sk) },
-          { key: 'description', label: 'Description du créateur (facultative)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de la compétence.' },
+          { key: 'description', label: 'Description (affichée en jeu)', type: 'textarea', rows: 2, placeholder: 'Ce que fait la compétence, vu par le joueur.' },
           { type: 'heading', label: 'Effet' },
           { key: 'effect', label: 'Type d’effet', type: 'select', options: Skills.EFFECTS.map(e => ({ value: e.id, label: e.name })) },
           ...(s.effect === 'inflictStatus' ? [
@@ -618,6 +619,15 @@
     },
     units: {
       label: 'Unités', list: () => db().units, prefix: 'c_',
+      // nom changé : l'orateur suit dans tous les dialogues de la base (événements, camp, soutiens…)
+      onField: (key, u) => {
+        const was = unitNames.get(u);
+        if (key === 'name' && was && u.name && u.name.trim() && was !== u.name && !db().units.some(x => x !== u && x.name === was)) {
+          const n = Texts.renameSpeaker(db(), Editor.project().meta, was, u.name.trim());
+          if (n) UI.toast(`« ${was} » renommé en « ${u.name.trim()} » dans ${n} réplique(s).`);
+        }
+        if (u.name && u.name.trim()) unitNames.set(u, u.name.trim());
+      },
       sub: (u) => (unitView.by === 'class' ? Roster.seriesOf(u) : (byId(db().classes, u.classId) || {}).name) || '',
       create: () => {
         const cls = db().classes[0];
@@ -626,7 +636,7 @@
           inventory: cls ? (cls.defaultInventory || []).map(id => ({ id })) : [], portrait: '', bio: '',
           personalSkill: '', learnedSkills: [], equippedSkills: [], skillLearning: [] };
       },
-      fields: (u) => withPluginFields('units', u, [
+      fields: (u) => { if (!unitNames.has(u)) unitNames.set(u, u.name); return withPluginFields('units', u, [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'color', label: 'Couleur', type: 'color', compact: true }] },
         { key: 'series', label: 'Série', type: 'text', placeholder: 'ex. Fire Emblem 7, Final Fantasy VII, Original…', suggestions: () => Roster.seriesList(db()),
           help: 'Jeu ou univers d’origine du personnage. Sert à trier la liste des unités (Trier par › Série).' },
@@ -651,7 +661,7 @@
         { type: 'custom', render: faceField },
         { key: 'bio', label: 'Description', type: 'textarea', rows: 2 },
         { type: 'row', fields: [
-          { key: 'gender', label: 'Genre', type: 'select', empty: '—', options: [{ value: 'homme', label: 'Homme' }, { value: 'femme', label: 'Femme' }, { value: 'autre', label: 'Autre' }] },
+          { key: 'gender', label: 'Genre', type: 'select', empty: '—', options: Rules.GENDERS, help: 'Asexué : monstres, créatures… Ils seront insensibles par défaut aux effets de charme (à venir).' },
           { key: 'protagonist', label: "Personnage principal (choisit son partenaire à l'épilogue)", type: 'checkbox' }] },
         { type: 'custom', render: (u) => { const box = h('div', { 'data-gender-warning-box': true }); box.refill = () => { const cls = byId(db().classes, u.classId);
           box.replaceChildren(...(Rules.classGenderOk(cls, u.gender) ? [] : [h('p', { class: 'note warn', 'data-gender-warning': true }, `${cls.name} : ${Rules.genderLockText(cls).toLowerCase()} Change la classe ou le genre.`)])); }; box.refill(); return box; } },
@@ -668,7 +678,7 @@
         { type: 'heading', label: 'Inventaire' },
         { key: 'inventory', type: 'inventory', options: () => Editor.invOptions(), max: 5 },
         { type: 'info', text: "La première arme utilisable est équipée. « É » = emplacement équipé." }
-      ])
+      ]); }
     },
     classes: {
       label: 'Classes', list: () => db().classes, prefix: 'cls_',
@@ -679,7 +689,7 @@
         caps: { hp: 60, str: 20, mag: 20, skl: 20, spd: 20, lck: 30, def: 20, res: 20 }, defaultInventory: [], skillLearning: [] }),
       fields: () => [
         { key: 'name', label: 'Nom', type: 'text' },
-        { key: 'description', label: 'Rôle / description', type: 'textarea', rows: 2 },
+        { key: 'description', label: 'Description (affichée en jeu)', type: 'textarea', rows: 2, placeholder: 'Le rôle de la classe, vu par le joueur.' },
         { type: 'row', fields: [
           { key: 'moveType', label: 'Type de déplacement', type: 'select', options: mtypes },
           { key: 'mov', label: 'Déplacement', type: 'number', min: 1, max: 15 },
@@ -733,6 +743,7 @@
       fields: (w) => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'type', label: 'Type', type: 'select', options: wtypes }] },
         { type: 'custom', render: () => itemImageField(w, 'weapons') },
+        { key: 'description', label: 'Description (affichée en jeu)', type: 'textarea', rows: 2, placeholder: 'Une courte présentation de l’arme, affichée dans l’inventaire et en boutique.' },
         { type: 'heading', label: 'Caractéristiques' },
         { type: 'row', fields: [
           { key: 'rank', label: 'Niveau requis', type: 'select', empty: '— aucun (tous) —', options: Rules.RANKS.map(r => ({ value: r, label: r })),
@@ -777,6 +788,7 @@
       fields: (it) => [
         { key: 'name', label: 'Nom', type: 'text' },
         { type: 'custom', render: () => itemImageField(it, 'items') },
+        { key: 'description', label: 'Description (affichée en jeu)', type: 'textarea', rows: 2, placeholder: 'Ce que fait l’objet, affiché dans l’inventaire et en boutique.' },
         { type: 'row', fields: [
           { key: 'effect', label: 'Effet', type: 'select', options: [{ value: 'heal', label: 'Rend des PV' }, { value: 'boost', label: 'Augmente une stat (définitif)' }, { value: 'promotion', label: 'Permet une promotion' }, { value: 'key', label: 'Ouvre une serrure' }, { value: 'restore', label: 'Soigne une altération' }] },
           ...(['heal', 'boost'].includes(it.effect) ? [{ key: 'amount', label: 'Valeur', type: 'number', min: 1, max: 99 }] : []),
@@ -807,7 +819,7 @@
         const ranks = (max) => ['C', 'B', 'A', 'S'].slice(0, Rules.rankIndex(max || 'S')).map(r => ({ value: r, label: 'Rang ' + r }));
         const start = Rules.SUPPORT_RANKS[Rules.rankForPoints(Number(p.startPoints) || 0, cfg, p.maxRank)] || 'aucun';
         const convFields = ['C', 'B', 'A', 'S'].slice(0, Rules.rankIndex(p.maxRank || 'A')).map(r => ({
-          key: 'conversations.' + r, label: `Conversation ${r} (${cfg.thresholds[Rules.rankIndex(r) - 1]} pts)`, type: 'textarea', rows: 3, placeholder: 'Nom: réplique\nAutre nom: réplique' }));
+          key: 'conversations.' + r, label: `Conversation ${r} (${cfg.thresholds[Rules.rankIndex(r) - 1]} pts)`, type: 'textarea', rows: 3, placeholder: 'Nom: réplique\nAutre nom: réplique', speakers: (p) => [uName(p.a), uName(p.b)] }));
         return [
           { type: 'row', fields: [
             { key: 'a', label: 'Personnage', type: 'select', options: units },
@@ -889,7 +901,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['ultimates', 'Ultimes'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['supports', 'Affinités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['ultimates', 'Ultimes'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['sounds', 'Son'], ['plugins', 'Plugins'], ['system', 'Système']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -922,14 +934,10 @@
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
-    if (t === 'supports') { // les affinités se règlent dans la fiche des unités
-      const pair = id ? byId(db().supports || [], id) : (db().supports || [])[0];
-      if (pair) { openPairs.add(pair.id); id = pair.a; } else id = null;
-      t = 'units';
-    }
     if (t) tab = t;
     if (!tabDef(tab) && !order().some(([k]) => k === tab) && !['chapters', 'terrains'].includes(tab)) tab = 'units'; // onglet d'un plugin retiré
     if (id) selected[tab] = id;
+    if (window.TextsEditor) TextsEditor.close();
     plug.installed = null; // relu à l'ouverture (le projet a pu changer)
     changed = false;
     $('#db').classList.remove('hidden');
@@ -937,14 +945,15 @@
   }
   async function close() {
     $('#db').classList.add('hidden');
+    stopSound();
     document.body.dataset.view = 'map';
     animToken++;
     if (changed) await Editor.refresh();
   }
 
   /** Catégories de la barre latérale (façon Pokémon Studio) ; les onglets des plugins vont dans « Plugins ». */
-  const NAV_GROUPS = [['Données', ['units', 'classes', 'skills', 'ultimates', 'weapons', 'animations']],
-    ['Monde', ['tilesets', 'arcs']], ['Projet', ['resources', 'system']], ['Plugins', ['plugins']]];
+  const NAV_GROUPS = [['Données', ['units', 'supports', 'classes', 'skills', 'ultimates', 'weapons', 'animations']],
+    ['Monde', ['tilesets', 'arcs']], ['Projet', ['resources', 'sounds', 'system']], ['Plugins', ['plugins']]];
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
     document.body.dataset.view = tab === 'system' ? 'system' : 'db';
@@ -966,8 +975,8 @@
   // barre du haut : Nouveau / dupliquer / supprimer, sélecteur de l'élément (liste en menu déroulant, épinglable) ;
   // fiche : en-tête (image, nom, #id, badges, description) puis une carte par section du formulaire.
   const KIND_NAMES = { units: 'Unité', classes: 'Classe', skills: 'Compétence', ultimates: 'Ultime', weapons: 'Arme', items: 'Objet',
-    animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin' };
-  const DOCKED = new Set(['resources', 'plugins']); // listes riches (aperçus) : toujours visibles
+    animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin', sounds: 'Son', supports: 'Affinité' };
+  const DOCKED = new Set(['resources', 'plugins', 'sounds']); // listes riches (aperçus) : toujours visibles
   let pinned = store('tf.dbPinned') === '1';
   function studio(body) {
     body.classList.add('studio');
@@ -1012,6 +1021,13 @@
     if (tab === 'skills') return skillIcon(cur, 56);
     if (tab === 'ultimates') return ultimateIcon(cur, 56);
     if (tab === 'weapons' || tab === 'items') return armoryIcon(cur, tab, 48);
+    if (tab === 'supports') { // les deux personnages
+      const face = (uid) => { const u = byId(db().units, uid); const box = h('div', { class: 'hero-face' });
+        if (u && u.portrait) Render.loadImage(Editor.baseUrl(), u.portrait).then(img => box.replaceChildren(Faces.element(img, Render.imageUrl(Editor.baseUrl(), u.portrait), 'bust') || '')).catch(() => {});
+        else box.append(h('div', { class: 'hero-initial', style: { background: (u && u.color) || '' } }, ((u && u.name) || '?').slice(0, 1)));
+        return box; };
+      return h('div', { class: 'hero-pair' }, face(cur.a), h('span', { class: 'hero-heart' }, '♥'), face(cur.b));
+    }
     if (tab === 'units' && cur.portrait) {
       const box = h('div', { class: 'hero-face' });
       Render.loadImage(Editor.baseUrl(), cur.portrait).then(img => box.replaceChildren(Faces.element(img, Render.imageUrl(Editor.baseUrl(), cur.portrait), 'bust') || '')).catch(() => {});
@@ -1021,6 +1037,95 @@
       return h('div', { class: 'hero-initial', style: { background: cur.color || '' } }, (cur.name || '?').trim().slice(0, 1).toUpperCase());
     }
     return null;
+  }
+  /** Rendu en jeu d'une animation d'attaque : fond de combat, deux combattants, lecture (en boucle si voulu). */
+  function animScene(anim) {
+    const pref = (k, d) => store('tf.animScene.' + k) || d;
+    const save = (k, v) => { try { localStorage.setItem('tf.animScene.' + k, v); } catch (e) { /* stockage indisponible */ } };
+    const r = res(), keys = Object.keys(r.battlers || {});
+    const firstUnit = db().units.map(u => u.battler || (byId(db().classes, u.classId) || {}).battler).find(k => k && r.battlers[k]);
+    const st = { atk: pref('atk', firstUnit || keys[0] || ''), tgt: pref('tgt', keys.find(k => /brigand/i.test(k)) || keys[1] || keys[0] || ''),
+      bg: pref('bg', (r.battlebacks || [])[0] || ''), loop: pref('loop', '0') === '1', run: null, hitAt: 0, flash: 0, shake: 0, imgs: {} };
+    if (!r.battlers[st.atk]) st.atk = firstUnit || keys[0] || '';
+    if (!r.battlers[st.tgt]) st.tgt = keys[0] || '';
+    if (st.bg && !(r.battlebacks || []).includes(st.bg)) st.bg = (r.battlebacks || [])[0] || '';
+    const W = 720, H = 400, S = 3, GROUND = 300, X_ATK = 222, X_TGT = 498;
+    const canvas = h('canvas', { class: 'anim-scene', 'data-anim-scene': true, width: W, height: H });
+    const load = (path) => { if (!path) return null; if (st.imgs[path]) return st.imgs[path]; st.imgs[path] = 'loading'; Render.loadImage(Editor.baseUrl(), path).then(img => { st.imgs[path] = img; paint(); }).catch(() => { st.imgs[path] = null; }); return null; };
+    const img = (path) => { const v = st.imgs[path]; return v && v !== 'loading' ? v : (load(path), null); };
+    const actor = (g, key, x, flip, white) => {
+      const meta = r.battlers[key], im = meta && img(meta.image);
+      g.fillStyle = 'rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(x, GROUND + 1, 14 * S, 3 * S, 0, 0, Math.PI * 2); g.fill();
+      if (!im) { g.fillStyle = 'rgba(150,160,185,.55)'; g.beginPath(); g.roundRect(x - 18, GROUND - 120, 36, 120, 12); g.fill(); return; }
+      const frame = ((meta.anims && meta.anims.stance && meta.anims.stance.frames) || [0])[0];
+      const facingRight = (meta.facing || 'right') === 'right';
+      const fl = flip ? facingRight : !facingRight;
+      if (!white) return Sprites.drawBattlerFrame(g, meta, im, frame, x, GROUND, S, fl);
+      const [cw, ch] = meta.cell, off = document.createElement('canvas'); off.width = cw; off.height = ch;
+      const o = off.getContext('2d'); o.drawImage(im, (frame % meta.columns) * cw, Math.floor(frame / meta.columns) * ch, cw, ch, 0, 0, cw, ch);
+      o.globalCompositeOperation = 'source-atop'; o.fillStyle = '#fff'; o.fillRect(0, 0, cw, ch);
+      g.save(); g.translate(x, GROUND); if (fl) g.scale(-1, 1); g.drawImage(off, -meta.anchor[0] * S, -meta.anchor[1] * S, cw * S, ch * S); g.restore();
+    };
+    function paint() {
+      const g = canvas.getContext('2d');
+      g.imageSmoothingEnabled = false;
+      g.setTransform(1, 0, 0, 1, 0, 0);
+      const bg = st.bg && img(st.bg);
+      if (bg) { const k = Math.max(W / bg.naturalWidth, H / bg.naturalHeight); g.drawImage(bg, (W - bg.naturalWidth * k) / 2, (H - bg.naturalHeight * k) / 2, bg.naturalWidth * k, bg.naturalHeight * k); }
+      else { const grd = g.createLinearGradient(0, 0, 0, H); grd.addColorStop(0, '#2b3550'); grd.addColorStop(1, '#151820'); g.fillStyle = grd; g.fillRect(0, 0, W, H); }
+      g.save();
+      if (st.shake > 0.3) { g.translate((Math.random() - 0.5) * st.shake, (Math.random() - 0.5) * st.shake * 0.6); st.shake *= 0.88; }
+      actor(g, st.atk, X_ATK, false, false);
+      actor(g, st.tgt, X_TGT, true, performance.now() < st.flash);
+      if (st.run) st.run.draw(g);
+      g.restore();
+      if (st.run) st.run.drawScreenFlash(g, W, H);
+      if (st.hitAt && performance.now() - st.hitAt < 700) {
+        g.fillStyle = '#ffe680'; g.strokeStyle = '#3a2a10'; g.lineWidth = 4; g.font = '800 30px Inter, system-ui, sans-serif'; g.textAlign = 'center';
+        const y = GROUND - 150 - (performance.now() - st.hitAt) / 25; g.strokeText('12', X_TGT, y); g.fillText('12', X_TGT, y);
+      }
+    }
+    const pt = (x) => () => ({ x, y: GROUND - 24 * S, feet: GROUND, head: GROUND - 44 * S });
+    const play = () => {
+      if (!canvas.isConnected) return;
+      if (st.run && st.run.active) return;
+      st.hitAt = 0;
+      AnimPlayer.preload(Editor.baseUrl(), db().animations || []).then(() => {
+        const run = st.run = AnimPlayer.run({ list: db().animations || [], id: anim.id, baseUrl: Editor.baseUrl(), unit: () => S / 3,
+          source: pt(X_ATK), target: pt(X_TGT), screen: () => ({ x: W / 2, y: GROUND / 2 }),
+          onEvent: (ev) => {
+            if (ev.type === 'se') Music.seFile(ev.path);
+            else if (ev.type === 'shake') st.shake = Math.max(st.shake, ev.amount);
+            else if (ev.type === 'flash' && ev.scope === 'target') st.flash = performance.now() + ev.duration;
+          } });
+        playBtn.classList.add('on');
+        run.hit.then(() => { st.hitAt = performance.now(); });
+        const loop = () => {
+          if (!canvas.isConnected) return;
+          paint();
+          if (run.active || run.flashes.length || (st.hitAt && performance.now() - st.hitAt < 700)) requestAnimationFrame(loop);
+          else { st.run = null; playBtn.classList.remove('on'); paint(); if (st.loop) setTimeout(play, 350); }
+        };
+        requestAnimationFrame(loop);
+      });
+    };
+    const sel = (key, list, label, attrs) => {
+      const s = h('select', attrs || {}, list.map(o => h('option', { value: o.value }, o.label)));
+      s.value = st[key]; s.onchange = () => { st[key] = s.value; save(key, s.value); paint(); };
+      return h('label', { class: 'field' }, h('span', { class: 'field-label' }, label), s);
+    };
+    const battlers = keys.map(k => ({ value: k, label: resLabel(k, r.battlers[k]) })).sort((a, b) => a.label.localeCompare(b.label, 'fr'));
+    const backs = [{ value: '', label: '— ciel uni —' }].concat((r.battlebacks || []).map(f => ({ value: f, label: f.replace(/^ressources\/fonds-combat\//, '') })));
+    const playBtn = h('button', { class: 'primary', 'data-anim-scene-play': true, html: Icons.icon('play'), onclick: play }, 'Jouer l’animation');
+    const loopCb = h('input', { type: 'checkbox', 'data-anim-scene-loop': true });
+    loopCb.checked = st.loop; loopCb.onchange = () => { st.loop = loopCb.checked; save('loop', st.loop ? '1' : '0'); if (st.loop) play(); };
+    const box = h('div', { class: 'anim-scene-box' },
+      h('div', { class: 'anim-scene-head' }, h('b', {}, 'Rendu en combat'), playBtn, h('label', { class: 'anim-scene-loop' }, loopCb, ' En boucle')),
+      canvas,
+      h('div', { class: 'form-row anim-scene-opts' }, sel('atk', battlers, 'Attaquant'), sel('tgt', battlers, 'Cible'), sel('bg', backs, 'Fond de combat')),
+      h('p', { class: 'form-info' }, 'Aperçu à la taille du jeu : l’attaquant à gauche, la cible à droite (en jeu, l’animation est retournée quand l’attaquant est à droite). Les dégâts affichés sont fictifs.'));
+    requestAnimationFrame(paint);
+    return box;
   }
   function heroBadges(cur) {
     if (!cur) return [];
@@ -1033,6 +1138,10 @@
     } else if (tab === 'classes') {
       if (cur.tier !== undefined) out.push(['Recrue', 'Base', 'Promue', 'Spéciale'][cur.tier] || ('Rang ' + cur.tier));
       if (cur.mov) out.push('Dép. ' + cur.mov);
+    } else if (tab === 'supports') {
+      const cfg = Object.assign({}, Rules.DEFAULT_SUPPORT, Editor.project().meta.supports || {});
+      out.push('Rang au départ : ' + (Rules.SUPPORT_RANKS[Rules.rankForPoints(Number(cur.startPoints) || 0, cfg, cur.maxRank)] || 'aucun'));
+      out.push('Rang max ' + (cur.maxRank || 'A'));
     } else if (tab === 'weapons') {
       const wt = Rules.WEAPON_TYPES.find(t => t.id === cur.type);
       if (wt) out.push(wt.name);
@@ -1067,6 +1176,7 @@
       heroExtra = h('div', { class: 'hero-extra' });
       hero = h('section', { class: 'studio-hero' }, h('div', { class: 'hero-main' }, vis ? h('div', { class: 'hero-visual' }, vis) : null, text), heroExtra);
       while (i < kids.length && !isForm(kids[i])) heroExtra.append(kids[i++]);
+      if (tab === 'animations' && cur) heroExtra.append(animScene(cur));
       if (!heroExtra.childNodes.length) heroExtra.remove();
     }
     let sawForm = false, rest = null;
@@ -1126,6 +1236,7 @@
     if (tab === 'chapters') return renderChapters(body);
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
+    if (tab === 'sounds') return renderSounds(body);
     if (tab === 'plugins') return renderPlugins(body);
     if (tab === 'arcs') return renderArcs(body);
   }
@@ -2516,6 +2627,96 @@
   // ------------------------------------------------------------------
   // Système
   // ------------------------------------------------------------------
+  // ---------- onglet Son : écouter les musiques, jingles et effets du projet ----------
+  const snd = { sel: '', query: '', audio: null, playing: '', timer: null };
+  const SOUND_KINDS = [['bgm', 'Musiques', 'ressources/musiques'], ['me', 'Jingles', 'ressources/jingles'], ['se', 'Effets sonores', 'ressources/sons']];
+  const AUDIO_LABELS = { playerPhase: 'phase joueur', allyPhase: 'phase alliée', enemyPhase: 'phase ennemie', battlePlayer: 'combat (le joueur attaque)',
+    battleEnemy: 'combat (l’ennemi attaque)', battleBoss: 'combat contre un boss', levelUp: 'montée de niveau', victory: 'victoire', gameOver: 'game over' };
+  function stopSound() {
+    if (snd.audio) { snd.audio.pause(); snd.audio = null; }
+    snd.playing = ''; clearInterval(snd.timer);
+    document.querySelectorAll('[data-sound-play].on').forEach(b => { b.classList.remove('on'); b.innerHTML = Icons.icon('play'); });
+  }
+  function playSound(path, onTick) {
+    stopSound();
+    const a = new Audio(Render.imageUrl(Editor.baseUrl(), path));
+    a.volume = (Editor.project().meta.audio || {}).volume === undefined ? 0.8 : Editor.project().meta.audio.volume;
+    a.play().catch(() => {});
+    snd.audio = a; snd.playing = path;
+    a.addEventListener('ended', () => { if (snd.audio === a) stopSound(); });
+    if (onTick) snd.timer = setInterval(() => onTick(a), 200);
+    document.querySelectorAll('[data-sound-play]').forEach(b => { const on = b.dataset.soundPlay === path; b.classList.toggle('on', on); b.innerHTML = Icons.icon(on ? 'stop' : 'play'); });
+    return a;
+  }
+  function soundUsage(path) {
+    const meta = Editor.project().meta, out = [];
+    for (const [k, v] of Object.entries(meta.audio || {})) {
+      if (v === path) out.push('Système : ' + (AUDIO_LABELS[k] || k));
+      if (k === 'se' && v && typeof v === 'object') for (const [sk, sv] of Object.entries(v)) if (sv === path) out.push('Son du jeu : ' + ((Music.SE_KEYS.find(x => x[0] === sk) || [])[1] || sk));
+    }
+    if (meta.title && meta.title.music === path) out.push('Écran titre');
+    if (meta.lobby && meta.lobby.music === path) out.push('Camp');
+    for (const ch of db().chapters || []) for (const [k, v] of Object.entries(ch.music || {})) if (v === path) out.push(`Acte « ${ch.name} » : ${AUDIO_LABELS[k] || k}`);
+    return out;
+  }
+  const fmtTime = (t) => isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '–:––';
+  function renderSounds(body) {
+    const r = res();
+    const all = SOUND_KINDS.flatMap(([k]) => (r[k] || []).map(f => ({ kind: k, path: f })));
+    if (!all.some(x => x.path === snd.sel)) snd.sel = all[0] ? all[0].path : '';
+    const items = h('div', { class: 'db-list-items' });
+    const nameOf = (f) => f.split('/').pop().replace(/\.[a-z0-9]+$/i, '');
+    const fill = () => {
+      items.replaceChildren();
+      const q = foldText(snd.query);
+      for (const [k, label, root] of SOUND_KINDS) {
+        const list = (r[k] || []).filter(f => !q || foldText(f).includes(q));
+        if (!list.length) continue;
+        items.append(h('div', { class: 'db-group' }, label, h('span', {}, String(list.length))));
+        let folder = null;
+        for (const f of list.slice().sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }))) {
+          const sub = f.slice(root.length + 1).split('/').slice(0, -1).join('/');
+          if (sub !== folder) { folder = sub; if (sub) items.append(h('div', { class: 'pick-group' }, sub)); }
+          items.append(h('div', { class: 'db-item snd-item' + (f === snd.sel ? ' on' : ''), 'data-sound': f, title: f, onclick: () => { snd.sel = f; renderBody(); } },
+            h('button', { class: 'mini' + (snd.playing === f ? ' on' : ''), 'data-sound-play': f, title: 'Écouter', html: Icons.icon(snd.playing === f ? 'stop' : 'play'),
+              onclick: (e) => { e.stopPropagation(); if (snd.playing === f) stopSound(); else playSound(f); } }),
+            h('span', {}, nameOf(f)), soundUsage(f).length ? h('span', { class: 'meta', title: soundUsage(f).join('\n') }, '●') : null));
+        }
+      }
+      if (!items.childNodes.length) items.append(h('p', { class: 'db-empty' }, all.length ? 'Aucun son ne correspond.' : 'Aucun son dans le projet.'));
+    };
+    fill();
+    const search = h('input', { type: 'search', placeholder: 'Rechercher une musique ou un son…', value: snd.query, 'data-sound-search': true, oninput: (e) => { snd.query = e.target.value; fill(); } });
+    body.append(h('div', { class: 'db-list' }, h('div', { class: 'roster-tools' }, search), items, h('div', { class: 'db-list-actions' },
+      h('button', { class: 'small', title: 'Ouvrir ressources/musiques', onclick: () => tf.openResourceFolder(Editor.dir(), 'ressources/musiques') }, 'Ouvrir le dossier'),
+      h('button', { class: 'small', title: 'Relire les fichiers ajoutés', onclick: async () => { await Editor.rescanResources(); renderBody(); } }, 'Rescanner'))));
+    const pane = h('div', { class: 'db-form' });
+    body.append(pane);
+    if (!snd.sel) { pane.append(h('div', { class: 'db-empty' }, 'Ajoute des fichiers .ogg, .mp3, .wav ou .m4a dans ressources/musiques, ressources/jingles ou ressources/sons.')); return; }
+    const kind = (all.find(x => x.path === snd.sel) || {}).kind;
+    const kindLabel = (SOUND_KINDS.find(x => x[0] === kind) || [])[1] || '';
+    const time = h('span', { class: 'snd-time' }, '0:00 / –:––');
+    const bar = h('input', { type: 'range', min: 0, max: 1000, value: 0, class: 'snd-bar', 'data-sound-seek': true });
+    const tick = (a) => { if (snd.audio !== a) return; time.textContent = fmtTime(a.currentTime) + ' / ' + fmtTime(a.duration); if (!bar.matches(':active')) bar.value = a.duration ? Math.round(a.currentTime / a.duration * 1000) : 0; };
+    bar.addEventListener('input', () => { if (snd.audio && snd.audio.duration) snd.audio.currentTime = bar.value / 1000 * snd.audio.duration; });
+    const big = h('button', { class: 'primary snd-big', 'data-sound-play': snd.sel, html: Icons.icon(snd.playing === snd.sel ? 'stop' : 'play'), title: 'Écouter / arrêter',
+      onclick: () => { if (snd.playing === snd.sel) stopSound(); else { const a = playSound(snd.sel, tick); a.addEventListener('loadedmetadata', () => tick(a)); } } });
+    if (snd.playing === snd.sel && snd.audio) { clearInterval(snd.timer); const a = snd.audio; snd.timer = setInterval(() => tick(a), 200); tick(a); }
+    else { const probe = new Audio(Render.imageUrl(Editor.baseUrl(), snd.sel)); probe.preload = 'metadata'; probe.addEventListener('loadedmetadata', () => { if (!snd.playing || snd.playing !== snd.sel) time.textContent = '0:00 / ' + fmtTime(probe.duration); }); }
+    const usage = soundUsage(snd.sel);
+    pane.append(h('h2', {}, nameOf(snd.sel), h('span', { class: 'id' }, snd.sel.replace(/^ressources\//, ''))),
+      h('div', { class: 'snd-player' }, big, h('div', { class: 'snd-track' }, bar, time)),
+      h('div', { class: 'form' },
+        h('div', { class: 'form-heading' }, 'Utilisation'),
+        usage.length ? h('ul', { class: 'snd-usage' }, usage.map(u => h('li', {}, u))) : h('p', { class: 'form-info' }, 'Pas encore utilisé : choisis-le dans Système › Musique, dans la musique d’un acte (Chapitres et actes) ou dans les réglages du camp.'),
+        kind === 'bgm' || kind === 'me' ? h('div', { class: 'form-heading' }, 'Utiliser comme…') : null,
+        kind === 'bgm' || kind === 'me' ? h('div', { class: 'chips snd-assign' }, (kind === 'bgm' ? ['playerPhase', 'allyPhase', 'enemyPhase', 'battlePlayer', 'battleEnemy', 'battleBoss'] : ['levelUp', 'victory', 'gameOver']).map(k => {
+          const meta = Editor.project().meta; meta.audio = meta.audio || {};
+          return h('button', { class: 'chip' + (meta.audio[k] === snd.sel ? ' on' : ''), 'data-sound-assign': k, onclick: () => { meta.audio[k] = meta.audio[k] === snd.sel ? '' : snd.sel; change(); renderBody(); } }, AUDIO_LABELS[k]);
+        })) : null,
+        h('p', { class: 'form-info' }, kindLabel + ' · le volume suit le réglage « Volume » de Système › Musique.')));
+  }
+
   function audioOpts(kind) {
     const r = res();
     return (r[kind] || []).concat(kind === 'me' ? (r.bgm || []) : []).map(f => ({ value: f, label: f.replace(/^ressources\//, '') }));

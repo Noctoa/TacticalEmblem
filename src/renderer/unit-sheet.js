@@ -125,7 +125,7 @@
     (u.inventory || []).forEach((slot, i) => {
       const e = R.getEntry(G.db, slot.id), d = e ? e.def : null;
       const isW = e && e.kind === 'weapon';
-      list.append(h('div', { class: 'rd-item' + (eq && eq.index === i ? ' eq' : '') },
+      list.append(h('div', { class: 'rd-item' + (eq && eq.index === i ? ' eq' : ''), title: d && d.description ? d.description : null },
         isW ? weaponIcon(d) : weaponIcon(d ? { image: d.image } : null),
         h('span', { class: 'rd-item-name' }, d ? d.name : slot.id), eq && eq.index === i ? h('i', {}, 'E') : null,
         h('b', {}, slot.uses ? String(slot.uses) : '∞')));
@@ -146,7 +146,7 @@
     const list = h('div', { class: 'rd-list' });
     ids.forEach((id, i) => {
       const s = R.byId(catalogue, id); if (!s) return;
-      list.append(h('div', { class: 'rd-item' + (i === 0 && id === u.personalSkill ? ' personal' : ''), title: Skills.describe(s) },
+      list.append(h('div', { class: 'rd-item' + (i === 0 && id === u.personalSkill ? ' personal' : ''), title: (s.description ? s.description + '\n' : '') + Skills.describe(s) },
         self.SkillIcons ? h('span', { class: 'rd-skillbox' }, SkillIcons.element(s, 32, 'rd-skill')) : h('span', { class: 'rd-icon rd-icon-txt' }, s.icon || '✦'),
         h('span', { class: 'rd-item-name' }, s.name), i === 0 && id === u.personalSkill ? h('i', {}, 'P') : null));
     });

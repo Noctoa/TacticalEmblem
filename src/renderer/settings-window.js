@@ -139,6 +139,17 @@
       });
       body.append(h('label', { class: 'st-check' }, h('span', {}, 'Difficulté de l’IA ennemie'), select), description,
         h('p', { class: 'st-info' }, 'S’applique aux prochaines décisions ennemies, sans changer leurs statistiques ni leurs chances de réussite. Les alliés conservent une IA normale. Ce choix est conservé quand tu sauvegardes la partie.'));
+      const tx = G.project && G.project.texts;
+      if (tx && (tx.languages || []).length > 1) { // langue des textes (outil Textes de l'éditeur)
+        const lang = h('select', { class: 'st-focus', 'data-language': '' }, tx.languages.map(l => h('option', { value: l.code }, l.name)));
+        lang.value = tx.languages.some(l => l.code === G.settings.language) ? G.settings.language : tx.main;
+        lang.addEventListener('change', () => {
+          G.settings.language = lang.value; api.Music.se('confirm');
+          try { localStorage.setItem('tf.language:' + (G.project.meta.name || ''), lang.value); } catch (e) { /* stockage indisponible */ }
+        });
+        body.append(h('label', { class: 'st-check' }, h('span', {}, 'Langue'), lang),
+          h('p', { class: 'st-info' }, 'Dialogues, noms et descriptions s’affichent dans cette langue (la langue principale du jeu si une traduction manque). Les noms changent au prochain chargement.'));
+      }
       const weather = h('input', { type: 'checkbox', class: 'st-focus', 'data-weather-effects': '' });
       weather.checked = G.settings.weatherEffects !== false;
       weather.addEventListener('change', () => { G.settings.weatherEffects = weather.checked; api.Music.se('confirm'); });

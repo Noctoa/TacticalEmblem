@@ -1688,17 +1688,17 @@
     const b = e.target.closest('[data-rail]');
     if (!b || !S.project) return;
     const r = b.dataset.rail;
-    if (r === 'map') DBEditor.close();
+    if (r === 'map') { DBEditor.close(); TextsEditor.close(); }
     else if (r === 'db') DBEditor.open(document.body.dataset.view === 'system' ? 'units' : undefined);
     else if (r === 'system') DBEditor.open('system');
     else if (r === 'play') playtest();
     else if (r === 'save') cmdSave();
-    else if (r === 'texts') UI.toast('Textes et dialogues : prochaine étape de la refonte de l’interface.');
+    else if (r === 'texts') TextsEditor.open();
   });
 
   document.addEventListener('keydown', (e) => {
     if (!S.project || isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (!$('#db').classList.contains('hidden') || document.querySelector('.modal-back')) return;
+    if (!$('#db').classList.contains('hidden') || !$('#texts').classList.contains('hidden') || document.querySelector('.modal-back')) return;
     const k = e.key.toLowerCase();
     const tools = { b: 'pencil', r: 'rect', f: 'fill', e: 'eraser', i: 'picker' };
     if (tools[k] && S.mode !== 'units') { setTool(tools[k]); e.preventDefault(); }
@@ -1784,6 +1784,15 @@
    * Musiques Fire Emblem (ressources/musiques/FE3…FE13 et ressources/jingles/FE5) : copiées une seule fois dans un
    * ancien projet, sans toucher aux fichiers existants ni aux musiques déjà choisies.
    */
+  /** Textes du jeu ajoutés aux CSV (outil Textes) à l'ouverture : à enregistrer pour écrire textes/*.csv. */
+  function migrateTexts() {
+    const sync = S.project.textsSync;
+    delete S.project.textsSync;
+    if (!sync) return;
+    markDirty();
+    if (sync.added) UI.toast(`Textes du jeu : ${sync.added} texte(s) ajouté(s) aux fichiers CSV (outil Textes). Enregistre pour écrire le dossier textes/.`);
+    if (sync.updated) UI.toast(`Textes du jeu : ${sync.updated} texte(s) modifié(s) dans les CSV repris dans la base.`);
+  }
   async function migrateMusic() {
     const meta = S.project.meta;
     if ((meta.pluginMigrations || []).includes('musiques-fe')) return;
@@ -1836,6 +1845,7 @@
     await migrateBattlebacks();
     await migrateAnimations();
     await migrateMusic();
+    migrateTexts();
     migrateUltimates();
     // icônes des compétences (img/skills) : les compétences de base d'un ancien projet reçoivent la leur (une icône retirée vaut '')
     let icons = 0;

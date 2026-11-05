@@ -254,7 +254,7 @@
     for (const k of STATS) stats[k] = (ch.stats && ch.stats[k] !== undefined) ? ch.stats[k] : 0;
     return {
       uid: 'u' + (uidCounter++), team: team || 'player', sourceId: ch.id, name: ch.name, convoy: !!ch.convoy,
-      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp, gender: ch.gender || '', wexp: initialWexp(ch, cls, db),
+      classId: ch.classId, level: ch.level || 1, exp: 0, stats, hp: stats.hp, gender: genderOf(ch, cls), wexp: initialWexp(ch, cls, db),
       growths: Object.assign({}, ch.growths || {}), inventory: buildInventory(ch.inventory, db),
       ...Skills.initialLoadout(ch, cls, db.skills),
       mov: (cls ? cls.mov : 5) + (ch.movBonus || 0), moveType: cls ? cls.moveType : 'foot',
@@ -286,7 +286,7 @@
     return {
       uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || character?.name || cls.name,
       ...(character ? { characterId: character.id, ...ultimateOf(character, db) } : {}),
-      classId: cls.id, level, exp: 0, stats, hp: stats.hp, growths: Object.assign({}, character ? character.growths || {} : cls.growths || {}),
+      classId: cls.id, level, exp: 0, stats, hp: stats.hp, gender: genderOf(character, cls), growths: Object.assign({}, character ? character.growths || {} : cls.growths || {}),
       ...Skills.initialLoadout(Object.assign({}, skillSource, { level }), cls, db.skills),
       inventory: buildInventory(inv, db), mov: cls.mov + (character?.movBonus || 0), moveType: cls.moveType,
       crossWater: Movement.classCrossesWater(cls),
@@ -871,13 +871,25 @@
    * Classe réservée à un genre (classe.gender : 'homme' | 'femme') : refusée seulement à l'autre genre ; un personnage
    * sans genre (ou « autre ») n'est pas bloqué.
    */
-  const GENDER_LOCKS = [{ value: 'homme', label: 'Hommes' }, { value: 'femme', label: 'Femmes' }];
+  const GENDER_LOCKS = [{ value: 'homme', label: 'Hommes' }, { value: 'femme', label: 'Femmes' }, { value: 'asexue', label: 'Asexués (monstres…)' }];
+  /** Genres d'un personnage ; « asexué » : monstres, créatures… (immunisés par défaut aux futurs effets de charme). */
+  const GENDERS = [{ value: 'homme', label: 'Homme' }, { value: 'femme', label: 'Femme' }, { value: 'asexue', label: 'Asexué' }, { value: 'autre', label: 'Autre' }];
+  const LOCKED = ['homme', 'femme', 'asexue'];
   function classGenderOk(cls, gender) {
     const lock = cls && cls.gender;
-    if (lock !== 'homme' && lock !== 'femme') return true;
-    return !(gender === 'homme' || gender === 'femme') || gender === lock;
+    if (!LOCKED.includes(lock)) return true;
+    return !LOCKED.includes(gender) || gender === lock;
   }
-  const genderLockText = (cls) => (cls && cls.gender === 'femme' ? 'Classe réservée aux femmes.' : cls && cls.gender === 'homme' ? 'Classe réservée aux hommes.' : '');
+  const genderLockText = (cls) => (cls && cls.gender === 'femme' ? 'Classe réservée aux femmes.' : cls && cls.gender === 'homme' ? 'Classe réservée aux hommes.'
+    : cls && cls.gender === 'asexue' ? 'Classe réservée aux personnages asexués.' : '');
+  /** Genre effectif : celui du personnage, sinon « asexué » si sa classe l'est (monstres). */
+  const genderOf = (unit, cls) => (unit && unit.gender) || (cls && cls.gender === 'asexue' ? 'asexue' : '');
+  /** Insensible aux charmes (mécanique à venir) : les personnages asexués, par défaut. */
+  function charmImmune(unit, db) {
+    if (!unit) return false;
+    if (unit.charmImmune !== undefined) return !!unit.charmImmune;
+    return genderOf(unit, db && byId(db.classes || [], unit.classId)) === 'asexue';
+  }
 
   /** Ajoute l'exp ; renvoie les montées de niveau et les compétences nouvellement apprises. */
   function gainExp(unit, amount, db, rng, settings) {
@@ -1062,7 +1074,7 @@
 
   return {
     RANKS, RANK_WEXP, MAX_WEXP, rankOfWexp, wexpOf, rankOf, meetsRank, rankProgress, initialWexp, gainWexp,
-    expMultiplier, expFor, GENDER_LOCKS, classGenderOk, genderLockText,
+    expMultiplier, expFor, GENDER_LOCKS, GENDERS, classGenderOk, genderLockText, genderOf, charmImmune,
     STATS, STAT_LABELS, MOVE_TYPES, WEAPON_TYPES, EFFECT_CATEGORIES, MAGIC_TYPES, TRIANGLE, IMPASSABLE, DEFAULT_SETTINGS, GID_MASK,
     AI_DIFFICULTIES, normalizeAiDifficulty,
     clamp, dist, key, byId, makeRng, triangle, resolveGid, buildTerrainGrid, getEntry, canWield,

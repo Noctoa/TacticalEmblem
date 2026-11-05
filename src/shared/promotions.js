@@ -70,8 +70,9 @@
       if (unit.level < row.minLevel) reasons.push('Niveau ' + row.minLevel + ' requis.');
       // classe réservée à un genre (Rules.classGenderOk) : refusée à l'autre genre seulement
       const g = unit.gender || ((db.units || []).find(ch => ch.id === unit.sourceId) || {}).gender;
-      if (target && (target.gender === 'homme' || target.gender === 'femme') && (g === 'homme' || g === 'femme') && g !== target.gender)
-        reasons.push(target.gender === 'femme' ? 'Classe réservée aux femmes.' : 'Classe réservée aux hommes.');
+      const LOCKS = ['homme', 'femme', 'asexue'];
+      if (target && LOCKS.includes(target.gender) && LOCKS.includes(g) && g !== target.gender)
+        reasons.push(target.gender === 'femme' ? 'Classe réservée aux femmes.' : target.gender === 'homme' ? 'Classe réservée aux hommes.' : 'Classe réservée aux personnages asexués.');
       const index = row.itemId ? (itemIndex === undefined ? unit.inventory.findIndex(slot => slot.id === row.itemId && slot.uses > 0) : itemIndex) : -1;
       if (row.itemId && (index < 0 || !unit.inventory[index] || unit.inventory[index].uses <= 0)) reasons.push('Objet requis : ' + ((byId(db.items, row.itemId) || {}).name || row.itemId) + ' dans l’inventaire.');
       return { row, target, itemIndex: index, available: reasons.length === 0, reasons };

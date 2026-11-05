@@ -344,7 +344,8 @@
           for (const it of stock) {
             const can = (G.campaign.gold || 0) >= it.price && !full;
             body.append(h('div', { class: 'lp-row' + (can ? '' : ' off') },
-              h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, it.def.name), h('div', { class: 'lp-sub' }, kindOf(it.def) + (it.def.uses ? ` · ${it.def.uses} utilisations` : ''))),
+              h('div', { class: 'lp-main' }, h('div', { class: 'lp-name' }, it.def.name), h('div', { class: 'lp-sub' }, kindOf(it.def) + (it.def.uses ? ` · ${it.def.uses} utilisations` : '')),
+                it.def.description ? h('div', { class: 'lp-desc' }, it.def.description) : null),
               h('span', { class: 'lp-price' }, UI.money(it.price, UI.GOLD_ICON, 'Or')),
               h('button', { class: 'lp-go lp-focus', disabled: !can, onclick: () => buy(it.id) }, 'Acheter')));
           }

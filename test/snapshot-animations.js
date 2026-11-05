@@ -55,7 +55,7 @@ module.exports = (editor, openPlaytest) => {
       const before = await js(`JSON.stringify(Editor.db().animations.find(a => a.id === 'anim_fire_hit').frames[4].cells.at(-1))`);
       await js(`(() => {
         document.querySelector('[data-anim-stage]').scrollIntoView({ block: 'center' }); // visible quels que soient les panneaux dépliés au-dessus
-        const cv = document.querySelector('[data-anim-stage]'), r = cv.getBoundingClientRect(), z = r.width / AnimationEditor.STAGE.w;
+        const cv = document.querySelector('[data-anim-stage]'), r = cv.getBoundingClientRect(), z = cv.clientWidth / AnimationEditor.STAGE.w; // même échelle que l’éditeur (largeur entière)
         const c = Editor.db().animations.find(a => a.id === 'anim_fire_hit').frames[4].cells.at(-1); // la cellule du dessus
         const x = r.left + (480 + c.x) * z, y = r.top + (222 + 72 + c.y) * z;
         cv.dispatchEvent(new MouseEvent('mousedown', { clientX: x, clientY: y, bubbles: true }));

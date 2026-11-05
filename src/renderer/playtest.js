@@ -38,6 +38,9 @@
       G.project = payload.project; G.baseUrl = payload.baseUrl; G.db = G.project.db;
       G.resources = G.project.resources || { characters: {}, battlers: {} };
       G.settings = Object.assign({}, R.DEFAULT_SETTINGS, G.project.meta.settings || {});
+      // textes du jeu dans la langue choisie (outil Textes : noms, descriptions, dialogues de la base)
+      try { const l = localStorage.getItem('tf.language:' + (G.project.meta.name || '')); if (l) G.settings.language = l; } catch (e) { /* stockage indisponible */ }
+      if (self.Texts && G.project.texts) Texts.localizeDb(G.project.texts, G.db, G.project.meta, G.settings.language || G.project.texts.main);
       const cv = G.project.meta.convoy || {};
       G.convoyCap = cv.capacity || 100;
       G.convoy = (cv.items || []).map(e => {
@@ -1002,6 +1005,7 @@
         const card = (id, label) => {
           const skill = R.byId(catalogue, id);
           return h('div', { class: 'game-skill-card' }, h('b', {}, label + ' — ', ...(skill ? skillLabel(skill) : ['Libre'])),
+            skill && skill.description ? h('p', { class: 'game-skill-desc' }, skill.description) : null,
             skill ? h('p', {}, Skills.describe(skill)) : null);
         };
         box.append(h('h3', {}, 'Compétences de ' + unit.name),
@@ -1140,11 +1144,14 @@
   function renderMenu() {
     const el = $('#menu'); el.innerHTML = '';
     G.menu.items.forEach((it, i) => {
-      const b = h('button', { class: (i === G.menu.index ? 'on' : '') + (it.disabled ? ' disabled' : '') }, it.label, it.sub ? h('small', {}, it.sub) : null);
+      const b = h('button', { class: (i === G.menu.index ? 'on' : '') + (it.disabled ? ' disabled' : ''), title: it.help || null }, it.label, it.sub ? h('small', {}, it.sub) : null);
       b.addEventListener('mouseenter', () => { if (!it.disabled) { G.menu.index = i; renderMenu(); } });
       b.addEventListener('mousedown', (e) => { e.stopPropagation(); if (e.button === 0 && !it.disabled) it.action(); if (e.button === 2) cancel(); });
       el.append(b);
     });
+    // description de l'objet / de l'arme sélectionné (Base de données › champ Description)
+    const cur = G.menu.items[G.menu.index];
+    if (cur && cur.help) el.append(h('p', { class: 'menu-help', 'data-menu-help': true }, cur.help));
   }
   function hideMenu() { $('#menu').classList.add('hidden'); G.menu = null; }
   function menuMove(d) {
@@ -1438,7 +1445,7 @@
       const buyCol = h('div', { class: 'cv-col' }, h('h4', {}, 'Acheter'),
         h('div', { class: 'cv-scroll' }, stock.length ? stock.map(it => {
           const blocked = gold < it.price ? 'or insuffisant' : full && !convoyFree ? 'inventaire et convoi pleins' : '';
-          return h('button', { class: 'cv-item bshop-item', disabled: !!blocked, title: blocked, 'data-shop-buy': it.id, onmousedown: (e) => { e.stopPropagation(); buy(it); } },
+          return h('button', { class: 'cv-item bshop-item', disabled: !!blocked, title: [it.def.description, blocked].filter(Boolean).join('\n'), 'data-shop-buy': it.id, onmousedown: (e) => { e.stopPropagation(); buy(it); } },
             h('span', {}, it.def.name), h('small', {}, kind(it.def) + (it.def.uses ? ` · ${it.def.uses}` : '')), h('b', {}, UI.money(it.price, UI.GOLD_ICON, 'Or')));
         }) : h('p', { class: 'cv-empty' }, 'Le marchand n’a rien à vendre.')));
       const sellCol = h('div', { class: 'cv-col' }, h('h4', {}, `Vendre — ${u.name} ${u.inventory.length}/5`),
@@ -1479,22 +1486,22 @@
     const items = u.inventory.map((slot, i) => {
       const it = iOf(slot), w = wOf(slot);
       if (it) {
-        if (it.effect === 'key') return { label: it.name, sub: `${slot.uses} · à utiliser depuis Coffre / Porte`, disabled: true, action: () => {} };
+        if (it.effect === 'key') return { label: it.name, help: it.description, sub: `${slot.uses} · à utiliser depuis Coffre / Porte`, disabled: true, action: () => {} };
         if (it.effect === 'promotion') {
           const choices = Promotions.options(u, G.db, i), available = choices.some(o => o.available);
-          return { label: it.name, sub: available ? `${slot.uses} · choisir une promotion` : choices.length ? choices[0].reasons.join(' ') : 'Aucune branche ne demande cet objet.',
+          return { label: it.name, help: it.description, sub: available ? `${slot.uses} · choisir une promotion` : choices.length ? choices[0].reasons.join(' ') : 'Aucune branche ne demande cet objet.',
             disabled: !available, action: () => openPromotion(u, i) };
         }
         const disabled = (it.effect === 'heal' && u.hp >= u.stats.hp) || (it.effect === 'restore' && !Statuses.canCure(u, it.cure));
-        return { label: it.name, sub: `${slot.uses}`, disabled, action: () => { hideMenu(); useItem(u, i); } };
+        return { label: it.name, help: it.description, sub: `${slot.uses}`, disabled, action: () => { hideMenu(); useItem(u, i); } };
       }
-      return { label: w ? w.name : slot.id, sub: w ? `${slot.uses || '∞'}` : '', disabled: true, action: () => {} };
+      return { label: w ? w.name : slot.id, help: w && w.description, sub: w ? `${slot.uses || '∞'}` : '', disabled: true, action: () => {} };
     });
     showMenu(items, u, 'items');
   }
   function openEquip(u) {
     hideMenu();
-    const items = R.attackWeapons(u, G.db).map(w => ({ label: w.weapon.name, sub: `${u.inventory[w.index].uses || '∞'}`, action: () => { R.equip(u, w.index); hideMenu(); lastInfoKey = ''; openActionMenu(); } }));
+    const items = R.attackWeapons(u, G.db).map(w => ({ label: w.weapon.name, help: w.weapon.description, sub: `${u.inventory[w.index].uses || '∞'}`, action: () => { R.equip(u, w.index); hideMenu(); lastInfoKey = ''; openActionMenu(); } }));
     showMenu(items, u, 'items');
   }
 
@@ -2579,8 +2586,13 @@
       || (() => { const c = G.db.units.find(c => c.name.toLowerCase() === n); return c ? { name: c.name, sourceId: c.id, team: 'player', color: c.color, portrait: c.portrait } : null; })();
   }
 
+  /** Références de l'outil Textes (@fichier#id, {@fichier#id}) remplacées par le texte dans la langue choisie. */
+  function textsOf(script) {
+    const tx = G.project && G.project.texts;
+    return tx && self.Texts ? Texts.resolve(script, tx, G.settings.language || tx.main, G.db) : script;
+  }
   function playDialogue(script) {
-    const lines = avatarText(script).split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+    const lines = avatarText(textsOf(script)).split('\n').map(l => l.trim()).filter(Boolean).map(l => {
       const m = /^([^:]{1,40}):\s*(.*)$/.exec(l);
       return m ? { who: m[1].trim(), text: m[2] } : { who: '', text: l };
     });

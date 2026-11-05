@@ -29,6 +29,7 @@ const Ultimates = require('../shared/ultimates.js');
 const Weather = require('../shared/weather.js');
 const SideObjectives = require('../shared/side-objectives.js');
 const Rules = require('../shared/rules.js');
+const Texts = require('../shared/texts.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -48,6 +49,51 @@ function writeJson(file, data) {
   const tmp = file + '.tmp';
   fs.writeFileSync(tmp, JSON.stringify(data, null, 1), 'utf8');
   fs.renameSync(tmp, file); // écriture atomique
+}
+
+// ---------- textes (outil Textes) : textes/index.json + un CSV par fichier ----------
+const TEXT_DIR = 'textes';
+/** Un dossier par catégorie pour les textes de la base (textes/units/name.csv), sinon textes/<id>.csv. */
+function textCsvPath(root, f) {
+  return f.kind === 'base' && f.field && Texts.FILE_ID.test(f.ref) && Texts.FILE_ID.test(f.field) ? path.join(root, f.ref, f.field + '.csv') : path.join(root, f.id + '.csv');
+}
+function listCsv(root, rel) {
+  const out = [];
+  for (const e of fs.readdirSync(path.join(root, rel), { withFileTypes: true })) {
+    const r = rel ? path.join(rel, e.name) : e.name;
+    if (e.isDirectory()) out.push(...listCsv(root, r)); else if (e.name.endsWith('.csv')) out.push(r);
+  }
+  return out;
+}
+function readTexts(dir) {
+  const root = path.join(dir, TEXT_DIR);
+  const index = readJson(path.join(root, 'index.json'), null);
+  if (!index) return Texts.empty();
+  const texts = Texts.normalize({ languages: index.languages, main: index.main, files: (index.files || []).map(f => Object.assign({}, f, { rows: [] })) });
+  for (const f of texts.files) {
+    const file = textCsvPath(root, f);
+    if (!Texts.FILE_ID.test(f.id) || !fs.existsSync(file)) continue;
+    f.rows = Texts.rowsFromCsv(fs.readFileSync(file, 'utf8')).rows;
+  }
+  return texts;
+}
+function writeTexts(dir, texts) {
+  const root = path.join(dir, TEXT_DIR);
+  if (!texts || (!texts.files.length && !fs.existsSync(root))) return;
+  fs.mkdirSync(root, { recursive: true });
+  writeJson(path.join(root, 'index.json'), { languages: texts.languages, main: texts.main,
+    files: texts.files.map(f => Object.assign({ id: f.id, name: f.name, kind: f.kind, ref: f.ref || '' }, f.field ? { field: f.field } : {})) });
+  const keep = new Set();
+  for (const f of texts.files) {
+    const file = textCsvPath(root, f);
+    keep.add(path.relative(root, file));
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, Texts.toCsv(f, texts.languages));
+  }
+  for (const rel of listCsv(root, '')) if (!keep.has(rel)) fs.unlinkSync(path.join(root, rel));
+  for (const e of fs.readdirSync(root, { withFileTypes: true })) {
+    if (e.isDirectory() && !fs.readdirSync(path.join(root, e.name)).length) fs.rmdirSync(path.join(root, e.name));
+  }
 }
 
 function isProjectDir(dir) { return fs.existsSync(path.join(dir, PROJECT_FILE)); }
@@ -98,12 +144,16 @@ function loadProject(dir, assetsDir) {
     return (ia < 0 ? 1e9 : ia) - (ib < 0 ? 1e9 : ib) || a.id.localeCompare(b.id);
   });
   delete meta.mapOrder;
-  const project = { meta, db, maps, resources: scanResources(dir) };
+  const project = { meta, db, maps, texts: readTexts(dir), resources: scanResources(dir) };
+  // textes du jeu : une ligne de CSV par texte de la base (créées s'il en manque ; un texte principal modifié dans le CSV gagne)
+  const sync = Texts.syncDb(project.texts, db, meta, { csvWins: true });
+  if (sync.added || sync.updated) project.textsSync = sync;
   if (migration) project.migration = migration;
   return project;
 }
 
 function saveProject(dir, project) {
+  if (project.texts) { project.texts = Texts.normalize(project.texts); Texts.syncDb(project.texts, project.db, project.meta); }
   const weatherErrors = (project.db.chapters || []).flatMap(ch => Weather.validate(ch.weather).map(e => `${ch.name || ch.id} : ${e}`));
   if (weatherErrors.length) throw new Error(weatherErrors.join('\n'));
   const statusErrors = Statuses.validateDefinitions(project.db);
@@ -120,7 +170,8 @@ function saveProject(dir, project) {
     ...Animations.validateAll(project.db.animations),
     ...Animations.validateLinks(project.db, project.meta),
     ...Ultimates.validateAll(project.db.ultimates),
-    ...Ultimates.validateLinks(project.db)
+    ...Ultimates.validateLinks(project.db),
+    ...Texts.validate(project.texts)
   ];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
@@ -141,6 +192,7 @@ function saveProject(dir, project) {
   writeJson(path.join(dir, PROJECT_FILE), meta);
   for (const k of DB_KEYS) writeJson(path.join(dir, 'data', k + '.json'), project.db[k] || []);
   for (const [k, v] of Object.entries(project.db)) if (!DB_KEYS.includes(k) && EXTRA_KEY.test(k) && v && typeof v === 'object') writeJson(path.join(dir, 'data', k + '.json'), v);
+  if (project.texts) writeTexts(dir, project.texts);
   const keep = new Set();
   for (const m of project.maps) {
     const name = m.id + '.json';

@@ -27,7 +27,7 @@ module.exports = (editor) => {
       await js(`DBEditor.open('weapons', 'w_fire')`);
       await until(`!!document.querySelector('#db-tabs button')`);
       result.onglets = await js(`[...document.querySelectorAll('#db-tabs button')].map(b => b.textContent)`);
-      assert(result.onglets.includes('Armes et objets') && !result.onglets.includes('Objets') && !result.onglets.includes('Affinités') && !result.onglets.includes('Armes'), 'onglets : ' + result.onglets);
+      assert(result.onglets.includes('Armes et objets') && !result.onglets.includes('Objets') && result.onglets.includes('Affinités') && !result.onglets.includes('Armes'), 'onglets : ' + result.onglets);
 
       // 1. Armes et objets : deux groupes dans une liste
       result.groupes = await js(`[...document.querySelectorAll('#db-body .db-group')].map(g => g.firstChild.textContent)`);
@@ -48,8 +48,13 @@ module.exports = (editor) => {
       // 2. affinités dans la fiche d'Eliwood
       const pair = await js(`Editor.db().supports[0]`);
       result.paire = pair.name;
-      await js(`DBEditor.open('supports', ${JSON.stringify(pair.id)})`); // ancien lien : redirigé vers l'unité
-      await until(`document.querySelector('#db-tabs button.on').textContent === 'Unités' && !!document.querySelector('[data-support="${pair.id}"][open]')`);
+      await js(`DBEditor.open('supports', ${JSON.stringify(pair.id)})`); // onglet Affinités (Données)
+      await until(`document.querySelector('#db-tabs button.on').textContent === 'Affinités' && document.querySelector('.db-form h2').firstChild.textContent === ${JSON.stringify(pair.name)}`);
+      await shot('c0_onglet_affinites');
+      // la même paire dans la fiche du premier personnage
+      await js(`DBEditor.open('units', ${JSON.stringify(pair.a)})`);
+      await until(`!!document.querySelector('[data-support="${pair.id}"]')`);
+      await js(`(() => { const d = document.querySelector('[data-support="${pair.id}"]'); d.open = true; d.dispatchEvent(new Event('toggle')); })()`);
       result.unite = await js(`document.querySelector('.db-form h2').firstChild.textContent`);
       await js(`document.querySelector('[data-support="${pair.id}"]').scrollIntoView()`);
       await wait(300); await shot('c_unite_affinites');

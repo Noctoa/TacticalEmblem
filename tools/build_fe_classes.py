@@ -266,6 +266,8 @@ def monster_group():
         e = {'id': 'fe8_' + slug(name), 'name': f'{name} · FE8', 'game': 'fe8m', 'source': name, 'moveType': MV[move], 'mov': mov,
              'weapons': [WM[w] for w in weapons.split()], 'base': st(b), 'growths': st(gr), 'caps': st(cp), 'tier': tier,
              'promoteTo': promos, 'kit': kit, 'monster': True,
+             # monstres asexués (immunisés aux charmes) ; la gorgone reste une femme
+             'gender': 'femme' if name.startswith('Gorgon') and name != 'Gorgon Egg' else 'asexue',
              'effectiveTypes': ['monster', 'dragon'] if name == 'Draco Zombie' else ['monster', MV[move]]}
         classes.append(e); by[name] = e
     for c in classes: c['promotions'] = [by[p]['id'] for p in c.pop('promoteTo') if p in by]
