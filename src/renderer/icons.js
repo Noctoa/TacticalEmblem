@@ -30,6 +30,10 @@
     flag: '<path d="M3.5 14V2"/><path d="M3.5 2.5h8.5l-2 3 2 3H3.5"/>',
     sword: '<path d="m13.5 2.5-7 7"/><path d="M13.5 2.5v3l-6.5 6.5"/><path d="m4 9 3 3"/><path d="m2.5 13.5 2.5-2.5"/>',
     chat: '<path d="M2 3h12v8H7l-3 2.5V11H2z"/>',
+    text: '<path d="M3 3.5h10M8 3.5v9.5M6 13h4"/>',
+    search: '<circle cx="7" cy="7" r="4.2"/><path d="m10.2 10.2 3.3 3.3"/>',
+    pin: '<path d="M6 2h4l-.6 4 2.6 2.5H4L6.6 6z"/><path d="M8 8.5V14"/>',
+    chevron: '<path d="m4.5 6 3.5 3.5L11.5 6"/>',
     gear: '<circle cx="8" cy="8" r="2.2"/><path d="M8 1.5v2M8 12.5v2M1.5 8h2M12.5 8h2M3.4 3.4l1.4 1.4M11.2 11.2l1.4 1.4M3.4 12.6l1.4-1.4M11.2 4.8l1.4-1.4"/>'
   };
   function icon(name, size) {

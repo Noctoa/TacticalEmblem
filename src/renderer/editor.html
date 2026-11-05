@@ -9,8 +9,20 @@
 <link rel="stylesheet" href="editor.css">
 <link rel="stylesheet" href="promotions.css">
 <link rel="stylesheet" href="char-gen.css">
+<link rel="stylesheet" href="studio.css">
 </head>
-<body>
+<body data-view="map">
+<!-- barre d'icônes (façon Pokémon Studio) : éditeur de map, base de données, textes ; tester, système, enregistrer -->
+<nav id="rail" class="needs-project-rail">
+  <div class="rail-brand" title="Tactical Emblem"><span class="brand-mark"></span></div>
+  <button class="rail-btn" data-rail="map" title="Éditeur de map" data-icon="map"></button>
+  <button class="rail-btn" data-rail="db" title="Base de données (F9)" data-icon="db"></button>
+  <button class="rail-btn" data-rail="texts" title="Textes et dialogues" data-icon="text"></button>
+  <span class="rail-spacer"></span>
+  <button class="rail-btn" data-rail="play" title="Tester l'acte (F5)" data-icon="play"></button>
+  <button class="rail-btn" data-rail="system" title="Système" data-icon="gear"></button>
+  <button class="rail-btn" data-rail="save" title="Enregistrer (Ctrl+S)" data-icon="save"></button>
+</nav>
 <div id="app" class="no-project">
   <header id="toolbar">
     <div class="brand"><span class="brand-mark"></span>Tactical Emblem</div>
@@ -110,7 +122,7 @@
     <div class="db-head">
       <h2>Base de données</h2>
       <nav id="db-tabs"></nav>
-      <button class="icon-close" data-db-close title="Fermer (Échap)">×</button>
+      <button class="db-back" data-db-close title="Retour à l'éditeur de map (Échap)">← Éditeur de map</button>
     </div>
     <div id="db-body"></div>
   </div>

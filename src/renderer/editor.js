@@ -1683,6 +1683,18 @@
     else if (b.dataset.tool) setTool(b.dataset.tool);
   });
   tf.onMenu((cmd) => { if (commands[cmd]) commands[cmd](); });
+  // barre d'icônes : éditeur de map, base de données, textes, tester, système, enregistrer
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-rail]');
+    if (!b || !S.project) return;
+    const r = b.dataset.rail;
+    if (r === 'map') DBEditor.close();
+    else if (r === 'db') DBEditor.open(document.body.dataset.view === 'system' ? 'units' : undefined);
+    else if (r === 'system') DBEditor.open('system');
+    else if (r === 'play') playtest();
+    else if (r === 'save') cmdSave();
+    else if (r === 'texts') UI.toast('Textes et dialogues : prochaine étape de la refonte de l’interface.');
+  });
 
   document.addEventListener('keydown', (e) => {
     if (!S.project || isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;

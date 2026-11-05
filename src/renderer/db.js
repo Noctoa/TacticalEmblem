@@ -634,11 +634,13 @@
           { key: 'classId', label: 'Classe', type: 'select', options: classOpts },
           { key: 'level', label: 'Niveau', type: 'number', min: 1, max: 40 }] },
         { type: 'custom', render: weaponRanksField },
+        { type: 'heading', label: 'Rôle dans l’histoire' },
         { key: 'isLord', label: 'Seigneur (protection et prise de point par défaut, personnalisables par acte)', type: 'checkbox' },
         { key: 'deathPolicy', label: 'Si ce personnage est vaincu', type: 'select', empty: 'Suivre le mode Classique / Détente', options: [{ value: 'retreat', label: 'Toujours se retirer et revenir au chapitre suivant' }] },
         { key: 'convoy', label: "Chef d'escouade : accès au convoi (les autres y accèdent depuis une case adjacente)", type: 'checkbox' },
         { key: 'recruitAfter', label: 'Rejoint l’effectif après', type: 'select', empty: '— pas de recrutement automatique —', options: () => doneOpts() },
         { type: 'info', text: 'L’effectif de départ se règle sur la map de camp (mode Unités). Un personnage placé dans le camp ne rejoint pas automatiquement l’équipe. Les placements joueur d’un acte rejoignent l’effectif quand cet acte commence.' },
+        { type: 'heading', label: 'Compétences et ultime' },
         { type: 'custom', render: unitSkillsField },
         { key: 'ultimate', label: 'Ultime (action spéciale rechargée en tours)', type: 'select', empty: '— aucun ultime —',
           options: () => (db().ultimates || []).map(x => ({ value: x.id, label: `${x.name} · recharge ${x.cooldown} t.` })),
@@ -684,6 +686,7 @@
           { key: 'tier', label: 'Palier (0 : recrue, 1 : base, 2 : promue…)', type: 'number', min: 0, max: 9 }] },
         { key: 'gender', label: 'Réservée à', type: 'select', empty: '— tous les genres —', options: Rules.GENDER_LOCKS,
           help: 'Un personnage de l’autre genre (champ Genre de sa fiche, ou genre choisi au générateur pour le protagoniste) ne peut pas y être promu, et le générateur impose ce genre. Sans genre renseigné, pas de blocage.' },
+        { type: 'heading', label: 'Armes et capacités' },
         { key: 'weapons', label: 'Armes maniées', type: 'multicheck', options: wtypes },
         { key: 'dance', label: 'Danse : action « Danser », un allié adjacent qui a déjà joué rejoue ce tour', type: 'checkbox' },
         { type: 'custom', render: cls => {
@@ -701,8 +704,10 @@
           return UI.form([{ key: 'effectiveTypes', label: 'Catégories pour les armes efficaces', type: 'multicheck', options: etypes }], tmp,
             { onChange: () => { cls.effectiveTypes = tmp.effectiveTypes; change(); } });
         } },
+        { type: 'heading', label: 'Promotions et compétences' },
         { type: 'custom', render: promotionField },
         { type: 'custom', render: c => learningField(c) },
+        { type: 'heading', label: 'Apparence' },
         { type: 'row', fields: [
           { key: 'mapSprite', label: 'Sprite de map', type: 'select', empty: '— aucun (jeton) —', options: charOpts },
           { key: 'battler', label: 'Animation de combat', type: 'select', empty: '— aucune (combat sur la map) —', options: battlerOpts }] },
@@ -728,6 +733,7 @@
       fields: (w) => [
         { type: 'row', fields: [{ key: 'name', label: 'Nom', type: 'text' }, { key: 'type', label: 'Type', type: 'select', options: wtypes }] },
         { type: 'custom', render: () => itemImageField(w, 'weapons') },
+        { type: 'heading', label: 'Caractéristiques' },
         { type: 'row', fields: [
           { key: 'rank', label: 'Niveau requis', type: 'select', empty: '— aucun (tous) —', options: Rules.RANKS.map(r => ({ value: r, label: r })),
             help: 'Niveau d’arme minimum (E < D < C < B < A < S) pour la manier, comme dans les Fire Emblem. Les ennemis l’ignorent.' },
@@ -753,6 +759,7 @@
           { key: 'brave', label: 'Brave : chaque attaque frappe deux fois', type: 'checkbox' },
           { key: 'magic', label: 'Dégâts magiques (Mag / Rés)', type: 'checkbox', help: 'Pour les épées, lances ou haches magiques (Lame du tonnerre, Lame runique…).' },
           { key: 'drain', label: 'Drain : soigne des dégâts infligés', type: 'checkbox' }] },
+        { type: 'heading', label: 'Effets, animation et boutique' },
         { type: 'custom', render: () => StatusFields.weapon(w, change) },
         ...weaponAnimFields(w),
         priceField,
@@ -930,16 +937,185 @@
   }
   async function close() {
     $('#db').classList.add('hidden');
+    document.body.dataset.view = 'map';
     animToken++;
     if (changed) await Editor.refresh();
   }
 
+  /** Catégories de la barre latérale (façon Pokémon Studio) ; les onglets des plugins vont dans « Plugins ». */
+  const NAV_GROUPS = [['Données', ['units', 'classes', 'skills', 'ultimates', 'weapons', 'animations']],
+    ['Monde', ['tilesets', 'arcs']], ['Projet', ['resources', 'system']], ['Plugins', ['plugins']]];
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
-    for (const [k, label] of order()) nav.append(h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains') || (k === 'weapons' && tab === 'items')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label));
+    document.body.dataset.view = tab === 'system' ? 'system' : 'db';
+    const all = order(), known = new Set(NAV_GROUPS.flatMap(g => g[1]));
+    const btn = ([k, label]) => h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains') || (k === 'weapons' && tab === 'items')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label);
+    for (const [title, keys] of NAV_GROUPS) {
+      const items = all.filter(([k]) => keys.includes(k) || (title === 'Plugins' && !known.has(k)));
+      if (!items.length) continue;
+      nav.append(h('div', { class: 'db-nav-group' }, title), ...items.map(btn));
+    }
   }
 
   function renderBody() {
+    renderBodyInner();
+    try { studio($('#db-body')); } catch (e) { console.error('[base de données] mise en page', e); }
+  }
+
+  // ---------- mise en page « studio » (inspirée de Pokémon Studio) ----------
+  // barre du haut : Nouveau / dupliquer / supprimer, sélecteur de l'élément (liste en menu déroulant, épinglable) ;
+  // fiche : en-tête (image, nom, #id, badges, description) puis une carte par section du formulaire.
+  const KIND_NAMES = { units: 'Unité', classes: 'Classe', skills: 'Compétence', ultimates: 'Ultime', weapons: 'Arme', items: 'Objet',
+    animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin' };
+  const DOCKED = new Set(['resources', 'plugins']); // listes riches (aperçus) : toujours visibles
+  let pinned = store('tf.dbPinned') === '1';
+  function studio(body) {
+    body.classList.add('studio');
+    const list = body.querySelector(':scope > .db-list');
+    const pane = body.querySelector(':scope > .db-form');
+    const docked = !!list && (DOCKED.has(tab) || pinned);
+    body.classList.toggle('docked', docked);
+    body.classList.toggle('no-list', !list);
+    if (list) {
+      const top = h('div', { class: 'studio-top' });
+      const actions = list.querySelectorAll(':scope > .db-list-actions');
+      const left = h('div', { class: 'studio-top-left' }, ...actions);
+      const on = list.querySelector('.db-item.on');
+      const name = on ? ((on.querySelector(':scope > span:nth-child(2)') || on).textContent || '').trim() : (pane && pane.querySelector('h2') ? pane.querySelector('h2').firstChild.textContent : '—');
+      const kind = KIND_NAMES[tab] || '';
+      const centre = h('div', { class: 'studio-top-centre' });
+      if (!DOCKED.has(tab)) {
+        const pop = h('div', { class: 'studio-pop' }, list);
+        const toggle = h('button', { class: 'studio-picker', 'data-db-picker': true, title: 'Choisir dans la liste',
+          onclick: (e) => { e.stopPropagation(); if (docked) return; pop.classList.toggle('open'); if (pop.classList.contains('open')) { const q = list.querySelector('input[type=search], input'); if (q) q.focus(); } } },
+          kind ? h('span', { class: 'studio-picker-kind' }, kind) : null, h('span', { class: 'studio-picker-name' }, name || '—'), h('span', { class: 'studio-picker-chev', html: Icons.icon('chevron') }));
+        centre.append(toggle);
+        const pin = h('button', { class: 'small ghost studio-pin' + (pinned ? ' on' : ''), title: pinned ? 'Replier la liste dans le menu déroulant' : 'Épingler la liste à gauche', html: Icons.icon('pin'),
+          onclick: () => { pinned = !pinned; try { localStorage.setItem('tf.dbPinned', pinned ? '1' : '0'); } catch (e) { /* stockage indisponible */ } renderBody(); } });
+        top.append(left, centre, h('div', { class: 'studio-top-right' }, pin));
+        body.prepend(top);
+        if (docked) body.insertBefore(list, top.nextSibling); else body.insertBefore(pop, top.nextSibling);
+      } else {
+        top.append(left, centre, h('div', { class: 'studio-top-right' }));
+        body.prepend(top);
+      }
+    }
+    if (pane) cardify(pane);
+  }
+  /** Ferme le menu déroulant de la liste quand on clique ailleurs. */
+  document.addEventListener('mousedown', (e) => {
+    const pop = document.querySelector('#db-body .studio-pop.open');
+    if (pop && !pop.contains(e.target) && !e.target.closest('[data-db-picker]')) pop.classList.remove('open');
+  });
+  function heroVisual(cur) {
+    if (!cur) return null;
+    if (tab === 'skills') return skillIcon(cur, 56);
+    if (tab === 'ultimates') return ultimateIcon(cur, 56);
+    if (tab === 'weapons' || tab === 'items') return armoryIcon(cur, tab, 48);
+    if (tab === 'units' && cur.portrait) {
+      const box = h('div', { class: 'hero-face' });
+      Render.loadImage(Editor.baseUrl(), cur.portrait).then(img => box.replaceChildren(Faces.element(img, Render.imageUrl(Editor.baseUrl(), cur.portrait), 'bust') || '')).catch(() => {});
+      return box;
+    }
+    if (['units', 'classes', 'animations', 'tilesets', 'terrains', 'chapters', 'arcs'].includes(tab)) {
+      return h('div', { class: 'hero-initial', style: { background: cur.color || '' } }, (cur.name || '?').trim().slice(0, 1).toUpperCase());
+    }
+    return null;
+  }
+  function heroBadges(cur) {
+    if (!cur) return [];
+    const out = [];
+    if (tab === 'units') {
+      const cls = byId(db().classes, cur.classId);
+      if (cls) out.push(cls.name);
+      out.push('Niv. ' + (cur.level || 1));
+      if (cur.isLord) out.push('Seigneur');
+    } else if (tab === 'classes') {
+      if (cur.tier !== undefined) out.push(['Recrue', 'Base', 'Promue', 'Spéciale'][cur.tier] || ('Rang ' + cur.tier));
+      if (cur.mov) out.push('Dép. ' + cur.mov);
+    } else if (tab === 'weapons') {
+      const wt = Rules.WEAPON_TYPES.find(t => t.id === cur.type);
+      if (wt) out.push(wt.name);
+      if (cur.rank) out.push('Niveau ' + cur.rank);
+    }
+    return out;
+  }
+  function cardify(pane) {
+    if (pane.dataset.studio) return;
+    pane.dataset.studio = '1';
+    const def = tabDef(tab);
+    const cur = def && def.list ? byId(def.list(), selected[tab]) : null;
+    const kids = [...pane.childNodes];
+    const title = pane.querySelector(':scope > h2');
+    const col = h('div', { class: 'studio-col' });
+    const tools = h('div', { class: 'studio-tools' });
+    const grid = h('div', { class: 'studio-grid' });
+    let hero = null, heroExtra = null, i = 0;
+    const isForm = (n) => n.classList && n.classList.contains('form');
+    if (title) {
+      while (kids[i] !== title) tools.append(kids[i++]);
+      i++;
+      const text = h('div', { class: 'hero-text' });
+      const kicker = cur ? (tab === 'units' ? cur.series : def && def.sub ? def.sub(cur) : '') : '';
+      if (kicker) text.append(h('div', { class: 'hero-kicker' }, kicker));
+      text.append(title);
+      const badges = heroBadges(cur);
+      if (badges.length) text.append(h('div', { class: 'hero-badges' }, badges.map(b => h('span', { class: 'hero-badge' }, b))));
+      const desc = cur && (cur.bio || cur.description);
+      if (desc) text.append(h('p', { class: 'hero-desc' }, desc));
+      const vis = heroVisual(cur);
+      heroExtra = h('div', { class: 'hero-extra' });
+      hero = h('section', { class: 'studio-hero' }, h('div', { class: 'hero-main' }, vis ? h('div', { class: 'hero-visual' }, vis) : null, text), heroExtra);
+      while (i < kids.length && !isForm(kids[i])) heroExtra.append(kids[i++]);
+      if (!heroExtra.childNodes.length) heroExtra.remove();
+    }
+    let sawForm = false, rest = null;
+    for (; i < kids.length; i++) {
+      const n = kids[i];
+      if (isForm(n)) { sawForm = true; splitForm(n, grid, title ? 'Général' : ''); continue; }
+      if (!sawForm && !title) { tools.append(n); continue; }
+      if (!rest) { rest = card(''); rest.classList.add('wide'); grid.append(rest); }
+      rest.append(n);
+    }
+    if (!title && !sawForm && tools.childNodes.length) { const c = card(''); c.append(...tools.childNodes); grid.append(c); }
+    // une carte étroite seule sur sa ligne prend toute la largeur
+    let colIdx = 0;
+    const cards = [...grid.children];
+    cards.forEach((c, k) => {
+      if (c.classList.contains('wide')) { colIdx = 0; return; }
+      const next = cards[k + 1];
+      if (colIdx === 0 && (!next || next.classList.contains('wide'))) { c.classList.add('wide'); return; }
+      colIdx = 1 - colIdx;
+    });
+    if (tools.childNodes.length) col.append(tools);
+    if (hero) col.append(hero);
+    if (grid.childNodes.length) col.append(grid);
+    pane.replaceChildren(col);
+  }
+  function card(label) {
+    return h('section', { class: 'studio-card' }, label ? h('h3', { class: 'studio-card-title' }, label) : null);
+  }
+  /** Une carte par section (titres « form-heading ») ; les grandes sections prennent toute la largeur. */
+  function splitForm(form, grid, firstLabel) {
+    const parts = [];
+    let curPart = { label: firstLabel, head: null, nodes: [] };
+    for (const n of [...form.childNodes]) {
+      if (n.classList && n.classList.contains('form-heading')) { if (curPart.nodes.length) parts.push(curPart); curPart = { label: n.textContent, head: n, nodes: [] }; continue; }
+      curPart.nodes.push(n);
+    }
+    if (curPart.nodes.length) parts.push(curPart);
+    for (const p of parts) {
+      // le titre de section reste l'élément « form-heading » d'origine (repère des scripts et des plugins)
+      const c = p.head ? h('section', { class: 'studio-card' }, (p.head.classList.add('studio-card-title'), p.head)) : card(p.label);
+      const body = h('div', { class: 'form' }, p.nodes);
+      c.append(body);
+      const fields = body.querySelectorAll('.field').length;
+      if (fields > 7 || body.querySelector('.inv-list, .stats-grid textarea, table, .chips, .learning, .supports, .multicheck, .img-field') || p.nodes.length > 8) c.classList.add('wide');
+      grid.append(c);
+    }
+  }
+
+  function renderBodyInner() {
     const body = $('#db-body'); body.innerHTML = '';
     animToken++;
     body.classList.toggle('single', tab === 'system');
