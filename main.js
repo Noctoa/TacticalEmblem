@@ -9,6 +9,7 @@ const campaignIO = require('./src/main/campaign-io.js');
 const { importTiled } = require('./src/main/tiled.js');
 const pluginsIO = require('./src/main/plugins-io.js');
 const files = require('./src/main/file-browser.js');
+const gameExport = require('./src/main/game-export.js');
 
 const ASSETS = path.join(__dirname, 'assets');
 const BUNDLED_PLUGINS = path.join(__dirname, 'plugins'); // plugins fournis avec l'application
@@ -89,6 +90,7 @@ function buildMenu() {
       { type: 'separator' },
       { label: 'Importer une map Tiled…', accelerator: 'CmdOrCtrl+I', click: () => send('import-tiled') },
       { label: 'Ouvrir le dossier du projet', click: () => send('open-folder') },
+      { label: 'Compiler le jeu…', accelerator: 'CmdOrCtrl+Shift+B', click: () => send('compile-game') },
       { type: 'separator' },
       { role: 'quit', label: 'Quitter' }
     ] },
@@ -168,6 +170,18 @@ handle('campaign:list', (e, dir) => campaignIO.list(dir));
 handle('campaign:remove', (e, dir, slot) => campaignIO.remove(dir, slot));
 handle('project:save', (e, dir, project) => { io.saveProject(dir, project); return true; });
 handle('project:openFolder', (e, dir) => shell.openPath(dir));
+// compilateur : version jouable du projet (Web, Windows, projet Android Studio), dans un dossier choisi
+let lastCompileDir = '';
+handle('game:chooseOutput', async (e, name) => {
+  const res = await dialog.showOpenDialog(editorWin || BrowserWindow.getFocusedWindow(), { title: 'Dossier où compiler le jeu',
+    defaultPath: lastCompileDir || app.getPath('documents'), properties: ['openDirectory', 'createDirectory'] });
+  if (res.canceled || !res.filePaths[0]) return null;
+  return (lastCompileDir = res.filePaths[0]);
+});
+handle('game:export', async (e, dir, opts) => {
+  await new Promise(r => setTimeout(r, 50)); // laisse l'éditeur afficher « Compilation… »
+  return gameExport.exportGame(dir, opts, { appRoot: __dirname, assetsDir: ASSETS, exePath: process.execPath, platform: process.platform });
+});
 // liens externes (Discord…) : ouverts dans le navigateur, adresses https uniquement
 handle('app:openExternal', (e, url) => {
   if (typeof url !== 'string' || !/^https:\/\/(discord\.gg|discord\.com)\//.test(url)) throw new Error('Lien non autorisé.');

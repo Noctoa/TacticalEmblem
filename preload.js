@@ -21,6 +21,8 @@ contextBridge.exposeInMainWorld('tf', {
   saveProject: (dir, project) => call('project:save', dir, project),
   openFolder: (dir) => call('project:openFolder', dir),
   openExternal: (url) => call('app:openExternal', url),
+  chooseCompileOutput: (name) => call('game:chooseOutput', name),
+  exportGame: (dir, opts) => call('game:export', dir, opts),
   importTiled: (dir, terrains) => call('tiled:import', dir, terrains),
   importTilesetImage: (dir) => call('tileset:importImage', dir),
   filePlaces: () => call('files:places'),

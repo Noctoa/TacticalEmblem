@@ -1693,12 +1693,67 @@
     } });
   window.EditorLobby = lobbyEd;
 
+  // ---------- compilateur (Fichier › Compiler le jeu…) ----------
+  const PLATFORM_INFO = {
+    web: ['Web (HTML5)', 'Dossier jouable dans un navigateur + .zip prêt pour itch.io (index.html à la racine). Sauvegardes dans le navigateur.'],
+    windows: ['Windows', 'Dossier avec ' + '<Nom>.exe : rien à installer, sans l’éditeur. Plein écran : F11 ou Alt+Entrée.'],
+    android: ['Android', 'Projet Android Studio (le jeu dans une WebView) : ouvre-le dans Android Studio puis Build › Build APK(s). Le bouton retour fait Échap.']
+  };
+  async function compileGame() {
+    const meta = S.project.meta;
+    let prefs = {};
+    try { prefs = JSON.parse(localStorage.getItem('tf.compile:' + (meta.name || '')) || '{}'); } catch (e) { /* défaut */ }
+    const st = { name: meta.name || 'Mon jeu', version: meta.version || prefs.version || '1.0.0', platforms: prefs.platforms || ['web', 'windows'], outDir: prefs.outDir || '' };
+    await UI.modal((box, close) => {
+      box.classList.add('compile-modal');
+      const name = h('input', { type: 'text', value: st.name, 'data-compile-name': true, maxlength: 60 });
+      const version = h('input', { type: 'text', value: st.version, 'data-compile-version': true, placeholder: '1.0.0' });
+      const out = h('span', { class: 'compile-out' }, st.outDir || 'aucun dossier choisi');
+      const status = h('div', { class: 'compile-status', 'data-compile-status': true });
+      const plats = Object.entries(PLATFORM_INFO).map(([id, [label, info]]) => {
+        const cb = h('input', { type: 'checkbox', 'data-compile-platform': id });
+        cb.checked = st.platforms.includes(id);
+        return h('label', { class: 'compile-plat' }, cb, h('div', {}, h('b', {}, label), h('small', {}, info)));
+      });
+      const go = h('button', { class: 'primary', 'data-compile-go': true, onclick: async () => {
+        st.name = name.value.trim() || st.name; st.version = version.value.trim() || '1.0.0';
+        st.platforms = [...box.querySelectorAll('[data-compile-platform]')].filter(c => c.checked).map(c => c.dataset.compilePlatform);
+        if (!st.platforms.length) return UI.toast('Coche au moins une plateforme.', 'warn');
+        if (!st.outDir) { const d = await tf.chooseCompileOutput(st.name); if (!d) return; st.outDir = d; out.textContent = d; }
+        try { localStorage.setItem('tf.compile:' + (meta.name || ''), JSON.stringify({ version: st.version, platforms: st.platforms, outDir: st.outDir })); } catch (e) { /* facultatif */ }
+        if (meta.version !== st.version) { meta.version = st.version; markDirty(); }
+        if (S.dirty) { await cmdSave(); if (S.dirty) return; } // on compile le projet enregistré
+        go.disabled = true; status.replaceChildren(h('p', {}, 'Compilation en cours… (copie des ressources, quelques secondes à une minute)'));
+        try {
+          const res = await tf.exportGame(S.dir, { name: st.name, version: st.version, platforms: st.platforms, outDir: st.outDir });
+          const mb = (n) => (n / 1048576).toFixed(n > 1048576 * 10 ? 0 : 1) + ' Mo';
+          status.replaceChildren(h('p', { class: 'compile-ok' }, `${res.name} ${res.version} compilé :`),
+            ...res.outputs.map(o => h('div', { class: 'compile-result', 'data-compile-result': o.platform },
+              h('b', {}, PLATFORM_INFO[o.platform][0]), h('span', {}, `${o.path} (${mb(o.size)})`),
+              h('button', { class: 'small ghost', onclick: () => tf.openFolder(o.path) }, 'Ouvrir'))),
+            ...res.warnings.map(w => h('p', { class: 'form-info' }, w)));
+          UI.toast('Jeu compilé', 'ok');
+        } catch (e) { status.replaceChildren(h('p', { class: 'compile-error' }, 'Compilation impossible : ' + e.message)); }
+        go.disabled = false;
+      } }, 'Compiler');
+      box.append(h('h3', {}, 'Compiler le jeu'),
+        h('p', { class: 'form-info' }, 'Crée une version jouable du projet, sans l’éditeur ni le menu Debug. Le projet est enregistré avant la compilation.'),
+        h('div', { class: 'compile-row' }, h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Nom du jeu'), name), h('label', { class: 'field' }, h('span', { class: 'field-label' }, 'Version'), version)),
+        h('div', { class: 'field-label' }, 'Plateformes'), h('div', { class: 'compile-plats' }, plats),
+        h('div', { class: 'compile-row out' }, h('span', { class: 'field-label' }, 'Dossier de sortie'), out,
+          h('button', { class: 'small', 'data-compile-out': true, onclick: async () => { const d = await tf.chooseCompileOutput(st.name); if (d) { st.outDir = d; out.textContent = d; } } }, 'Choisir…')),
+        status,
+        h('div', { class: 'modal-actions' }, h('button', { onclick: () => close() }, 'Fermer'), go));
+    }, { wide: true });
+  }
+
   // ---------- commandes ----------
   const commands = {
     'new': cmdNew, 'open': () => cmdOpen(), 'save': cmdSave,
     'save-and-close': async () => { await cmdSave(); if (!S.dirty) tf.forceClose(); },
     'import-tiled': () => S.project && importTiled(),
     'open-folder': () => S.project && tf.openFolder(S.dir),
+    'compile-game': () => S.project && compileGame(),
     'undo': () => { if (isTyping()) document.execCommand('undo'); else undo(); },
     'redo': () => { if (isTyping()) document.execCommand('redo'); else redo(); },
     'zoom-in': () => S.project && zoomBy(1), 'zoom-out': () => S.project && zoomBy(-1),
@@ -1752,7 +1807,7 @@
   // ---------- API pour la base de données ----------
   /** Ouvre une map de camp sur ses réglages (repères, personnages, conversations). */
   function selectCamp(id) { S.mapId = id; S.layerIndex = 0; S.selected = null; fitZoom(); setMode('units'); }
-  window.Editor = { selectCamp,
+  window.Editor = { command: (c) => commands[c] && commands[c](), selectCamp,
     get state() { return S; },
     db: () => DB(), project: () => S.project, baseUrl: () => S.baseUrl, dir: () => S.dir,
     markDirty, uid, invOptions, objectives: OBJECTIVES,

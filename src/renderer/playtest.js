@@ -39,6 +39,7 @@
       G.resources = G.project.resources || { characters: {}, battlers: {} };
       Factions.configure(G.project.meta.factions); // camps en plus (armée jaune…), hostilités
       G.settings = Object.assign({}, R.DEFAULT_SETTINGS, G.project.meta.settings || {});
+      if (window.__RELEASE__) G.settings.debugMenu = false; // jeu compilé : pas d'onglet Debug
       // textes du jeu dans la langue choisie (outil Textes : noms, descriptions, dialogues de la base)
       try { const l = localStorage.getItem('tf.language:' + (G.project.meta.name || '')); if (l) G.settings.language = l; } catch (e) { /* stockage indisponible */ }
       if (self.Texts && G.project.texts) Texts.localizeDb(G.project.texts, G.db, G.project.meta, G.settings.language || G.project.texts.main);

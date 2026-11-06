@@ -301,3 +301,20 @@ body[data-view="generator"] .rail-btn[data-rail="map"] { background: transparent
 .faction-chip::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--fc); margin-right: 5px; }
 .faction-chip.on { border-color: var(--fc); color: var(--text); background: color-mix(in srgb, var(--fc) 18%, transparent); }
 .placement .turn.faction { color: #111; }
+
+/* ---------- compilateur (Fichier › Compiler le jeu…) ---------- */
+.modal.compile-modal { width: min(720px, 94vw); }
+.compile-row { display: grid; grid-template-columns: 1fr 160px; gap: 10px; margin: 10px 0; }
+.compile-row.out { grid-template-columns: auto 1fr auto; align-items: center; }
+.compile-out { color: var(--text-2); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.compile-plats { display: grid; gap: 6px; margin: 6px 0 10px; }
+.compile-plat { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-lg, 8px); background: var(--panel-2); cursor: pointer; }
+.compile-plat input { margin-top: 3px; }
+.compile-plat b { display: block; }
+.compile-plat small { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.compile-status:empty { display: none; }
+.compile-status { margin: 8px 0; padding: 10px 12px; border-radius: var(--radius-lg, 8px); background: var(--elevated); }
+.compile-result { display: grid; grid-template-columns: 90px 1fr auto; gap: 10px; align-items: center; padding: 4px 0; font-size: 12.5px; }
+.compile-result span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-2); }
+.compile-ok { margin: 0 0 6px; color: var(--gold-2); }
+.compile-error { margin: 0; color: #e8776e; }
