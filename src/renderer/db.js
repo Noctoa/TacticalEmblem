@@ -973,23 +973,28 @@
   }
 
   function renderBody() {
+    const body = $('#db-body');
+    const previousList = body.querySelector('.db-list-items');
+    const scrollTop = body.dataset.listTab === tab && previousList ? previousList.scrollTop : null;
     renderBodyInner();
-    try { studio($('#db-body')); } catch (e) { console.error('[base de données] mise en page', e); }
+    try { studio(body); } catch (e) { console.error('[base de données] mise en page', e); }
+    body.dataset.listTab = tab;
+    const list = body.querySelector('.db-list-items');
+    if (list && scrollTop !== null) list.scrollTop = scrollTop;
   }
 
   // ---------- mise en page « studio » (inspirée de Pokémon Studio) ----------
-  // barre du haut : Nouveau / dupliquer / supprimer, sélecteur de l'élément (liste en menu déroulant, épinglable) ;
+  // barre du haut : Nouveau / dupliquer / supprimer ; liste repliable à droite ;
   // fiche : en-tête (image, nom, #id, badges, description) puis une carte par section du formulaire.
   const KIND_NAMES = { units: 'Unité', classes: 'Classe', skills: 'Compétence', ultimates: 'Ultime', weapons: 'Arme', items: 'Objet',
     animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin', sounds: 'Son', supports: 'Affinité', factions: 'Faction' };
-  const DOCKED = new Set(['resources', 'plugins', 'sounds', 'factions']); // listes riches (aperçus) : toujours visibles
-  let pinned = store('tf.dbPinned') === '1';
+  let listCollapsed = store('tf.dbListCollapsed') === '1';
   function studio(body) {
     body.classList.add('studio');
     const list = body.querySelector(':scope > .db-list');
     const pane = body.querySelector(':scope > .db-form');
-    const docked = !!list && (DOCKED.has(tab) || pinned);
-    body.classList.toggle('docked', docked);
+    body.classList.toggle('has-list', !!list);
+    body.classList.toggle('list-collapsed', !!list && listCollapsed);
     body.classList.toggle('no-list', !list);
     if (list) {
       const top = h('div', { class: 'studio-top' });
@@ -999,29 +1004,34 @@
       const name = on ? ((on.querySelector(':scope > span:nth-child(2)') || on).textContent || '').trim() : (pane && pane.querySelector('h2') ? pane.querySelector('h2').firstChild.textContent : '—');
       const kind = KIND_NAMES[tab] || '';
       const centre = h('div', { class: 'studio-top-centre' });
-      if (!DOCKED.has(tab)) {
-        const pop = h('div', { class: 'studio-pop' }, list);
-        const toggle = h('button', { class: 'studio-picker', 'data-db-picker': true, title: 'Choisir dans la liste',
-          onclick: (e) => { e.stopPropagation(); if (docked) return; pop.classList.toggle('open'); if (pop.classList.contains('open')) { const q = list.querySelector('input[type=search], input'); if (q) q.focus(); } } },
-          kind ? h('span', { class: 'studio-picker-kind' }, kind) : null, h('span', { class: 'studio-picker-name' }, name || '—'), h('span', { class: 'studio-picker-chev', html: Icons.icon('chevron') }));
-        centre.append(toggle);
-        const pin = h('button', { class: 'small ghost studio-pin' + (pinned ? ' on' : ''), title: pinned ? 'Replier la liste dans le menu déroulant' : 'Épingler la liste à gauche', html: Icons.icon('pin'),
-          onclick: () => { pinned = !pinned; try { localStorage.setItem('tf.dbPinned', pinned ? '1' : '0'); } catch (e) { /* stockage indisponible */ } renderBody(); } });
-        top.append(left, centre, h('div', { class: 'studio-top-right' }, pin));
-        body.prepend(top);
-        if (docked) body.insertBefore(list, top.nextSibling); else body.insertBefore(pop, top.nextSibling);
-      } else {
-        top.append(left, centre, h('div', { class: 'studio-top-right' }));
-        body.prepend(top);
-      }
+      centre.append(h('div', { class: 'studio-current' },
+        kind ? h('span', { class: 'studio-picker-kind' }, kind) : null,
+        h('span', { class: 'studio-picker-name', title: name }, name || '—')));
+      top.append(left, centre);
+      body.prepend(top);
+      const label = tab === 'items' ? 'Armes et objets' : tab === 'terrains' ? 'Terrains et tilesets'
+        : tab === 'chapters' ? 'Chapitres et actes' : (order().find(([key]) => key === tab) || [tab, kind || 'Liste'])[1];
+      list.id = 'db-side-list';
+      const toggle = h('button', { class: 'small ghost studio-list-toggle', 'data-db-list-toggle': true,
+        'aria-controls': list.id, html: Icons.icon('chevron'), onclick: () => {
+          listCollapsed = !listCollapsed;
+          try { localStorage.setItem('tf.dbListCollapsed', listCollapsed ? '1' : '0'); } catch (e) { /* stockage indisponible */ }
+          update();
+        } });
+      const sidebar = h('aside', { class: 'studio-sidebar', 'aria-label': label },
+        h('div', { class: 'studio-sidebar-head' }, toggle, h('span', { class: 'studio-sidebar-title' }, label)), list);
+      const update = () => {
+        body.classList.toggle('list-collapsed', listCollapsed);
+        list.hidden = listCollapsed;
+        toggle.setAttribute('aria-expanded', String(!listCollapsed));
+        toggle.title = (listCollapsed ? 'Afficher la liste : ' : 'Replier la liste : ') + label;
+        toggle.setAttribute('aria-label', toggle.title);
+      };
+      update();
+      body.append(sidebar);
     }
     if (pane) cardify(pane);
   }
-  /** Ferme le menu déroulant de la liste quand on clique ailleurs. */
-  document.addEventListener('mousedown', (e) => {
-    const pop = document.querySelector('#db-body .studio-pop.open');
-    if (pop && !pop.contains(e.target) && !e.target.closest('[data-db-picker]')) pop.classList.remove('open');
-  });
   function heroVisual(cur) {
     if (!cur) return null;
     if (tab === 'skills') return skillIcon(cur, 56);

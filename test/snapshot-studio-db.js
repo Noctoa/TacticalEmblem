@@ -1,6 +1,6 @@
 /*
  * Interface « studio » (inspirée de Pokémon Studio) : barre d'icônes, base de données en pleine page (catégories,
- * barre du haut, sélecteur en menu déroulant ou liste épinglée), fiches en cartes.
+ * barre du haut, liste repliable à droite), fiches en cartes.
  * TF_SNAPSHOT=dossier TF_SNAPSHOT_SCRIPT=$PWD/test/snapshot-studio-db.js npm start
  */
 'use strict';
@@ -24,7 +24,7 @@ module.exports = (editor) => {
       editor.setSize(1600, 1000);
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-studio-')), 'Jeu');
       io.createProject(dir, 'Studio', 'sample', path.join(__dirname, '..', 'assets'));
-      await js(`localStorage.removeItem('tf.dbPinned')`);
+      await js(`localStorage.removeItem('tf.dbListCollapsed')`);
       await js(`Editor.open(${JSON.stringify(dir)})`);
       await until(`!!Editor.db()`);
       await wait(500); await shot('a_carte');
@@ -37,14 +37,24 @@ module.exports = (editor) => {
       result.groupes = await js(`[...document.querySelectorAll('.db-nav-group')].map(g => g.textContent)`);
       result.cartes = await js(`[...document.querySelectorAll('.studio-card-title')].map(t => t.textContent)`);
       assert(result.cartes.includes('Stats de base') && result.cartes.includes('Général'), 'cartes : ' + result.cartes);
-      result.selecteur = await js(`document.querySelector('.studio-picker').textContent`);
+      result.selecteur = await js(`document.querySelector('.studio-current').textContent`);
       await shot('b_unite');
-      // menu déroulant
-      await js(`document.querySelector('[data-db-picker]').click()`);
-      await until(`!!document.querySelector('.studio-pop.open')`);
-      await shot('c_menu');
-      await js(`[...document.querySelectorAll('#db-body .db-item')].find(e => e.textContent.includes('Lyn')).click()`);
-      await until(`document.querySelector('.studio-hero h2').firstChild.textContent === 'Lyn' && !document.querySelector('.studio-pop.open')`);
+      // Liste persistante à droite : recherche, sélection et repli sans reconstruire la fiche.
+      assert(await js(`!document.querySelector('.studio-pop') && document.querySelector('[data-db-list-toggle]').getAttribute('aria-expanded') === 'true'`), 'panneau ouvert par défaut');
+      assert(await js(`document.querySelector('.studio-sidebar').getBoundingClientRect().left >= document.querySelector('.db-form').getBoundingClientRect().right - 1`), 'liste à droite');
+      await js(`(() => { const q = document.querySelector('.roster-search'); q.value = 'Lyn'; q.dispatchEvent(new Event('input')); })()`);
+      assert(await js(`document.querySelectorAll('#db-body .db-item').length === 1`), 'recherche conservée');
+      await js(`document.querySelector('#db-body .db-item').click()`);
+      await until(`document.querySelector('.studio-hero h2').firstChild.textContent === 'Lyn'`);
+      assert(await js(`document.querySelector('.roster-search').value === 'Lyn' && !document.querySelector('#db-side-list').hidden`), 'sélection sans fermer la liste');
+      await js(`(() => { const q = document.querySelector('.roster-search'); q.value = ''; q.dispatchEvent(new Event('input')); })()`);
+      await shot('c_liste');
+      await js(`window.sidebarForm = document.querySelector('.db-form'); document.querySelector('[data-db-list-toggle]').click()`);
+      assert(await js(`document.querySelector('#db-side-list').hidden && document.querySelector('[data-db-list-toggle]').getAttribute('aria-expanded') === 'false' && localStorage.getItem('tf.dbListCollapsed') === '1' && window.sidebarForm === document.querySelector('.db-form')`), 'repli sans perdre la fiche');
+      await shot('c_repliee');
+      await js(`DBEditor.open('classes')`);
+      assert(await js(`document.querySelector('#db-side-list').hidden`), 'repli conservé entre catégories');
+      await js(`document.querySelector('[data-db-list-toggle]').click()`);
       // classes, armes, compétences, système
       for (const [t, n] of [['classes', 'd_classe'], ['weapons', 'e_arme'], ['skills', 'f_competence'], ['arcs', 'g_chapitres'], ['resources', 'h_ressources'], ['system', 'i_systeme']]) {
         await js(`document.querySelector('#db-tabs button[data-tab="${t}"]').click()`);
@@ -91,12 +101,34 @@ module.exports = (editor) => {
       result.arme = await js(`(() => { const w = Editor.db().weapons.find(w => w.description); return w && w.description; })()`);
       assert(result.arme === 'Une épée de fer, simple et fiable.', 'description enregistrée : ' + result.arme);
       await wait(200); await shot('n_description');
-      // liste épinglée
-      await js(`document.querySelector('#db-tabs button[data-tab="units"]').click()`); await wait(300);
-      await js(`document.querySelector('.studio-pin').click()`);
-      await until(`document.querySelector('#db-body').classList.contains('docked')`);
-      await shot('j_epinglee');
-      await js(`document.querySelector('.studio-pin').click()`);
+      // Toutes les familles de listes et les catégories fusionnées.
+      result.panneaux = [];
+      for (const t of ['units', 'classes', 'skills', 'ultimates', 'weapons', 'items', 'animations', 'tilesets', 'terrains', 'arcs', 'chapters', 'factions', 'supports', 'resources', 'sounds', 'plugins']) {
+        await js(`DBEditor.open('${t}')`);
+        await until(`!!document.querySelector('.studio-sidebar > .db-list')`);
+        assert(await js(`document.querySelector('.studio-sidebar').getBoundingClientRect().left >= document.querySelector('.db-form').getBoundingClientRect().right - 1`), 'panneau à droite : ' + t);
+        await js(`document.querySelector('[data-db-list-toggle]').click()`);
+        assert(await js(`document.querySelector('#db-side-list').hidden`), 'repli : ' + t);
+        await js(`document.querySelector('[data-db-list-toggle]').click()`);
+        result.panneaux.push(t);
+      }
+      // Défilement conservé après sélection dans une longue liste.
+      await js(`DBEditor.open('classes'); document.querySelector('.db-list-items').scrollTop = 200; window.sidebarScroll = document.querySelector('.db-list-items').scrollTop; document.querySelector('.db-item').click()`);
+      assert(await js(`document.querySelector('.db-list-items').scrollTop === window.sidebarScroll`), 'défilement conservé');
+      await js(`DBEditor.open('units')`);
+      editor.setSize(1024, 700); await wait(400);
+      assert(await js(`document.querySelector('#db-body').scrollWidth <= document.querySelector('#db-body').clientWidth + 1`), 'panneau dans une petite fenêtre');
+      await shot('j_petite_fenetre');
+      await js(`document.querySelector('[data-db-list-toggle]').click()`);
+      await shot('j_petite_repliee');
+      // La préférence survit aussi au rechargement de l'application.
+      await wc.reload();
+      await until(`typeof DBEditor !== 'undefined' && typeof Editor !== 'undefined'`);
+      await js(`Editor.open(${JSON.stringify(dir)})`);
+      await until(`!!Editor.db()`);
+      await js(`DBEditor.open('units')`);
+      assert(await js(`document.querySelector('#db-side-list').hidden`), 'repli mémorisé après rechargement');
+      await js(`document.querySelector('[data-db-list-toggle]').click()`);
       // retour à la carte
       await js(`document.querySelector('[data-rail="map"]').click()`);
       await until(`document.querySelector('#db').classList.contains('hidden') && document.body.dataset.view === 'map'`);

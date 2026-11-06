@@ -1,8 +1,8 @@
 /*
  * Mise en page « studio » de l'éditeur, inspirée de Pokémon Studio :
  *  - barre d'icônes à gauche (éditeur de map, base de données, textes ; tester, système, enregistrer) ;
- *  - base de données en pleine page : catégories à gauche, barre du haut (Nouveau, sélecteur de l'élément,
- *    liste en menu déroulant ou épinglée), fiche en colonne centrée : en-tête puis cartes par section.
+ *  - base de données en pleine page : catégories à gauche, barre du haut (Nouveau, élément courant),
+ *    liste repliable à droite, fiche en colonne centrée : en-tête puis cartes par section.
  * Chargé après editor.css : ne fait que réorganiser, les jetons de couleurs restent ceux de soft-dark.css / ui.css.
  */
 :root { --rail-w: 64px; --studio-col: 1060px; --card-bg: #1f2228; --card-line: #2b2f37; }
@@ -36,34 +36,42 @@ body:has(#app.no-project) #rail .rail-btn { visibility: hidden; }
 .db-back { margin-top: 12px; background: transparent; border-color: transparent; color: var(--muted); justify-content: flex-start; font-size: 12px; }
 .db-back:hover { color: var(--text); background: var(--panel-2); }
 
-/* corps : barre du haut, puis (liste épinglée) + fiche */
+/* corps : barre du haut, fiche et liste repliable à droite */
 #db-body.studio { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); position: relative; min-height: 0; }
 #db-body.studio.no-list { grid-template-rows: minmax(0, 1fr); }
-#db-body.studio.docked { grid-template-columns: 280px minmax(0, 1fr); }
-#db-body.studio.docked > .studio-top { grid-column: 1 / -1; }
-.studio-top { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--bg-2); min-height: 60px; }
+#db-body.studio.has-list { grid-template-columns: minmax(0, 1fr) 292px; }
+#db-body.studio.list-collapsed { grid-template-columns: minmax(0, 1fr) 44px; }
+#db-body.studio > .studio-top { grid-column: 1 / -1; }
+.studio-top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--line); background: var(--bg-2); min-height: 60px; }
 .studio-top-left, .studio-top-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .studio-top-right { justify-content: flex-end; }
 .studio-top .db-list-actions { border: 0; padding: 0; gap: 6px; flex-wrap: wrap; }
 .studio-top .db-list-actions button { flex: none; }
 .studio-top .db-list-actions button:first-child:not(.danger):not([title]) { background: var(--gold-dim); border-color: var(--accent-line); color: var(--gold-2); padding: 6px 14px; font-size: 13px; }
 .studio-top .db-list-actions button:first-child:not(.danger):not([title]):hover { background: var(--gold); color: var(--accent-text); }
-.studio-picker { display: flex; align-items: center; gap: 12px; min-width: 300px; max-width: 46vw; padding: 7px 12px 7px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius-lg); color: var(--text); font-size: 13.5px; }
-.studio-picker:hover { border-color: var(--line-2); background: var(--panel-2); }
-.studio-picker-kind { color: var(--text-2); font-weight: 500; }
+.studio-top-centre { min-width: 0; justify-self: end; max-width: 100%; }
+.studio-current { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--text); font-size: 13.5px; }
+.studio-picker-kind { color: var(--text-2); font-weight: 500; flex: none; }
 .studio-picker-kind::after { content: ''; display: inline-block; width: 1px; height: 14px; background: var(--line-2); margin-left: 12px; vertical-align: -2px; }
-.studio-picker-name { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.studio-picker-chev { color: var(--muted); display: grid; }
-#db-body.docked .studio-picker { pointer-events: none; }
-#db-body.docked .studio-picker-chev { visibility: hidden; }
-.studio-pin.on { color: var(--gold-2); background: var(--gold-dim); }
+.studio-picker-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-/* liste en menu déroulant (sous le sélecteur) */
-.studio-pop { position: absolute; top: 58px; left: 50%; transform: translateX(-50%); width: min(460px, 92%); max-height: min(70vh, 640px); z-index: 20; display: none; background: var(--elevated); border: 1px solid var(--line-2); border-radius: var(--radius-xl); box-shadow: var(--shadow-lg); overflow: hidden; }
-.studio-pop.open { display: flex; }
-.studio-pop > .db-list { flex: 1; border: 0; min-height: 0; max-height: min(70vh, 640px); }
-#db-body.docked > .db-list { border-right: 1px solid var(--line); background: var(--panel); min-height: 0; }
-#db-body.studio > .db-form { grid-column: -2 / -1; min-height: 0; overflow: auto; padding: 28px 28px 60px; }
+/* Le panneau garde sa place et son défilement, même quand on change de fiche. */
+.studio-sidebar { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; border-left: 1px solid var(--line); background: var(--panel); }
+.studio-sidebar-head { display: flex; align-items: center; gap: 8px; padding: 10px 6px; min-height: 52px; flex: none; }
+.studio-sidebar-title { font-size: 12px; font-weight: 600; color: var(--text-2); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.studio-list-toggle { width: 30px; height: 30px; padding: 0; flex: none; justify-content: center; }
+.studio-list-toggle .ic { transform: rotate(-90deg); }
+.list-collapsed .studio-list-toggle .ic { transform: rotate(90deg); }
+.list-collapsed .studio-sidebar-title { display: none; }
+.studio-sidebar > .db-list { flex: 1; min-height: 0; border: 0; }
+.studio-sidebar > .db-list[hidden] { display: none; }
+.studio-sidebar .db-list-items { padding: 4px 8px 12px; }
+.studio-sidebar .db-item { min-width: 0; border-radius: var(--radius-lg); padding: 9px 8px; }
+.studio-sidebar .db-item > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.studio-sidebar .db-item .sub { max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.studio-sidebar .db-item.on { box-shadow: inset 3px 0 var(--gold); }
+#db-body.studio > .db-form { grid-column: 1; grid-row: 2; min-width: 0; min-height: 0; overflow: auto; padding: 28px 28px 60px; container-type: inline-size; }
+#db-body.studio.no-list > .db-form { grid-row: 1; }
 
 /* ---------- fiche : colonne centrée, en-tête, cartes ---------- */
 .studio-col { max-width: var(--studio-col); margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
@@ -98,7 +106,12 @@ body:has(#app.no-project) #rail .rail-btn { visibility: hidden; }
 .studio-card input[type=text], .studio-card input[type=number], .studio-card input[type=search], .studio-card select, .studio-card textarea { background: var(--color-inset); border-color: transparent; }
 .studio-card input:hover, .studio-card select:hover, .studio-card textarea:hover { border-color: var(--line-2); }
 #db-body.single.studio > .db-form .studio-col, #db-body.no-list > .db-form .studio-col { max-width: var(--studio-col); }
-@media (max-width: 1280px) { .studio-grid { grid-template-columns: minmax(0, 1fr); } .studio-picker { min-width: 220px; } }
+@container (max-width: 760px) { .studio-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 1280px) {
+  .studio-grid { grid-template-columns: minmax(0, 1fr); }
+  #db-body.studio.has-list:not(.list-collapsed) { grid-template-columns: minmax(0, 1fr) 260px; }
+  #db-body.studio > .db-form { padding: 20px 16px 40px; }
+}
 
 /* ---------- outil Textes (même mise en page que la base de données) ---------- */
 #texts { left: var(--rail-w); background: var(--bg); z-index: 55; }
