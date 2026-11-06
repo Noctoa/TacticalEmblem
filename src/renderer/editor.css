@@ -4,8 +4,10 @@
 #toolbar { display: flex; align-items: center; gap: 6px; padding: 0 10px; background: var(--bg-2); border-bottom: 1px solid var(--line); }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 600; letter-spacing: .02em; margin-right: 10px; white-space: nowrap; }
 .brand.big { font-size: 22px; }
-.brand-mark { width: 16px; height: 16px; transform: rotate(45deg); border: 2px solid var(--gold); background: linear-gradient(135deg, var(--gold) 0 50%, transparent 50%); border-radius: 3px; }
-.brand.big .brand-mark { width: 22px; height: 22px; }
+/* logo : héros en pixel art (img/logo.png, 3 images de 32 px, tools/build_logo.py), animation de respiration */
+.brand-mark { width: 32px; height: 32px; flex: none; background: url(img/logo.png) 0 0 / 100% 300% no-repeat; image-rendering: pixelated; animation: brand-idle 1.2s steps(1) infinite; }
+@keyframes brand-idle { 0% { background-position: 0 0; } 33% { background-position: 0 50%; } 66% { background-position: 0 100%; } }
+.brand.big .brand-mark { width: 48px; height: 48px; }
 .tb-group { display: flex; align-items: center; gap: 2px; padding: 0 6px; border-left: 1px solid var(--line); }
 .tb-group:first-of-type { border-left: 0; }
 .tb-group button { background: transparent; border-color: transparent; padding: 5px 8px; color: var(--text-2); }

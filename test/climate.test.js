@@ -18,8 +18,8 @@ function fixture() {
 }
 
 test('climat : les anciennes ambiances restent visuelles, activation explicite et validation', () => {
-  assert.deepEqual(W.effects({ type: 'fog' }), { vision: 4, avoid: 0, movement: 0 }); // brouillard (modéré par défaut) : vue limitée, toujours
-  assert.deepEqual(W.effects({ type: 'sand' }), { vision: null, avoid: 0, movement: 0 });
+  assert.deepEqual(W.effects({ type: 'fog' }), { vision: 4, avoid: 0, movement: 0, rain: false }); // brouillard (modéré par défaut) : vue limitée, toujours
+  assert.deepEqual(W.effects({ type: 'sand' }), { vision: null, avoid: 0, movement: 0, rain: false });
   assert.deepEqual(W.effects({ type: 'snow', intensity: 3, tactical: false }), W.effects());
   assert.deepEqual(W.validate(weather('snow')), []);
   assert.ok(W.validate({ ...weather('snow'), tactical: 'true' }).length);

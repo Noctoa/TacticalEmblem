@@ -252,9 +252,9 @@
         const acts = Lobby.chapters(G.db, G.project.meta, G.campaign);
         const hasEvents = true; // les deux sections sont toujours affichées
         const tab = S.panel.tab = S.panel.tab || 'story';
-        if (hasEvents) body.append(tabs([['story', 'Histoire' + countNew(acts, 'story')], ['event', 'Évènements' + countNew(acts, 'event')]], tab, (v) => { S.panel.tab = v; rerender(); }));
+        if (hasEvents) body.append(tabs([['story', 'Histoire' + countNew(acts, 'story')], ['side', 'Annexes' + countNew(acts, 'side')], ['event', 'Évènements' + countNew(acts, 'event')]], tab, (v) => { S.panel.tab = v; rerender(); }));
         const list = all.filter(e => e.kind === (hasEvents ? tab : 'story'));
-        if (!list.length) body.append(h('p', { class: 'lp-empty' }, tab === 'event' ? 'Aucun évènement en cours.' : 'Aucun chapitre disponible.'));
+        if (!list.length) body.append(h('p', { class: 'lp-empty' }, tab === 'event' ? 'Aucun évènement en cours.' : tab === 'side' ? 'Aucune quête annexe disponible.' : 'Aucun chapitre disponible.'));
         for (const b of list) body.append(arcCard(b));
       });
     }
@@ -414,7 +414,7 @@
         { label: 'Équipe', sub: `${members().length} personnage(s) recruté(s)`, action: () => { api.hideMenu(); openTeam(); } },
         { label: 'Convoi', sub: `${G.convoy.length}/${G.convoyCap} objets`, action: () => { api.hideMenu(); openConvoy(); } },
         avatarAtCamp() ? { label: 'Apparence', sub: 'générateur du protagoniste', action: () => { api.hideMenu(); openAvatar(); } } : null,
-        { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
+        { label: S.cfg.board.label || 'Tableau des quêtes', sub: (countNew(all, 'story') + countNew(all, 'side') + countNew(all, 'event')).trim(), action: () => { api.hideMenu(); openChapters(); } },
         S.cfg.shop.enabled ? { label: S.cfg.shop.name || 'Boutique', sub: goldLabel(), action: () => { api.hideMenu(); openShop(); } } : null,
         ...activePlaces().filter(p => p.menu !== false).map(p => ({ label: placeName(p), sub: typeof p.menuSub === 'function' ? p.menuSub(placeContext(p)) : '', action: () => { api.hideMenu(); openPlace(p); } })),
         { label: 'Paramètres', sub: 'sauvegarde, son… (Échap)', action: () => { api.hideMenu(); G.ui = 'idle'; api.openSettings(); } },
@@ -446,7 +446,7 @@
 
     let bubbleImg = null;
     function bubbleImage() {
-      if (!bubbleImg) { bubbleImg = new Image(); bubbleImg.src = new URL('img/feh/bubble.png', document.baseURI).href; }
+      if (!bubbleImg) { bubbleImg = new Image(); bubbleImg.src = new URL((self.UIAsset ? UIAsset('img/feh/bubble.png') : 'img/feh/bubble.png'), document.baseURI).href; }
       return bubbleImg.complete && bubbleImg.naturalWidth ? bubbleImg : null;
     }
     /** Repères dessinés par-dessus la map et les unités. */

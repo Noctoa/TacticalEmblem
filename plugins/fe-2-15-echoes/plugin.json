@@ -1,0 +1,41 @@
+{
+ "id": "fe-2-15-echoes",
+ "name": "FE 2-15 Echoes",
+ "version": "0.2.0",
+ "kind": "ressources",
+ "description": "Portraits de 22 personnage(s) de « FE 2-15 Echoes » (22 image(s), face sets GBA 128×112). Sprites de map (4) et animations de combat (40) de 3 personnage(s), d'après FE-Repo. Sprites de map (4) et animations de combat (40) de 3 personnage(s), d'après FE-Repo. Sprites de map (4) et animations de combat (40) de 3 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe2:Alm": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Alm/Alm.png",
+    "mapSprite": "ressources/personnages/FE 2-15 Echoes/Alm/map_AlmHero",
+    "battler": "ressources/personnages/FE 2-15 Echoes/Alm/combat_AlmT1M_Sword"
+   },
+   "fe2:Celica": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Celica/Celica.png",
+    "mapSprite": "ressources/personnages/FE 2-15 Echoes/Celica/map_LordRedBeanSCelica",
+    "battler": "ressources/personnages/FE 2-15 Echoes/Celica/combat_PriestessCelicaT1F_Sword"
+   },
+   "fe2:Lukas": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Lukas/Lukas.png"
+   },
+   "fe2:Gray": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Gray/Gray.png"
+   },
+   "fe2:Tobin": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Tobin/Tobin.png"
+   },
+   "fe2:Kliff": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Kliff/Kliff.png"
+   },
+   "fe2:Silque": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Silque/Silque.png"
+   },
+   "fe2:Saber": {
+    "portrait": "ressources/personnages/FE 2-15 Echoes/Saber/Saber.png"
+   }
+  }
+ }
+}

@@ -77,6 +77,7 @@
     S.dir = payload.dir; S.baseUrl = payload.baseUrl; S.project = payload.project;
     migrate(S.project);
     Factions.configure(S.project.meta.factions); // armée jaune et factions du projet
+    if (self.UIAssets) UIAssets.init(S.baseUrl, payload.ui); // images d'interface du projet (ressources/interface)
     S.mapId = S.project.maps[0] ? S.project.maps[0].id : null;
     const first = S.project.maps[0] ? chaptersOf(S.project.maps[0])[0] : null;
     S.chapterId = first ? first.id : null;

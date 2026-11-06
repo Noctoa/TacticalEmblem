@@ -1,0 +1,9 @@
+{
+ "id": "persona",
+ "name": "Persona",
+ "version": "0.1.0",
+ "kind": "ressources",
+ "description": "Portraits de 27 personnage(s) de « Persona » (44 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources"
+}

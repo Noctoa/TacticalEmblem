@@ -19,7 +19,7 @@
     const m = /^icon:([a-z0-9-]+)$/.exec(String(id || ''));
     return m && byId.has(m[1]) ? byId.get(m[1]) : null;
   };
-  const url = (rel) => new URL(rel, document.baseURI).href;
+  const url = (rel) => new URL(self.UIAsset ? UIAsset(rel) : rel, document.baseURI).href; // image du projet si modifiée
   const rows = () => Math.ceil(META.list.length / META.cols);
   function style(id, size) {
     const p = parse(id); if (!p) return null;

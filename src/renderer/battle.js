@@ -430,7 +430,7 @@
 
   let bannerImg = null;
   function bannerImage() {
-    if (!bannerImg) { bannerImg = new Image(); bannerImg.src = new URL('img/feh/banner.png', document.baseURI).href; }
+    if (!bannerImg) { bannerImg = new Image(); bannerImg.src = new URL((self.UIAsset ? UIAsset('img/feh/banner.png') : 'img/feh/banner.png'), document.baseURI).href; }
     return bannerImg.complete && bannerImg.naturalWidth ? bannerImg : null;
   }
 

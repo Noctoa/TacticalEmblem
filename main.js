@@ -12,6 +12,7 @@ const files = require('./src/main/file-browser.js');
 const gameExport = require('./src/main/game-export.js');
 
 const ASSETS = path.join(__dirname, 'assets');
+const APP_ICON = path.join(ASSETS, 'icon', 'icon.png'); // logo (tools/build_logo.py)
 const BUNDLED_PLUGINS = path.join(__dirname, 'plugins'); // plugins fournis avec l'application
 let editorWin = null;
 let editorDirty = false;
@@ -36,11 +37,14 @@ function migrateOldUserData() {
     if (!fs.existsSync(now) && fs.existsSync(old)) { fs.mkdirSync(path.dirname(now), { recursive: true }); fs.copyFileSync(old, now); }
   } catch (e) { /* liste vide : rien de grave */ }
 }
-const payload = (dir, project) => ({ dir, baseUrl: pathToFileURL(dir).href.replace(/\/?$/, '/'), project });
+const UI_IMG = path.join(__dirname, 'src', 'renderer', 'img');
+/** Projet + images d'interface du projet (ressources/interface, recopiées au besoin depuis le moteur). */
+function interfaceOf(dir) { try { return io.installInterface(dir, UI_IMG); } catch (e) { console.error('[interface]', e); return []; } }
+const payload = (dir, project) => ({ dir, baseUrl: pathToFileURL(dir).href.replace(/\/?$/, '/'), project, ui: interfaceOf(dir) });
 
 // ---------- fenêtres ----------
 function createEditor() {
-  editorWin = new BrowserWindow({
+  editorWin = new BrowserWindow({ icon: APP_ICON,
     show: !process.env.TF_SNAPSHOT,
     width: 1440, height: 900, minWidth: 1024, minHeight: 640, backgroundColor: '#15171c',
     title: 'Tactical Emblem',
@@ -61,7 +65,7 @@ function createEditor() {
 }
 
 function openPlaytest(dir, chapterId) {
-  const win = new BrowserWindow({
+  const win = new BrowserWindow({ icon: APP_ICON,
     show: !process.env.TF_SNAPSHOT,
     width: 1100, height: 780, minWidth: 640, minHeight: 480, backgroundColor: '#0b0d12', title: 'Playtest',
     parent: undefined, autoHideMenuBar: true,

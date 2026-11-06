@@ -14,7 +14,7 @@
   const SHEET = 'img/items/icons.png';
   const byId = new Map(META.list.map((e, index) => [e.id, Object.assign({ index }, e)]));
   const rows = () => Math.max(1, Math.ceil(META.list.length / META.cols));
-  const url = () => new URL(SHEET, document.baseURI).href;
+  const url = () => new URL(self.UIAsset ? UIAsset(SHEET) : SHEET, document.baseURI).href; // image du projet si modifiée (ressources/interface)
   const parse = (id) => { const m = /^item:([a-z0-9-]+)$/.exec(String(id || '')); return m && byId.has(m[1]) ? byId.get(m[1]) : null; };
   function style(id) {
     const p = parse(id); if (!p) return null;

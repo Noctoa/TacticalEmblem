@@ -417,3 +417,15 @@ Sprites et animations issus de FE-Repo (https://github.com/Klokinator/FE-Repo), 
 | Sprite de map | Zombie | Zombie (U) Symphone | DATonDemand, Tanakakiri |
 | Sprite de map | Zombie | Zombie (U) flipped | IS |
 | Sprite de map | Zombie | Zombie Lich (+Staff) | EldritchAbomination, SkidMarc25, Blood |
+
+## Livraison personnelle (portraits, sprites de map, animations GIF)
+
+Ressources fournies par l'équipe Tactical Emblem ; auteurs d'origine à compléter.
+
+| Personnage | Type | Fichier |
+|---|---|---|
+| Divers | Animation de combat | 18ff82e5e4a789156126c14367aed89131dcc914.gif : stance, attack, critical, ranged, rangedCritical |
+| Divers | Animation de combat | 56f11ecffe7131bbb43064257d18a8f69da2ee68.gif : stance, attack, critical, dodge |
+| Divers | Animation de combat | 65ece8ac3bd21d64a547ea112f7f8cb6e8c936e0.gif : stance, attack, critical, ranged, rangedCritical |
+| Divers | Animation de combat | 6ec4ee2ec9f4e44a188debd3dde0fa910e13172d.gif : stance, attack, critical, ranged, rangedCritical |
+| Tarvos | Animation de combat | 4c8ba4d06002deb52e669d66554b32420c1a6804.gif : stance, attack, critical |

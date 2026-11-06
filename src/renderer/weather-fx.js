@@ -2,6 +2,7 @@
  * Météo : flux déterministe, indépendant du hasard des combats. Neige et brouillard utilisent des textures qui se
  * répètent (img/weather/snow.png, fog.png, tools/build_weather.py) en couches défilantes à vitesses différentes
  * (parallaxe) ; tant qu'elles ne sont pas chargées, le rendu procédural d'origine prend le relais. Sable : procédural.
+ * Pluie et cendres : img/weather/rain.png, ash.png (fond noir, mélange « écran »).
  */
 (function (root) {
   'use strict';
@@ -13,7 +14,7 @@
   function texture(name) {
     if (textures[name] !== undefined) return textures[name] && textures[name].complete && textures[name].naturalWidth ? textures[name] : null;
     if (typeof Image === 'undefined') { textures[name] = null; return null; }
-    const img = new Image(); img.src = 'img/weather/' + name + '.png'; textures[name] = img;
+    const img = new Image(), rel = 'img/weather/' + name + '.png'; img.src = self.UIAsset ? UIAsset(rel) : rel; textures[name] = img;
     img.onerror = () => { textures[name] = null; };
     return null;
   }
@@ -46,7 +47,36 @@
     ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.translate(x, y);
     const alpha = ctx.globalAlpha;
     const snowTex = weather.type === 'snow' && texture('snow'), fogTex = weather.type === 'fog' && texture('fog');
-    if (fogTex) {
+    if (weather.type === 'rain' || weather.type === 'ash') {
+      // pluie / cendres : textures sur fond noir (img/weather/rain.png, ash.png) ajoutées en mode « écran »
+      // (le noir ne change rien, les gouttes et les braises éclairent), deux couches en parallaxe
+      const rain = weather.type === 'rain', tex = texture(weather.type);
+      ctx.fillStyle = rain ? '#141d2a' : '#2a1d17'; ctx.globalAlpha = alpha * (rain ? .12 + intensity * .07 : .1 + intensity * .06); ctx.fillRect(0, 0, w, h);
+      if (tex) {
+        ctx.imageSmoothingEnabled = true;
+        ctx.globalCompositeOperation = 'screen';
+        const k = pixel * (rain ? 1 : 1.2);
+        const layers = rain ? [[k, 520, 140, .55], [k * 1.6, 760, 210, .8]] : [[k, 18, 10, .7], [k * 1.5, 32, 22, 1]];
+        layers.slice(0, intensity === 1 && !rain ? 1 : 2).forEach(([scale, fall, drift, a], i) => {
+          ctx.globalAlpha = Math.min(1, alpha * a * (rain ? .4 + intensity * .13 : .45 + intensity * .2));
+          tiled(ctx, tex, w, h, scale, dir * t * drift * (rain ? .5 + intensity * .2 : 1) + (rain ? 0 : Math.sin(t * .4 + i) * 14) + i * 151, t * fall * (rain ? .6 + intensity * .2 : 1) + i * 97);
+        });
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.imageSmoothingEnabled = false;
+      } else {
+        // texture pas encore chargée : gouttes / braises procédurales
+        const count = Math.min(400, Math.ceil(w * h / 6000) * intensity + 20);
+        for (let i = 0; i < count; i++) {
+          const speed = .6 + noise(i + 81) * .8;
+          const px = mod(noise(i + 1) * (w + 60) + dir * t * (rain ? 120 : 12) * speed, w + 60) - 30;
+          const py = mod(noise(i + 120) * (h + 30) + t * (rain ? 420 : 22) * speed, h + 30) - 15;
+          ctx.globalAlpha = alpha * (.3 + noise(i + 230) * .5);
+          ctx.fillStyle = rain ? '#9db8e6' : (i % 4 ? '#5d5a58' : '#f0a43c');
+          if (rain) ctx.fillRect(Math.round(px), Math.round(py), Math.max(1, pixel * .5), pixel * 4);
+          else ctx.fillRect(Math.round(px), Math.round(py), pixel, pixel);
+        }
+      }
+    } else if (fogTex) {
       // brouillard : voile léger + deux nappes de brume qui dérivent à des vitesses différentes
       ctx.fillStyle = '#d9e3e7'; ctx.globalAlpha = alpha * (.07 + intensity * .06); ctx.fillRect(0, 0, w, h);
       ctx.imageSmoothingEnabled = true;
@@ -102,6 +132,6 @@
     ctx.restore();
   }
   /** Textures prêtes (tests, aperçus) : { snow, fog }. */
-  const ready = () => ({ snow: !!texture('snow'), fog: !!texture('fog') });
+  const ready = () => ({ snow: !!texture('snow'), fog: !!texture('fog'), rain: !!texture('rain'), ash: !!texture('ash') });
   root.WeatherFX = { draw, ready };
 })(self);

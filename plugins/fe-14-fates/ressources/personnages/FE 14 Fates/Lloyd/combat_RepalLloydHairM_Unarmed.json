@@ -1,0 +1,101 @@
+{
+ "type": "battler",
+ "name": "Repal Lloyd hair [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  42,
+  36
+ ],
+ "anchor": [
+  14,
+  35
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    33
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    33
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    33
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    33
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    33
+   ]
+  }
+ },
+ "source": "FE-Repo — Alice, IS"
+}

@@ -36,6 +36,7 @@
       G.busy = true;
       const payload = await tf.loadProject(params.get('dir'));
       G.project = payload.project; G.baseUrl = payload.baseUrl; G.db = G.project.db;
+      if (self.UIAssets) { UIAssets.init(G.baseUrl, payload.ui); refreshUiImages(); } // images d'interface du projet (ressources/interface)
       G.resources = G.project.resources || { characters: {}, battlers: {} };
       Factions.configure(G.project.meta.factions); // camps en plus (armée jaune…), hostilités
       G.settings = Object.assign({}, R.DEFAULT_SETTINGS, G.project.meta.settings || {});
@@ -676,6 +677,11 @@
 
   // flèche de déplacement façon Fire Emblem (img/ui/arrow.png, cases de 16 px ; tools/build_ui_popups.py)
   const arrowImg = new Image(); arrowImg.src = 'img/ui/arrow.png';
+  /** Images d'interface créées avant le chargement du projet : versions du projet (ressources/interface). */
+  function refreshUiImages() {
+    arrowImg.src = UIAsset('img/ui/arrow.png');
+    ULT_IMG.icon.src = UIAsset('img/ui/ultimate/icon.png'); ULT_IMG.digits.src = UIAsset('img/ui/ultimate/digits.png');
+  }
   const DIRS4 = { '1,0': 'r', '0,1': 'd', '-1,0': 'l', '0,-1': 'u' };
   const ARROW = { start: { r: 0, d: 1, l: 2, u: 3 }, head: { r: 8, d: 9, l: 10, u: 11 } };
   const OPP = { r: 'l', l: 'r', u: 'd', d: 'u' };
@@ -1063,9 +1069,10 @@
     for (const r of u.rally || []) tags.push(h('span', { class: 'tag support', 'data-unit-rally': true }, `✹ ${r.name} : ${[r.dmg ? `DGT +${r.dmg}` : '', r.hit ? `PRÉC +${r.hit}` : '', r.avoid ? `ESQ +${r.avoid}` : ''].filter(Boolean).join(' · ')} (${r.turns} t.)`));
     for (const s of Statuses.list(u)) tags.push(h('span', { class: 'tag status', title: s.description, style: { color: s.color }, 'data-unit-status': s.id }, `${s.name} · ${s.turns} phase(s)`));
     const penalty = Weather.movePenalty(G.weather, u.moveType);
-    if (penalty) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `${G.weather.type === 'sand' ? 'Sable' : 'Neige'} : coût par case +${penalty}`));
+    const wName = { sand: 'Sable', snow: 'Neige', rain: 'Pluie', ash: 'Cendres', fog: 'Brouillard' }[G.weather.type] || 'Météo';
+    if (penalty) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `${wName} : coût par case +${penalty}${G.weather.type === 'rain' ? ' (terrain découvert)' : ''}`));
     const avoid = Weather.effects(G.weather).avoid;
-    if (avoid) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, `Brouillard : esquive +${avoid}`));
+    if (avoid) tags.push(h('span', { class: 'tag terrain', title: Weather.describe(G.weather) }, G.weather.type === 'ash' ? `Cendres : précision −${avoid}` : `Brouillard : esquive +${avoid}`));
     return tags.length ? h('div', { class: 'u-tags' }, tags) : '';
   }
 
@@ -2248,7 +2255,7 @@
     updateObjective();
     TacticalEmblem.emit('turn:start', { phase: 'player', turn: G.turn });
     Music.bgm('playerPhase');
-    await banner('Phase joueur', '', 'img/ui/phase-player.png');
+    await banner('Phase joueur', '', UIAsset('img/ui/phase-player.png'));
     for (const u of players()) { u.done = false; u.tradeLocked = false; u.fogMoved = false; }
     await statusPhase(team('player'));
     await ultimatePhase(team('player'));
@@ -2272,7 +2279,7 @@
     G.phase = 'ally'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'ally', turn: G.turn });
     Music.bgm('allyPhase');
-    await banner('Phase alliée', 'ally', 'img/ui/phase-ally.png');
+    await banner('Phase alliée', 'ally', UIAsset('img/ui/phase-ally.png'));
     for (const u of allies) { u.done = false; u.fogMoved = false; }
     await statusPhase(allies);
     await ultimatePhase(allies);
@@ -2375,7 +2382,7 @@
     G.phase = 'enemy'; G.busy = true;
     TacticalEmblem.emit('turn:start', { phase: 'enemy', turn: G.turn });
     Music.bgm('enemyPhase');
-    await banner('Phase ennemie', 'enemy', 'img/ui/phase-enemy.png');
+    await banner('Phase ennemie', 'enemy', UIAsset('img/ui/phase-enemy.png'));
     // renforts : ennemis et alliés génériques ici ; ceux des autres factions arrivent à leur phase
     const arriving = await arriveReinforcements(u => !Factions.phaseOrder().includes(u.team));
     if (arriving === null) return;

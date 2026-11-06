@@ -1,0 +1,79 @@
+{
+ "type": "battler",
+ "name": "Halberdier [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  29,
+  36
+ ],
+ "anchor": [
+  12,
+  35
+ ],
+ "columns": 12,
+ "count": 4,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83
+   ]
+  }
+ },
+ "source": "FE-Repo — TytheBub"
+}

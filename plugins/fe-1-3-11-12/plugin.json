@@ -1,0 +1,57 @@
+{
+ "id": "fe-1-3-11-12",
+ "name": "FE 1-3-11-12",
+ "version": "0.3.0",
+ "kind": "ressources",
+ "description": "Portraits de 76 personnage(s) de « FE 1-3-11-12 » (79 image(s), face sets GBA 128×112). Sprites de map (9) et animations de combat (20) de 5 personnage(s), d'après FE-Repo. Sprites de map (9) et animations de combat (20) de 5 personnage(s), d'après FE-Repo. Sprites de map (9) et animations de combat (20) de 5 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe1:Marth": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Marth/Marth.png",
+    "mapSprite": "ressources/personnages/FE 1-3-11-12/Marth/map_LordFe3Marth",
+    "battler": "ressources/personnages/FE 1-3-11-12/Marth/combat_T1MarthHardStabM_Sword"
+   },
+   "fe1:Caeda": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Caeda/Caeda.png"
+   },
+   "fe1:Jagen": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Jagen/Jagen.png"
+   },
+   "fe1:Cain": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Cain/Cain.png"
+   },
+   "fe1:Abel": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Abel/Abel.png"
+   },
+   "fe1:Ogma": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Ogma/Ogma.png"
+   },
+   "fe1:Navarre": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Navarre/Navarre.png"
+   },
+   "fe1:Merric": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Merric/Merric.png"
+   },
+   "fe1:Minerva": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Minerva/Minerva.png"
+   },
+   "fe1:Lena": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Lena/Lena.png"
+   },
+   "fe1:Linde": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Linde/Linde.png"
+   },
+   "fe1:Palla": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Palla/Palla.png"
+   },
+   "fe1:Catria": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Catria/Catria.png"
+   },
+   "fe1:Est": {
+    "portrait": "ressources/personnages/FE 1-3-11-12/Est/Est.png"
+   }
+  }
+ }
+}

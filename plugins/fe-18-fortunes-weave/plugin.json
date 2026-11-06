@@ -1,0 +1,9 @@
+{
+ "id": "fe-18-fortunes-weave",
+ "name": "FE 18 Fortune's Weave",
+ "version": "0.2.0",
+ "kind": "ressources",
+ "description": "Portraits de 8 personnage(s) de « FE 18 Fortune's Weave » (9 image(s), face sets GBA 128×112). Sprites de map (2) et animations de combat (2) de 1 personnage(s), d'après FE-Repo. Sprites de map (2) et animations de combat (2) de 1 personnage(s), d'après FE-Repo. Sprites de map (2) et animations de combat (2) de 1 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources"
+}

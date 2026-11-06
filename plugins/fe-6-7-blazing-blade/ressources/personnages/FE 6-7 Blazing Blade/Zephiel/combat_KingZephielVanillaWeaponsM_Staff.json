@@ -1,0 +1,119 @@
+{
+ "type": "battler",
+ "name": "King Zephiel Vanilla +Weapons [M] — Staff",
+ "facing": "left",
+ "cell": [
+  77,
+  94
+ ],
+ "anchor": [
+  34,
+  91
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    0
+   ],
+   "durations": [
+    100,
+    83,
+    83,
+    100,
+    83,
+    17
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    0
+   ],
+   "durations": [
+    100,
+    83,
+    83,
+    100,
+    83,
+    17
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    0
+   ],
+   "durations": [
+    100,
+    83,
+    83,
+    100,
+    83,
+    17
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    0
+   ],
+   "durations": [
+    100,
+    83,
+    83,
+    100,
+    83,
+    17
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    5,
+    6,
+    5,
+    0
+   ],
+   "durations": [
+    50,
+    83,
+    117,
+    83,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, Hairyblob from Deviantart, Maiser6, MageBoy, tatutachang, Tatata, Leo_Link, tatata"
+}

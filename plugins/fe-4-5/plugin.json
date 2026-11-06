@@ -1,0 +1,66 @@
+{
+ "id": "fe-4-5",
+ "name": "FE 4-5",
+ "version": "0.2.0",
+ "kind": "ressources",
+ "description": "Portraits de 88 personnage(s) de « FE 4-5 » (88 image(s), face sets GBA 128×112). Sprites de map (10) et animations de combat (30) de 8 personnage(s), d'après FE-Repo. Sprites de map (10) et animations de combat (30) de 8 personnage(s), d'après FE-Repo. Sprites de map (10) et animations de combat (30) de 8 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe4:Sigurd": {
+    "portrait": "ressources/personnages/FE 4-5/Sigurd/Sigurd.png",
+    "battler": "ressources/personnages/FE 4-5/Sigurd/combat_SigurdM_Sword"
+   },
+   "fe4:Seliph": {
+    "portrait": "ressources/personnages/FE 4-5/Seliph/Seliph.png",
+    "mapSprite": "ressources/personnages/FE 4-5/Seliph/map_KnightLordSeliph",
+    "battler": "ressources/personnages/FE 4-5/Seliph/combat_SeliphRepaletteM_Sword"
+   },
+   "fe4:Deirdre": {
+    "portrait": "ressources/personnages/FE 4-5/Deirdre/Deirdre.png"
+   },
+   "fe4:Lex": {
+    "portrait": "ressources/personnages/FE 4-5/Lex/Lex.png"
+   },
+   "fe4:Azelle": {
+    "portrait": "ressources/personnages/FE 4-5/Azelle/Azelle.png"
+   },
+   "fe4:Finn": {
+    "portrait": "ressources/personnages/FE 4-5/Finn/Finn.png"
+   },
+   "fe4:Ethlyn": {
+    "portrait": "ressources/personnages/FE 4-5/Ethly/Ethly.png"
+   },
+   "fe4:Lachesis": {
+    "portrait": "ressources/personnages/FE 4-5/Lachesis/Lachesis.png"
+   },
+   "fe4:Brigid": {
+    "portrait": "ressources/personnages/FE 4-5/Brigid/Brigid.png"
+   },
+   "fe5:Leif": {
+    "portrait": "ressources/personnages/FE 4-5/Leif/Leif.png",
+    "mapSprite": "ressources/personnages/FE 4-5/Leif/map_MageThunderLeif",
+    "battler": "ressources/personnages/FE 4-5/Leif/combat_LeifLordM_Sword"
+   },
+   "fe5:Nanna": {
+    "portrait": "ressources/personnages/FE 4-5/Nanna/Nanna.png"
+   },
+   "fe5:Eyvel": {
+    "portrait": "ressources/personnages/FE 4-5/Eyvel/Eyvel.png"
+   },
+   "fe5:Dagdar": {
+    "portrait": "ressources/personnages/FE 4-5/Dagdar/Dagdar.png"
+   },
+   "fe5:Tanya": {
+    "portrait": "ressources/personnages/FE 4-5/Tanya/Tanya.png"
+   },
+   "fe5:Olwen": {
+    "portrait": "ressources/personnages/FE 4-5/Olwen/Olwen.png"
+   },
+   "fe5:Lara": {
+    "portrait": "ressources/personnages/FE 4-5/Lara/Lara.png"
+   }
+  }
+ }
+}

@@ -87,7 +87,7 @@ function zipDir(root, out) {
  * platform : 'web' | 'windows' | 'android' (comportement de « Quitter »).
  */
 function writeWeb(dest, ctx, platform) {
-  const { appRoot, projectDir, project, plugins, name, version, id } = ctx;
+  const { appRoot, projectDir, project, plugins, ui, name, version, id } = ctx;
   rmrf(dest);
   fs.mkdirSync(dest, { recursive: true });
   // moteur : renderer (sans les fichiers propres à l'éditeur, inutiles) + shared
@@ -102,7 +102,7 @@ function writeWeb(dest, ctx, platform) {
   fs.writeFileSync(page, html);
   // projet : ressources, plugins, données (sans sauvegardes ni copies de secours)
   copyDir(projectDir, path.join(dest, 'game'), (p, e) => !(e.isDirectory() && path.dirname(p) === projectDir && SKIP_PROJECT.has(e.name)) && !/\.(bak|tmp)$/.test(e.name));
-  const data = { id, name, version, platform, project, plugins };
+  const data = { id, name, version, platform, project, plugins, ui };
   fs.writeFileSync(path.join(dest, 'game', 'game-data.js'), '/* Généré par Tactical Emblem (Fichier › Compiler le jeu…) */\nwindow.__GAME__ = ' + JSON.stringify(data) + ';\n');
   fs.writeFileSync(path.join(dest, 'index.html'), `<!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -297,7 +297,8 @@ function exportGame(projectDir, opts, env) {
   const name = fileName(opts.name || project.meta.name);
   const version = /^\d+(\.\d+){0,3}$/.test(String(opts.version || '')) ? String(opts.version) : '1.0.0';
   const plugins = pluginsIO.listInstalled(projectDir).filter(m => !m.error);
-  const ctx = { appRoot: env.appRoot, projectDir, project, plugins, name, version, id: slug(name), exePath: env.exePath };
+  const ui = io.installInterface(projectDir, path.join(env.appRoot, 'src', 'renderer', 'img')); // images d'interface du projet
+  const ctx = { appRoot: env.appRoot, projectDir, project, plugins, ui, name, version, id: slug(name), exePath: env.exePath };
   const outputs = [], warnings = [];
   fs.mkdirSync(outRoot, { recursive: true });
   if (platforms.includes('web')) {

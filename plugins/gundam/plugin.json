@@ -1,0 +1,9 @@
+{
+ "id": "gundam",
+ "name": "Gundam",
+ "version": "0.2.0",
+ "kind": "ressources",
+ "description": "Portraits de 7 personnage(s) de « Gundam » (9 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources"
+}

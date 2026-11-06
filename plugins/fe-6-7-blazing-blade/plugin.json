@@ -1,0 +1,137 @@
+{
+ "id": "fe-6-7-blazing-blade",
+ "name": "FE 6-7 Blazing Blade",
+ "version": "0.3.0",
+ "kind": "ressources",
+ "description": "Portraits de 221 personnage(s) de « FE 6-7 Blazing Blade » (232 image(s), face sets GBA 128×112). Sprites de map (98) et animations de combat (1433) de 78 personnage(s), d'après FE-Repo. Sprites de map (98) et animations de combat (1433) de 78 personnage(s), d'après FE-Repo. Sprites de map (98) et animations de combat (1433) de 78 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe6:Roy": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Roy/Roy.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Roy/map_LordRoyT1",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Roy/combat_VanillaMagicM_Sword"
+   },
+   "fe6:Lilina": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Lilina/Lilina.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Lilina/map_LordLilina",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Lilina/combat_VanillaFe6LilinaStaffF_Magic"
+   },
+   "fe6:Marcus": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Marcus/Marcus.png"
+   },
+   "fe6:Alen": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Alen/Alen.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Alen/combat_Alen_Sword"
+   },
+   "fe6:Lance": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Lance/Lance.png"
+   },
+   "fe6:Wolt": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Wolt/Wolt.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Wolt/combat_DerSWoltM_Bow"
+   },
+   "fe6:Bors": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Bors/Bors.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Bors/combat_BorsM_Lance"
+   },
+   "fe6:Ellen": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Elen/Elen.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Elen/combat_ElenF_Magic"
+   },
+   "fe6:Dieck": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Dieck/Dieck.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Dieck/combat_DieckM_SwordFixed"
+   },
+   "fe6:Shanna": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Shanna/Shanna.png"
+   },
+   "fe6:Rutger": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Rutger/Rutger.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Rutger/combat_RutgerM_Sword"
+   },
+   "fe6:Sue": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Sue/Sue.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Sue/combat_Sue_Bow"
+   },
+   "fe6:Fir": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Fir/Fir.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Fir/combat_T1FirStyleMyrmidonF_Sword"
+   },
+   "fe7:Eliwood": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Eliwood/Eliwood.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Eliwood/map_LordEliwoodSword",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Eliwood/combat_T2VanillaWeaponsM_Sword"
+   },
+   "fe7:Lyn": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Lyn/Lyn.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Lyn/map_LordLynSword",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Lyn/combat_T1VanillaAxesF_Sword"
+   },
+   "fe7:Hector": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Hector/Hector.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Hector/map_LordHectorAxe2",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Hector/combat_T1VanillaWeaponsM_Sword"
+   },
+   "fe7:Florina": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Florina/Florina.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Florina/combat_FalcoknightFlorina_Sword"
+   },
+   "fe7:Kent": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Kent/Kent.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Kent/combat_Kent_Sword"
+   },
+   "fe7:Sain": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Sain/Sain.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Sain/combat_Sain_Sword"
+   },
+   "fe7:Wil": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Wil/Wil.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Wil/combat_DerSWilM_Bow"
+   },
+   "fe7:Erk": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Erk/Erk.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Erk/combat_ErkM_Magic"
+   },
+   "fe7:Raven": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Raven/Raven.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Raven/combat_RavenArmorCoatBasicShieldMVanillaFixes_Sword"
+   },
+   "fe7:Priscilla": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Priscilla/Priscilla.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Priscilla/combat_PriscillaF_Magic"
+   },
+   "fe7:Ninian": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Ninian/Ninian.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Ninian/map_DancerNinian",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Ninian/combat_VanillaFe7NinianWeapons_Lance"
+   },
+   "fe7:Nino": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Nino/Nino.png",
+    "mapSprite": "ressources/personnages/FE 6-7 Blazing Blade/Nino/map_CustomPaleFlowerNino",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Nino/combat_VanillaFe7NinoFixesF_Magic"
+   },
+   "fe7:Karel": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Karel/Karel.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Karel/combat_VanillaFe7KarelM_Sword"
+   },
+   "fe7:Canas": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Canas/Canas.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Canas/combat_CanasM_Magic"
+   },
+   "fe7:Heath": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Heath/Heath.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Heath/combat_HeathRepalette_Sword"
+   },
+   "fe7:Pent": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Pent/Pent.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Pent/combat_PentM_Magic"
+   },
+   "fe7:Louise": {
+    "portrait": "ressources/personnages/FE 6-7 Blazing Blade/Louise/Louise.png",
+    "battler": "ressources/personnages/FE 6-7 Blazing Blade/Louise/combat_LouiseF_Bow"
+   }
+  }
+ }
+}

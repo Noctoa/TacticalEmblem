@@ -1,0 +1,139 @@
+{
+ "type": "battler",
+ "name": "Leo-Style +Weapons — Magic",
+ "facing": "left",
+ "cell": [
+  48,
+  53
+ ],
+ "anchor": [
+  32,
+  52
+ ],
+ "columns": 12,
+ "count": 11,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    67,
+    133,
+    67,
+    17
+   ],
+   "hit": 3
+  },
+  "critical": {
+   "frames": [
+    0,
+    3,
+    4,
+    5,
+    6,
+    3,
+    7,
+    3,
+    8,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    100,
+    117,
+    117,
+    100,
+    117,
+    117,
+    117,
+    50,
+    117,
+    67,
+    17
+   ],
+   "hit": 10
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    67,
+    133,
+    67,
+    17
+   ],
+   "hit": 3
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    3,
+    4,
+    5,
+    6,
+    3,
+    7,
+    3,
+    8,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    100,
+    117,
+    117,
+    100,
+    117,
+    117,
+    117,
+    50,
+    117,
+    67,
+    17
+   ],
+   "hit": 10
+  },
+  "dodge": {
+   "frames": [
+    0,
+    9,
+    10,
+    9,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    333,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Leo_Link, Jey the Count, knabepicer, SALVAGED"
+}

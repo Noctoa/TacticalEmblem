@@ -272,5 +272,5 @@
       icon ? h('img', { class: 'money-icon', src: icon, alt: name || '' }) : (name ? name + ' : ' : ''), h('b', {}, n));
   }
   const GOLD_ICON = 'img/ui/gold.png'; // pièce d'or (monnaie du jeu)
-  root.UI = { money, GOLD_ICON, h, getPath, setPath, modal, prompt, confirm, alert, choose, toast, form, debounce };
+  root.UI = { money, get GOLD_ICON() { return root.UIAsset ? root.UIAsset(GOLD_ICON) : GOLD_ICON; }, h, getPath, setPath, modal, prompt, confirm, alert, choose, toast, form, debounce };
 })(self);

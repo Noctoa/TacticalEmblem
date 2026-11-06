@@ -1,0 +1,77 @@
+{
+ "type": "battler",
+ "name": "T1 Waleed's Gladiator Repal v2 +Sword [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  43,
+  41
+ ],
+ "anchor": [
+  12,
+  40
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Waleed, Pushwall, Lord_Tweed"
+}

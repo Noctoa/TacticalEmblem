@@ -12,7 +12,7 @@
   const imgs = {};
   function image(style) {
     if (!META[style]) return null;
-    if (!imgs[style]) { const im = new Image(); im.src = new URL(`img/feh/digits-${style}.png`, document.baseURI).href; imgs[style] = im; }
+    if (!imgs[style]) { const im = new Image(); const rel = `img/feh/digits-${style}.png`; im.src = new URL(self.UIAsset ? UIAsset(rel) : rel, document.baseURI).href; imgs[style] = im; }
     const im = imgs[style];
     return im.complete && im.naturalWidth ? im : null;
   }

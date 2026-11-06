@@ -1,0 +1,137 @@
+{
+ "type": "battler",
+ "name": "Nils +Weapons — Revert (Ice)",
+ "facing": "left",
+ "cell": [
+  155,
+  153
+ ],
+ "anchor": [
+  66,
+  104
+ ],
+ "columns": 12,
+ "count": 19,
+ "anims": {
+  "stance": {
+   "frames": [
+    11
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    6,
+    7,
+    8,
+    9,
+    5,
+    4,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18
+   ],
+   "durations": [
+    17,
+    117,
+    150,
+    33,
+    33,
+    83,
+    83,
+    83,
+    67,
+    83,
+    83,
+    67,
+    67,
+    83,
+    100,
+    117,
+    133,
+    67,
+    67,
+    67,
+    67,
+    67,
+    67,
+    67
+   ],
+   "hit": 12
+  },
+  "critical": {
+   "frames": [
+    11,
+    11
+   ],
+   "durations": [
+    50,
+    50
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    11,
+    11,
+    11,
+    0
+   ],
+   "durations": [
+    83,
+    67,
+    67,
+    50
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    11,
+    11,
+    11,
+    11
+   ],
+   "durations": [
+    83,
+    67,
+    67,
+    50
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    11,
+    11,
+    11,
+    11
+   ],
+   "durations": [
+    33,
+    50,
+    33,
+    33
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, FaerieFruit, Mikey Seregon, Marlon0024, Sirknite31, Saint Rubenio"
+}

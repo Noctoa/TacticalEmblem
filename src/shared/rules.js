@@ -318,7 +318,7 @@
     const c = terrain && terrain.cost && terrain.cost[moveType];
     let base = (c === undefined || c === null || c === '') ? 1 : Number(c);
     if (terrain?.id === 'water' && moveType !== 'flier' && Movement.crossesWater(unit) && (c == null || c === '' || base >= IMPASSABLE)) base = 2;
-    return base >= IMPASSABLE ? base : Math.min(IMPASSABLE - 1, base + Weather.movePenalty(weather, moveType));
+    return base >= IMPASSABLE ? base : Math.min(IMPASSABLE - 1, base + Weather.movePenalty(weather, moveType, terrain));
   }
 
   /**

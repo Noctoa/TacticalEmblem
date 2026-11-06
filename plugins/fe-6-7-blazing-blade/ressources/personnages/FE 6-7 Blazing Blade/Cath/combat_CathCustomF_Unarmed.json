@@ -1,0 +1,151 @@
+{
+ "type": "battler",
+ "name": "Cath Custom [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  49,
+  59
+ ],
+ "anchor": [
+  24,
+  51
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — RedBean, Redbean, UltraFenix, RiriK, 7743, Ultra Fenix"
+}

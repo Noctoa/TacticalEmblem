@@ -1,0 +1,101 @@
+{
+ "type": "battler",
+ "name": "Hawkzerker [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  26,
+  41
+ ],
+ "anchor": [
+  10,
+  40
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Maiser6, Pikmin1211, ZoramineFae, Pikmin1211 and DerTheVaporeon, DerTheVaporeon"
+}

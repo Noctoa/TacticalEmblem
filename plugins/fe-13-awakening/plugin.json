@@ -1,0 +1,64 @@
+{
+ "id": "fe-13-awakening",
+ "name": "FE 13 Awakening",
+ "version": "0.3.0",
+ "kind": "ressources",
+ "description": "Portraits de 88 personnage(s) de « FE 13 Awakening » (113 image(s), face sets GBA 128×112). Sprites de map (7) et animations de combat (18) de 7 personnage(s), d'après FE-Repo. Sprites de map (7) et animations de combat (18) de 7 personnage(s), d'après FE-Repo. Sprites de map (7) et animations de combat (18) de 7 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe13:Chrom": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Chrom/Chrom.png",
+    "battler": "ressources/personnages/FE 13 Awakening/Chrom/combat_ChromM_Sword"
+   },
+   "fe13:Lucina": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Lucina/Lucina.png",
+    "mapSprite": "ressources/personnages/FE 13 Awakening/Lucina/map_LordLucinaSword",
+    "battler": "ressources/personnages/FE 13 Awakening/Lucina/combat_T1LucinaSlashF_Sword"
+   },
+   "fe13:Robin": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Robinm/Robinm.png"
+   },
+   "fe13:Frederick": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Frederick/Frederick.png"
+   },
+   "fe13:Lissa": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Lissa/Lissa.png",
+    "mapSprite": "ressources/personnages/FE 13 Awakening/Lissa/map_ClericLissa",
+    "battler": "ressources/personnages/FE 13 Awakening/Lissa/combat_Fe13LissaF_Staff"
+   },
+   "fe13:Sully": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Sully/Sully.png"
+   },
+   "fe13:Virion": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Virion/Virion.png"
+   },
+   "fe13:Stahl": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Stahl/Stahl.png"
+   },
+   "fe13:Vaike": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Vaike/Vaike.png"
+   },
+   "fe13:Miriel": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Miriel/Miriel.png"
+   },
+   "fe13:Sumia": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Sumia/Sumia.png"
+   },
+   "fe13:Cordelia": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Cordelia/Cordelia.png"
+   },
+   "fe13:Lon'qu": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Lonqu/Lonqu.png"
+   },
+   "fe13:Tharja": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Tharja/Tharja.png",
+    "battler": "ressources/personnages/FE 13 Awakening/Tharja/combat_DarkMageTharjaF_Magic"
+   },
+   "fe13:Olivia": {
+    "portrait": "ressources/personnages/FE 13 Awakening/Olivia/Olivia.png"
+   }
+  }
+ }
+}

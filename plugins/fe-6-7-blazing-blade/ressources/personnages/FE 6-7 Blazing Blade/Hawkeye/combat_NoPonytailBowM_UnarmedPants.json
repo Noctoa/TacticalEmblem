@@ -1,0 +1,101 @@
+{
+ "type": "battler",
+ "name": "No Ponytail +Bow [M] — Unarmed (Pants)",
+ "facing": "left",
+ "cell": [
+  38,
+  41
+ ],
+ "anchor": [
+  16,
+  40
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Orihara_Saki, HyperGammaSpaces, ZoramineFae, ltranc, Apolo15"
+}

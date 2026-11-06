@@ -1,0 +1,84 @@
+{
+ "type": "battler",
+ "name": "Heath Repalette — Bow",
+ "facing": "left",
+ "cell": [
+  129,
+  92
+ ],
+ "anchor": [
+  52,
+  91
+ ],
+ "columns": 12,
+ "count": 27,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    17,
+    26,
+    17,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17
+   ]
+  },
+  "bow": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  },
+  "bowCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  }
+ },
+ "projectiles": {
+  "arrow": "arrow.png"
+ },
+ "source": "FE-Repo — Greentea, RobertFPY, UltraFenix, CranJam"
+}

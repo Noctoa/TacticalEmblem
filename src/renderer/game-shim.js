@@ -37,7 +37,7 @@
   }
   const api = {
     __shim: true,
-    loadProject: async () => ({ dir: 'game', baseUrl, project: JSON.parse(JSON.stringify(GAME.project)) }),
+    loadProject: async () => ({ dir: 'game', baseUrl, project: JSON.parse(JSON.stringify(GAME.project)), ui: (GAME.ui || []).slice() }),
     installedPlugins: async () => (GAME.plugins || []).slice(),
     listSaves: async () => list(),
     loadCampaign: async (dir, slot) => {

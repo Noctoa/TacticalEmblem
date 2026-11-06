@@ -1,0 +1,9 @@
+{
+ "id": "generic-characters",
+ "name": "Generic Characters (Villagers, Goons, and Loons)",
+ "version": "0.2.0",
+ "kind": "ressources",
+ "description": "Portraits de 163 personnage(s) de « Generic Characters (Villagers, Goons, and Loons) » (569 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources"
+}

@@ -13,10 +13,10 @@ test('météo : aucun effet dans les anciens actes, valeurs par défaut et libel
 });
 
 test('météo : trois types et trois intensités, vent contrôlé et données invalides refusées', () => {
-  for (const type of ['none', 'fog', 'sand', 'snow']) for (const intensity of [1, 2, 3]) for (const direction of ['left', 'right']) {
+  for (const type of ['none', 'fog', 'sand', 'snow', 'rain', 'ash']) for (const intensity of [1, 2, 3]) for (const direction of ['left', 'right']) {
     assert.deepEqual(W.validate({ type, intensity, direction }), []);
   }
-  for (const v of [null, [], 'fog', {}, { type: 'rain' }, { type: 'fog', intensity: 0 }, { type: 'fog', intensity: '2' },
+  for (const v of [null, [], 'fog', {}, { type: 'storm' }, { type: 'fog', intensity: 0 }, { type: 'fog', intensity: '2' },
     { type: 'fog', direction: 'north' }]) assert.ok(W.validate(v).length, JSON.stringify(v));
 });
 
@@ -62,4 +62,19 @@ test('sauvegarde : masquer la météo est optionnel et doit être un booléen', 
   save.weatherEffects = false; assert.doesNotThrow(() => C.validate(save));
   save.weatherEffects = true; assert.doesNotThrow(() => C.validate(save));
   save.weatherEffects = 'false'; assert.throws(() => C.validate(save), /météo/);
+});
+
+test('météo : pluie (règle de FE7 sur le terrain découvert) et cendres (vue et précision)', () => {
+  const rain = { type: 'rain', intensity: 2, direction: 'right', tactical: true };
+  const plain = { id: 'plain', avoid: 0, def: 0 }, forest = { id: 'forest', avoid: 20, def: 1 }, bridge = { id: 'bridge', avoid: 0, def: 0 };
+  assert.equal(W.movePenalty(rain, 'foot', plain), 1);
+  assert.equal(W.movePenalty(rain, 'horse', plain), 2);
+  assert.equal(W.movePenalty(rain, 'foot', forest), 0, 'forêt : déjà ralentie, inchangée');
+  assert.equal(W.movePenalty(rain, 'foot', bridge), 0, 'pont / intérieur : inchangé');
+  assert.equal(W.movePenalty(rain, 'flier', plain), 0);
+  assert.equal(W.movePenalty({ ...rain, intensity: 1 }, 'foot', plain), 0);
+  assert.equal(W.movePenalty({ ...rain, tactical: false }, 'horse', plain), 0, 'ambiance seule');
+  const ash = W.effects({ type: 'ash', intensity: 2, tactical: true });
+  assert.equal(ash.vision, 4); assert.equal(ash.avoid, 10); assert.equal(ash.movement, 0);
+  assert.match(W.describe({ type: 'ash', intensity: 2, tactical: true }), /précision −10/);
 });

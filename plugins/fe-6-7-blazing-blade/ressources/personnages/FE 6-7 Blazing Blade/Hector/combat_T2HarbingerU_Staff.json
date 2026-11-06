@@ -1,0 +1,135 @@
+{
+ "type": "battler",
+ "name": "T2 Harbinger [U] — Staff",
+ "facing": "left",
+ "cell": [
+  71,
+  42
+ ],
+ "anchor": [
+  38,
+  40
+ ],
+ "columns": 12,
+ "count": 6,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    200,
+    67,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    200,
+    67,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    200,
+    67,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    200,
+    67,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "dodge": {
+   "frames": [
+    0,
+    4,
+    5,
+    4,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Nuramon, Mycahel, JJ09, GabrielKnight, ZoramineFae"
+}

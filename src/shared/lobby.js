@@ -17,7 +17,8 @@
  *   Un ACTE est un niveau jouable (data/chapters.json : map, placements, objectif, dialogues).
  *   Un CHAPITRE (data/arcs.json) regroupe des actes, joués dans l'ordre :
  *     { id, name, kind, description, unlock, acts: [id d'acte] }
- *     kind      'story' (histoire : les chapitres s'ouvrent l'un après l'autre) ou 'event' (évènement)
+ *     kind      'story' (histoire : les chapitres s'ouvrent l'un après l'autre), 'side' (annexe : quête secondaire,
+ *               ouverte selon ses conditions comme un évènement) ou 'event' (évènement)
  *     unlock    { after, alive: [unitId], from, to } — after : chapitre ou acte à terminer avant ;
  *               alive : personnages vivants requis ; from / to : dates réelles « AAAA-MM-JJ » (incluses)
  *   Un chapitre est terminé quand tous ses actes le sont. Un acte qui n'appartient à aucun chapitre
@@ -38,6 +39,9 @@
 })(typeof self !== 'undefined' ? self : this, function (Extensions) {
   'use strict';
   const byId = (list, id) => (list || []).find(e => e && e.id === id);
+  /** Sections du tableau des quêtes, dans l'ordre : histoire, annexes, évènements. */
+  const KINDS = ['story', 'side', 'event'];
+  const kindOf = (k) => (KINDS.includes(k) ? k : 'story');
   const LOBBY_SAVE = '@lobby'; // « chapitre » d'une sauvegarde faite dans le lobby
 
   function defaults(cfg) {
@@ -107,11 +111,11 @@
     for (const a of (db && db.arcs) || []) {
       const list = (a.acts || []).map(id => byId(acts, id)).filter(c => c && !used.has(c.id));
       list.forEach(c => used.add(c.id));
-      out.push({ id: a.id, name: a.name || a.id, kind: a.kind === 'event' ? 'event' : 'story', description: a.description || '', unlock: a.unlock || {}, acts: list, implicit: false });
+      out.push({ id: a.id, name: a.name || a.id, kind: kindOf(a.kind), description: a.description || '', unlock: a.unlock || {}, acts: list, implicit: false });
     }
     for (const c of acts) {
       if (used.has(c.id)) continue;
-      out.push({ id: c.id, name: c.name, kind: c.kind === 'event' ? 'event' : 'story', description: '', unlock: c.unlock || {}, acts: [c], implicit: true });
+      out.push({ id: c.id, name: c.name, kind: kindOf(c.kind), description: '', unlock: c.unlock || {}, acts: [c], implicit: true });
     }
     return out;
   }
@@ -348,5 +352,5 @@
     return errors;
   }
 
-  return { LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, extraRewards, rewardText, places, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
+  return { KINDS, LOBBY_SAVE, defaults, heroOf, today, conditions, arcsOf, actInfo, actLabel, nameOf, isDone, board, chapters, nextAct, validateArcs, goldFor, extraRewards, rewardText, places, completeChapter, present, talks, markTalk, entryOf, price, sellPrice, stock, buy, sell, validate, progressOf };
 });

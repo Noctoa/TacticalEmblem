@@ -1,0 +1,91 @@
+{
+ "type": "battler",
+ "name": "Ryoma [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  37,
+  43
+ ],
+ "anchor": [
+  19,
+  42
+ ],
+ "columns": 12,
+ "count": 2,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Dejais"
+}

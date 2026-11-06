@@ -1,0 +1,111 @@
+{
+ "type": "battler",
+ "name": "Leo-Style +Weapons — Staff",
+ "facing": "left",
+ "cell": [
+  48,
+  82
+ ],
+ "anchor": [
+  32,
+  81
+ ],
+ "columns": 12,
+ "count": 6,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    67,
+    333,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    67,
+    333,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    67,
+    333,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    117,
+    333,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    4,
+    5,
+    4,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    333,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Leo_Link, Jey the Count, knabepicer, SALVAGED"
+}

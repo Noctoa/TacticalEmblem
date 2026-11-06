@@ -284,6 +284,44 @@ function createProject(dir, name, template, assetsDir) {
  * files : [{ name: 'portrait.png' | 'map_genere.png' | …, base64 } | { name: '….json', json }] ; noms simples uniquement.
  * Renvoie { dir, files: { nom: chemin relatif }, resources }.
  */
+/**
+ * Images de l'interface du moteur (src/renderer/img, sans le générateur) copiées dans ressources/interface/ du projet
+ * quand elles y manquent, pour être modifiées librement ; renvoie toutes les images présentes (chemins en « / »).
+ */
+const UI_SKIP = new Set(['generator', 'logo.png']); // outils et logo de l'éditeur : pas dans le jeu
+function installInterface(dir, imgDir) {
+  const dest = path.join(dir, Layout.ROOT, 'interface');
+  if (imgDir && fs.existsSync(imgDir)) {
+    (function walk(src, rel) {
+      for (const e of fs.readdirSync(src, { withFileTypes: true })) {
+        if (!rel && UI_SKIP.has(e.name)) continue;
+        const s = path.join(src, e.name), r = rel ? rel + '/' + e.name : e.name;
+        if (e.isDirectory()) walk(s, r);
+        else if (/\.png$/i.test(e.name)) {
+          const d = path.join(dest, ...r.split('/'));
+          if (!fs.existsSync(d)) { fs.mkdirSync(path.dirname(d), { recursive: true }); fs.copyFileSync(s, d); }
+        }
+      }
+    })(imgDir, '');
+    const readme = path.join(dest, 'LISEZMOI.txt');
+    if (!fs.existsSync(readme)) fs.writeFileSync(readme, `Interface du jeu (images du moteur Tactical Emblem)
+
+Ces images sont celles du jeu : fenêtres et curseur (ui/), interface de combat (ui/, ui/ff9, ui/radiant),
+annonces de phase (ui/phase-*.png), chiffres et bulles (feh/), icônes des compétences (skills/) et des objets
+(items/), météo (weather/), ultimes (ui/ultimate/), sauvegardes (ui/save/).
+Modifie-les librement en gardant le même nom et la même taille (les planches sont découpées en cases).
+Une image supprimée est recopiée telle qu'à l'origine à la prochaine ouverture du projet.
+`);
+  }
+  const out = [];
+  if (fs.existsSync(dest)) (function list(d, rel) {
+    for (const e of fs.readdirSync(d, { withFileTypes: true })) {
+      const r = rel ? rel + '/' + e.name : e.name;
+      if (e.isDirectory()) list(path.join(d, e.name), r); else if (/\.(png|jpe?g|gif|webp)$/i.test(e.name)) out.push(r);
+    }
+  })(dest, '');
+  return out;
+}
 /** Écrit les fichiers du générateur (PNG en base64, JSON) dans un dossier ; noms contrôlés. */
 function writeFilesTo(abs, files, max) {
   if (!Array.isArray(files) || !files.length || files.length > (max || 8)) throw new Error('Fichiers du générateur invalides.');
@@ -325,4 +363,4 @@ function writeGenerated(dir, owner, files) {
   return { dir: rel, files: out, resources: scanResources(dir) };
 }
 
-module.exports = { writeGenerated, exportGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };
+module.exports = { installInterface, writeGenerated, exportGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };

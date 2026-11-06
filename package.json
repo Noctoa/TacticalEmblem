@@ -21,6 +21,6 @@
   "build": {
     "appId": "fr.luca.tacticalemblem",
     "files": ["main.js", "preload.js", "src/**/*", "assets/**/*", "plugins/**/*", "node_modules/**/*"],
-    "win": { "target": "portable" }
+    "win": { "target": "portable", "icon": "assets/icon/icon.ico" }
   }
 }

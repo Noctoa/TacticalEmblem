@@ -1906,7 +1906,7 @@
         { key: 'music.victory', label: 'Victoire', type: 'select', empty: '— projet —', options: () => audioOpts('me') }] },
       { type: 'heading', label: 'Lobby : récompense' + (inArc ? '' : ', type et déblocage') },
       { type: 'row', fields: [
-        inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènement (optionnel)' }] },
+        inArc ? null : { key: 'kind', label: 'Type', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'side', label: 'Annexe (quête secondaire)' }, { value: 'event', label: 'Évènement (optionnel)' }] },
         { key: 'gold', label: 'Or à la victoire', type: 'number', min: 0, max: 999999 }].filter(Boolean) },
       { type: 'row', fields: [
         { key: 'goldEachClear', label: "Or à chaque victoire (sinon : la première fois)", type: 'checkbox' },
@@ -1918,7 +1918,7 @@
         { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
         { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
       { type: 'info', text: (c) => (Lobby.defaults(Editor.project().meta.lobby).enabled ? '' : '⚠ Le camp est désactivé (map de camp, mode Unités) : ces réglages ne servent pas encore. ') +
-        (inArc ? '' : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
+        (inArc ? '' : c.kind === 'side' ? "Annexe : quête secondaire, visible au tableau des quêtes (section Annexes) quand ses conditions sont remplies." : c.kind === 'event' ? "Évènement : visible au tableau des quêtes quand ses conditions sont remplies ; un évènement daté s'affiche « Bientôt » avant sa date." : "Histoire : s'ouvre quand l'acte qui le désigne comme « suivant » est terminé (ou s'il est l'acte de départ).") },
       { type: 'info', text: (c) => `${c.players.length} unité(s) joueur · ${c.enemies.length} ennemi(s) — les placements se font sur la map (mode Unités, F3).` }
     ]), ch, { onChange: (k) => { change(); if (k === 'objective.type' || k === 'name' || k === 'kind') renderBody(); } }));
     pane.append(h('div', { class: 'form-heading' }, 'Ambiance météo'), WeatherFields.form(ch, { change }));
@@ -2479,7 +2479,8 @@
   }
   function addArc(kind) {
     const list = db().arcs || (db().arcs = []);
-    const a = { id: Editor.uid('arc_', list), name: kind === 'event' ? 'Évènement ' + (list.filter(x => x.kind === 'event').length + 1) : 'Chapitre ' + (list.filter(x => x.kind !== 'event').length + 1),
+    const n = (k) => list.filter(x => (x.kind || 'story') === k).length + 1;
+    const a = { id: Editor.uid('arc_', list), name: kind === 'event' ? 'Évènement ' + n('event') : kind === 'side' ? 'Annexe ' + n('side') : 'Chapitre ' + n('story'),
       kind, description: '', unlock: { after: '', alive: [], from: '', to: '' }, acts: [] };
     list.push(a); collapsedArcs.delete(a.id); change(); selectNode('arcs', a.id);
   }
@@ -2507,9 +2508,9 @@
       const q = fold(treeView.query.trim());
       const hit = (...texts) => !q || texts.some(t => fold(t).includes(q));
       let shown = 0;
-      for (const [kind, title] of [['story', 'Histoire'], ['event', 'Évènements']]) {
-        const group = arcs.filter(a => (a.kind === 'event' ? 'event' : 'story') === kind);
-        box.append(h('div', { class: 'db-group' }, title, h('button', { class: 'mini ch-add', title: kind === 'event' ? 'Nouvel évènement' : 'Nouveau chapitre', html: Icons.icon('plus'), onclick: () => addArc(kind) })));
+      for (const [kind, title] of [['story', 'Histoire'], ['side', 'Annexes'], ['event', 'Évènements']]) {
+        const group = arcs.filter(a => (['side', 'event'].includes(a.kind) ? a.kind : 'story') === kind);
+        box.append(h('div', { class: 'db-group', 'data-arc-group': kind }, title, h('button', { class: 'mini ch-add', title: kind === 'event' ? 'Nouvel évènement' : kind === 'side' ? 'Nouvelle quête annexe' : 'Nouveau chapitre', html: Icons.icon('plus'), onclick: () => addArc(kind) })));
         let any = false;
         group.forEach(a => {
           const list = (a.acts || []).map(id => byId(acts, id)).filter(Boolean);
@@ -2517,7 +2518,7 @@
           if (q && !arcHit && !matching.length) return;
           any = true; shown++;
           const open = q || !collapsedArcs.has(a.id);
-          const num = kind === 'event' ? '' : String(group.indexOf(a) + 1);
+          const num = kind === 'story' ? String(group.indexOf(a) + 1) : '';
           box.append(h('div', { class: 'db-item ch-arc' + (curArc && curArc.id === a.id ? ' on' : ''), 'data-arc': a.id, onclick: () => selectNode('arcs', a.id) },
             h('button', { class: 'ch-toggle', title: open ? 'Replier' : 'Déplier', onclick: (e) => { e.stopPropagation(); if (collapsedArcs.has(a.id)) collapsedArcs.delete(a.id); else collapsedArcs.add(a.id); fill(); } }, open ? '▾' : '▸'),
             h('span', {}, a.name || a.id), h('span', { class: 'sub' }, num ? `ch. ${num} · ${list.length} acte(s)` : `${list.length} acte(s)`)));
@@ -2526,7 +2527,7 @@
             if (!q) box.append(h('button', { class: 'ch-act ch-new', onclick: () => addActTo(a) }, '+ Nouvel acte'));
           }
         });
-        if (!any) box.append(h('p', { class: 'db-empty' }, q ? 'Aucun résultat.' : (kind === 'event' ? 'Aucun évènement.' : 'Aucun chapitre.')));
+        if (!any) box.append(h('p', { class: 'db-empty' }, q ? 'Aucun résultat.' : (kind === 'event' ? 'Aucun évènement.' : kind === 'side' ? 'Aucune quête annexe.' : 'Aucun chapitre.')));
       }
       const used = new Set(arcs.flatMap(a => a.acts || []));
       const free = acts.filter(c => !used.has(c.id) && hit(c.name));
@@ -2572,15 +2573,15 @@
     pane.append(UI.form([
       { type: 'row', fields: [
         { key: 'name', label: 'Nom', type: 'text', placeholder: 'Chapitre 1 — …' },
-        { key: 'kind', label: 'Section du tableau', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'event', label: 'Évènements' }] }] },
+        { key: 'kind', label: 'Section du tableau', type: 'select', options: [{ value: 'story', label: 'Histoire' }, { value: 'side', label: 'Annexes' }, { value: 'event', label: 'Évènements' }] }] },
       { key: 'description', label: 'Description (affichée au tableau des quêtes)', type: 'text' },
       { type: 'heading', label: 'Déblocage' },
-      { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: arc.kind === 'event' ? '— pas de condition —' : '— le chapitre d\'histoire précédent —', options: () => doneOpts(arc.id) },
+      { key: 'unlock.after', label: 'Disponible après', type: 'select', empty: arc.kind === 'event' || arc.kind === 'side' ? '— pas de condition —' : '— le chapitre d\'histoire précédent —', options: () => doneOpts(arc.id) },
       { key: 'unlock.alive', label: 'Seulement si ces personnages sont en vie', type: 'multicheck', options: () => db().units.map(u => ({ value: u.id, label: u.name })) },
       { type: 'row', fields: [
         { key: 'unlock.from', label: 'Disponible du (date réelle)', type: 'date' },
         { key: 'unlock.to', label: 'au (inclus)', type: 'date' }] },
-      { type: 'info', text: (a) => a.kind === 'event' ? "Évènement : visible quand ses conditions sont remplies ; daté, il s'affiche « Bientôt » avant sa date et disparaît après." : "Histoire : s'ouvre quand le chapitre d'histoire précédent est terminé (le premier contient l'acte de départ, Système). Les conditions s'ajoutent à cet ordre." }
+      { type: 'info', text: (a) => a.kind === 'side' ? "Annexe : quête secondaire (paralogue), dans sa propre section du tableau des quêtes, entre Histoire et Évènements. Elle s'ouvre selon ses conditions (après un chapitre, personnages en vie, dates), comme un évènement." : a.kind === 'event' ? "Évènement : visible quand ses conditions sont remplies ; daté, il s'affiche « Bientôt » avant sa date et disparaît après." : "Histoire : s'ouvre quand le chapitre d'histoire précédent est terminé (le premier contient l'acte de départ, Système). Les conditions s'ajoutent à cet ordre." }
     ], arc, { onChange: (k) => { change(); if (k === 'kind') renderBody(); else if (k === 'name') { pane.querySelector('h2').firstChild.textContent = arc.name; const row = document.querySelector(`#db-body [data-arc="${arc.id}"] span:nth-child(2)`); if (row) row.textContent = arc.name; } } }));
 
     // actes du chapitre, dans l'ordre

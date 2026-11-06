@@ -1,7 +1,7 @@
 {
  "id": "monstres",
  "name": "Monstres",
- "version": "1.0.0",
+ "version": "1.1.0",
  "kind": "ressources",
  "description": "Sprites de map (212) et animations de combat (200) des monstres de FE-Repo, rangés par famille (Amogus Imposter, Bael, Banshee, Battle Of Wesnoth, Blast Golem, Bombardino Crocodilo, Bonewalker, Cactus, Cultist, Cursed Sword, Cyclops, Demon King, Djinn, Dragon, Dryad, Evergrim, Fairy, Faoladh, Fire Imp, Gargoyle, Ghost, Gomorrah, Gorgon, Harpy, Kerendu, Kraken, Laguz, Living Armor, Living Doll, Loot Bug, Manakete, Mermaid, Mimic, Minotaur, Mogall, Mosquito, Nether Dryad, Ophanim, Phantom, Python, Rhea, Salamander, Scorpgal, Shark, Shield, Skibidi Toilet, Slime, Succubus, Sylph, Taguel, Tarvos, Tiger, Tome, Tralalero Tralala, Treant, Tung Sahun, Warbird, Wetgal, Wolf, Wyvern, Zombie) dans ressources/personnages/Monstres/. Les classes monstres FE8 du pack de classes (Bael, Gorgon, Mogall, Wight, Revenant…) reçoivent leurs sprites d'origine.",
  "author": "Tactical Emblem (conversion) — sprites et animations : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",

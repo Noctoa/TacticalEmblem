@@ -1,0 +1,101 @@
+{
+ "type": "battler",
+ "name": "Joshua Hat [M] — Staff",
+ "facing": "left",
+ "cell": [
+  40,
+  41
+ ],
+ "anchor": [
+  23,
+  40
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    17,
+    67
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    17,
+    67
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    17,
+    67
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    17,
+    67
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    3,
+    4,
+    3
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — ltranc, SD9K"
+}

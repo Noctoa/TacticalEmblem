@@ -1,0 +1,111 @@
+{
+ "type": "battler",
+ "name": "Camilla [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  23,
+  40
+ ],
+ "anchor": [
+  11,
+  39
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    67,
+    50,
+    50,
+    67
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    67,
+    50,
+    50,
+    67
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    67,
+    50,
+    50,
+    67
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    67,
+    50,
+    50,
+    67
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    67,
+    50,
+    50,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — SteamingTofu, Seliost1"
+}
