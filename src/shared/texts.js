@@ -214,7 +214,7 @@
   /** Catégories de la base : [liste, nom de la catégorie, complément pour le nom des fichiers]. */
   const DB_TEXT_FILES = [['units', 'Unités', 'des unités'], ['classes', 'Classes', 'des classes'], ['weapons', 'Armes', 'des armes'], ['items', 'Objets', 'des objets'],
     ['skills', 'Compétences', 'des compétences'], ['ultimates', 'Ultimes', 'des ultimes'], ['terrains', 'Terrains', 'des terrains'], ['arcs', 'Chapitres', 'des chapitres'],
-    ['chapters', 'Actes et dialogues', 'des actes'], ['talks', 'Conversations du camp', 'du camp'], ['supports', 'Affinités', 'des affinités'], ['system', 'Jeu (titre, camp, crédits)', 'du jeu']];
+    ['chapters', 'Actes', 'des actes'], ['talks', 'Conversations du camp', 'du camp'], ['supports', 'Affinités', 'des affinités'], ['system', 'Jeu (titre, camp, crédits)', 'du jeu']];
   /** Types de texte : un CSV par catégorie et par type (ex. « Noms des unités », « Épilogues des unités »). */
   const DB_TEXT_FIELDS = [['name', 'Noms'], ['description', 'Descriptions'], ['bio', 'Biographies'], ['ending', 'Épilogues'], ['quote', 'Citations'],
     ['title', 'Titres'], ['subtitle', 'Sous-titres'], ['objective', 'Objectifs'], ['label', 'Libellés'], ['dialogues', 'Dialogues'], ['conversations', 'Conversations'], ['credits', 'Crédits']];
@@ -224,6 +224,7 @@
   /** Type de texte d'une entrée d'après son chemin (« c_eliwood.ending » → ending, « ….conversations.C » → conversations). */
   function fieldOf(path) {
     if (path.includes('conversations')) return 'conversations';
+    if (path.includes('objective')) return 'objective';
     const k = path[path.length - 1];
     return k === 'script' || k === 'text' ? 'dialogues' : k;
   }
@@ -349,12 +350,15 @@
       const byField = new Map();
       for (const e of entries) { if (!byField.has(e.field)) byField.set(e.field, []); byField.get(e.field).push(e); }
       const fields = [...byField.keys()].sort((a, b) => fieldRank(a) - fieldRank(b));
-      for (const field of fields) {
-        const fid = baseFileId(list, field);
+      const parts = [];
+      for (const field of fields) parts.push(...partsOf(list, field, byField.get(field), db, { name: fieldLabel(field) + ' ' + suffix, group }));
+      for (const { field, part, name, group: g, entries: list_ } of parts) {
+        const fid = part ? partFileId(list, field, part, parts) : baseFileId(list, field);
         const prev = oldBase.find(f => f.id === fid);
         // même objet d'une synchro à l'autre (l'éditeur garde ses références)
-        const file = Object.assign(prev || {}, { id: fid, name: fieldLabel(field) + ' ' + suffix, kind: 'base', ref: list, field, group, auto: true, rows: [] });
-        for (const e of byField.get(field)) {
+        const file = Object.assign(prev || {}, { id: fid, name, kind: 'base', ref: list, field, group: g, auto: true, rows: [] });
+        if (part) file.part = part; else delete file.part;
+        for (const e of list_) {
           let r = rowFor(e);
           if (r && r.legacy) { delete r.legacy; known.delete(e.parent.id); }
           if (!r) { r = { id: e.id, t: {} }; res.added++; }
@@ -371,6 +375,29 @@
     }
     texts.files = base.concat(others);
     return res;
+  }
+  /**
+   * Découpage d'un type de texte en plusieurs CSV : les dialogues des niveaux (actes) sont rangés par chapitre
+   * (Base de données › Chapitres et actes), un fichier par chapitre ; les actes hors chapitre ensemble.
+   */
+  function partsOf(list, field, entries, db, def) {
+    if (list !== 'chapters' || field !== 'dialogues') return [Object.assign({ field, part: '', entries }, def)];
+    const arcOf = new Map();
+    for (const a of ((db || {}).arcs || [])) for (const id of (a.acts || [])) if (!arcOf.has(id)) arcOf.set(id, a);
+    const parts = new Map();
+    for (const e of entries) {
+      const a = arcOf.get(e.path[0]), key = a ? a.id : '';
+      if (!parts.has(key)) parts.set(key, { field, part: a ? String(a.id) : 'hors-chapitre', name: a ? (a.name || a.id) : 'Actes hors chapitre', group: 'Dialogues des chapitres', entries: [], order: a ? db.arcs.indexOf(a) : 1e9 });
+      parts.get(key).entries.push(e);
+    }
+    return [...parts.values()].sort((x, y) => x.order - y.order);
+  }
+  function partFileId(list, field, part, parts) {
+    const slug = String(part).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/g, '_');
+    let id = ('base_' + list + '_' + field + '_' + slug).slice(0, 48);
+    const same = parts.filter(p => p.part && p.part !== part && ('base_' + list + '_' + field + '_' + String(p.part).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9_-]+/g, '_')).slice(0, 48) === id);
+    if (same.length) id = id.slice(0, 44) + '_' + (parts.findIndex(p => p.part === part) + 1);
+    return id;
   }
   // ---------- répliques des personnages ----------
   const unitByName = (db, name) => { const n = String(name || '').trim().toLowerCase(); return n ? ((db || {}).units || []).find(u => String(u.name || '').trim().toLowerCase() === n) : null; };
@@ -419,10 +446,12 @@
 
   /** Fichiers de la base groupés par catégorie : [{ list, name, files }]. */
   function baseGroups(texts) {
-    const out = [];
-    for (const [list, name] of DB_TEXT_FILES) {
-      const files = texts.files.filter(f => f.kind === 'base' && f.ref === list);
-      if (files.length) out.push({ list, name, files });
+    const out = [], byName = new Map();
+    for (const [list, name] of DB_TEXT_FILES) for (const f of texts.files) {
+      if (f.kind !== 'base' || f.ref !== list) continue;
+      const key = f.group || name;
+      if (!byName.has(key)) { const g = { list, name: key, files: [] }; byName.set(key, g); out.push(g); }
+      byName.get(key).files.push(f);
     }
     return out;
   }

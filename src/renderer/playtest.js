@@ -37,6 +37,7 @@
       const payload = await tf.loadProject(params.get('dir'));
       G.project = payload.project; G.baseUrl = payload.baseUrl; G.db = G.project.db;
       G.resources = G.project.resources || { characters: {}, battlers: {} };
+      Factions.configure(G.project.meta.factions); // camps en plus (armée jaune…), hostilités
       G.settings = Object.assign({}, R.DEFAULT_SETTINGS, G.project.meta.settings || {});
       // textes du jeu dans la langue choisie (outil Textes : noms, descriptions, dialogues de la base)
       try { const l = localStorage.getItem('tf.language:' + (G.project.meta.name || '')); if (l) G.settings.language = l; } catch (e) { /* stockage indisponible */ }
@@ -371,8 +372,10 @@
       G.units.push(prep(u));
     }
     for (const pl of ch.enemies) {
-      const u = R.makeEnemyFromPlacement(pl, G.db, 'enemy');
+      // unités génériques de toutes les factions (ennemis, alliés génériques, armée jaune…) : placement.faction
+      const u = R.makeEnemyFromPlacement(pl, G.db, Factions.ofPlacement(pl));
       if (!u) continue;
+      if (u.team === 'ally') { u.control = pl.control || 'ai'; u.convoy = false; }
       // recrutement par la conversation : seulement si son personnage n'est pas déjà dans l'équipe (ou mort)
       u.talk = TalkRecruit.config(pl);
       if (u.talk && ((G.campaign.recruited || []).includes(u.talk.joinAs) || G.campaign.dead.includes(u.talk.joinAs) || !R.byId(G.db.units, u.talk.joinAs))) u.talk = null;
@@ -387,7 +390,7 @@
   /** Debug « déplacement illimité » : 99 cases pour les unités du joueur et les alliés. */
   function applyDebugMove() {
     for (const u of G.units.concat(G.pending)) {
-      if (u.team === 'enemy') continue;
+      if (!isPS(u)) continue;
       if (G.debug.move) { if (u.debugMov === undefined) u.debugMov = u.mov; u.mov = 99; }
       else if (u.debugMov !== undefined) { u.mov = u.debugMov; delete u.debugMov; }
     }
@@ -398,7 +401,12 @@
   // Requêtes sur l'état
   // =====================================================================
   const alive = () => G.units.filter(u => !u.dead);
-  const players = () => alive().filter(u => u.team !== 'enemy');      // joueur + alliés (camp ami)
+  const isPS = (u) => !!u && Factions.isPlayerSide(u.team);          // joueur ou allié
+  const isFoe = (a, b) => !!a && !!b && Factions.hostile(a.team, b.team);
+  /** Unités qui se battent contre ce camp (ennemis du joueur, d'une faction…). */
+  const hostileTo = (team) => alive().filter(u => Factions.hostile(team, u.team));
+  const hostiles = () => hostileTo('player');                           // tout ce qui est hostile au joueur
+  const players = () => alive().filter(isPS);      // joueur + alliés (camp ami)
   const team = (t) => alive().filter(u => u.team === t);
   /** Unité commandable maintenant : unités du joueur en phase joueur, alliés « jouables » en phase alliée. */
   const controllable = (u) => !!u && !u.dead && !u.done && Statuses.canAct(u) &&
@@ -419,7 +427,7 @@
     if (visible === null || visible.has(key(x, y))) return true;
     return !!(G.combatReveal && G.units.some(u => G.combatReveal.has(u.uid) && u.x === x && u.y === y));
   }
-  const unitVisible = u => !!u && (u.team !== 'enemy' || tileVisible(u.x, u.y));
+  const unitVisible = u => !!u && (isPS(u) || tileVisible(u.x, u.y));
   const visibleUnitAt = (x, y) => { const u = unitAt(x, y); return unitVisible(u) ? u : null; };
   const terrainAt = (x, y) => Locks.terrainAt(G.chapter, G.db, x, y, G.openedDoors || new Set(),
     G.mode === 'lobby' ? G.terrains[G.tgrid[y * G.map.width + x]] || null : Villages.terrainAt(G.chapter, G.db, x, y, villageState(), G.terrains[G.tgrid[y * G.map.width + x]] || null));
@@ -431,7 +439,7 @@
     return perceived ? R.perceivedContext({ team: 'player' }, real, alive()) : real;
   };
   const ropts = () => ({ db: G.db, settings: G.settings, ctx: rctx(), weather: G.mode === 'lobby' ? undefined : G.weather, terrainOf, bonusOf, units: alive(),
-    protect: (u) => G.debug.god && u.team !== 'enemy' });
+    protect: (u) => G.debug.god && isPS(u) });
   // ---------- affinités ----------
   /** Bonus d'affinité + bonus d'un renfort d'ultime encore actif. */
   const bonusOf = (u) => {
@@ -451,14 +459,24 @@
     }
     return false;
   }
+  /** Verrous de rang des affinités : chapitres atteints (acte en cours + actes terminés, ordre de Chapitres et actes). */
+  function refreshSupportLocks() {
+    if (!G.sup) return;
+    const arcs = G.db.arcs || [];
+    const arcIndexOfAct = (id) => arcs.findIndex(a => (a.acts || []).includes(id));
+    const max = Math.max(-1, ...[G.chapter && G.chapter.id].concat((G.campaign && G.campaign.cleared) || []).filter(Boolean).map(arcIndexOfAct));
+    R.applySupportLocks(G.sup, (arcId) => { const i = arcs.findIndex(a => a.id === arcId); return i < 0 || i <= max; });
+  }
   function gainSupport(a, b, amount) {
-    if (!a || !b || a.team === 'enemy' || b.team === 'enemy') return;
+    refreshSupportLocks();
+    if (!a || !b || !isPS(a) || !isPS(b) || a.placementId || b.placementId) return;
     if (R.addSupportPoints(G.sup, a.sourceId, b.sourceId, amount, G.supCfg, sTaken)) {
       float(a.x, a.y, '♥ Soutien !', '#ff9ecb'); float(b.x, b.y, '♥', '#ff9ecb');
     }
   }
   /** Partenaires adjacents avec une conversation de soutien disponible. */
   function supportsAvailable(u) {
+    refreshSupportLocks();
     const out = [];
     for (const p of R.partnersOf(u, G.sup)) {
       const other = unitById(p.id);
@@ -491,6 +509,7 @@
     }
   }
   function supportTags(u) {
+    refreshSupportLocks();
     return R.partnersOf(u, G.sup).filter(p => p.entry.rank > 0 || R.pendingRank(p.entry, G.supCfg, sTaken))
       .map(p => {
         const c = R.byId(G.db.units, p.id); const pend = R.pendingRank(p.entry, G.supCfg, sTaken);
@@ -503,7 +522,7 @@
 
   function attackTargetsFrom(u) {
     const res = [];
-    for (const e of enemies().filter(unitVisible)) {
+    for (const e of alive().filter(o => isFoe(u, o)).filter(unitVisible)) {
       const d = R.dist(u, e);
       if (R.attackWeapons(u, G.db).some(w => d >= (w.weapon.minRange || 1) && d <= (w.weapon.maxRange || 1))) res.push(e);
     }
@@ -746,6 +765,7 @@
   }
   function teamColor(u) {
     if (u.team === 'enemy') return u.isBoss ? '#a3243f' : '#d9473d';
+    if (!isPS(u)) return Factions.hex(u.team);
     if (u.team === 'ally') return '#2fa866';
     return '#3f7cf0';
   }
@@ -758,7 +778,7 @@
   /** Palette de l'animation de combat : couleurs choisies au générateur (fiche de l'unité) à la place des couleurs d'origine. */
   function battlePaletteOf(u) {
     const p = Palettes.paletteFor(u.team, colorMode(u), 'battle', false), def = R.byId(G.db.units, u.characterId || u.sourceId);
-    return p === 'original' && (u.team !== 'enemy' || u.characterId) && def && def.battleColors ? def.battleColors : p;
+    return p === 'original' && (isPS(u) || u.characterId) && def && def.battleColors ? def.battleColors : p;
   }
   /** Couleurs d'une unité : placement › unité › classe › réglage du projet. */
   function colorMode(u) { return Palettes.resolveMode(u.colorsOverride, u.colors, G.settings.colors); }
@@ -786,7 +806,7 @@
     ctx.fillStyle = 'rgba(0,0,0,.4)';
     ctx.beginPath(); ctx.ellipse(x + tw / 2, y + th - pad * 0.7 - bob, w * 0.42, hh * 0.13, 0, 0, Math.PI * 2); ctx.fill();
     let col = teamColor(u);
-    if (u.done && u.team !== 'enemy') col = '#6d7180';
+    if (u.done && isPS(u)) col = '#6d7180';
     const top = y + pad - hh * 0.02, bh = hh * 0.86;
     const grad = ctx.createLinearGradient(0, top, 0, top + bh);
     grad.addColorStop(0, shade(col, 1.25)); grad.addColorStop(1, shade(col, 0.72));
@@ -800,7 +820,7 @@
     ctx.fillStyle = '#fff';
     ctx.font = `800 ${Math.round(bh * 0.5)}px "Segoe UI", system-ui, sans-serif`;
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText((u.team === 'enemy' && c ? c.name : u.name).slice(0, 1).toUpperCase(), x + tw / 2, top + bh * 0.47);
+    ctx.fillText((!isPS(u) && c ? c.name : u.name).slice(0, 1).toUpperCase(), x + tw / 2, top + bh * 0.47);
     // seigneur / boss
     if (u.isLord || u.isBoss) {
       ctx.fillStyle = '#f2c46a';
@@ -831,7 +851,7 @@
     if (u.walkDir) anim = u.walkDir;
     else if (G.sel === u && ['moving', 'menu', 'items', 'target', 'staff', 'ultimate'].includes(G.ui)) anim = 'down';
     else if (controllable(u) && !G.busy && G.cursor.x === u.x && G.cursor.y === u.y && G.ui === 'idle') anim = 'focus';
-    const done = u.done && G.phase === (u.team === 'ally' ? 'ally' : 'player') && u.team !== 'enemy';
+    const done = u.done && G.phase === (u.team === 'ally' ? 'ally' : 'player') && isPS(u);
     const palette = Palettes.paletteFor(u.team, colorMode(u), 'map', done);
     ctx.globalAlpha = u.alpha;
     if (u.flash > performance.now()) ctx.filter = 'brightness(5) saturate(0)';
@@ -905,7 +925,7 @@
   function portraitEl(u, mode) {
     const c = R.byId(G.db.units, u.characterId || u.sourceId);
     const src = (c && c.portrait) || u.portrait;
-    const col = (u.team !== 'enemy' && ((c && c.color) || u.color)) || teamColor(u);
+    const col = (isPS(u) && !u.placementId && ((c && c.color) || u.color)) || teamColor(u);
     const el = h('div', { class: 'portrait', style: { background: `linear-gradient(160deg, ${shade(col, 1.2)}, ${shade(col, 0.6)})` } });
     if (src) {
       const face = Faces.element(Render.readyImage(G.baseUrl, src), Render.imageUrl(G.baseUrl, src), mode || 'mini');
@@ -947,7 +967,7 @@
     if (k === lastInfoKey) return;
     lastInfoKey = k;
     uw.innerHTML = '';
-    uw.className = 'win' + (u ? ' show' : '') + (u && u.team === 'enemy' ? ' enemy' : '') + (u && u.team === 'ally' ? ' ally' : '') + (u && leftHalf && !topHalf ? ' right' : '');
+    uw.className = 'win' + (u ? ' show' : '') + (u && !isPS(u) ? ' enemy' : '') + (u && u.team === 'ally' ? ' ally' : '') + (u && leftHalf && !topHalf ? ' right' : '');
     if (!u) return;
     const eq = R.equipped(u, G.db);
     const cl = cls(u);
@@ -956,7 +976,7 @@
     stats.push(h('div', {}, h('span', {}, 'Dép '), String(u.mov)));
     uw.append(portraitEl(u), h('div', {},
       h('div', { class: 'u-name' }, u.name),
-      h('div', { class: 'u-class' }, `${cl ? cl.name : ''} · Nv ${u.level}` + (u.team !== 'enemy' ? ` · EXP ${u.exp}` : '')),
+      h('div', { class: 'u-class' }, `${cl ? cl.name : ''} · Nv ${u.level}` + (isPS(u) ? ` · EXP ${u.exp}` : '') + (!isPS(u) && u.team !== 'enemy' ? ` · ${Factions.name(u.team)}` : '')),
       h('div', { class: 'u-hp' }, h('span', {}, `PV ${u.hp}/${u.stats.hp}`), hpBar(u)),
       h('div', { class: 'u-weapon' }, eq ? `⚔ ${eq.weapon.name} (${u.inventory[eq.index].uses || '∞'})` : (R.staves(u, G.db)[0] ? '✚ ' + R.staves(u, G.db)[0].weapon.name : '— sans arme —')),
       unitTags(u),
@@ -973,13 +993,13 @@
   /** Contexte de la fiche de personnage (unit-sheet.js, façon Radiant Dawn). */
   function sheetCtx() {
     return { G, R, baseUrl: G.baseUrl, mapSpriteOf, paletteOf: (u) => Palettes.paletteFor(u.team, colorMode(u), 'map', false),
-      supportsOf: (u) => u.team === 'enemy' ? [] : R.partnersOf(u, G.sup).filter(p => p.entry.rank > 0)
+      supportsOf: (u) => !isPS(u) || u.placementId ? [] : R.partnersOf(u, G.sup).filter(p => p.entry.rank > 0)
         .map(p => ({ name: (R.byId(G.db.units, p.id) || {}).name || p.id, rank: R.SUPPORT_RANKS[p.entry.rank] })) };
   }
   /** Fiche plein écran d'une unité de la map ; ↑ ↓ passent aux autres unités de son camp. */
   async function openUnitSheet(u) {
     if (!unitVisible(u) || G.busy || G.over || G.sheetOpen) return;
-    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === u.team && unitVisible(o)).sort((a, b) => (a.team === 'enemy' ? 0 : (a.order || 0) - (b.order || 0)) || a.y - b.y || a.x - b.x);
+    const list = G.units.filter(o => !o.dead && o.hp > 0 && o.team === u.team && unitVisible(o)).sort((a, b) => (!isPS(a) ? 0 : (a.order || 0) - (b.order || 0)) || a.y - b.y || a.x - b.x);
     G.sheetOpen = true;
     try { await UnitSheet.open(u, sheetCtx(), { list }); } finally { G.sheetOpen = false; lastInfoKey = ''; }
   }
@@ -1028,7 +1048,7 @@
       const names = u.talk.with.map(id => (R.byId(G.db.units, id) || {}).name).filter(Boolean);
       tags.push(h('span', { class: 'tag support', 'data-unit-talk': true }, '💬 Recrutable : ' + (names.length ? names.join(', ') : 'n’importe qui') + ' peut lui parler'));
     }
-    if (u.team !== 'enemy') for (const t of supportTags(u)) tags.push(h('span', { class: 'tag support' }, '♥ ' + t));
+    if (isPS(u) && !u.placementId) for (const t of supportTags(u)) tags.push(h('span', { class: 'tag support' }, '♥ ' + t));
     const t = terrainOf(u);
     if (t && (Number(t.avoid) || Number(t.def))) {
       const parts = [];
@@ -1051,7 +1071,7 @@
   function updateObjective() {
     if (G.mode === 'chapter' && !G.over) G.secondaryProgress = G.secondaryFinal || SideObjectives.advance(G.chapter, G, G.secondaryProgress);
     const result = Mission.evaluate(G.chapter, G.db, G);
-    const fog = visibility() !== null, left = fog ? enemies().filter(unitVisible).length : enemies().length + G.pending.length;
+    const fog = visibility() !== null, left = fog ? hostiles().filter(unitVisible).length : hostiles().length + G.pending.filter(u => Factions.hostile(u.team, 'player')).length;
     $('#objective').innerHTML = '';
     const info = Lobby.actInfo(G.db, G.chapter.id);
     if (info && !info.arc.implicit) $('#objective').append(h('div', { class: 'act' }, `${info.arc.name} · Acte ${info.index + 1}/${info.arc.acts.length}`));
@@ -1215,7 +1235,7 @@
     if (talkers.length) items.push({ label: 'Parler', sub: talkers.map(o => o.name).join(', '), action: () => {
       if (talkers.length === 1) return talkTo(u, talkers[0]);
       hideMenu();
-      showMenu(talkers.map(o => ({ label: o.name, sub: o.team === 'enemy' ? 'ennemi' : 'allié', action: () => talkTo(u, o) })), u, 'items');
+      showMenu(talkers.map(o => ({ label: o.name, sub: Factions.get(o.team) ? Factions.get(o.team).short : o.team, action: () => talkTo(u, o) })), u, 'items');
     } });
     if (canUseConvoy(u)) items.push({ label: 'Convoi', sub: u.convoy ? '' : 'via ' + convoyLeader().name, action: () => openConvoy(u) });
     items.push({ label: 'Attendre', action: () => { hideMenu(); finishAction(u); } });
@@ -1230,7 +1250,7 @@
       target.talked = true;
       await playDialogue(target.talk.text.trim() || TalkRecruit.defaultText(u, target));
       let joined = target;
-      if (target.team === 'enemy') {
+      if (target.placementId && target.talk.joinAs) { // ennemi, autre faction ou allié générique : remplacé par son personnage
         const def = R.byId(G.db.units, target.talk.joinAs);
         joined = prep(applyCampaign(R.makeUnitFromCharacter(def, G.db, { x: target.x, y: target.y })));
         joined.hp = Math.max(1, Math.min(joined.stats.hp, Math.round(joined.stats.hp * target.hp / Math.max(1, target.stats.hp))));
@@ -1270,7 +1290,7 @@
     hideMenu(); G.ui = 'ultimate';
     if (ult.effect === 'blast' && ult.area === 'tile') {
       G.ultimate.range = new Set(Ultimates.area(u, ult.range, G.map.width, G.map.height).map(p => key(p.x, p.y)));
-      const foe = enemies().filter(unitVisible).filter(e => G.ultimate.range.has(key(e.x, e.y))).sort((a, b) => R.dist(a, u) - R.dist(b, u))[0];
+      const foe = alive().filter(e => isFoe(u, e)).filter(unitVisible).filter(e => G.ultimate.range.has(key(e.x, e.y))).sort((a, b) => R.dist(a, u) - R.dist(b, u))[0];
       setCursor(foe ? foe.x : u.x, foe ? foe.y : u.y);
     } else setCursor(u.x, u.y);
     UI.toast(ult.effect === 'blast' && ult.area === 'tile' ? 'Choisis la case visée (violet : portée), puis valide.' : 'Valide pour lancer l’ultime (zone en surbrillance), X pour annuler.');
@@ -1321,10 +1341,10 @@
         if (amount > 0) { t.hp += amount; float(t.x, t.y, '+' + amount, '#7dffa8', false, { num: amount, style: 'heal' }); }
         if (ult.cure) { const removed = Statuses.cure(t, 'all'); if (removed.length) float(t.x, t.y - 0.4, removed.map(x => x.name).join(', ') + ' soigné', '#a8e3b1'); }
       } else if (ult.effect === 'blast') {
-        const dmg = G.debug.god && t.team !== 'enemy' ? 0 : Ultimates.blastDamage(ult, u, t);
+        const dmg = G.debug.god && isPS(t) ? 0 : Ultimates.blastDamage(ult, u, t);
         t.hp -= dmg; t.flash = performance.now() + 140;
         float(t.x, t.y, dmg ? String(dmg) : 'Aucun dégât', dmg ? '#ffffff' : '#bbbbbb', false, dmg ? { num: dmg, style: 'dmg' } : null);
-        if (u.team !== 'enemy' && t.team === 'enemy') exp += R.combatExp(u, t, dmg > 0, t.hp <= 0, G.db, 0);
+        if (isPS(u) && isFoe(u, t)) exp += R.combatExp(u, t, dmg > 0, t.hp <= 0, G.db, 0);
         if (t.hp <= 0) fallen.push(t);
       } else if (ult.effect === 'rally') {
         if (ult.dmg || ult.hit || ult.avoid) t.rally = (t.rally || []).filter(r => r.id !== ult.id).concat([{ id: ult.id, name: ult.name, dmg: ult.dmg, hit: ult.hit, avoid: ult.avoid, turns: ult.duration }]);
@@ -1340,7 +1360,7 @@
     await sleep(650);
     if (runs.length) await Promise.all(runs.map(r => r.done));
     for (const t of fallen) await killUnit(t);
-    if (u.team !== 'enemy' && u.hp > 0) await grantExp(u, ult.effect === 'blast' ? Math.max(1, Math.min(100, exp)) : (targets.length ? 10 : 1));
+    if (isPS(u) && u.hp > 0) await grantExp(u, ult.effect === 'blast' ? Math.max(1, Math.min(100, exp)) : (targets.length ? 10 : 1));
     G.busy = false;
     await finishAction(u);
   }
@@ -1605,7 +1625,7 @@
     if (!G.danger) { G.dangerSet = null; return; }
     const set = new Set();
     const visible = visibility();
-    for (const e of enemies().filter(unitVisible)) for (const k of R.threatTiles(e, rctx(true), G.db, e.ai === 'stationary')) if (visible === null || visible.has(k)) set.add(k);
+    for (const e of hostiles().filter(unitVisible)) for (const k of R.threatTiles(e, rctx(true), G.db, e.ai === 'stationary')) if (visible === null || visible.has(k)) set.add(k);
     G.dangerSet = set;
   }
 
@@ -1815,7 +1835,7 @@
     if (slot.uses > 0) { slot.uses--; if (!slot.uses) { u.inventory.splice(st.index, 1); float(u.x, u.y, 'Bâton brisé', '#ffb36b'); } }
     await sleep(500);
     if (healRun) await healRun.done;
-    if (u.team !== 'enemy') { await grantExp(u, R.staffExp(u, G.db)); await grantWexp(u, st.weapon); }
+    if (isPS(u)) { await grantExp(u, R.staffExp(u, G.db)); await grantWexp(u, st.weapon); }
     return true;
   }
 
@@ -1964,10 +1984,10 @@
 
   function combatHud(a, b) {
     const el = $('#combat-hud'); el.innerHTML = '';
-    const side = (u) => h('div', { class: 'win side ' + (u.team === 'enemy' ? 'e' : 'p') },
+    const side = (u) => h('div', { class: 'win side ' + (!isPS(u) ? 'e' : 'p'), style: !isPS(u) && u.team !== 'enemy' ? { '--team': Factions.hex(u.team) } : {} },
       h('div', { class: 'u-name' }, u.name),
       h('div', { class: 'u-hp' }, h('span', {}, `${u.dispHp}`), hpBar(u, u.dispHp)));
-    const p = a.team === 'enemy' ? b : a, e = a.team === 'enemy' ? a : b;
+    const p = !isPS(a) && isPS(b) ? b : a, e = p === a ? b : a;
     el.append(side(p), side(e));
     el.classList.remove('hidden');
   }
@@ -1979,7 +1999,7 @@
   }
   /** Dialogue de combat (BattleTalks) entre un personnage et un ennemi, une fois par tentative. */
   async function battleTalk(att, def) {
-    const player = att.team === 'player' ? att : def.team === 'player' ? def : null, enemy = att.team === 'enemy' ? att : def.team === 'enemy' ? def : null;
+    const player = att.team === 'player' ? att : def.team === 'player' ? def : null, enemy = att.placementId && !isPS(att) ? att : def.placementId && !isPS(def) ? def : null;
     if (!player || !enemy || !G.chapter) return;
     const pl = (G.chapter.enemies || []).find(e => e.id === enemy.sourceId);
     const talk = BattleTalks.find(pl, player, player === att, G.battleTalksDone || (G.battleTalksDone = new Set()));
@@ -1995,7 +2015,7 @@
     const eqDef = R.equipped(def, G.db); const wDef = eqDef ? eqDef.weapon : null;
     const distance = R.dist(att, def);
     focus(def.x, def.y);
-    const dual = att.team !== 'enemy' ? R.supportDual(att, players(), G.sup, G.db) : null;
+    const dual = isPS(att) ? R.supportDual(att, players(), G.sup, G.db) : null;
     if (dual) hp0[dual.partner.uid] = dual.partner.hp;
     const res = R.resolveCombat(att, aIndex, def, { ...ropts(), rng: Math.random, specialOf, dual, ultimate: ultimate || null });
     // partenaires des attaques spéciales (ils apparaissent pendant le coup)
@@ -2005,7 +2025,7 @@
     if (animate) {
       document.body.classList.add('in-battle');
       // musique de combat (Système › Musique ou l'acte) : boss, ennemi qui attaque, ou joueur qui attaque
-      const endBattleMusic = Music.battle(att.isBoss || def.isBoss ? 'battleBoss' : att.team === 'enemy' ? 'battleEnemy' : 'battlePlayer');
+      const endBattleMusic = Music.battle(att.isBoss || def.isBoss ? 'battleBoss' : !isPS(att) ? 'battleEnemy' : 'battlePlayer');
       try {
       await BattleScene.play({
         weather: G.settings.weatherEffects !== false ? G.weather : undefined,
@@ -2079,7 +2099,7 @@
 
     // affinités : combattre à côté de son partenaire rapproche
     for (const u of [att, def]) {
-      if (u.team === 'enemy' || u.hp <= 0) continue;
+      if (!isPS(u) || u.placementId || u.hp <= 0) continue;
       for (const p of R.partnersOf(u, G.sup)) {
         const o = unitById(p.id);
         if (o && R.dist(o, u) === 1) gainSupport(u, o, Number(G.supCfg.gainCombat) || 0);
@@ -2088,7 +2108,7 @@
     if (res.duo && res.duo.partner.hp > 0) gainSupport(att, res.duo.partner, Number(G.supCfg.gainCombat) || 0);
 
     // expérience
-    const pl = att.team !== 'enemy' ? att : def.team !== 'enemy' ? def : null;
+    const pl = isPS(att) ? att : isPS(def) ? def : null;
     if (pl && pl.hp > 0) {
       const foe = pl === att ? def : att;
       const side = pl === att ? 'a' : 'd';
@@ -2097,7 +2117,7 @@
       await grantExp(pl, xp, bonus ? 'Overkill' : '');
       if (res.dealt[side] || foe.hp <= 0) await grantWexp(pl, pl === att ? wAtt : wDef); // maîtrise : l'arme a touché
     }
-    if (res.duo && res.duo.partner.hp > 0 && res.duo.partner.team !== 'enemy') {
+    if (res.duo && res.duo.partner.hp > 0 && isPS(res.duo.partner)) {
       const last = res.strikes.filter(s => !s.overkillStrike).pop();
       await grantExp(res.duo.partner, R.combatExp(res.duo.partner, def, res.duo.dmg > 0, def.hp <= 0 && last && last.dual, G.db));
     }
@@ -2162,7 +2182,7 @@
     u.dead = true;
     TacticalEmblem.emit('unit:defeated', { unit: u });
     Music.se('death');
-    if (u.team === 'enemy' && u.gold > 0) {
+    if (!isPS(u) && u.gold > 0) {
       G.campaign.gold = (G.campaign.gold || 0) + u.gold;
       float(u.x, u.y, `+${u.gold} or`, '#f2d58a', true);
       updateObjective();
@@ -2170,7 +2190,7 @@
     if (u.team === 'player') G.lost.push(u.name);
     if (u.team === 'ally') float(u.x, u.y, 'Allié perdu', '#9be59b');
     await runEvents('death', { unit: u });
-    if (u.team !== 'enemy' && !Campaign.permanent(G.campaign, u)) float(u.x, u.y, 'Retraite — retour au prochain chapitre', '#9be59b');
+    if (isPS(u) && !u.placementId && !Campaign.permanent(G.campaign, u)) float(u.x, u.y, 'Retraite — retour au prochain chapitre', '#9be59b');
   }
 
   function showLevelUp(u, up) {
@@ -2194,11 +2214,13 @@
   // Tours et phases
   // =====================================================================
   /** Annonce au centre de l'écran ; image : annonce de phase dessinée (img/ui/phase-*.png, Lukiroh), le texte sert de repli. */
-  function banner(text, cls, image) {
+  function banner(text, cls, image, color) {
     const el = $('#banner');
     el.className = (cls || '') + (image ? ' phase' : '');
     el.innerHTML = '';
-    el.append(image ? h('span', { class: 'phase-pop' }, h('img', { src: image, alt: text, onerror: (e) => { e.target.replaceWith(text); } })) : h('span', {}, text));
+    // couleur d'une faction en plus : bandeau à sa couleur
+    const style = color ? { background: `linear-gradient(90deg, transparent, ${color}d9 20%, ${color}d9 80%, transparent)` } : {};
+    el.append(image ? h('span', { class: 'phase-pop' }, h('img', { src: image, alt: text, onerror: (e) => { e.target.replaceWith(text); } })) : h('span', { style, 'data-banner-faction': color ? '1' : null }, text));
     return sleep(1150).then(() => el.classList.add('hidden'));
   }
 
@@ -2255,7 +2277,9 @@
     await ultimatePhase(allies);
     await skillRecovery(allies);
     await terrainHeal(allies);
-    if (await aiTurn(allies.filter(u => u.control === 'ai'), () => team('enemy'))) return;
+    await runEvents('allyTurn', { turn: G.turn });
+    if (await checkEnd()) return;
+    if (await aiTurn(allies.filter(u => u.control === 'ai'), () => hostileTo('ally'))) return;
     G.busy = false; G.ui = 'idle';
     const first = alive().find(controllable);
     if (!first) return endPlayerPhase(true);
@@ -2265,7 +2289,7 @@
 
   /** Fait jouer une liste d'unités par l'IA. Renvoie true si la partie est terminée. */
   async function aiTurn(list, foesFn) {
-    if (G.debug.passive && list.some(u => u.team === 'enemy')) { for (const e of list) e.done = true; return false; } // debug
+    if (G.debug.passive && list.some(u => !isPS(u))) { for (const e of list) e.done = true; return false; } // debug
     const acted = new Set();
     // Une unité endormie attend : si Rétablissement la réveille, elle peut encore jouer.
     while (true) {
@@ -2321,7 +2345,7 @@
     if (events.length) { lastInfoKey = ''; await sleep(700); }
   }
   async function statusPhase(units) {
-    const events = Statuses.beginPhase(units, u => G.debug.god && u.team !== 'enemy');
+    const events = Statuses.beginPhase(units, u => G.debug.god && isPS(u));
     for (const e of events) float(e.unit.x, e.unit.y, e.damage ? `Poison −${e.damage} PV` : 'Poison', e.status.color);
     lastInfoKey = ''; if (events.length) await sleep(450);
   }
@@ -2351,36 +2375,79 @@
     TacticalEmblem.emit('turn:start', { phase: 'enemy', turn: G.turn });
     Music.bgm('enemyPhase');
     await banner('Phase ennemie', 'enemy', 'img/ui/phase-enemy.png');
-    // renforts
-    const arriving = G.pending.filter(u => !u.eventOnly && u.appearTurn <= G.turn);
-    for (const u of arriving) {
-      const spot = freeSpotNear(u.x, u.y, u);
-      if (!spot) continue;
-      G.pending.splice(G.pending.indexOf(u), 1);
-      u.x = u.rx = spot.x; u.y = u.ry = spot.y; u.done = true; u.alpha = 0;
-      G.units.push(u);
-      if (await checkEnd()) return;
-      if (unitVisible(u)) {
-        focus(u.x, u.y);
-        for (let i = 1; i <= 8; i++) { u.alpha = i / 8; await sleep(30); }
-      } else u.alpha = 1;
-      float(u.x, u.y, 'Renfort !', '#ff9a8a');
-      await sleep(250);
-    }
-    if (arriving.length) await sleep(300);
+    // renforts : ennemis et alliés génériques ici ; ceux des autres factions arrivent à leur phase
+    const arriving = await arriveReinforcements(u => !Factions.phaseOrder().includes(u.team));
+    if (arriving === null) return;
     updateObjective();
     for (const e of enemies()) if (!arriving.includes(e)) e.done = false;
     await statusPhase(enemies());
     await ultimatePhase(enemies());
     await skillRecovery(enemies());
     await terrainHeal(enemies());
+    await runEvents('enemyTurn', { turn: G.turn });
+    if (await checkEnd()) return;
 
-    if (await aiTurn(enemies(), players)) return;
+    if (await aiTurn(enemies(), () => hostileTo('enemy'))) return;
     for (const e of enemies()) e.done = false;
     endStatusPhase(enemies());
+    // factions en plus (armée jaune, factions du projet) : chacune sa phase, dans l'ordre
+    for (const fid of Factions.phaseOrder()) if (await factionPhase(fid)) return;
     G.turn++;
     G.busy = false;
     await startPlayerPhase();
+  }
+
+  /** Renforts dont le tour est venu (filtre : camps concernés). Renvoie la liste arrivée, ou null si la partie est finie. */
+  async function arriveReinforcements(filter) {
+    const arriving = G.pending.filter(u => !u.eventOnly && u.appearTurn <= G.turn && filter(u));
+    const arrived = [];
+    for (const u of arriving) {
+      const spot = freeSpotNear(u.x, u.y, u);
+      if (!spot) continue;
+      G.pending.splice(G.pending.indexOf(u), 1);
+      u.x = u.rx = spot.x; u.y = u.ry = spot.y; u.done = true; u.alpha = 0;
+      G.units.push(u); arrived.push(u);
+      if (await checkEnd()) return null;
+      if (unitVisible(u)) {
+        focus(u.x, u.y);
+        for (let i = 1; i <= 8; i++) { u.alpha = i / 8; await sleep(30); }
+      } else u.alpha = 1;
+      float(u.x, u.y, 'Renfort !', isPS(u) ? '#9be59b' : u.team === 'enemy' ? '#ff9a8a' : Factions.hex(u.team));
+      await sleep(250);
+    }
+    if (arrived.length) await sleep(300);
+    return arrived;
+  }
+
+  /**
+   * Phase d'une faction en plus : bannière à sa couleur, renforts, altérations, événements « début du tour » de la
+   * faction, puis son IA contre les camps qui lui sont hostiles. Sautée si la faction n'a aucune unité.
+   * Renvoie true si la partie est terminée.
+   */
+  async function factionPhase(fid) {
+    if (G.over) return true;
+    const due = G.pending.some(u => u.team === fid && !u.eventOnly && u.appearTurn <= G.turn);
+    if (!team(fid).length && !due) return false;
+    const f = Factions.get(fid);
+    G.phase = fid; G.busy = true;
+    TacticalEmblem.emit('turn:start', { phase: fid, turn: G.turn });
+    Music.bgm('enemyPhase');
+    await banner('Phase — ' + (f ? f.name : fid), 'faction', '', Factions.hex(fid));
+    const arriving = await arriveReinforcements(u => u.team === fid);
+    if (arriving === null) return true;
+    updateObjective();
+    const list = team(fid);
+    for (const u of list) if (!arriving.includes(u)) u.done = false;
+    await statusPhase(list);
+    await ultimatePhase(list);
+    await skillRecovery(list);
+    await terrainHeal(list);
+    await runEvents('factionTurn', { turn: G.turn, faction: fid });
+    if (await checkEnd()) return true;
+    if (await aiTurn(team(fid), () => hostileTo(fid))) return true;
+    for (const u of team(fid)) u.done = false;
+    endStatusPhase(team(fid));
+    return false;
   }
 
   function freeSpotNear(x, y, u) {
@@ -2543,7 +2610,7 @@
         items.push({ faces: [ua, ub], title: `${ua.name} & ${ub.name}`, text: avatarText((e && e.def.ending) || `${ua.name} et ${ub.name} ne se quittèrent plus.`) });
         done.add(a); done.add(b);
       }
-      const seen = new Set(G.units.filter(u => u.team !== 'enemy').map(u => u.sourceId).concat(Object.keys(G.campaign.units)));
+      const seen = new Set(G.units.filter(u => isPS(u) && !u.placementId).map(u => u.sourceId).concat(Object.keys(G.campaign.units)));
       for (const id of seen) {
         if (done.has(id)) continue;
         const u = R.byId(G.db.units, id); if (!u) continue;
@@ -2658,7 +2725,7 @@
       case 'idle': {
         const u = visibleUnitAt(c.x, c.y);
         if (controllable(u)) return select(u);
-        if (u && (u.team === 'enemy' || u.team === 'ally')) {
+        if (u && u.team !== 'player' && !controllable(u)) {
           if (G.enemyView && G.enemyView.unit === u) { G.enemyView = null; return; }
           const reach = u.ai === 'stationary' ? new Map([[key(u.x, u.y), { x: u.x, y: u.y, canStop: true }]]) : R.reachable(u, rctx(true));
           const visibleKeys = set => new Set([...set].filter(k => tileVisible(...k.split(',').map(Number))));
@@ -2796,12 +2863,20 @@
   window.PlaytestPreparation = preparation;
   const trade = TradePanel.create({ G, h, R, portrait: u => portraitEl(u, 'mini'), hideMenu, returnToMenu: openActionMenu,
     changed: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateInfo(); } });
-  const scenarioRuntime = ScenarioRuntime.create({ G, R, playDialogue, freeSpotNear, float,
+  /** Copie d'un placement (renfort en plusieurs exemplaires) : même classe, niveau, inventaire et faction. */
+  function copyOfPlacement(pl) {
+    const u = R.makeEnemyFromPlacement(pl, G.db, Factions.ofPlacement(pl));
+    if (!u) return null;
+    if (u.team === 'ally') { u.control = pl.control || 'ai'; u.convoy = false; }
+    u.talk = null; u.eventOnly = false;
+    return prep(u);
+  }
+  const scenarioRuntime = ScenarioRuntime.create({ G, R, playDialogue, freeSpotNear, float, copyOfPlacement,
     weatherChanged: () => { lastInfoKey = ''; G.enemyView = null; refreshDanger(); updateObjective(); },
     refreshHud: () => { if (G.mode === 'lobby') lobby.refreshHud(); } });
 
   // ---------- paramètres (Échap) : sauvegarde, chargement, son, debug ----------
-  const playerSide = () => alive().filter(u => u.team !== 'enemy');
+  const playerSide = () => alive().filter(isPS);
   const later = (fn) => { settings.close(); setTimeout(fn, 0); };
   const settings = SettingsWindow.create({
     G, h, $, R, Music, dir: params.get('dir'), hideMenu,
@@ -2815,7 +2890,7 @@
     debug: {
       win: () => later(() => victory()),
       lose: () => later(() => defeat('Défaite déclenchée depuis le menu Debug.')),
-      killEnemies: () => later(async () => { for (const u of enemies()) await killUnit(u, true); G.pending = []; await checkEnd(); }),
+      killEnemies: () => later(async () => { for (const u of hostiles()) await killUnit(u, true); G.pending = G.pending.filter(isPS); await checkEnd(); }),
       healAll: () => { for (const u of playerSide()) { u.hp = u.stats.hp; float(u.x, u.y, 'PV max', '#7dffa8'); } },
       refresh: () => { for (const u of playerSide()) { u.done = false; u.tradeLocked = false; u.fogMoved = false; } G.ui = 'idle'; },
       endTurn: () => later(() => { G.ui = 'idle'; endCurrentPhase(); }),

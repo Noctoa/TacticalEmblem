@@ -16,7 +16,7 @@
 .rail-btn .ic { width: 20px; height: 20px; }
 .rail-btn:hover { background: var(--panel-2); color: var(--text); }
 .rail-spacer { flex: 1; }
-body[data-view="map"] .rail-btn[data-rail="map"], body[data-view="db"] .rail-btn[data-rail="db"], body[data-view="system"] .rail-btn[data-rail="system"] { background: var(--gold-dim); color: var(--gold-2); }
+body[data-view="map"] .rail-btn[data-rail="map"], body[data-view="db"] .rail-btn[data-rail="db"], body[data-view="system"] .rail-btn[data-rail="db"] { background: var(--gold-dim); color: var(--gold-2); }
 .rail-btn[data-rail="play"] { color: var(--gold-2); }
 body:has(#app.no-project) #rail .rail-btn { visibility: hidden; }
 /* la base de données s'ouvre depuis la barre d'icônes ; le bouton de la barre d'outils reste pour le raccourci */
@@ -252,3 +252,52 @@ body[data-view="texts"] .rail-btn[data-rail="map"] { background: transparent; co
 .dlg-pick-list { max-height: 260px; overflow: auto; }
 .dlg-pick-new { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .dlg-pick-new textarea { flex: 1; }
+
+/* ---------- section Générateur (generator-page.js) ---------- */
+#generator { left: var(--rail-w); background: var(--bg); z-index: 55; }
+body[data-view="generator"] .rail-btn[data-rail="generator"] { background: var(--gold-dim); color: var(--gold-2); }
+body[data-view="generator"] .rail-btn[data-rail="map"] { background: transparent; color: var(--muted); }
+#gen-nav { display: flex; flex-direction: column; gap: 4px; padding: 18px 12px 12px; border-right: 1px solid var(--line); background: var(--panel); overflow: auto; min-height: 0; }
+#gen-nav h2 { font-size: 16px; padding: 0 10px 10px; margin: 0; text-align: left; }
+#gen-nav > .db-nav-group { text-align: left; padding-top: 12px; }
+#gen-nav .gen-new { justify-content: center; }
+.tx-nav-file.gen-item { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
+.gen-thumb { width: 32px; height: 32px; flex: none; border-radius: 6px; overflow: hidden; background: var(--elevated); display: grid; place-items: center; }
+.gen-thumb-img { width: 32px; height: 32px; image-rendering: pixelated; }
+.gen-note { margin-top: auto; padding: 12px 6px 0; }
+#gen-body { display: grid; min-height: 0; position: relative; }
+#gen-body > .db-form { overflow: auto; padding: 28px 28px 60px; min-height: 0; }
+.gen-hero-visual { width: 160px; height: 140px; display: grid; place-items: center; }
+.gen-hero-img { width: 160px; height: 140px; image-rendering: pixelated; }
+.studio-hero input.gen-name { font-size: 26px; font-weight: 700; background: transparent; border: 1px solid transparent; padding: 2px 6px; margin-left: -7px; height: auto; color: var(--text); max-width: 420px; }
+.studio-hero input.gen-name:hover, .studio-hero input.gen-name:focus { border-color: var(--line); }
+.gen-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.gen-export-status { margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gen-export-status:empty { display: none; }
+.gen-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.gen-fig { margin: 0; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: var(--radius-lg, 8px); background: var(--panel-2); }
+.gen-fig-img { min-height: 150px; display: grid; place-items: center; overflow: auto; background: repeating-conic-gradient(#ffffff08 0% 25%, transparent 0% 50%) 0 0 / 16px 16px; border-radius: 6px; }
+.gen-fig-img canvas { image-rendering: pixelated; max-width: 100%; height: auto; }
+.gen-fig-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.gen-fig small { color: var(--muted); font-size: 11.5px; line-height: 1.35; }
+.gen-empty .hero-text { max-width: 720px; }
+
+/* ---------- factions (Base de données › Factions, éditeur de map) ---------- */
+.faction-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; display: inline-block; box-shadow: 0 0 0 2px #0004; }
+.db-item[data-faction] { display: flex; align-items: center; gap: 10px; }
+.db-item[data-faction] > span:nth-child(2) { flex: 1; }
+.faction-swatch { display: flex; align-items: center; gap: 8px; }
+.faction-colors { display: flex; flex-wrap: wrap; gap: 6px; }
+.faction-color { border: 1px solid var(--line); background: transparent; padding: 4px 10px 4px 8px; display: inline-flex; align-items: center; gap: 6px; }
+.faction-color::before { content: ''; width: 12px; height: 12px; border-radius: 50%; background: var(--fc); }
+.faction-color.on { border-color: var(--fc); box-shadow: 0 0 0 1px var(--fc) inset; }
+.faction-color:disabled { opacity: .35; }
+.faction-foes { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.faction-foe { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-lg, 8px); background: var(--panel-2); cursor: pointer; }
+.faction-foe.fixed { opacity: .7; cursor: default; }
+.faction-foe small { margin-left: auto; color: var(--muted); font-size: 11px; }
+.faction-chips { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 6px 8px; }
+.faction-chip { font-size: 11.5px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text-2); }
+.faction-chip::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--fc); margin-right: 5px; }
+.faction-chip.on { border-color: var(--fc); color: var(--text); background: color-mix(in srgb, var(--fc) 18%, transparent); }
+.placement .turn.faction { color: #111; }

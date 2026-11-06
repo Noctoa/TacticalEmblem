@@ -76,6 +76,7 @@
     if (!payload) return;
     S.dir = payload.dir; S.baseUrl = payload.baseUrl; S.project = payload.project;
     migrate(S.project);
+    Factions.configure(S.project.meta.factions); // armée jaune et factions du projet
     S.mapId = S.project.maps[0] ? S.project.maps[0].id : null;
     const first = S.project.maps[0] ? chaptersOf(S.project.maps[0])[0] : null;
     S.chapterId = first ? first.id : null;
@@ -377,10 +378,14 @@
     }
   }
 
+  /** Faction d'un placement : joueur, allié (personnage), ou celle du placement générique (ennemi, allié générique, armée jaune…). */
+  const factionOf = (pl, kind) => kind === 'players' ? 'player' : kind === 'allies' ? 'ally' : Factions.ofPlacement(pl);
   function tokenColor(pl, kind) {
     if (kind === 'players') return '#3f7cf0';
-    if (kind === 'allies') return '#22a35a';
-    return pl.isBoss ? '#8b1e3f' : '#d9473d';
+    const f = factionOf(pl, kind);
+    if (f === 'ally') return '#22a35a';
+    if (f === 'enemy') return pl.isBoss ? '#8b1e3f' : '#d9473d';
+    return Factions.hex(f);
   }
   function tokenLabel(pl, kind) {
     if (kind === 'players' || kind === 'allies') { const u = byId(DB().units, pl.unitId); return u ? u.name : '?'; }
@@ -408,7 +413,7 @@
       const u = byId(DB().units, pl.unitId); const c = u && byId(DB().classes, u.classId);
       unitColors = u && u.colors; clsColors = c && c.colors;
     } else { const c = byId(DB().classes, pl.classId); clsColors = c && c.colors; }
-    return Palettes.paletteFor(TEAM_OF[kind] || 'player', Palettes.resolveMode(pl.colors, unitColors, clsColors, settings), 'map', false);
+    return Palettes.paletteFor(factionOf(pl, kind), Palettes.resolveMode(pl.colors, unitColors, clsColors, settings), 'map', false);
   }
   /** Palette d'une icône de liste pour un camp, selon le réglage d'une unité / classe. */
   function iconPalette(team, ...modes) { return Palettes.paletteFor(team, Palettes.resolveMode(...modes, (S.project.meta.settings || {}).colors), 'map', false); }
@@ -429,11 +434,12 @@
     const k = cs.w / (meta.base || 16);
     // repère d'équipe sous le sprite
     ctx.globalAlpha = opts.ghost ? 0.5 : 1;
-    ctx.fillStyle = kind === 'players' ? 'rgba(63,124,240,.35)' : kind === 'allies' ? 'rgba(47,211,122,.45)' : 'rgba(217,71,61,.35)';
+    const fac = factionOf(pl, kind);
+    ctx.fillStyle = fac === 'player' ? 'rgba(63,124,240,.35)' : fac === 'ally' ? 'rgba(47,211,122,.45)' : fac === 'enemy' ? 'rgba(217,71,61,.35)' : Factions.hex(fac) + '66';
     ctx.fillRect(x * cs.w + 1, y * cs.h + 1, cs.w - 2, cs.h - 2);
     Sprites.drawMapSprite(ctx, meta, img, x * cs.w + cs.w / 2, (y + 1) * cs.h, k, { anim: 'idle', frame: 0, palette: paletteOf(pl, kind), alpha: opts.ghost ? 0.55 : 1 });
     ctx.globalAlpha = 1;
-    if (kind === 'allies') { ctx.strokeStyle = '#7dffb0'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1.5, y * cs.h + 1.5, cs.w - 3, cs.h - 3); }
+    if (fac === 'ally') { ctx.strokeStyle = '#7dffb0'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1.5, y * cs.h + 1.5, cs.w - 3, cs.h - 3); }
     if (opts.boss) { ctx.strokeStyle = '#f2c46a'; ctx.lineWidth = 2; ctx.strokeRect(x * cs.w + 1.5, y * cs.h + 1.5, cs.w - 3, cs.h - 3); }
     if (opts.badge) {
       ctx.fillStyle = '#e3a83b'; const r = Math.max(6, cs.w * 0.2);
@@ -708,6 +714,8 @@
         const character = byId(DB().units, S.placeTool.unitId);
         const cls = byId(DB().classes, character ? character.classId : S.placeTool.classId);
         const pl = { id: uid('e', ch.enemies), name: character ? character.name : cls ? cls.name : 'Ennemi', classId: cls?.id || S.placeTool.classId, level: character?.level || S.placeTool.level || 1, x: c.x, y: c.y, ai: 'aggressive', appearTurn: 0, isBoss: false, inventory: [], ...(character ? { unitId: character.id } : {}) };
+        const fac = S.placeTool.faction || 'enemy';
+        if (fac !== 'enemy') { pl.faction = fac; if (fac === 'ally') pl.control = 'ai'; if (!character && cls) pl.name = cls.name; }
         ch.enemies.push(pl); S.selected = { kind: 'enemies', id: pl.id };
       }
       renderInspector(); renderPalette(); draw();
@@ -1029,12 +1037,21 @@
     });
     fill();
     list.append(tools, units);
-    list.append(h('div', { class: 'pick-group' }, 'Ennemis (par classe)'));
+    // unités génériques (classe + niveau) : pour la faction choisie (ennemis, alliés génériques, armée jaune…)
+    const fac = Factions.ids().includes(S.placeFaction) && S.placeFaction !== 'player' ? S.placeFaction : 'enemy';
+    list.append(h('div', { class: 'pick-group' }, 'Unités génériques (par classe)'));
+    list.append(h('div', { class: 'faction-chips', 'data-place-factions': true }, Factions.all().filter(f => f.id !== 'player').map(f =>
+      h('button', { class: 'faction-chip' + (f.id === fac ? ' on' : ''), type: 'button', 'data-place-faction': f.id, style: { '--fc': Factions.hex(f.id) },
+        title: 'Placer des unités génériques pour : ' + f.name, onclick: () => {
+          S.placeFaction = f.id;
+          if (S.placeTool && S.placeTool.kind === 'enemies' && S.placeTool.classId) S.placeTool.faction = f.id;
+          renderPalette();
+        } }, f.name))));
     for (const c of DB().classes) {
       const on = S.placeTool && S.placeTool.kind === 'enemies' && S.placeTool.classId === c.id;
       const meta = charMeta(c.mapSprite);
-      list.append(h('div', { class: 'pick' + (on ? ' on' : ''), onclick: () => { S.placeTool = on ? null : { kind: 'enemies', classId: c.id, level: 1 }; renderPalette(); } },
-        meta ? Sprites.icon(S.baseUrl, meta, iconPalette('enemy', c.colors), 24) : h('span', { class: 'token enemy' }, c.name.slice(0, 1)), h('span', {}, c.name),
+      list.append(h('div', { class: 'pick' + (on ? ' on' : ''), 'data-pick-class': c.id, onclick: () => { S.placeTool = on ? null : { kind: 'enemies', classId: c.id, level: 1, faction: fac }; renderPalette(); } },
+        meta ? Sprites.icon(S.baseUrl, meta, iconPalette(fac, c.colors), 24) : h('span', { class: 'token enemy', style: fac !== 'enemy' ? { background: Factions.hex(fac) } : {} }, c.name.slice(0, 1)), h('span', {}, c.name),
         h('span', { class: 'meta' }, (Rules.MOVE_TYPES.find(m => m.id === c.moveType) || {}).name || '')));
     }
     box.append(list);
@@ -1435,8 +1452,9 @@
       const on = S.selected && S.selected.kind === kind && S.selected.id === pl.id;
       return h('div', { class: 'placement' + (on ? ' on' : ''), onclick: () => { S.selected = { kind, id: pl.id }; renderInspector(); draw(); } },
         charMeta(spritePathOf(pl, kind)) ? Sprites.icon(S.baseUrl, charMeta(spritePathOf(pl, kind)), paletteOf(pl, kind), 24)
-          : h('span', { class: 'token ' + ({ players: 'player', allies: 'ally' }[kind] || (pl.isBoss ? 'boss' : 'enemy')), style: kind === 'players' ? { background: tokenColor(pl, kind) } : {} }, tokenLabel(pl, kind).slice(0, 1)),
-        kind === 'allies' ? h('span', { class: 'turn ally' }, 'allié') : null,
+          : h('span', { class: 'token ' + ({ players: 'player', allies: 'ally' }[kind] || (pl.isBoss ? 'boss' : 'enemy')), style: kind === 'players' || (kind === 'enemies' && Factions.ofPlacement(pl) !== 'enemy') ? { background: tokenColor(pl, kind) } : {} }, tokenLabel(pl, kind).slice(0, 1)),
+        kind === 'allies' || (kind === 'enemies' && Factions.ofPlacement(pl) === 'ally') ? h('span', { class: 'turn ally' }, 'allié') : null,
+        kind === 'enemies' && !['enemy', 'ally'].includes(Factions.ofPlacement(pl)) ? h('span', { class: 'turn faction', style: { background: Factions.hex(Factions.ofPlacement(pl)) } }, Factions.name(Factions.ofPlacement(pl))) : null,
         h('span', {}, tokenLabel(pl, kind) + (kind === 'enemies' ? ` Nv ${(byId(DB().units, pl.unitId) || {}).level || pl.level}` : '')),
         kind === 'enemies' && pl.appearTurn > 0 ? h('span', { class: 'turn' }, 'T' + pl.appearTurn) : null,
         h('span', { class: 'pos' }, `${pl.x},${pl.y}`));
@@ -1444,7 +1462,9 @@
     ch.players.forEach(p => list.append(row('players', p)));
     ch.allies.forEach(p => list.append(row('allies', p)));
     ch.enemies.forEach(p => list.append(row('enemies', p)));
-    box.append(section(`Placements — ${ch.players.length} joueur · ${ch.allies.length} allié · ${ch.enemies.length} ennemi`,
+    const nFac = (f) => ch.enemies.filter(p => Factions.ofPlacement(p) === f).length;
+    const others = Factions.extras().map(f => [f, nFac(f.id)]).filter(([, n]) => n).map(([f, n]) => ` · ${n} ${f.name.toLowerCase()}`).join('');
+    box.append(section(`Placements — ${ch.players.length} joueur · ${ch.allies.length + nFac('ally')} allié · ${nFac('enemy')} ennemi${others}`,
       (ch.players.length + ch.allies.length + ch.enemies.length) ? list : h('p', { class: 'muted' }, 'Choisis une unité à gauche puis clique sur la map.'),
       m.objects.some(o => objectKind(o)) ? h('div', { class: 'insp-actions' }, h('button', { class: 'small', onclick: () => { snapshot('chapter', ch.id); const n = placementsFromObjects(m, ch); UI.toast(n + ' placement(s) importé(s)'); renderAll(); } }, `Importer les objets Tiled (${m.objects.filter(o => objectKind(o)).length})`)) : null));
 
@@ -1543,8 +1563,24 @@
       const character = byId(DB().units, pl.unitId);
       const cls = byId(DB().classes, character ? character.classId : pl.classId);
       const prev = character ? character.stats : cls ? Rules.statsFromClass(cls, pl.level || 1) : null;
-      box.append(section(pl.isBoss ? 'Boss' : 'Ennemi', UI.form([
-        { key: 'unitId', label: 'Personnage de la base', type: 'select', empty: '— ennemi générique (classe) —', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
+      const fac = Factions.ofPlacement(pl), facName = Factions.name(fac);
+      box.append(section((pl.isBoss ? 'Boss' : fac === 'enemy' ? 'Ennemi' : fac === 'ally' ? 'Allié générique' : 'Unité') + (fac !== 'enemy' && fac !== 'ally' ? ' — ' + facName : ''), UI.form([
+        { type: 'custom', render: () => {
+          const sel = h('select', { 'data-placement-faction': true, onchange: () => {
+            snapshot('chapter', ch.id);
+            if (sel.value === 'enemy') delete pl.faction; else pl.faction = sel.value;
+            if (sel.value === 'ally' && !pl.control) pl.control = 'ai';
+            markDirty(); renderInspector(); draw();
+          } }, Factions.all().filter(f => f.id !== 'player').map(f => h('option', { value: f.id }, f.name)));
+          sel.value = fac;
+          return h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Faction'), sel,
+            h('p', { class: 'form-info' }, fac === 'ally' ? 'Allié générique : joue pendant la phase alliée, aux côtés du joueur.'
+              : fac === 'enemy' ? 'Ennemi rouge : joue pendant la phase ennemie.' : `Joue sa propre phase après la phase ennemie. Contre qui elle se bat : Base de données › Factions.`));
+        } },
+        fac === 'ally' ? { key: 'control', label: 'Contrôle', type: 'select', options: [
+          { value: 'ai', label: 'IA — joue seul pendant la phase alliée' },
+          { value: 'player', label: 'Jouable — le joueur le dirige pendant la phase alliée' }] } : null,
+        { key: 'unitId', label: 'Personnage de la base', type: 'select', empty: '— unité générique (classe) —', options: DB().units.map(u => ({ value: u.id, label: u.name })) },
         character ? { type: 'info', text: `${character.name} · ${cls?.name || 'Classe introuvable'} · Nv ${character.level || 1}. Stats, compétences, portrait et sprites issus de sa fiche. L’ennemi est indépendant de l’équipe du joueur.` } : null,
         { key: 'name', label: 'Nom', type: 'text' },
         !character ? { type: 'row', fields: [
@@ -1683,14 +1719,17 @@
     else if (b.dataset.tool) setTool(b.dataset.tool);
   });
   tf.onMenu((cmd) => { if (commands[cmd]) commands[cmd](); });
-  // barre d'icônes : éditeur de map, base de données, textes, tester, système, enregistrer
+  // barre d'icônes : éditeur de map, base de données, textes, générateur ; tester, Discord, enregistrer
+  const DISCORD_URL = 'https://discord.gg/dArY6jms7N';
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-rail]');
+    if (b && b.dataset.rail === 'discord') { tf.openExternal(DISCORD_URL).catch(err => UI.toast(err.message, 'warn')); return; }
     if (!b || !S.project) return;
     const r = b.dataset.rail;
+    if (r !== 'generator' && r !== 'play' && r !== 'save' && window.GeneratorPage) GeneratorPage.close();
     if (r === 'map') { DBEditor.close(); TextsEditor.close(); }
+    else if (r === 'generator') GeneratorPage.open();
     else if (r === 'db') DBEditor.open(document.body.dataset.view === 'system' ? 'units' : undefined);
-    else if (r === 'system') DBEditor.open('system');
     else if (r === 'play') playtest();
     else if (r === 'save') cmdSave();
     else if (r === 'texts') TextsEditor.open();
@@ -1698,7 +1737,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (!S.project || isTyping() || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (!$('#db').classList.contains('hidden') || !$('#texts').classList.contains('hidden') || document.querySelector('.modal-back')) return;
+    if (!$('#db').classList.contains('hidden') || !$('#texts').classList.contains('hidden') || !$('#generator').classList.contains('hidden') || document.querySelector('.modal-back')) return;
     const k = e.key.toLowerCase();
     const tools = { b: 'pencil', r: 'rect', f: 'fill', e: 'eraser', i: 'picker' };
     if (tools[k] && S.mode !== 'units') { setTool(tools[k]); e.preventDefault(); }

@@ -168,6 +168,11 @@ handle('campaign:list', (e, dir) => campaignIO.list(dir));
 handle('campaign:remove', (e, dir, slot) => campaignIO.remove(dir, slot));
 handle('project:save', (e, dir, project) => { io.saveProject(dir, project); return true; });
 handle('project:openFolder', (e, dir) => shell.openPath(dir));
+// liens externes (Discord…) : ouverts dans le navigateur, adresses https uniquement
+handle('app:openExternal', (e, url) => {
+  if (typeof url !== 'string' || !/^https:\/\/(discord\.gg|discord\.com)\//.test(url)) throw new Error('Lien non autorisé.');
+  return shell.openExternal(url);
+});
 
 handle('tiled:import', async (e, dir, terrains) => {
   let files = global.__tiledOverride; // utilisé par le test automatisé
@@ -230,6 +235,18 @@ handle('resources:installDefaults', (e, dir, only) => io.installDefaults(dir, AS
 handle('resources:setTeamColors', (e, dir, key, colors) => io.setTeamColors(dir, key, colors));
 // générateur de personnage : portrait et sprite de map écrits dans ressources/personnages/<Nom>/
 handle('resources:writeGenerated', (e, dir, owner, files) => io.writeGenerated(dir, owner, files));
+// section Générateur : exporter les images d'un personnage dans un dossier choisi (hors du projet)
+let lastExportDir = '';
+handle('generator:export', async (e, owner, files) => {
+  let target = process.env.TF_EXPORT_DIR || '';
+  if (!target) {
+    const res = await dialog.showOpenDialog(editorWin || BrowserWindow.getFocusedWindow(), { title: 'Dossier où exporter les images du personnage',
+      defaultPath: lastExportDir || app.getPath('pictures'), properties: ['openDirectory', 'createDirectory'] });
+    if (res.canceled || !res.filePaths[0]) return null;
+    target = lastExportDir = res.filePaths[0];
+  }
+  return io.exportGenerated(target, owner, files);
+});
 handle('resources:openFolder', (e, dir, sub) => {
   const target = path.resolve(dir, sub || Layout.ROOT);
   if (!target.startsWith(path.resolve(dir))) throw new Error('Dossier hors du projet.');

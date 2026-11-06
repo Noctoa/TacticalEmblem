@@ -5,6 +5,10 @@
   if (common) module.exports = api; else root.SideObjectives = api;
 })(typeof self !== 'undefined' ? self : this, function (R) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const TYPES = [['turn', 'Gagner avant la fin d’un tour'], ['protect', 'Garder un personnage en vie'],
     ['target', 'Vaincre un ennemi précis'], ['village', 'Visiter un village'], ['chest', 'Ouvrir un coffre'],
     ['flag', 'Remplir une condition de scénario']].map(([value, label]) => ({ value, label }));
@@ -72,12 +76,12 @@
       let status = 'pending';
       const expired = ob.turns > 0 && turn > ob.turns;
       if (ob.type === 'protect') {
-        const unit = (state.units || []).find(u => u.team !== 'enemy' && u.sourceId === ob.target);
+        const unit = (state.units || []).find(u => playerSide(u) && !placed(u) && u.sourceId === ob.target);
         status = !unit || down(unit) ? 'failed' : final ? 'success' : 'pending';
       } else if (ob.type === 'turn') status = expired ? 'failed' : final ? 'success' : 'pending';
       else {
         let done = false;
-        if (ob.type === 'target') done = (state.units || []).some(u => u.team === 'enemy' && u.sourceId === ob.target && down(u));
+        if (ob.type === 'target') done = (state.units || []).some(u => !!placed(u) && u.sourceId === ob.target && down(u));
         if (ob.type === 'village') done = !!state.visitedVillages?.has(ob.target) || (!ob.repeatOnReplay && (state.campaign.villageVisits || []).some(v => v.chapterId === ch.id && v.villageId === ob.target));
         if (ob.type === 'chest') done = !!state.openedChests?.has(ob.target) || (!ob.repeatOnReplay && (state.campaign.chestVisits || []).some(v => v.chapterId === ch.id && v.chestId === ob.target));
         if (ob.type === 'flag') done = (state.campaign.scenario?.flags?.[ob.flag] === true) === ob.value;

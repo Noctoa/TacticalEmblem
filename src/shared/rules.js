@@ -13,6 +13,10 @@
   else root.Rules = api;
 })(typeof self !== 'undefined' ? self : this, function (Skills, Promotions, Statuses, Weather, Movement) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
 
   const STATS = ['hp', 'str', 'mag', 'skl', 'spd', 'lck', 'def', 'res'];
   const STAT_LABELS = { hp: 'PV', str: 'For', mag: 'Mag', skl: 'Tec', spd: 'Vit', lck: 'Cha', def: 'Déf', res: 'Rés', mov: 'Dép' };
@@ -155,7 +159,7 @@
   const wexpOf = (unit, type) => Math.max(1, Number(unit && unit.wexp && unit.wexp[type]) || 1);
   const rankOf = (unit, type) => rankOfWexp(wexpOf(unit, type));
   function meetsRank(unit, weapon) {
-    if (!weapon || !RANK_WEXP[weapon.rank] || !unit || unit.team === 'enemy' || unit.ignoreRanks) return true;
+    if (!weapon || !RANK_WEXP[weapon.rank] || !unit || !playerSide(unit) || unit.ignoreRanks) return true;
     return wexpOf(unit, weapon.type) >= RANK_WEXP[weapon.rank];
   }
   /** Progression vers le niveau suivant : { rank, next, value, from, to, ratio } (ratio 1 au niveau S). */
@@ -180,7 +184,7 @@
   }
   /** Ajoute l'EXP d'arme d'une utilisation ; renvoie { type, rank } si le niveau monte, sinon null. */
   function gainWexp(unit, weapon, amount) {
-    if (!unit || !weapon || unit.team === 'enemy') return null;
+    if (!unit || !weapon || !playerSide(unit)) return null;
     const gain = amount !== undefined ? amount : (weapon.wexp !== undefined && weapon.wexp !== '' ? Number(weapon.wexp) : 1);
     if (!(gain > 0)) return null;
     unit.wexp = Object.assign({}, unit.wexp);
@@ -284,7 +288,7 @@
     const inv = pl.inventory && pl.inventory.length ? pl.inventory : character ? character.inventory || [] : cls.defaultInventory || [];
     const skillSource = character ? { ...character, ...Object.fromEntries(['personalSkill', 'learnedSkills', 'equippedSkills'].filter(k => pl[k] !== undefined).map(k => [k, pl[k]])) } : pl;
     return {
-      uid: 'u' + (uidCounter++), team: team || 'enemy', sourceId: pl.id, name: pl.name || character?.name || cls.name,
+      uid: 'u' + (uidCounter++), team: team || Factions.ofPlacement(pl), sourceId: pl.id, placementId: pl.id, name: pl.name || character?.name || cls.name,
       ...(character ? { characterId: character.id, ...ultimateOf(character, db) } : {}),
       classId: cls.id, level, exp: 0, stats, hp: stats.hp, gender: genderOf(character, cls), growths: Object.assign({}, character ? character.growths || {} : cls.growths || {}),
       ...Skills.initialLoadout(Object.assign({}, skillSource, { level }), cls, db.skills),
@@ -352,10 +356,8 @@
     return res;
   }
 
-  function sameSide(a, b) {
-    const side = t => (t === 'enemy' ? 'enemy' : 'player'); // 'ally' joue avec le joueur
-    return side(a.team) === side(b.team);
-  }
+  /** Même camp au sens large : deux factions qui ne se battent pas (joueur et alliés, ou factions non hostiles). */
+  function sameSide(a, b) { return !Factions.hostile(a.team, b.team); }
 
   /** Occupation connue du camp : un ennemi caché ne doit pas découper une zone de déplacement. */
   function perceivedContext(unit, ctx, units) {
@@ -780,7 +782,7 @@
   }
   /** Bonus passifs : somme des rangs des partenaires présents à portée. */
   function supportBonus(unit, friends, st, cfg) {
-    if (!unit || unit.team === 'enemy' || !st) return null;
+    if (!unit || !playerSide(unit) || !st) return null;
     const c = Object.assign({}, DEFAULT_SUPPORT, cfg || {});
     const b = { hit: 0, avoid: 0, crit: 0, critAvoid: 0, partners: [] };
     for (const p of partnersOf(unit, st)) {
@@ -794,7 +796,7 @@
   }
   /** Attaque spéciale disponible : partenaire à portée avec le rang requis. */
   function supportSpecial(unit, friends, st, cfg) {
-    if (!unit || unit.team === 'enemy' || !st) return null;
+    if (!unit || !playerSide(unit) || !st) return null;
     const c = Object.assign({}, DEFAULT_SUPPORT, cfg || {});
     let best = null;
     for (const p of partnersOf(unit, st)) {
@@ -810,7 +812,7 @@
   }
   /** Attaque duo : partenaire adjacent à l'attaquant avec le rang requis et une arme. */
   function supportDual(unit, friends, st, db) {
-    if (!unit || unit.team === 'enemy' || !st) return null;
+    if (!unit || !playerSide(unit) || !st) return null;
     let best = null;
     for (const p of partnersOf(unit, st)) {
       const co = p.entry.def.combo;
@@ -826,17 +828,33 @@
    * Ajoute des points à une paire. Renvoie true si un nouveau rang devient disponible
    * (la conversation de soutien peut alors être vue en jeu).
    */
+  /**
+   * Verrous de rang (def.locks = { C|B|A|S: id d'un chapitre }) : un rang n'est atteignable qu'à partir de ce chapitre
+   * (Base de données › Chapitres et actes). reached(arcId) dit si la partie y est arrivée. Renvoie le rang le plus haut
+   * atteignable (un rang verrouillé bloque aussi ceux d'après).
+   */
+  function supportCap(def, reached) {
+    let cap = 0;
+    for (let i = 1; i <= 4; i++) {
+      const lock = def && def.locks && def.locks[SUPPORT_RANKS[i]];
+      if (lock && !(reached && reached(lock))) break;
+      cap = i;
+    }
+    return cap;
+  }
+  function applySupportLocks(st, reached) { for (const e of Object.values(st || {})) e.cap = supportCap(e.def, reached); return st; }
+  const capOf = (e) => (e.cap === undefined ? 4 : e.cap);
   function addSupportPoints(st, idA, idB, amount, cfg, sRankTaken) {
     const e = st[pairKey(idA, idB)];
     if (!e || !amount) return false;
-    const before = rankForPoints(e.points, cfg, e.def.maxRank);
+    const before = Math.min(rankForPoints(e.points, cfg, e.def.maxRank), capOf(e));
     e.points += amount;
-    let after = rankForPoints(e.points, cfg, e.def.maxRank);
+    let after = Math.min(rankForPoints(e.points, cfg, e.def.maxRank), capOf(e));
     if (after === 4 && sRankTaken && sRankTaken(e)) after = 3; // un seul rang S par personnage
     return after > e.rank && after > before;
   }
   function pendingRank(e, cfg, sRankTaken) {
-    let r = rankForPoints(e.points, cfg, e.def.maxRank);
+    let r = Math.min(rankForPoints(e.points, cfg, e.def.maxRank), capOf(e)); // rang verrouillé : la conversation attend le chapitre
     if (r === 4 && sRankTaken && sRankTaken(e)) r = 3;
     return r > e.rank ? e.rank + 1 : 0;
   }
@@ -1013,7 +1031,7 @@
     const db = opts.db;
     const ctx = perceivedContext(unit, { ...opts.ctx, weather: opts.weather || opts.ctx.weather }, opts.units || [unit, ...foes]);
     opts = { ...opts, ctx };
-    const difficulty = unit.team === 'enemy' ? normalizeAiDifficulty(opts.settings && opts.settings.aiDifficulty) : 'normal';
+    const difficulty = !playerSide(unit) ? normalizeAiDifficulty(opts.settings && opts.settings.aiDifficulty) : 'normal';
     foes = foes.filter(u => !u.dead && u.hp > 0 && !sameSide(unit, u) && Weather.canSee(ctx.visible, u));
     const friends = (opts.units || []).filter(u => !u.dead && u.hp > 0 && sameSide(unit, u));
     const stationary = unit.ai === 'stationary' || unit.ai === 'boss';
@@ -1081,7 +1099,7 @@
     attackWeapons, staves, staffCanTarget, equipped, equip, statsFromClass, makeUnitFromCharacter, makeEnemyFromPlacement, validateEnemyCharacters,
     moveCost, reachable, perceivedContext, pathTo, tilesInRange, threatTiles, sameSide, isMagic, attackSpeed, strikeStats,
     forecast, resolveCombat, estimateCombat, phaseRecovery, combatExp, staffExp, gainExp, planEnemy,
-    SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, partnersOf, supportBonus, supportSpecial, supportDual,
+    SUPPORT_RANKS, DEFAULT_SUPPORT, rankIndex, pairKey, rankForPoints, initSupports, supportCap, applySupportLocks, partnersOf, supportBonus, supportSpecial, supportDual,
     addSupportPoints, pendingRank
   };
 });

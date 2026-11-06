@@ -4,6 +4,10 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Weather = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const TYPES = [
     { value: 'none', label: 'Aucune' }, { value: 'fog', label: 'Brouillard' },
     { value: 'sand', label: 'Tempête de sable' }, { value: 'snow', label: 'Neige' }
@@ -59,13 +63,13 @@
     if (e.movement) parts.push(e.movement === 1 ? 'Cavalerie : coût +1' : e.movement === 3 ? 'Sol : coût +1 / cav. +2' : 'Sol : coût +1');
     return parts.join(' · ') || 'Visuel';
   }
-  const side = team => team === 'enemy' ? 'enemy' : 'player';
+
   function visibleTiles(value, units, team, width, height) {
     const radius = effects(value).vision;
     if (radius === null) return null; // null = carte entière, sans allouer une grille
     const visible = new Set();
     for (const u of units) {
-      if (u.dead || u.hp <= 0 || side(u.team) !== side(team)) continue;
+      if (u.dead || u.hp <= 0 || Factions.hostile(u.team, team)) continue; // vision partagée par les camps qui ne se battent pas
       for (let dy = -radius; dy <= radius; dy++) for (let dx = -radius + Math.abs(dy); dx <= radius - Math.abs(dy); dx++) {
         const x = u.x + dx, y = u.y + dy;
         if (x >= 0 && y >= 0 && x < width && y < height) visible.add(x + ',' + y);

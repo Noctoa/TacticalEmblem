@@ -5,6 +5,10 @@
   if (common) module.exports = api; else root.Villages = api;
 })(typeof self !== 'undefined' ? self : this, function (R, Team, Statuses) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const list = ch => ch.villages || [];
   const at = (ch, x, y) => list(ch).find(v => v.x === x && v.y === y);
   const visited = (campaign, ch, v) => (campaign.villageVisits || []).some(p => p.chapterId === ch.id && p.villageId === v.id);
@@ -12,7 +16,7 @@
   const closed = (ch, v, state) => ruined(ch, v, state) || state.visited.has(v.id) || (!v.repeatOnReplay && visited(state.campaign, ch, v));
   const status = (ch, v, state) => ruined(ch, v, state) ? 'ruined' : closed(ch, v, state) ? 'visited' : 'open';
   const classPillages = cls => typeof cls?.pillageVillages === 'boolean' ? cls.pillageVillages : /^(fe\d*_)?(brigand|bandit|pirate)$/.test(cls?.id || '');
-  const canPillage = (unit, db) => unit?.team === 'enemy' && !unit.dead && unit.hp > 0 && Statuses.canAct(unit) &&
+  const canPillage = (unit, db) => !!unit && Factions.hostile(unit.team, 'player') && !unit.dead && unit.hp > 0 && Statuses.canAct(unit) &&
     (typeof unit.pillageVillages === 'boolean' ? unit.pillageVillages : classPillages((db.classes || []).find(c => c.id === unit.classId)));
   const bounds = (v, patch) => ({ x: v.x + (patch?.offsetX || 0), y: v.y + (patch?.offsetY || 0), w: patch?.width || 1, h: patch?.height || 1 });
   const inside = (x, y, area) => x >= area.x && y >= area.y && x < area.x + area.w && y < area.y + area.h;
@@ -71,7 +75,7 @@
     if (v.recruitUnitId) {
       const def = db.units.find(u => u.id === v.recruitUnitId);
       if (!def) return no('Personnage à recruter introuvable.');
-      const present = state.units.find(u => u.sourceId === def.id && u.team !== 'enemy');
+      const present = state.units.find(u => u.sourceId === def.id && playerSide(u) && !placed(u));
       const unavailable = (state.campaign.dead || []).includes(def.id) || (present && (present.dead || present.hp <= 0));
       const kind = unavailable ? 'unavailable' : present && present.team === 'player' ? 'already' : present && present.team === 'ally' ? 'ally' : (state.campaign.recruited || []).includes(def.id) ? 'already' : 'new';
       recruit = { id: def.id, name: def.name, kind, unit: present || null };

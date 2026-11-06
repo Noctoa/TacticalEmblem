@@ -5,6 +5,10 @@
   else root.Skills = api;
 })(typeof self !== 'undefined' ? self : this, function (Statuses) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const EFFECTS = [
     { id: 'hit', name: 'Bonus de précision', amount: 'Précision +', value: 10, max: 100, combat: true },
     { id: 'avoid', name: 'Bonus d’esquive', amount: 'Esquive +', value: 10, max: 100, combat: true },
@@ -218,7 +222,7 @@
   function active(unit, catalogue, context = {}) {
     if (unit.dead || unit.hp <= 0) return [];
     const allied = other => other !== unit && !other.dead && other.hp > 0 &&
-      (other.team === 'enemy') === (unit.team === 'enemy');
+      !Factions.hostile(other.team, unit.team);
     return assigned(unit, catalogue).map(entry => entry.skill).filter(skill => {
       const spec = effectOf(skill);
       if (!spec || spec.utility) return false;

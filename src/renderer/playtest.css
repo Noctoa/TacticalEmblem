@@ -805,3 +805,8 @@ body.on-title #hud, body.on-title #game { visibility: hidden; }
 /* boutique d'une map de combat (même fenêtre que le convoi) */
 #convoy .bshop-item b { display: inline-flex; align-items: center; gap: 4px; }
 #convoy [data-shop-gold] { display: inline-flex; align-items: center; gap: 4px; color: #f2d58a; }
+
+/* factions en plus (armée jaune…) : pièces rouges du combat teintées vers la couleur de la faction */
+#battle .gb-plate.faction::before, #battle .gb-stats.faction::before, #battle .gb-hp.faction::before { filter: hue-rotate(var(--hue, 0deg)) saturate(1.15); }
+#banner.faction span { text-shadow: 0 2px 6px rgba(0, 0, 0, .6); }
+#combat-hud .win.side.e[style*="--team"] { border-color: var(--team); }

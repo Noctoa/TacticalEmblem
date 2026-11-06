@@ -32,6 +32,8 @@
     chat: '<path d="M2 3h12v8H7l-3 2.5V11H2z"/>',
     stop: '<rect x="4" y="4" width="8" height="8" rx="1" fill="currentColor"/>',
     text: '<path d="M3 3.5h10M8 3.5v9.5M6 13h4"/>',
+    community: '<path d="M2 3.2h8.2v5.6H5.6L3.4 10.8V8.8H2z"/><path d="M10.2 5.8H14v5.4h-1.4v1.8l-2-1.8H7.2V8.8"/>',
+    user: '<circle cx="8" cy="5.4" r="2.6"/><path d="M2.8 13.8c.7-2.7 2.7-4.2 5.2-4.2s4.5 1.5 5.2 4.2"/>',
     search: '<circle cx="7" cy="7" r="4.2"/><path d="m10.2 10.2 3.3 3.3"/>',
     pin: '<path d="M6 2h4l-.6 4 2.6 2.5H4L6.6 6z"/><path d="M8 8.5V14"/>',
     chevron: '<path d="m4.5 6 3.5 3.5L11.5 6"/>',

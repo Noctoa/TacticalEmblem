@@ -61,7 +61,9 @@
  *          animations (Base de données › Animations), animationFor(u, coup) -> id de l'animation de ce coup ('' = aucune) }
    */
   async function play(opts) {
-    const left = opts.att.team === 'enemy' ? opts.att : opts.def;
+    // à gauche : le camp hostile au joueur (l'attaquant si les deux sont des factions ennemies)
+    const ps = (u) => u.team === 'player' || u.team === 'ally';
+    const left = !ps(opts.att) ? opts.att : !ps(opts.def) ? opts.def : opts.def;
     const right = left === opts.att ? opts.def : opts.att;
     const sc = {
       opts, speed: 1, skip: false, floats: [], shake: 0, whiteout: 0, projectile: null, fade: 0, runs: [],
@@ -187,7 +189,12 @@
   // Interface de combat façon GBA (pièces découpées dans img/ui par tools/build_ui_gba.py)
   // ------------------------------------------------------------------
   const ICON_ORDER = ['sword', 'lance', 'axe', 'bow', 'anima', 'light', 'dark', 'staff'];
-  const teamColor = (u) => (u.team === 'enemy' ? 'red' : u.team === 'ally' ? 'green' : u.team === 'player' ? 'blue' : 'gray');
+  // factions en plus : pièces rouges teintées vers la couleur de la faction (--hue)
+  const teamColor = (u) => (u.team === 'enemy' ? 'red' : u.team === 'ally' ? 'green' : u.team === 'player' ? 'blue' : self.Factions && Factions.get(u.team) ? 'red faction' : 'gray');
+  const teamStyle = (u) => {
+    if (!self.Factions || ['enemy', 'ally', 'player'].includes(u.team) || !Factions.get(u.team) || !self.Palettes) return {};
+    return { '--hue': ((Palettes.TARGET_HUE[Factions.palette(u.team)] || 0) - 2) + 'deg' };
+  };
   /** Échelle de l'interface : le bandeau du bas garde les proportions d'un écran GBA (52 px sur 160). */
   // thèmes de l'interface (img/ui/<thème>/, styles .theme-<id> de playtest.css) : hauteur du bandeau du bas en pixels GBA
   const HUD_THEMES = { gba: { band: 52 }, ff9: { band: 53 } };
@@ -217,13 +224,13 @@
         h('div', { class: 'gb-weapon' },
           weaponGlyph(w, icon),
           h('span', { class: 'gb-wname' }, sideWeapon(sc, actor))),
-        h('div', { class: 'gb-hp ' + color }, hpNum, hpBar),
-        h('div', { class: 'gb-stats ' + color },
+        h('div', { class: 'gb-hp ' + color, style: teamStyle(actor.unit) }, hpNum, hpBar),
+        h('div', { class: 'gb-stats ' + color, style: teamStyle(actor.unit) },
           row('hit', s ? String(s.hit) : '--'),
           row('dmg', s ? String(s.dmg) + (s.count > 1 ? '×' + s.count : '') : '--'),
           row('crt', s ? String(s.crit) : '--')));
     };
-    const plate = (actor) => h('div', { class: 'gb-plate ' + actor.side + ' ' + teamColor(actor.unit) }, h('span', {}, actor.unit.name));
+    const plate = (actor) => h('div', { class: 'gb-plate ' + actor.side + ' ' + teamColor(actor.unit), style: teamStyle(actor.unit) }, h('span', {}, actor.unit.name));
     const cv = h('canvas', { class: 'b-canvas' });
     sc.canvas = cv; sc.ctx = cv.getContext('2d');
     sc.hud = h('div', { class: 'gb-hud theme-' + hudTheme(sc) }, plate(sc.L), plate(sc.R), h('div', { class: 'gb-bottom' }, side(sc.L), side(sc.R)));

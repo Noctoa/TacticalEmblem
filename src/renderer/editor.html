@@ -18,9 +18,10 @@
   <button class="rail-btn" data-rail="map" title="Éditeur de map" data-icon="map"></button>
   <button class="rail-btn" data-rail="db" title="Base de données (F9)" data-icon="db"></button>
   <button class="rail-btn" data-rail="texts" title="Textes et dialogues" data-icon="text"></button>
+  <button class="rail-btn" data-rail="generator" title="Générateur de personnages (images exportées, hors projet)" data-icon="user"></button>
   <span class="rail-spacer"></span>
   <button class="rail-btn" data-rail="play" title="Tester l'acte (F5)" data-icon="play"></button>
-  <button class="rail-btn" data-rail="system" title="Système" data-icon="gear"></button>
+  <button class="rail-btn" data-rail="discord" title="Rejoindre le Discord de Tactical Emblem" data-icon="community"></button>
   <button class="rail-btn" data-rail="save" title="Enregistrer (Ctrl+S)" data-icon="save"></button>
 </nav>
 <div id="app" class="no-project">
@@ -135,9 +136,17 @@
   </div>
 </div>
 
+<div id="generator" class="overlay hidden">
+  <div class="tx-window">
+    <aside id="gen-nav" class="db-head"></aside>
+    <div id="gen-body" class="studio"></div>
+  </div>
+</div>
+
 <div id="modal-root"></div>
 <div id="toast-root"></div>
 
+<script src="../shared/factions.js"></script>
 <script src="../shared/extensions.js"></script>
 <script src="../shared/statuses.js"></script>
 <script src="../shared/weather.js"></script>
@@ -194,6 +203,7 @@
 <script src="img/generator/battlers.js"></script>
 <script src="img/generator/battler-colors.js"></script>
 <script src="char-gen-ui.js"></script>
+<script src="generator-page.js"></script>
 <script src="anim-player.js"></script>
 <script src="animation-editor.js"></script>
 <script src="db.js"></script>

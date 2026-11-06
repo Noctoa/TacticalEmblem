@@ -5,6 +5,12 @@
   else root.Mission = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
+  /** Unité hostile au joueur : ennemis rouges et factions qui se battent contre lui. */
+  const hostileToPlayer = (u) => !!u && Factions.hostile(u.team, 'player');
   const objectives = ch => [ch.objective || { type: 'rout' }, ...(ch.extraObjectives || [])];
   const friends = ch => [...(ch.players || []), ...(ch.allies || [])];
   const required = (ch, db) => Array.isArray(ch.requiredUnits) ? ch.requiredUnits :
@@ -42,25 +48,25 @@
     return [...new Set(errors)];
   }
   function canSeize(ch, db, u) {
-    return u && !down(u) && u.team !== 'enemy' && seizers(ch, db).includes(u.sourceId) &&
+    return u && !down(u) && playerSide(u) && seizers(ch, db).includes(u.sourceId) &&
       objectives(ch).some(ob => ob.type === 'seize' && ob.x === u.x && ob.y === u.y);
   }
   function evaluate(ch, db, state) {
     const units = state.units || [], pending = state.pending || [];
-    const foes = [...units, ...pending].filter(u => u.team === 'enemy');
+    const foes = [...units, ...pending].filter(hostileToPlayer);
     const live = units.filter(u => !down(u));
     const completedTurns = (state.turn || 1) - 1;
     let reason = '';
     for (const id of required(ch, db)) {
-      const u = units.find(u => u.team !== 'enemy' && u.sourceId === id);
+      const u = units.find(u => playerSide(u) && !placed(u) && u.sourceId === id);
       if (!u || down(u)) { reason = `${(db.units.find(c => c.id === id) || {}).name || id} doit survivre à ce chapitre.`; break; }
     }
     if (!reason && ch.defeatAll !== false && !live.some(u => u.team === 'player')) reason = 'Toutes vos unités ont été vaincues.';
-    if (!reason && ch.defendZone && ch.defendZone.enabled && live.some(u => u.team === 'enemy' && inside(u, ch.defendZone))) reason = 'Un ennemi a atteint la zone à défendre.';
-    if (!reason && ch.lossLimit > 0 && units.filter(u => u.team !== 'enemy' && down(u)).length >= ch.lossLimit) reason = `La limite de ${ch.lossLimit} perte(s) est atteinte.`;
+    if (!reason && ch.defendZone && ch.defendZone.enabled && live.some(u => hostileToPlayer(u) && inside(u, ch.defendZone))) reason = 'Un ennemi a atteint la zone à défendre.';
+    if (!reason && ch.lossLimit > 0 && units.filter(u => playerSide(u) && down(u)).length >= ch.lossLimit) reason = `La limite de ${ch.lossLimit} perte(s) est atteinte.`;
     const progress = objectives(ch).map(ob => {
       switch (ob.type) {
-        case 'rout': return !(ob.includeReinforcements === false ? units : foes).some(u => u.team === 'enemy' && !down(u));
+        case 'rout': return !(ob.includeReinforcements === false ? units : foes).some(u => hostileToPlayer(u) && !down(u));
         case 'boss': { const b = foes.filter(u => u.isBoss); return b.length > 0 && b.every(down); }
         case 'target': { const target = foes.find(u => u.sourceId === ob.target); return !!target && down(target); }
         case 'survive': return completedTurns >= (ob.turns || 10);

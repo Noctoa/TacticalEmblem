@@ -3,7 +3,7 @@
  * Le dialogue reste stocké comme avant (une ligne « Nom: réplique » par réplique, ou « @fichier#id » pour un texte de
  * l'outil Textes) : tous les systèmes du jeu le lisent sans changement. L'éditeur le montre réplique par réplique :
  * orateur (avec son portrait), texte, ordre, aperçu dans la boîte de dialogue. Chaque réplique a sa ligne dans le CSV
- * (outil Textes › Base de données › « Dialogues … » / « Conversations … »), sans le nom de l'orateur.
+ * (outil Textes › Base de données : les dialogues des niveaux dans le CSV de leur chapitre), sans le nom de l'orateur.
  *
  * UI.dialogueEditor(textarea) : le textarea d'origine reste la source (masqué, « Texte brut » pour l'afficher) ;
  * écrire dedans de l'extérieur reconstruit les répliques.
@@ -155,15 +155,6 @@
       if (b && whoOf(b) && whoOf(b) !== last) return whoOf(b);
       return speakers.find(n => n !== last) || last;
     };
-    /** Réplique écrite d'une unité : rangée dans le fichier de textes du personnage, le dialogue y renvoie. */
-    const commit = (r) => {
-      const t = texts(), u = r && !r.ref && t && Texts.unitByName(db(), r.who);
-      if (!u || !r.text.trim()) return false;
-      r.ref = Texts.storeLine(t, db(), u.id, r.text, Texts.lineTranslations(t, r.who, r.text));
-      delete r.who; delete r.text; dirty();
-      return true;
-    };
-    const commitAll = () => { let n = 0; for (const r of rows) if (commit(r)) n++; if (n) { render(); write(); } return n; };
     const insert = (at, row) => { rows.splice(at, 0, row); render(); write(); };
 
     function rowEl(r, i) {
@@ -199,14 +190,13 @@
         title: 'Orateur : le nom d’une unité affiche son portrait ; vide = narration' });
       const faceBox = h('div', { class: 'dlg-face-slot' }, face(r.who));
       who.addEventListener('input', () => { r.who = who.value.replace(/[:\n]/g, ''); write(); });
-      who.addEventListener('change', () => { if (commit(r)) { render(); write(); return; } faceBox.replaceChildren(face(r.who)); fillNames(); });
+      who.addEventListener('change', () => { faceBox.replaceChildren(face(r.who)); fillNames(); });
       const text = h('textarea', { rows: 1, class: 'dlg-text', placeholder: 'Réplique…', spellcheck: false, 'data-dlg-text': String(i) });
       text.value = r.text;
       const grow = () => { text.style.height = 'auto'; text.style.height = Math.max(34, text.scrollHeight + 2) + 'px'; };
       text.addEventListener('input', () => { r.text = text.value.replace(/\n/g, ' '); if (text.value !== r.text) text.value = r.text; grow(); write(); });
-      text.addEventListener('change', () => { if (rows.includes(r) && commit(r)) { render(); write(); } });
       text.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) { e.preventDefault(); commit(r); insert(i + 1, { who: nextWho(i + 1), text: '' }); focusRow(i + 1); }
+        if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) { e.preventDefault(); insert(i + 1, { who: nextWho(i + 1), text: '' }); focusRow(i + 1); }
         else if (e.key === 'Backspace' && !text.value && !r.who && rows.length > 1) { e.preventDefault(); rows.splice(i, 1); render(); write(); focusRow(Math.max(0, i - 1)); }
       });
       requestAnimationFrame(grow);
@@ -220,7 +210,6 @@
 
     function render() {
       fillNames();
-      storeBtn.hidden = !rows.some(r => !r.ref && r.text && r.text.trim() && Texts.unitByName(db(), r.who));
       list.replaceChildren(...rows.map(rowEl));
       if (!rows.length) list.append(h('p', { class: 'dlg-empty' }, opts.empty || 'Aucune réplique. Ajoute la première, ou un texte de l’outil Textes.'));
     }
@@ -229,16 +218,12 @@
       raw = !raw; wrap.classList.toggle('raw', raw); rawBtn.textContent = raw ? 'Répliques' : 'Texte brut';
       if (!raw) { rows = parse(ta.value); render(); }
     } }, 'Texte brut');
-    const storeBtn = h('button', { class: 'small ghost', type: 'button', 'data-dlg-store': true, title: 'Ranger les répliques écrites des personnages dans leurs fichiers de textes (traductions comprises)', onclick: () => {
-      const n = commitAll(); UI.toast(n ? n + ' réplique(s) rangée(s) dans les fichiers des personnages.' : 'Aucune réplique de personnage à ranger.');
-    } }, 'Importer dans les personnages');
     const bar = h('div', { class: 'dlg-bar' },
       h('button', { class: 'small', type: 'button', 'data-dlg-add': true, html: Icons.icon('plus'), onclick: () => { insert(rows.length, { who: nextWho(rows.length), text: '' }); focusRow(rows.length - 1, rows[rows.length - 1].who ? 'text' : 'who'); } }, 'Réplique'),
       h('button', { class: 'small', type: 'button', 'data-dlg-pick-char': true, html: Icons.icon('chat'), title: 'Ajouter une réplique déjà écrite d’un personnage (son fichier de textes)', onclick: async () => {
         const last = [...rows].reverse().find(x => whoOf(x)), u = Texts.unitByName(db(), nextWho(rows.length) || (last && whoOf(last)));
         const ref = await pickLine(u && u.id); if (ref) insert(rows.length, { ref });
       } }, 'Réplique d’un personnage'),
-      storeBtn,
       window.TextsEditor ? h('button', { class: 'small ghost', type: 'button', 'data-text-ref-btn': true, title: 'Ajouter un texte de l’outil Textes (référence @fichier#id, traduite en jeu)', onclick: async () => {
         const ref = await TextsEditor.pick(); if (ref) insert(rows.length, { ref });
       } }, '＋ Texte existant') : null,

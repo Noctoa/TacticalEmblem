@@ -828,6 +828,10 @@
             { key: 'startPoints', label: 'Points au départ', type: 'number', min: 0, max: 999 },
             { key: 'maxRank', label: 'Rang maximum', type: 'select', options: [{ value: 'A', label: 'A (amitié)' }, { value: 'S', label: 'S (couple)' }] }] },
           { type: 'info', text: `Rang au début du jeu : ${start}. Seuils C/B/A/S : ${cfg.thresholds.join(' / ')} points. Gains : +${cfg.gainAdjacent} par fin de tour côte à côte, +${cfg.gainCombat} en combattant l'un à côté de l'autre. Bonus par rang tant qu'ils sont à ${cfg.range} cases ou moins : précision +${cfg.bonus.hit}, esquive +${cfg.bonus.avoid}, critique +${cfg.bonus.crit}.` },
+          { type: 'heading', label: 'Verrous de rang (chapitres)' },
+          { type: 'row', fields: ['C', 'B', 'A', 'S'].slice(0, Rules.rankIndex(p.maxRank || 'A')).map(r => ({ key: 'locks.' + r, label: 'Rang ' + r + ' dès le', type: 'select',
+            empty: 'Toujours', options: (db().arcs || []).map(a => ({ value: a.id, label: a.name || a.id })) })) },
+          { type: 'info', text: 'Un rang verrouillé ne peut pas être atteint avant ce chapitre (Base de données › Chapitres et actes) : les points continuent de monter, et la conversation devient disponible dès que la partie arrive au chapitre (acte en cours ou chapitre déjà joué). Un rang verrouillé bloque aussi les suivants.' },
           { type: 'heading', label: 'Attaque spéciale (le partenaire est à portée)' },
           { type: 'row', fields: [
             { key: 'special.name', label: 'Nom', type: 'text' },
@@ -901,7 +905,7 @@
   // ------------------------------------------------------------------
   // Structure de la fenêtre
   // ------------------------------------------------------------------
-  const ORDER = [['units', 'Unités'], ['supports', 'Affinités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['ultimates', 'Ultimes'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['resources', 'Ressources'], ['sounds', 'Son'], ['plugins', 'Plugins'], ['system', 'Système']];
+  const ORDER = [['units', 'Unités'], ['supports', 'Affinités'], ['classes', 'Classes'], ['skills', 'Compétences'], ['ultimates', 'Ultimes'], ['weapons', 'Armes et objets'], ['animations', 'Animations'], ['tilesets', 'Terrains et tilesets'], ['arcs', 'Chapitres et actes'], ['factions', 'Factions'], ['system', 'Système'], ['sounds', 'Son'], ['resources', 'Ressources'], ['plugins', 'Plugins']];
 
   /** Onglets : ceux du noyau, plus ceux des plugins actifs (Extensions « dbTab », placés après leur « after »). */
   function order() {
@@ -934,6 +938,7 @@
 
   function open(t, id) {
     if (t === 'lobby' || t === 'talks') return openCamp(t === 'talks' ? id : null); // déplacés sur la map de camp
+    if (window.GeneratorPage) GeneratorPage.close();
     if (t) tab = t;
     if (!tabDef(tab) && !order().some(([k]) => k === tab) && !['chapters', 'terrains'].includes(tab)) tab = 'units'; // onglet d'un plugin retiré
     if (id) selected[tab] = id;
@@ -953,14 +958,15 @@
 
   /** Catégories de la barre latérale (façon Pokémon Studio) ; les onglets des plugins vont dans « Plugins ». */
   const NAV_GROUPS = [['Données', ['units', 'supports', 'classes', 'skills', 'ultimates', 'weapons', 'animations']],
-    ['Monde', ['tilesets', 'arcs']], ['Projet', ['resources', 'sounds', 'system']], ['Plugins', ['plugins']]];
+    ['Monde', ['tilesets', 'arcs', 'factions']], ['Projet', ['system', 'sounds', 'resources']], ['Plugins', ['plugins']]];
   function renderTabs() {
     const nav = $('#db-tabs'); nav.innerHTML = '';
     document.body.dataset.view = tab === 'system' ? 'system' : 'db';
     const all = order(), known = new Set(NAV_GROUPS.flatMap(g => g[1]));
     const btn = ([k, label]) => h('button', { class: (tab === k || (k === 'arcs' && tab === 'chapters') || (k === 'tilesets' && tab === 'terrains') || (k === 'weapons' && tab === 'items')) ? 'on' : '', 'data-tab': k, onclick: () => { tab = k; renderTabs(); renderBody(); } }, label);
     for (const [title, keys] of NAV_GROUPS) {
-      const items = all.filter(([k]) => keys.includes(k) || (title === 'Plugins' && !known.has(k)));
+      // ordre de la catégorie (ex. Projet : Système, Son, Ressources), puis les onglets des plugins
+      const items = keys.map(k => all.find(x => x[0] === k)).filter(Boolean).concat(title === 'Plugins' ? all.filter(([k]) => !known.has(k)) : []);
       if (!items.length) continue;
       nav.append(h('div', { class: 'db-nav-group' }, title), ...items.map(btn));
     }
@@ -975,8 +981,8 @@
   // barre du haut : Nouveau / dupliquer / supprimer, sélecteur de l'élément (liste en menu déroulant, épinglable) ;
   // fiche : en-tête (image, nom, #id, badges, description) puis une carte par section du formulaire.
   const KIND_NAMES = { units: 'Unité', classes: 'Classe', skills: 'Compétence', ultimates: 'Ultime', weapons: 'Arme', items: 'Objet',
-    animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin', sounds: 'Son', supports: 'Affinité' };
-  const DOCKED = new Set(['resources', 'plugins', 'sounds']); // listes riches (aperçus) : toujours visibles
+    animations: 'Animation', tilesets: 'Tileset', terrains: 'Terrain', chapters: 'Acte', arcs: 'Chapitre', resources: 'Ressource', plugins: 'Plugin', sounds: 'Son', supports: 'Affinité', factions: 'Faction' };
+  const DOCKED = new Set(['resources', 'plugins', 'sounds', 'factions']); // listes riches (aperçus) : toujours visibles
   let pinned = store('tf.dbPinned') === '1';
   function studio(body) {
     body.classList.add('studio');
@@ -1237,6 +1243,7 @@
     if (tab === 'system') return renderSystem(body);
     if (tab === 'resources') return renderResources(body);
     if (tab === 'sounds') return renderSounds(body);
+    if (tab === 'factions') return renderFactions(body);
     if (tab === 'plugins') return renderPlugins(body);
     if (tab === 'arcs') return renderArcs(body);
   }
@@ -2660,6 +2667,79 @@
     return out;
   }
   const fmtTime = (t) => isFinite(t) ? Math.floor(t / 60) + ':' + String(Math.floor(t % 60)).padStart(2, '0') : '–:––';
+  // ---------- onglet Factions (Monde) : camps, couleurs, hostilités (shared/factions.js) ----------
+  const fac = { sel: 'yellow' };
+  function renderFactions(body) {
+    const meta = Editor.project().meta;
+    const save = (list) => { meta.factions = Factions.normalize(list); Factions.configure(meta.factions); change(); renderBody(); };
+    const all = Factions.all();
+    if (!all.some(f => f.id === fac.sel)) fac.sel = 'yellow';
+    const dot = (f) => h('span', { class: 'faction-dot', style: { background: Factions.hex(f.id) } });
+    const items = h('div', { class: 'db-list-items' },
+      h('div', { class: 'db-group' }, 'Factions', h('span', {}, `${all.length} / ${Factions.MAX}`)),
+      ...all.map(f => h('div', { class: 'db-item' + (f.id === fac.sel ? ' on' : ''), 'data-faction': f.id, onclick: () => { fac.sel = f.id; renderBody(); } },
+        dot(f), h('span', {}, f.name), h('span', { class: 'meta' }, f.fixed ? 'de base' : f.id === 'yellow' ? 'par défaut' : 'créée'))));
+    const canAdd = all.length < Factions.MAX;
+    body.append(h('div', { class: 'db-list' }, items, h('div', { class: 'db-list-actions' },
+      h('button', { class: 'small primary', 'data-faction-new': true, html: Icons.icon('plus'), disabled: !canAdd,
+        title: canAdd ? 'Créer une faction (couleur au choix)' : `${Factions.MAX} factions au plus`, onclick: () => {
+          const f = Factions.create(meta.factions); if (!f) return;
+          fac.sel = f.id; save(Factions.extras().concat([f]));
+        } }, 'Nouvelle faction'))));
+    const f = Factions.get(fac.sel);
+    const pane = h('div', { class: 'db-form' });
+    body.append(pane);
+    const extras = Factions.extras(), cur = extras.find(x => x.id === f.id);
+    pane.append(h('h2', {}, f.name, h('span', { class: 'muted' }, ' #' + f.id)));
+    if (cur) {
+      pane.append(h('div', { class: 'form-heading' }, 'Général'));
+      const name = h('input', { type: 'text', value: cur.name, 'data-faction-name': true, maxlength: 40, onchange: () => { cur.name = name.value.trim() || cur.name; save(extras); } });
+      pane.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Nom'), name));
+      if (f.id === 'yellow') pane.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Couleur'), h('div', { class: 'faction-swatch' }, dot(f), 'Jaune')));
+      else {
+        const used = new Set(extras.filter(x => x.id !== cur.id).map(x => x.color));
+        pane.append(h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Couleur'), h('div', { class: 'faction-colors' },
+          Factions.CUSTOM_COLORS.map(c => h('button', { type: 'button', class: 'faction-color' + (cur.color === c ? ' on' : ''), disabled: used.has(c), 'data-faction-color': c,
+            title: used.has(c) ? 'Déjà prise par une autre faction' : Factions.COLORS[c].label, style: { '--fc': Factions.COLORS[c].hex },
+            onclick: () => { cur.color = c; save(extras); } }, Factions.COLORS[c].label)))));
+      }
+    } else {
+      pane.append(h('div', { class: 'form-heading' }, 'Général'), h('div', { class: 'field' }, h('label', { class: 'field-label' }, 'Couleur'), h('div', { class: 'faction-swatch' }, dot(f), Factions.COLORS[f.color].label)),
+        h('p', { class: 'form-info' }, f.id === 'enemy' ? 'Les ennemis rouges jouent la phase ennemie. Ils se battent toujours contre le joueur et les alliés.'
+          : f.id === 'ally' ? 'Les alliés (verts) jouent la phase alliée, juste après le joueur. Ils sont toujours amis du joueur. Des alliés génériques (classe + niveau) se placent depuis l’éditeur de map › Unités génériques › Alliés.'
+          : 'Le joueur est toujours ami des alliés et ennemi des rouges.'));
+    }
+    // hostilités : une case par autre faction (symétrique) ; joueur / alliés / ennemis entre eux : fixe
+    pane.append(h('div', { class: 'form-heading' }, 'Se bat contre'));
+    const fixedRel = (a, b) => Factions.BASE.some(x => x.id === a) && Factions.BASE.some(x => x.id === b);
+    pane.append(h('div', { class: 'faction-foes' }, all.filter(o => o.id !== f.id).map(o => {
+      const box = h('input', { type: 'checkbox', 'data-faction-foe': o.id, disabled: fixedRel(f.id, o.id), onchange: () => {
+        const list = Factions.extras();
+        const a = list.find(x => x.id === f.id), b = list.find(x => x.id === o.id);
+        if (box.checked) { (a || b).foes.push(a ? o.id : f.id); }
+        else { if (a) a.foes = a.foes.filter(x => x !== o.id); if (b) b.foes = b.foes.filter(x => x !== f.id); }
+        save(list);
+      } });
+      box.checked = Factions.hostile(f.id, o.id);
+      return h('label', { class: 'faction-foe' + (box.disabled ? ' fixed' : '') }, box, dot(o), h('span', {}, o.name), box.disabled ? h('small', {}, 'fixe') : null);
+    })), h('p', { class: 'form-info' }, 'Deux factions qui ne se battent pas ne s’attaquent pas, se laissent passer et partagent leur vision dans le brouillard. L’objectif « Vaincre tous les ennemis » compte toutes les unités qui se battent contre le joueur.'));
+    if (cur) {
+      pane.append(h('div', { class: 'form-heading' }, 'En jeu'),
+        h('p', { class: 'form-info' }, `${cur.name} joue sa propre phase après la phase ennemie (bannière à sa couleur), avec son IA, ses renforts et ses événements « Début du tour d’une autre faction ». Place ses unités génériques depuis l’éditeur de map › Unités génériques › ${cur.name}.`));
+      if (f.id !== 'yellow') pane.append(h('div', { class: 'insp-actions' }, h('button', { class: 'small danger', 'data-faction-delete': true, html: Icons.icon('trash'), onclick: async () => {
+        const n = (Editor.db().chapters || []).reduce((a, ch) => a + (ch.enemies || []).filter(p => p.faction === f.id).length, 0);
+        if (!(await UI.confirm(`Supprimer la faction « ${f.name} » ?` + (n ? `\nSes ${n} unité(s) placée(s) deviennent des ennemis rouges.` : ''), { ok: 'Supprimer', danger: true }))) return;
+        for (const ch of Editor.db().chapters || []) {
+          for (const p of ch.enemies || []) if (p.faction === f.id) delete p.faction;
+          for (const ev of ch.events || []) if (ev.trigger && ev.trigger.faction === f.id) delete ev.trigger.faction;
+        }
+        const list = Factions.extras().filter(x => x.id !== f.id);
+        for (const x of list) x.foes = x.foes.filter(id => id !== f.id);
+        fac.sel = 'yellow'; save(list);
+      } }, 'Supprimer la faction')));
+    }
+  }
+
   function renderSounds(body) {
     const r = res();
     const all = SOUND_KINDS.flatMap(([k]) => (r[k] || []).map(f => ({ kind: k, path: f })));

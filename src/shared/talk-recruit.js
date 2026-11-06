@@ -13,6 +13,10 @@
   else root.TalkRecruit = api;
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const byId = (list, id) => (list || []).find(e => e.id === id);
   const dist = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
@@ -52,7 +56,7 @@
    */
   function partners(units, u) {
     if (!u || u.team !== 'player' || u.dead) return [];
-    return (units || []).filter(o => o !== u && !o.dead && o.hp > 0 && (o.team === 'enemy' || o.team === 'ally') && o.talk && !o.talked
+    return (units || []).filter(o => o !== u && !o.dead && o.hp > 0 && o.team !== 'player' && o.talk && !o.talked
       && dist(o, u) === 1 && (!o.talk.with.length || o.talk.with.includes(u.sourceId)));
   }
   /** Texte joué si le créateur n'en a pas écrit. */

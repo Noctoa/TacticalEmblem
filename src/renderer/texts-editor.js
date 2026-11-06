@@ -26,6 +26,7 @@
   function open(fileId) {
     if (!Editor.project()) return;
     if (window.DBEditor && !$('#db').classList.contains('hidden')) DBEditor.close();
+    if (window.GeneratorPage) GeneratorPage.close();
     if (fileId) S.file = fileId;
     const t = texts();
     // un texte de la base créé ou modifié depuis : sa ligne apparaît tout de suite
@@ -57,11 +58,11 @@
 
   /** Groupes de fichiers : une catégorie par liste de la base (Unités : Noms, Descriptions, Épilogues…), puis les types de fichiers. */
   function groups(t) {
-    const out = Texts.baseGroups(t).map(g => ({ id: 'base:' + g.list, name: g.name, base: true, files: g.files }));
+    const out = Texts.baseGroups(t).map(g => ({ id: 'base:' + g.name, name: g.name, base: true, files: g.files }));
     for (const k of Texts.KINDS) if (k.id !== 'base') out.push({ id: k.id, name: k.name, files: t.files.filter(f => f.kind === k.id) });
     return out;
   }
-  const shortName = (f) => f.kind === 'base' && f.field ? ((Texts.DB_TEXT_FIELDS.find(x => x[0] === f.field) || [])[1] || f.name) : f.name;
+  const shortName = (f) => f.kind === 'base' && f.field && !f.part ? ((Texts.DB_TEXT_FIELDS.find(x => x[0] === f.field) || [])[1] || f.name) : f.name;
   const fileOptions = (t) => groups(t).filter(g => g.files.length).map(g => h('optgroup', { label: g.name }, g.files.map(x => h('option', { value: x.id }, x.name))));
 
   function renderNav() {
@@ -84,11 +85,6 @@
         for (const u of missing) Texts.create(t, { name: u.name, kind: 'character', ref: u.id });
         change(); if (!S.file) S.file = t.files[0].id; render(); UI.toast(missing.length + ' fichier(s) de personnage créé(s).');
       } }, '＋ Fichiers des personnages (' + missing.length + ')') : null,
-      h('button', { class: 'small', 'data-texts-move-lines': true, title: 'Chaque réplique écrite d’une unité dans les dialogues (événements, camp, soutiens…) part dans le fichier de textes de ce personnage, traductions comprises ; le dialogue y renvoie.', onclick: async () => {
-        if (!(await UI.confirm('Ranger toutes les répliques des personnages écrites dans les dialogues de la base dans leurs fichiers de textes ?\nLes dialogues renverront à ces répliques (@fichier#id) ; les traductions déjà saisies suivent.', { ok: 'Importer' }))) return;
-        const n = Texts.moveToCharacters(t, db(), Editor.project().meta);
-        change(); render(); UI.toast(n ? n + ' réplique(s) importée(s) dans les fichiers des personnages.' : 'Aucune réplique de personnage à importer.');
-      } }, 'Importer les répliques dans les personnages'),
       h('button', { class: 'small ghost', title: 'Les fichiers CSV sont écrits à l’enregistrement du projet', onclick: () => tf.openResourceFolder(Editor.dir(), 'textes') }, 'Ouvrir le dossier textes')));
   }
 

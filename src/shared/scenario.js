@@ -6,11 +6,18 @@
   if (common) module.exports = api; else root.Scenario = api;
 })(typeof self !== 'undefined' ? self : this, function (Mission, Extensions, Statuses, Weather) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const TRIGGERS = [
-    ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['death', 'Unité vaincue'],
+    ['start', 'Début de l’acte'], ['turn', 'Début du tour (phase joueur)'], ['allyTurn', 'Début du tour allié (phase alliée)'],
+    ['enemyTurn', 'Début du tour ennemi (phase ennemie)'], ['factionTurn', 'Début du tour d’une autre faction (armée jaune…)'], ['death', 'Unité vaincue'],
     ['area', 'Une unité termine son action dans une zone'], ['chest', 'Coffre ouvert'], ['door', 'Porte ouverte'],
     ['village', 'Village visité'], ['villagePillaged', 'Village pillé'], ['condition', 'Dès que les conditions sont remplies'], ['victory', 'Victoire']
   ].map(([value, label]) => ({ value, label }));
+  /** Déclencheurs liés au début d'une phase d'un tour donné (trigger.turn). */
+  const TURN_TRIGGERS = ['turn', 'allyTurn', 'enemyTurn', 'factionTurn'];
   // actions du noyau ; les plugins en ajoutent (Extensions, type « action » : { type, label, defaults, fields, validate, run })
   const ACTIONS = [['dialogue', 'Afficher un dialogue'], ['gold', 'Donner de l’or'],
     ['item', 'Donner une arme ou un objet'], ['reinforcement', 'Faire apparaître un renfort'], ['door', 'Ouvrir / fermer une porte'],
@@ -35,7 +42,7 @@
   function conditions(ev, state) {
     const c = ev.conditions || {};
     return (c.flags || []).every(f => flag(state.campaign, f.key) === f.value) &&
-      (c.present || []).every(id => state.units.some(u => u.team !== 'enemy' && u.sourceId === id && !u.dead && u.hp > 0));
+      (c.present || []).every(id => state.units.some(u => playerSide(u) && !placed(u) && u.sourceId === id && !u.dead && u.hp > 0));
   }
   /*
    * Qui déclenche une zone (trigger.who) : '' = joueur ou allié (comme avant), 'player', 'ally', 'enemy', 'any',
@@ -45,18 +52,19 @@
     ['enemy', 'Un ennemi'], ['any', 'N’importe quelle unité']].map(([value, label]) => ({ value, label }));
   function unitMatches(who, u) {
     if (!u) return false;
-    if (!who) return u.team !== 'enemy';
+    if (!who) return playerSide(u);
     if (who === 'any') return true;
-    if (who === 'player' || who === 'ally' || who === 'enemy') return u.team === who;
-    if (who.startsWith('unit:')) return (u.team !== 'enemy' ? u.sourceId : u.characterId) === who.slice(5);
-    if (who.startsWith('enemy:')) return u.team === 'enemy' && u.sourceId === who.slice(6);
+    if (Factions.ids().includes(who)) return u.team === who; // joueur, alliés, ennemis ou faction en plus
+    if (who.startsWith('unit:')) return (placed(u) ? u.characterId : u.sourceId) === who.slice(5);
+    if (who.startsWith('enemy:')) return placed(u) && u.sourceId === who.slice(6);
     return false;
   }
   function matches(ev, type, data) {
     const tr = ev.trigger || {};
     if (tr.type !== type) return false;
-    if (type === 'turn') return tr.turn === data.turn;
-    if (type === 'death') return !!data.unit && (tr.target === data.unit.sourceId || (data.unit.team !== 'enemy' && tr.target === 'unit:' + data.unit.sourceId));
+    if (type === 'factionTurn') return tr.turn === data.turn && (!tr.faction || tr.faction === data.faction);
+    if (TURN_TRIGGERS.includes(type)) return tr.turn === data.turn;
+    if (type === 'death') return !!data.unit && (tr.target === data.unit.sourceId || (!placed(data.unit) && tr.target === 'unit:' + data.unit.sourceId));
     if (type === 'area') { const u = data.unit; return !!u && unitMatches(tr.who, u) && u.x >= tr.x && u.y >= tr.y && u.x < tr.x + (tr.w || 1) && u.y < tr.y + (tr.h || 1); }
     if (['chest', 'door', 'village', 'villagePillaged'].includes(type)) return tr.target === data.target;
     return true;
@@ -72,9 +80,10 @@
       if (!TRIGGERS.some(t => t.value === tr.type)) bad('déclencheur inconnu.');
       if (e.script !== undefined && typeof e.script !== 'string') bad('dialogue invalide.');
       for (const k of ['once', 'campaignOnce']) if (e[k] !== undefined && typeof e[k] !== 'boolean') bad('fréquence invalide.');
-      if (tr.type === 'turn' && (!Number.isInteger(tr.turn) || tr.turn < 1 || tr.turn > 999)) bad('tour invalide.');
+      if (TURN_TRIGGERS.includes(tr.type) && (!Number.isInteger(tr.turn) || tr.turn < 1 || tr.turn > 999)) bad('tour invalide.');
+      if (tr.type === 'factionTurn' && tr.faction && !Factions.phaseOrder().includes(tr.faction)) bad('faction inconnue.');
       if (tr.type === 'death' && !(ch.enemies || []).some(u => u.id === tr.target) && !(typeof tr.target === 'string' && tr.target.startsWith('unit:') && known(tr.target.slice(5)))) bad('unité vaincue introuvable.');
-      if (tr.type === 'area' && tr.who !== undefined && !(typeof tr.who === 'string' && (AREA_WHO.some(o => o.value === tr.who)
+      if (tr.type === 'area' && tr.who !== undefined && !(typeof tr.who === 'string' && (AREA_WHO.some(o => o.value === tr.who) || Factions.ids().includes(tr.who)
         || (tr.who.startsWith('unit:') && known(tr.who.slice(5))) || (tr.who.startsWith('enemy:') && (ch.enemies || []).some(e => e.id === tr.who.slice(6)))))) bad('unité qui déclenche la zone introuvable.');
       if (tr.type === 'area' && (!point(tr.x, tr.y) || !Number.isInteger(tr.w || 1) || !Number.isInteger(tr.h || 1) || (tr.w || 1) < 1 || (tr.h || 1) < 1 || !point(tr.x + (tr.w || 1) - 1, tr.y + (tr.h || 1) - 1))) bad('zone hors de la map.');
       if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type) && !interaction(tr.type, tr.target)) bad('interaction de déclenchement introuvable.');
@@ -108,6 +117,7 @@
           if (!Number.isInteger(a.uses) || a.uses < 0 || a.uses > 999) bad('utilisations de récompense invalides.');
           if (a.unitId && !known(a.unitId)) bad('destinataire introuvable.');
         }
+        if (a.type === 'reinforcement' && a.count !== undefined && !(Number.isInteger(a.count) && a.count >= 1 && a.count <= 30)) bad('nombre de renforts : de 1 à 30.');
         if (a.type === 'reinforcement' && !(ch.enemies || []).some(u => u.id === a.target && (u.eventOnly || u.appearTurn > 0) && (db.classes || []).some(c => c.id === (u.unitId ? (db.units || []).find(d => d.id === u.unitId)?.classId : u.classId)))) bad('choisis un renfort placé sur la map (arrivée par événement ou par tour).');
         if (a.type === 'door' && (!interaction('door', a.target) || typeof a.open !== 'boolean')) bad('porte ou état invalide.');
         if (a.type === 'objective') {
@@ -165,5 +175,5 @@
     }
     return { run, pending: () => progress.size > 0 };
   }
-  return { TRIGGERS, AREA_WHO, unitMatches, ACTIONS, actionTypes, pluginAction, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
+  return { TRIGGERS, TURN_TRIGGERS, AREA_WHO, unitMatches, ACTIONS, actionTypes, pluginAction, validFlag, flag, setFlag, validateMemory, conditions, matches, validate, references, createRunner };
 });

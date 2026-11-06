@@ -88,7 +88,7 @@ test('textes de la base : une ligne par texte du jeu, créée / retirée avec l\
   const p = io.loadProject(dir);
   const file = (id) => p.texts.files.find(f => f.id === id);
   // une catégorie par liste, un fichier par type de texte
-  const names = file('base_units_name'), weapons = file('base_weapons_name'), chapters = file('base_chapters_dialogues');
+  const names = file('base_units_name'), weapons = file('base_weapons_name'), chapters = file('base_chapters_dialogues_arc_1');
   assert.equal(names.name, 'Noms des unités');
   assert.equal(names.rows.find(r => r.id === 'c_eliwood.name').t.fr, 'Eliwood');
   assert.ok(!names.rows.some(r => r.id === 'c_eliwood.bio'));
@@ -99,6 +99,10 @@ test('textes de la base : une ligne par texte du jeu, créée / retirée avec l\
   assert.ok(first && first.who === 'Lyn' && !/^Lyn: /.test(first.t.fr), JSON.stringify(first));
   assert.ok(file('base_supports_conversations').rows.some(r => /\.conversations\.C\.01$/.test(r.id)));
   assert.ok(file('base_system_subtitle').rows.some(r => r.id === 'titre.subtitle'));
+  // dialogues des niveaux : un CSV par chapitre (nommé comme le chapitre)
+  assert.equal(chapters.name, p.db.arcs.find(a => a.id === 'arc_1').name);
+  assert.equal(chapters.group, 'Dialogues des chapitres');
+  assert.ok(T.baseGroups(p.texts).some(g => g.name === 'Dialogues des chapitres' && g.files.length >= 2));
   const groups = T.baseGroups(p.texts);
   assert.equal(groups[0].name, 'Unités');
   assert.ok(groups[0].files.every(f => f.ref === 'units'));

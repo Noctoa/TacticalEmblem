@@ -12,6 +12,10 @@
   else root.Campaign = api;
 })(typeof self !== 'undefined' ? self : this, function (Skills, Scenario, Extensions, SideObjectives, Movement) {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const clone = value => JSON.parse(JSON.stringify(value));
   const CORE_FIELDS = ['classId', 'level', 'exp', 'stats', 'growths', 'inventory', 'mov', 'moveType', 'personalSkill', 'learnedSkills', 'equippedSkills', 'effectiveLevel', 'wexp'];
   // champs d'unité gardés d'un acte à l'autre : ceux du noyau + ceux des plugins (Extensions « unitField » : 'nom')
@@ -28,7 +32,7 @@
   const permanent = (campaign, unit) => campaign.mode === 'classic' && unit.deathPolicy !== 'retreat';
   function commit(campaign, units) {
     for (const u of units) {
-      if (u.team === 'enemy') continue;
+      if (placed(u)) continue; // ennemis, autres factions, alliés génériques
       if ((u.dead || u.hp <= 0) && permanent(campaign, u)) {
         if (!campaign.dead.includes(u.sourceId)) campaign.dead.push(u.sourceId);
         delete campaign.units[u.sourceId];

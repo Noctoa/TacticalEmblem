@@ -178,7 +178,7 @@
     const cl = R.byId(G.db.classes, u.classId) || {}, usable = cl.weapons || [];
     WICONS.forEach((type, i) => {
       const col = i < 4 ? 0 : 1, row = i % 4, x = 104 + col * 64, y = 27 + row * 15;
-      const can = usable.includes(type) && u.team !== 'enemy';
+      const can = usable.includes(type) && (u.team === 'player' || u.team === 'ally');
       const pr = R.rankProgress ? R.rankProgress(u, type) : { rank: 'E', ratio: 0, value: 1, to: 31, next: 'D' };
       const name = (R.WEAPON_TYPES.find(t => t.id === type) || {}).name || type;
       panel.append(box(x, y, 60, 13, 'rd-wrank' + (can ? '' : ' off'), typeIcon(type),
@@ -213,7 +213,7 @@
       el.append(portrait(u, ctx),
         box(18, 81, 72, 14, 'rd-name', u.name),
         box(4, 106, 61, 12, 'rd-wood', cl ? cl.name : '—'),
-        box(4, 121, 61, 12, 'rd-wood rd-split', h('span', {}, 'Nv ', h('b', {}, String(u.level))), u.team !== 'enemy' ? h('span', {}, 'EXP ', h('b', {}, String(u.exp || 0))) : null),
+        box(4, 121, 61, 12, 'rd-wood rd-split', h('span', {}, 'Nv ', h('b', {}, String(u.level))), (u.team === 'player' || u.team === 'ally') ? h('span', {}, 'EXP ', h('b', {}, String(u.exp || 0))) : null),
         box(4, 137, 61, 12, 'rd-wood rd-split', h('span', {}, 'PV'), h('b', {}, `${u.hp}/${u.stats.hp}`)),
         box(4, 150, 60, 2, 'rd-hp' + (r <= 0.3 ? ' low' : ''), h('i', { style: { width: (r * 100) + '%' } })),
         sprite(u, ctx));

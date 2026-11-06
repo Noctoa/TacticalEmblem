@@ -22,6 +22,10 @@
   else root.Ultimates = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
+  const Factions = typeof module !== 'undefined' && module.exports ? require('./factions.js') : self.Factions;
+  const playerSide = (u) => !!u && Factions.isPlayerSide(u.team);
+  /** Unité venue d'un placement générique (ennemi, autre faction, allié générique) ; les anciennes unités ennemies sans placementId aussi. */
+  const placed = (u) => !!u && (!!u.placementId || !Factions.isPlayerSide(u.team));
   const EFFECTS = [
     { id: 'strike', name: 'Frappe ultime — attaque une cible' },
     { id: 'heal', name: 'Soin de zone' },
@@ -131,7 +135,7 @@
   function affected(ult, caster, units, tile) {
     const c = centerOf(ult, caster, tile); if (!c) return [];
     const r = ult.radius || 0, alive = units.filter(o => o && !o.dead && o.hp > 0 && dist(o, c) <= r);
-    const friend = (o) => (caster.team === 'enemy') === (o.team === 'enemy');
+    const friend = (o) => !Factions.hostile(caster.team, o.team);
     if (ult.effect === 'blast') return alive.filter(o => !friend(o));
     return alive.filter(o => friend(o) && (o !== caster || ult.self));
   }

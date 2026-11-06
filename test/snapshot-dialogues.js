@@ -39,29 +39,21 @@ module.exports = (editor) => {
       await js(`(() => { const t = [...document.querySelector('[data-dlg-editor]').querySelectorAll('[data-dlg-text]')]; const a = t[t.length - 1]; a.value = 'On se reverra.'; a.dispatchEvent(new Event('input', { bubbles: true })); })()`); await wait(200);
       result.ecrit = await js(`Editor.db().supports[0].conversations.C`);
       assert(result.ecrit === before + '\n' + result.propose + ': On se reverra.', 'écrit : ' + JSON.stringify(result.ecrit));
-      // fin de saisie : la réplique part dans le fichier de textes du personnage, le dialogue y renvoie
-      await js(`(() => { const t = [...document.querySelector('[data-dlg-editor]').querySelectorAll('[data-dlg-text]')]; t[t.length - 1].dispatchEvent(new Event('change', { bubbles: true })); })()`); await wait(200);
       const refOf = (name, text) => js(`(() => { const t = Editor.project().texts, u = Texts.unitByName(Editor.db(), ${JSON.stringify(name)}), f = Texts.characterFile(t, Editor.db(), u.id); const r = f && f.rows.find(r => r.t.fr === ${JSON.stringify(text)}); return r ? f.id + '#' + r.id : null; })()`);
-      result.ref = await refOf(result.propose, 'On se reverra.');
-      result.apres = await js(`Editor.db().supports[0].conversations.C`);
-      assert(result.ref && result.apres === before + '\n@' + result.ref, 'rangée : ' + JSON.stringify(result.apres));
-      assert(await js(`!!document.querySelector('[data-dlg-editor] .dlg-row.char [data-dlg-speaker]')`), 'ligne de personnage');
-      // réplique déjà écrite d'un personnage : choix du personnage puis de la réplique
-      await js(`document.querySelector('[data-dlg-editor] [data-dlg-pick-char]').click()`);
-      await until(`!!document.querySelector('[data-pick-unit]')`);
-      await js(`(() => { const s = document.querySelector('[data-pick-unit]'); s.value = Texts.unitByName(Editor.db(), ${JSON.stringify(result.propose)}).id; s.dispatchEvent(new Event('change')); })()`); await wait(200);
-      await js(`document.querySelector('[data-pick-line]').dispatchEvent(new MouseEvent('mouseenter'))`); await wait(2000);
-      await shot('b0_choix_replique');
-      await js(`document.querySelector('[data-pick-line]').click()`); await wait(300);
-      result.choisie = await js(`Editor.db().supports[0].conversations.C.split('\\n').pop()`);
-      assert(result.choisie === '@' + result.ref, 'réplique choisie : ' + result.choisie);
-      // nouvelle réplique écrite depuis le choix : rangée dans le fichier du personnage
+      // réplique d'un personnage : nouvelle réplique rangée dans son fichier, puis choisie depuis la liste
       await js(`document.querySelector('[data-dlg-editor] [data-dlg-pick-char]').click()`);
       await until(`!!document.querySelector('[data-pick-unit]')`);
       await js(`(() => { const s = document.querySelector('[data-pick-unit]'); s.value = 'c_lyn'; s.dispatchEvent(new Event('change')); const a = document.querySelector('[data-pick-new]'); a.value = 'À bientôt, alors.'; document.querySelector('[data-pick-add]').click(); })()`); await wait(300);
       result.nouvelle = await refOf('Lyn', 'À bientôt, alors.');
       assert(result.nouvelle && (await js(`Editor.db().supports[0].conversations.C.split('\\n').pop()`)) === '@' + result.nouvelle, 'nouvelle réplique : ' + result.nouvelle);
-      assert(result.paire.includes(result.propose), 'orateur proposé : ' + result.propose);
+      await js(`document.querySelector('[data-dlg-editor] [data-dlg-pick-char]').click()`);
+      await until(`!!document.querySelector('[data-pick-unit]')`);
+      await js(`(() => { const s = document.querySelector('[data-pick-unit]'); s.value = 'c_lyn'; s.dispatchEvent(new Event('change')); })()`); await wait(200);
+      await js(`document.querySelector('[data-pick-line]').dispatchEvent(new MouseEvent('mouseenter'))`); await wait(2000);
+      await shot('b0_choix_replique');
+      await js(`document.querySelector('[data-pick-line]').click()`); await wait(300);
+      result.choisie = await js(`Editor.db().supports[0].conversations.C.split('\\n').slice(-2)`);
+      assert(result.choisie[0] === '@' + result.nouvelle && result.choisie[1] === '@' + result.nouvelle, 'réplique choisie : ' + result.choisie);
       await wait(300); await shot('a_soutien');
       // aperçu dans la boîte de dialogue
       await js(`document.querySelector('[data-dlg-editor] [data-dlg-preview]').click()`);
@@ -91,14 +83,11 @@ module.exports = (editor) => {
       await js(`document.querySelector('[data-text-row]').dispatchEvent(new MouseEvent('mousedown'))`); await wait(400);
       result.portrait = await js(`!!document.querySelector('[data-text-preview] .tx-dlg-name') && document.querySelector('[data-text-preview] .tx-dlg-name').textContent`);
       await shot('c_textes');
-      // importer toutes les répliques des personnages des dialogues dans leurs fichiers
-      const avant = await js(`Editor.project().texts.files.find(f => f.id === 'base_supports_conversations').rows.length`);
-      await js(`document.querySelector('[data-texts-move-lines]').click()`);
-      await until(`!!document.querySelector('.modal .primary')`);
-      await js(`document.querySelector('.modal .primary').click()`); await wait(400);
-      result.import = await js(`(() => { const t = Editor.project().texts, b = t.files.find(f => f.id === 'base_supports_conversations'); return { base: b ? b.rows.length : 0, personnages: t.files.filter(f => f.kind === 'character').map(f => f.name + ':' + f.rows.length), conv: Editor.db().supports[0].conversations.B }; })()`);
-      assert(result.import.base < avant && result.import.personnages.length >= 2 && /^@/.test(result.import.conv), 'import : ' + JSON.stringify(result.import));
-      await shot('d_import');
+      // dialogues des niveaux : un CSV par chapitre
+      result.chapitres = await js(`Texts.baseGroups(Editor.project().texts).filter(g => g.name === 'Dialogues des chapitres').flatMap(g => g.files.map(f => f.id + ' = ' + f.name + ' (' + f.rows.length + ')'))`);
+      assert(result.chapitres.length >= 2 && /arc_1 = Chapitre 1/.test(result.chapitres[0]), 'chapitres : ' + result.chapitres);
+      await js(`TextsEditor.open(${JSON.stringify('base_chapters_dialogues_arc_1')})`); await wait(400);
+      await shot('d_chapitre');
     } catch (e) { errors.push(String(e && e.stack || e)); }
     finish();
   });

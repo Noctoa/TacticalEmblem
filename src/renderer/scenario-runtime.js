@@ -10,7 +10,7 @@
           if (api.weatherChanged) api.weatherChanged();
           break;
         case 'status': {
-          const unit = G.units.find(u => !u.dead && u.hp > 0 && (a.target.startsWith('unit:') ? u.team !== 'enemy' && u.sourceId === a.target.slice(5) : u.team === 'enemy' && u.sourceId === a.target));
+          const unit = G.units.find(u => !u.dead && u.hp > 0 && (a.target.startsWith('unit:') ? !u.placementId && u.team !== 'enemy' && u.sourceId === a.target.slice(5) : (u.placementId || u.team === 'enemy') && u.sourceId === a.target));
           if (!unit) break;
           if (a.remove) { const removed = Statuses.cure(unit, a.statusId); if (removed.length) api.float(unit.x, unit.y, removed.map(s => s.name).join(', ') + ' soigné', '#7dffa8'); }
           else { const applied = Statuses.apply(unit, a.statusId, a.turns); if (applied) api.float(unit.x, unit.y, `${applied.name} · ${applied.turns} phases`, applied.color); }
@@ -37,12 +37,24 @@
           UI.toast(`${R.getEntry(G.db, a.itemId).def.name} reçu (${result.destination === 'unit' ? recipient.name : 'convoi'}).`); break;
         }
         case 'reinforcement': {
+          // a.count unités de ce placement : le renfort placé (s'il attend encore) puis des copies identiques autour
+          const count = Math.max(1, Math.min(30, Math.floor(Number(a.count) || 1)));
           const unit = G.pending.find(u => u.sourceId === a.target);
-          if (!unit) break; // Un ennemi déjà apparu, même vaincu, ne revient jamais.
-          const spot = api.freeSpotNear(unit.x, unit.y, unit);
-          if (!spot) return no(`Renfort en attente : aucune case accessible près de ${unit.name}.`);
-          G.pending.splice(G.pending.indexOf(unit), 1); Object.assign(unit, spot, { rx: spot.x, ry: spot.y, alpha: 1, done: true });
-          G.units.push(unit); api.float(unit.x, unit.y, 'Renfort !', '#ff9a8a'); break;
+          if (!unit && count === 1) break; // Avec 1 : un ennemi déjà apparu, même vaincu, ne revient jamais.
+          const pl = (G.chapter.enemies || []).find(e => e.id === a.target);
+          const list = unit ? [unit] : [];
+          while (list.length < count && pl && api.copyOfPlacement) { const c = api.copyOfPlacement(pl); if (!c) break; list.push(c); }
+          let placed = 0;
+          for (const u of list) {
+            const spot = api.freeSpotNear(pl ? pl.x : u.x, pl ? pl.y : u.y, u);
+            if (!spot) { if (u === unit) return no(`Renfort en attente : aucune case accessible près de ${u.name}.`); continue; }
+            if (u === unit) G.pending.splice(G.pending.indexOf(unit), 1);
+            Object.assign(u, spot, { rx: spot.x, ry: spot.y, alpha: 1, done: true });
+            G.units.push(u); placed++;
+            api.float(u.x, u.y, 'Renfort !', '#ff9a8a');
+          }
+          if (count > 1 && placed < count) UI.toast(`${placed} renfort(s) sur ${count} : plus de case libre autour.`, 'warn');
+          break;
         }
         case 'door': {
           const door = G.chapter.doors.find(d => d.id === a.target), wasOpen = G.openedDoors.has(door.id);

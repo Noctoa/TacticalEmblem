@@ -30,6 +30,7 @@ const Weather = require('../shared/weather.js');
 const SideObjectives = require('../shared/side-objectives.js');
 const Rules = require('../shared/rules.js');
 const Texts = require('../shared/texts.js');
+const Factions = require('../shared/factions.js');
 const Layout = require('./resources-layout.js');
 
 const PROJECT_FILE = 'game.tfproj';
@@ -55,7 +56,12 @@ function writeJson(file, data) {
 const TEXT_DIR = 'textes';
 /** Un dossier par catégorie pour les textes de la base (textes/units/name.csv), sinon textes/<id>.csv. */
 function textCsvPath(root, f) {
-  return f.kind === 'base' && f.field && Texts.FILE_ID.test(f.ref) && Texts.FILE_ID.test(f.field) ? path.join(root, f.ref, f.field + '.csv') : path.join(root, f.id + '.csv');
+  if (f.kind === 'base' && f.field && Texts.FILE_ID.test(f.ref) && Texts.FILE_ID.test(f.field)) {
+    // dialogues des niveaux : un fichier par chapitre (textes/chapters/dialogues/<chapitre>.csv)
+    if (f.part) return path.join(root, f.ref, f.field, f.id.slice(('base_' + f.ref + '_' + f.field + '_').length) + '.csv');
+    return path.join(root, f.ref, f.field + '.csv');
+  }
+  return path.join(root, f.id + '.csv');
 }
 function listCsv(root, rel) {
   const out = [];
@@ -82,7 +88,7 @@ function writeTexts(dir, texts) {
   if (!texts || (!texts.files.length && !fs.existsSync(root))) return;
   fs.mkdirSync(root, { recursive: true });
   writeJson(path.join(root, 'index.json'), { languages: texts.languages, main: texts.main,
-    files: texts.files.map(f => Object.assign({ id: f.id, name: f.name, kind: f.kind, ref: f.ref || '' }, f.field ? { field: f.field } : {})) });
+    files: texts.files.map(f => Object.assign({ id: f.id, name: f.name, kind: f.kind, ref: f.ref || '' }, f.field ? { field: f.field } : {}, f.part ? { part: f.part } : {})) });
   const keep = new Set();
   for (const f of texts.files) {
     const file = textCsvPath(root, f);
@@ -153,6 +159,9 @@ function loadProject(dir, assetsDir) {
 }
 
 function saveProject(dir, project) {
+  const factionErrors = Factions.validate(project.meta.factions);
+  if (factionErrors.length) throw new Error(factionErrors.join('\n'));
+  Factions.configure(project.meta.factions); // validation des placements et événements avec les factions du projet
   if (project.texts) { project.texts = Texts.normalize(project.texts); Texts.syncDb(project.texts, project.db, project.meta); }
   const weatherErrors = (project.db.chapters || []).flatMap(ch => Weather.validate(ch.weather).map(e => `${ch.name || ch.id} : ${e}`));
   if (weatherErrors.length) throw new Error(weatherErrors.join('\n'));
@@ -171,7 +180,9 @@ function saveProject(dir, project) {
     ...Animations.validateLinks(project.db, project.meta),
     ...Ultimates.validateAll(project.db.ultimates),
     ...Ultimates.validateLinks(project.db),
-    ...Texts.validate(project.texts)
+    ...Texts.validate(project.texts),
+    ...(project.db.chapters || []).flatMap(ch => (ch.enemies || []).filter(pl => pl.faction !== undefined && (pl.faction === 'player' || !Factions.ids().includes(pl.faction)))
+      .map(pl => `${ch.name || ch.id} : ${pl.name || pl.id} appartient à une faction inconnue (${pl.faction}).`))
   ];
   for (const ch of project.db.chapters || []) errors.push(...Locks.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
   for (const ch of project.db.chapters || []) errors.push(...Scenario.validate(ch, project.db, project.maps.find(m => m.id === ch.mapId) || { width: Infinity, height: Infinity }));
@@ -273,6 +284,28 @@ function createProject(dir, name, template, assetsDir) {
  * files : [{ name: 'portrait.png' | 'map_genere.png' | …, base64 } | { name: '….json', json }] ; noms simples uniquement.
  * Renvoie { dir, files: { nom: chemin relatif }, resources }.
  */
+/** Écrit les fichiers du générateur (PNG en base64, JSON) dans un dossier ; noms contrôlés. */
+function writeFilesTo(abs, files, max) {
+  if (!Array.isArray(files) || !files.length || files.length > (max || 8)) throw new Error('Fichiers du générateur invalides.');
+  fs.mkdirSync(abs, { recursive: true });
+  const out = [];
+  for (const f of files) {
+    if (!f || typeof f.name !== 'string' || !/^[\w-]{1,80}\.(png|json)$/.test(f.name)) throw new Error('Nom de fichier invalide : ' + (f && f.name));
+    if (f.name.endsWith('.png')) {
+      if (typeof f.base64 !== 'string' || f.base64.length > 4e6) throw new Error('Image invalide : ' + f.name);
+      const buf = Buffer.from(f.base64, 'base64');
+      if (buf.slice(1, 4).toString() !== 'PNG') throw new Error('Image PNG attendue : ' + f.name);
+      fs.writeFileSync(path.join(abs, f.name), buf);
+    } else fs.writeFileSync(path.join(abs, f.name), JSON.stringify(f.json, null, 1));
+    out.push(f.name);
+  }
+  return out;
+}
+/** Générateur (section Générateur) : images d'un personnage exportées hors du projet, dans <dossier>/<Nom>/. */
+function exportGenerated(target, owner, files) {
+  const abs = path.join(target, Layout.safeName(owner || 'Personnage'));
+  return { dir: abs, files: writeFilesTo(abs, files, 12) };
+}
 function writeGenerated(dir, owner, files) {
   if (!Array.isArray(files) || !files.length || files.length > 8) throw new Error('Fichiers du générateur invalides.');
   const rel = Layout.DIRS.characters + '/' + Layout.safeName(owner || 'Personnage');
@@ -292,4 +325,4 @@ function writeGenerated(dir, owner, files) {
   return { dir: rel, files: out, resources: scanResources(dir) };
 }
 
-module.exports = { writeGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };
+module.exports = { writeGenerated, exportGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };

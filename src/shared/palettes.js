@@ -30,9 +30,12 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const LIST = ['original', 'blue', 'red', 'green', 'gray'];
-  const LABELS = { original: "Couleur d'origine", blue: 'Bleu (joueur)', red: 'Rouge (ennemi)', green: 'Vert (allié)', gray: 'Gris (a joué)' };
-  const TARGET_HUE = { blue: 222, red: 2, green: 118 };
+  // jaune, violet, orange, cyan, rose : factions en plus (shared/factions.js)
+  const LIST = ['original', 'blue', 'red', 'green', 'yellow', 'purple', 'orange', 'cyan', 'pink', 'gray'];
+  const LABELS = { original: "Couleur d'origine", blue: 'Bleu (joueur)', red: 'Rouge (ennemi)', green: 'Vert (allié)', yellow: 'Jaune', purple: 'Violet',
+    orange: 'Orange', cyan: 'Cyan', pink: 'Rose', gray: 'Gris (a joué)' };
+  const TARGET_HUE = { blue: 222, red: 2, green: 118, yellow: 48, purple: 276, orange: 26, cyan: 188, pink: 322 };
+  const factions = () => (typeof module !== 'undefined' && module.exports ? require('./factions.js') : (typeof self !== 'undefined' ? self.Factions : null));
   // anciens noms (planches à 4 palettes précalculées)
   const ALIAS = { ally: 'blue', enemy: 'red', neutral: 'green' };
   const MODES = [
@@ -184,8 +187,14 @@
     return data;
   }
 
-  /** Palette d'équipe d'une unité selon son camp ('player' | 'ally' | 'enemy'). */
-  function teamPalette(team) { return team === 'enemy' ? 'red' : team === 'ally' ? 'green' : 'blue'; }
+  /** Palette d'équipe d'une unité selon son camp ('player' | 'ally' | 'enemy' | faction en plus). */
+  function teamPalette(team) {
+    if (team === 'enemy') return 'red';
+    if (team === 'ally') return 'green';
+    if (!team || team === 'player') return 'blue';
+    const F = factions();
+    return F ? F.palette(team) : 'red';
+  }
 
   /** Réglage effectif : le premier non vide de la liste, sinon le défaut du projet. */
   function resolveMode(...candidates) {

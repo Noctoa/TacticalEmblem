@@ -96,3 +96,18 @@ test('validation et références : anciens exemples valides, erreurs explicites,
   // Le coffre doit être sur une case libre d'autre interaction pour la validation globale.
   f.ch.villages = []; io.saveProject(dir, f.p); const before = fs.readFileSync(path.join(dir, 'data/chapters.json'), 'utf8'); ev.actions[0].itemId = 'missing'; assert.throws(() => io.saveProject(dir, f.p), /récompense introuvable/); assert.equal(fs.readFileSync(path.join(dir, 'data/chapters.json'), 'utf8'), before);
 });
+
+test('déclencheurs : début du tour allié et du tour ennemi (numéro de tour)', () => {
+  const f = fixture();
+  for (const type of ['allyTurn', 'enemyTurn']) {
+    assert.ok(S.TRIGGERS.some(t => t.value === type));
+    const ev = { id: 'e_' + type, trigger: { type, turn: 2 }, script: 'Lyn: Attention !' };
+    assert.equal(S.matches(ev, type, { turn: 2 }), true);
+    assert.equal(S.matches(ev, type, { turn: 3 }), false);
+    assert.equal(S.matches(ev, 'turn', { turn: 2 }), false, 'la phase joueur ne déclenche pas ' + type);
+    f.ch.events = [ev];
+    assert.deepEqual(S.validate(f.ch, f.db, f.map), []);
+    f.ch.events = [{ id: 'bad', trigger: { type, turn: 0 } }];
+    assert.match(S.validate(f.ch, f.db, f.map).join(), /tour invalide/);
+  }
+});

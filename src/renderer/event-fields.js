@@ -18,7 +18,7 @@
       const plug = Scenario.pluginAction(type);
       if (plug) return Object.assign({ plugin: plug.plugin || '' }, JSON.parse(JSON.stringify(plug.defaults || {})));
       return { dialogue: { text: '' }, gold: { amount: 100 }, item: { itemId: '', uses: 0, unitId: '' },
-        reinforcement: { target: '' }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
+        reinforcement: { target: '', count: 1 }, door: { target: '', open: true }, objective: { objective: { type: 'rout' } },
         flag: { key: '', value: true }, choice: { key: '', text: 'Que décides-tu ?', yes: 'Accepter', no: 'Refuser' }, status: { target: '', statusId: 'poison', turns: 3, remove: false },
         weather: { weather: { type: 'none', intensity: 2, direction: 'right', tactical: false } } }[type];
     }
@@ -48,7 +48,8 @@
         { type: 'info', text: 'Personnage absent, vaincu ou inventaire plein : envoi au convoi. Si tout est plein, l’événement attend et reprend sans redonner les récompenses précédentes.' }];
       if (a.type === 'reinforcement') return [
         { key: 'target', label: 'Renfort placé sur la map', type: 'select', empty: '— choisir —', options: options((ch.enemies || []).filter(e => e.eventOnly || e.appearTurn > 0)) },
-        { type: 'info', text: 'En F3, place l’ennemi et coche « Arrivée uniquement par événement ». Une case occupée utilise une case accessible voisine. Un ennemi déjà apparu ne revient pas.' }];
+        { key: 'count', label: 'Nombre d’unités', type: 'number', min: 1, max: 30, help: 'Combien d’unités de ce renfort arrivent d’un coup (1 à 30) : le renfort placé puis des copies identiques, réparties sur les cases libres autour.' },
+        { type: 'info', text: 'En F3, place l’ennemi et coche « Arrivée uniquement par événement ». Une case occupée utilise une case accessible voisine. Avec 1 unité, un ennemi déjà apparu ne revient pas ; avec plusieurs, de nouvelles copies arrivent à chaque fois que l’action se joue.' }];
       if (a.type === 'door') return [{ key: 'target', label: 'Porte', type: 'select', empty: '— choisir —', options: interactions('door') },
         { key: 'open', label: 'Ouvrir (décoché = fermer)', type: 'checkbox' }, { type: 'info', text: 'La fermeture attend si une unité occupe la case. Les déplacements et la zone de danger sont actualisés.' }];
       if (a.type === 'objective') return [
@@ -75,16 +76,22 @@
         card.append(fields([{ key: 'type', label: 'Déclenchement', type: 'select', options: Scenario.TRIGGERS }], tr));
         card.querySelector('select').addEventListener('change', () => {
           const type = tr.type; ev.trigger = { type };
-          if (type === 'turn') ev.trigger.turn = 2;
+          if (Scenario.TURN_TRIGGERS.includes(type)) ev.trigger.turn = type === 'turn' ? 2 : 1;
           if (type === 'area') Object.assign(ev.trigger, { x: 0, y: 0, w: 1, h: 1 });
           changed();
         });
-        if (tr.type === 'turn') card.append(fields([{ key: 'turn', label: 'Tour', type: 'number', min: 1, max: 999 }], tr));
+        if (Scenario.TURN_TRIGGERS.includes(tr.type)) card.append(fields([{ key: 'turn', label: 'Tour', type: 'number', min: 1, max: 999,
+          help: tr.type === 'enemyTurn' ? 'Au début de la phase ennemie de ce tour, après l’arrivée des renforts et avant que les ennemis jouent.'
+            : tr.type === 'allyTurn' ? 'Au début de la phase alliée de ce tour, avant que les alliés jouent. Sans allié (vert) sur la map, il n’y a pas de phase alliée : l’événement ne se déclenche pas.'
+            : tr.type === 'factionTurn' ? 'Au début de la phase de la faction choisie, pour ce tour.'
+            : 'Au début de la phase joueur de ce tour.' }], tr));
+        if (tr.type === 'factionTurn') card.append(fields([{ key: 'faction', label: 'Faction', type: 'select', empty: 'N’importe laquelle',
+          options: () => Factions.extras().map(f => ({ value: f.id, label: f.name })), help: 'Au début de la phase de cette faction (après la phase ennemie). Une faction sans unité sur la map ne joue pas sa phase.' }], tr));
         if (tr.type === 'death') card.append(fields([{ key: 'target', label: 'Unité vaincue', type: 'select', empty: '— choisir —', options: targets }], tr));
         if (tr.type === 'area') card.append(fields(['x', 'y', 'w', 'h'].map(k => ({ key: k, label: { x: 'Zone X', y: 'Zone Y', w: 'Largeur', h: 'Hauteur' }[k], type: 'number', min: ['w', 'h'].includes(k) ? 1 : 0, max: 499 })), tr));
-        if (tr.type === 'area') card.append(fields([{ key: 'who', label: 'Déclenché par', type: 'select', options: () => Scenario.AREA_WHO.concat(
+        if (tr.type === 'area') card.append(fields([{ key: 'who', label: 'Déclenché par', type: 'select', options: () => Scenario.AREA_WHO.concat(Factions.extras().map(f => ({ value: f.id, label: 'Une unité de : ' + f.name })),
           (db.units || []).map(u => ({ value: 'unit:' + u.id, label: 'Personnage : ' + u.name })),
-          (ch.enemies || []).map(e => ({ value: 'enemy:' + e.id, label: 'Ennemi placé : ' + (e.name || e.id) + ` (${e.x}, ${e.y})` }))),
+          (ch.enemies || []).map(e => ({ value: 'enemy:' + e.id, label: (Factions.ofPlacement(e) === 'enemy' ? 'Ennemi placé : ' : 'Unité placée (' + Factions.name(Factions.ofPlacement(e)) + ') : ') + (e.name || e.id) + ` (${e.x}, ${e.y})` }))),
           help: 'Par défaut, une unité du joueur ou un allié. Un ennemi ou un allié vert peut aussi déclencher l’événement en terminant son déplacement dans la zone.' }], tr));
         if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type)) card.append(fields([{ key: 'target', label: 'Interaction', type: 'select', empty: '— choisir —', options: interactions(tr.type) }], tr));
         if (tr.type === 'condition') card.append(h('p', { class: 'form-info' }, 'Évalué après les événements et actions, avant le résultat de mission. Sans « une seule fois », attend que les conditions deviennent fausses puis vraies pour se répéter.'));
