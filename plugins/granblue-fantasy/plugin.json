@@ -1,9 +1,0 @@
-{
- "id": "granblue-fantasy",
- "name": "Granblue Fantasy",
- "version": "0.1.0",
- "kind": "ressources",
- "description": "Portraits de 2 personnage(s) de « Granblue Fantasy » (2 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
- "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
- "ressources": "ressources"
-}

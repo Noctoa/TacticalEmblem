@@ -1,9 +1,0 @@
-{
- "id": "anime",
- "name": "Anime",
- "version": "0.2.0",
- "kind": "ressources",
- "description": "Portraits de 13 personnage(s) de « Anime » (13 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
- "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
- "ressources": "ressources"
-}

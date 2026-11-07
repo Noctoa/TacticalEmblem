@@ -1,9 +1,0 @@
-{
- "id": "golden-sun",
- "name": "Golden_Sun",
- "version": "0.1.0",
- "kind": "ressources",
- "description": "Portraits de 6 personnage(s) de « Golden_Sun » (6 image(s), face sets GBA 128×112). Sprites de map et animations de combat à venir.",
- "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
- "ressources": "ressources"
-}

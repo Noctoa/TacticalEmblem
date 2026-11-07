@@ -1,9 +1,0 @@
-{
- "id": "random",
- "name": "Random",
- "version": "0.3.0",
- "kind": "ressources",
- "description": "Portraits de 9 personnage(s) de « Random » (11 image(s), face sets GBA 128×112). Sprites de map (1) et animations de combat (4) de 1 personnage(s), d'après FE-Repo. Sprites de map (1) et animations de combat (4) de 1 personnage(s), d'après FE-Repo. Sprites de map (1) et animations de combat (4) de 1 personnage(s), d'après FE-Repo.",
- "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
- "ressources": "ressources"
-}
