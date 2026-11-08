@@ -188,45 +188,68 @@
     box.refill();
     return box;
   }
+  async function saveGenerated(u, r, owner = (u.generator && ownerOfKey(u.portrait || '')) || u.name) {
+    const meta = Object.assign({}, r.map.meta, { name: u.name + ' (généré)' });
+    const files = [
+      { name: 'portrait_genere.png', base64: CharGenUI.base64(r.faceset) },
+      { name: 'map_genere.png', base64: CharGenUI.base64(r.map.canvas) },
+      { name: 'map_genere.json', json: Object.assign(meta, { image: undefined }) }];
+    if (r.battler) { // animation de combat FE du sprite de combat (+ sa flèche pour un arc)
+      const bm = Object.assign({}, r.battler.meta, { image: undefined });
+      if (r.battler.arrow) { files.push({ name: 'combat_genere_arrow.png', base64: CharGenUI.base64(r.battler.arrow) }); bm.projectiles = { arrow: 'combat_genere_arrow.png' }; }
+      else delete bm.projectiles;
+      files.push({ name: 'combat_genere.png', base64: CharGenUI.base64(r.battler.canvas) }, { name: 'combat_genere.json', json: bm });
+    }
+    const out = await tf.writeGenerated(Editor.dir(), owner, files);
+    for (const f of Object.values(out.files)) Render.forget(Editor.baseUrl(), f); // l'ancienne image en cache est remplacée
+    await Editor.rescanResources();
+    u.portrait = out.files['portrait_genere.png'];
+    u.mapSprite = out.files['map_genere.json'].replace(/\.json$/, '');
+    if (out.files['combat_genere.json']) u.battler = out.files['combat_genere.json'].replace(/\.json$/, '');
+    u.generator = r.recipe;
+    if (CharGen.battlePalette(r.recipe)) u.battleColors = CharGen.battlePalette(r.recipe); else delete u.battleColors;
+    return out;
+  }
+  async function importGeneratedUnit() {
+    try {
+      const imported = await CharGenUI.pickRecipe(); if (!imported) return;
+      const project = Editor.project();
+      const r = await CharGenUI.open({ recipe: imported.recipe, name: imported.name, askName: true,
+        title: 'Importer un personnage', subtitle: 'Nouvelle unité du projet · classe et statistiques à régler dans sa fiche', okLabel: 'Importer dans le projet' });
+      if (!r || project !== Editor.project()) return;
+      const list = db().units, u = Object.assign({ id: Editor.uid(TABS.units.prefix, list) }, TABS.units.create(), { name: r.name });
+      if (r.recipe.gender) u.gender = r.recipe.gender === 'f' ? 'femme' : 'homme';
+      await saveGenerated(u, r, u.name + ' (' + u.id + ')');
+      list.push(u); selected.units = u.id; tab = 'units'; unitView.query = '';
+      change(); renderTabs(); renderBody();
+      UI.toast('Personnage importé : ' + u.name + '. Sa classe et ses statistiques se règlent dans cette fiche.');
+    } catch (e) { UI.alert('Import impossible', e.message); }
+  }
   function generatorField(u) {
     const box = h('div', { class: 'gen-field' });
-    const run = async () => {
+    const run = async (importing = false) => {
       if (!self.CharGenUI) return UI.alert('Générateur indisponible', 'Les pièces du générateur sont absentes de cette installation.');
-      let r;
-      // aperçu de l'animation de combat (celle de l'unité, sinon de sa classe) pour les couleurs de combat
-      const cls = byId(db().classes, u.classId), bKey = u.battler || (cls && cls.battler), bMeta = bKey && res().battlers[bKey];
-      const bImg = bMeta ? await Render.loadImage(Editor.baseUrl(), bMeta.image) : null;
-      try { r = await CharGenUI.open({ recipe: u.generator, name: u.name, title: 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name, cls,
-        battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null }); }
-      catch (e) { return UI.alert('Générateur indisponible', e.message); }
-      if (!r) return;
-      const meta = Object.assign({}, r.map.meta, { name: u.name + ' (généré)' });
-      const files = [
-        { name: 'portrait_genere.png', base64: CharGenUI.base64(r.faceset) },
-        { name: 'map_genere.png', base64: CharGenUI.base64(r.map.canvas) },
-        { name: 'map_genere.json', json: Object.assign(meta, { image: undefined }) }];
-      if (r.battler) { // animation de combat FE du sprite de combat (+ sa flèche pour un arc)
-        const bm = Object.assign({}, r.battler.meta, { image: undefined });
-        if (r.battler.arrow) { files.push({ name: 'combat_genere_arrow.png', base64: CharGenUI.base64(r.battler.arrow) }); bm.projectiles = { arrow: 'combat_genere_arrow.png' }; }
-        else delete bm.projectiles;
-        files.push({ name: 'combat_genere.png', base64: CharGenUI.base64(r.battler.canvas) }, { name: 'combat_genere.json', json: bm });
-      }
-      const out = await tf.writeGenerated(Editor.dir(), u.name, files);
-      for (const f of Object.values(out.files)) Render.forget(Editor.baseUrl(), f); // l'ancienne image en cache est remplacée
-      await Editor.rescanResources();
-      u.portrait = out.files['portrait_genere.png'];
-      u.mapSprite = out.files['map_genere.json'].replace(/\.json$/, '');
-      if (out.files['combat_genere.json']) u.battler = out.files['combat_genere.json'].replace(/\.json$/, '');
-      u.generator = r.recipe;
-      if (CharGen.battlePalette(r.recipe)) u.battleColors = CharGen.battlePalette(r.recipe); else delete u.battleColors;
-      change(); renderBody();
-      UI.toast(`Portrait, sprite de map${r.battler ? ' et animation de combat' : ''} de ${u.name} enregistrés (${out.dir}).`);
+      try {
+        const imported = importing ? await CharGenUI.pickRecipe() : null;
+        if (importing && !imported) return;
+        const cls = byId(db().classes, u.classId), bKey = u.battler || (cls && cls.battler), bMeta = bKey && res().battlers[bKey];
+        const bImg = bMeta ? await Render.loadImage(Editor.baseUrl(), bMeta.image) : null;
+        const r = await CharGenUI.open({ recipe: imported ? imported.recipe : u.generator, name: u.name,
+          title: importing ? 'Importer une apparence' : 'Générateur de personnage', subtitle: u.name, okLabel: 'Enregistrer pour ' + u.name, cls,
+          battler: bMeta && bImg ? { meta: bMeta, image: bImg } : null });
+        if (!r) return;
+        const out = await saveGenerated(u, r);
+        if (importing && !r.battler) u.battler = '';
+        change(); renderBody();
+        UI.toast(`Portrait, sprite de map${r.battler ? ' et animation de combat' : ''} de ${u.name} enregistrés (${out.dir}).`);
+      } catch (e) { UI.alert(importing ? 'Import impossible' : 'Générateur indisponible', e.message); }
     };
     box.append(h('div', { class: 'gen-row' },
-      h('button', { class: 'small primary', 'data-generator-open': true, onclick: run }, u.generator ? 'Retoucher avec le générateur…' : 'Créer avec le générateur…'),
+      h('button', { class: 'small primary', 'data-generator-open': true, onclick: () => run() }, u.generator ? 'Retoucher avec le générateur…' : 'Créer avec le générateur…'),
+      h('button', { class: 'small', 'data-generator-import': true, title: 'Charger un fichier _recette.json sur cette unité', onclick: () => run(true) }, 'Importer une apparence…'),
       h('span', { class: 'form-info' }, u.generator
         ? 'Personnage généré : rouvre le générateur pour changer ses pièces, ses couleurs ou leur position (portrait et sprite de map réécrits).'
-        : 'Compose un portrait et un sprite de map à partir de pièces façon Fire Emblem GBA (cheveux, visage, tenue, figurine) et de six couleurs.')));
+        : 'Compose un portrait et un sprite à partir de pièces façon Fire Emblem GBA, ou importe le fichier _recette.json d’un personnage exporté.')));
     return box;
   }
   function appearanceField(u) {
@@ -1596,6 +1619,7 @@
         change(); renderBody();
       }
     }));
+    if (roster) body.querySelector('.db-list-actions').append(h('button', { class: 'small', 'data-generator-import-unit': true, title: 'Créer une unité à partir d’un fichier _recette.json', onclick: importGeneratedUnit }, 'Importer du générateur…'));
     const pane = h('div', { class: 'db-form' });
     if (['weapons', 'items', 'skills'].includes(tab)) {
       const statusExamples = tab === 'skills' ? Statuses.TYPES.map(s => Object.assign(Skills.create('inflictStatus'), { id: 'skill_status_' + s.id, name: 'Frappe — ' + s.name, statusId: s.id })) : Statuses.examples()[tab];

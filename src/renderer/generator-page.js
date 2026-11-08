@@ -106,18 +106,13 @@
     if (st) st.replaceChildren(h('span', {}, 'Exporté dans ' + out.dir + ' '), h('button', { class: 'small ghost', type: 'button', onclick: () => tf.openFolder(out.dir) }, 'Ouvrir le dossier'));
   }
 
-  function importRecipe() {
-    const input = h('input', { type: 'file', accept: '.json,application/json', class: 'hidden', onchange: async () => {
-      const f = input.files[0]; input.remove(); if (!f) return;
-      try {
-        const j = JSON.parse(await f.text()), recipe = j.recipe || j;
-        if (!recipe || typeof recipe !== 'object' || !recipe.colors) throw new Error('Ce fichier n’est pas une recette du générateur.');
-        const list = load(), c = { id: uid(), name: j.name || f.name.replace(/(_recette)?\.json$/i, ''), recipe, created: Date.now(), updated: Date.now() };
-        list.unshift(c); save(list); S.sel = c.id; render();
-        UI.toast('Recette importée : ' + c.name);
-      } catch (e) { UI.alert('Import impossible', e.message); }
-    } });
-    document.body.append(input); input.click();
+  async function importRecipe() {
+    try {
+      const imported = await CharGenUI.pickRecipe(); if (!imported) return;
+      const list = load(), c = { id: uid(), ...imported, created: Date.now(), updated: Date.now() };
+      list.unshift(c); save(list); S.sel = c.id; render();
+      UI.toast('Personnage importé : ' + c.name);
+    } catch (e) { UI.alert('Import impossible', e.message); }
   }
 
   // ---------- rendu ----------
@@ -126,7 +121,7 @@
     const nav = $('#gen-nav'), list = load();
     nav.replaceChildren(h('h2', {}, 'Générateur'),
       h('button', { class: 'primary gen-new', 'data-gen-new': true, html: Icons.icon('plus'), onclick: () => edit(null) }, 'Nouveau personnage'),
-      h('button', { class: 'small ghost gen-import', 'data-gen-import': true, onclick: importRecipe }, 'Importer une recette…'),
+      h('button', { class: 'gen-import', 'data-gen-import': true, html: Icons.icon('import'), title: 'Choisir le fichier _recette.json d’un personnage exporté', onclick: importRecipe }, 'Importer un personnage…'),
       h('div', { class: 'db-nav-group' }, 'Mes personnages'));
     if (!list.length) nav.append(h('p', { class: 'tx-nav-empty' }, 'Aucun personnage pour l’instant.'));
     for (const c of list) {
@@ -145,7 +140,7 @@
         h('div', { class: 'hero-kicker' }, 'Générateur de personnages'),
         h('h2', {}, 'Crée un personnage, exporte ses images'),
         h('p', { class: 'hero-desc' }, 'Compose un portrait et un sprite à partir de pièces façon Fire Emblem GBA, puis exporte le face set, le portrait, le sprite de map et l’animation de combat en PNG. Rien n’est ajouté au projet : pour donner ces images à une unité, utilise plutôt Base de données › Unités › « Créer avec le générateur ».'),
-        h('div', { class: 'gen-actions' }, h('button', { class: 'primary', 'data-gen-new': true, onclick: () => edit(null) }, 'Nouveau personnage'), h('button', { class: 'ghost', onclick: importRecipe }, 'Importer une recette…')))));
+        h('div', { class: 'gen-actions' }, h('button', { class: 'primary', 'data-gen-new': true, onclick: () => edit(null) }, 'Nouveau personnage'), h('button', { 'data-gen-import': true, onclick: importRecipe }, 'Importer un personnage…')))));
       return;
     }
     const heroImg = h('div', { class: 'hero-visual gen-hero-visual' });
@@ -158,6 +153,7 @@
       h('p', { class: 'hero-desc' }, 'Images exportées en PNG dans le dossier de ton choix (un sous-dossier au nom du personnage). Elles ne sont pas ajoutées au projet.'),
       h('div', { class: 'gen-actions' },
         h('button', { class: 'primary', 'data-gen-export-btn': true, html: Icons.icon('import'), onclick: () => exportImages(c) }, 'Exporter les images…'),
+        h('button', { 'data-gen-import': true, html: Icons.icon('import'), title: 'Choisir le fichier _recette.json d’un personnage exporté', onclick: importRecipe }, 'Importer un personnage…'),
         h('button', { 'data-gen-edit': true, html: Icons.icon('pencil'), onclick: () => edit(c) }, 'Retoucher'),
         h('button', { class: 'ghost', 'data-gen-duplicate': true, html: Icons.icon('copy'), onclick: () => {
           const l = load(), d = { id: uid(), name: c.name + ' (copie)', recipe: JSON.parse(JSON.stringify(c.recipe)), created: Date.now(), updated: Date.now() };

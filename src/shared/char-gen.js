@@ -208,6 +208,19 @@
     if (r.gender !== undefined && r.gender !== '' && r.gender !== 'm' && r.gender !== 'f') errors.push('Genre invalide.');
     return errors;
   }
+  /** Export du générateur ({ name, recipe }) ou ancienne recette seule. */
+  function importRecipe(data, parts) {
+    const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
+    const recipe = object(data) && Object.hasOwn(data, 'recipe') ? data.recipe : data;
+    if (!object(recipe)) throw new Error('Choisis le fichier _recette.json exporté par le générateur.');
+    const errors = validate(recipe, parts);
+    for (const key of ['map', 'combat']) if (recipe[key] != null) {
+      if (!object(recipe[key])) errors.push('Couleurs ' + key + ' invalides.');
+      else errors.push(...validate({ ...recipe, colors: recipe[key].colors, ramps: recipe[key].ramps, combat: undefined }, parts));
+    }
+    if (errors.length) throw new Error('Recette inutilisable : ' + [...new Set(errors)].join(' '));
+    return { name: typeof data.name === 'string' ? data.name.trim() : '', recipe: normalize(recipe, parts) };
+  }
   /** Recette au hasard (rng : () => [0, 1)) ; garde les champs de keep. */
   function random(parts, rng = Math.random, keep = {}) {
     const pick = (list) => (list && list.length ? list[Math.floor(rng() * list.length)].id : '');
@@ -685,5 +698,5 @@
   }
 
   return { GENDERS, MOUNTS, FEMALE_PARTS, partSex, partMount, classMounts, allowedParts, recipeGender, fitRecipe, normColors, mapColors, combatColors, battlePalette, battlerColorTable, recolorBattler, RAMP_INDEX, HAIR_RAMPS, HAIR_LAYOUT, SKIN_RAMPS, RAMP_SIZE, eyePalette, eyeMask, avatarConfig, renameText, validateAvatar, SIZE, TOKEN, LAYERS, GROUPS, DEFAULT_COLORS, SWATCHES, SHADES, FACESET, rgb, hex, brighter, darker, palette, shade,
-    normalize, validate, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feHairMask, recolorFeHair, feTeamColors };
+    normalize, validate, importRecipe, random, defaults, composePortrait, composeToken, mountMask, bbox, faceset, mapSprite, spriteMeta, teamColors, FE_MAP_COLORS, feMapPalette, recolorFeSprite, feHairMask, recolorFeHair, feTeamColors };
 });

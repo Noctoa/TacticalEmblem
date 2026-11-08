@@ -60,6 +60,27 @@ test('recette : normalisation, validation, pièces par défaut du même nom, al�
   assert.deepEqual(C.validate(a, P), []);
 });
 
+test('import : export complet et recette seule, couleurs indépendantes et décalages conservés sans modifier la source', () => {
+  const P = parts(), recipe = C.defaults(P, 'Lyn');
+  recipe.gender = 'f'; recipe.offsets.face = [3, -2];
+  recipe.map = C.normColors({ colors: { hair: '#abcdef' }, ramps: { hair: C.HAIR_RAMPS[40] } });
+  recipe.combat = C.normColors({ colors: { cloth: '#123456' }, ramps: { skin: C.SKIN_RAMPS[4] } });
+  const data = { generator: 'Tactical Emblem', name: ' Élise ', recipe }, before = JSON.stringify(data);
+  const imported = C.importRecipe(data, P);
+  assert.equal(imported.name, 'Élise'); assert.deepEqual(imported.recipe, recipe);
+  assert.deepEqual(C.importRecipe(recipe, P).recipe, recipe);
+  imported.recipe.offsets.face[0] = 9; imported.recipe.map.colors.hair = '#ffffff';
+  assert.equal(JSON.stringify(data), before);
+});
+
+test('import : fichiers de sprites, recettes invalides et pièces inconnues refusés avant normalisation', () => {
+  const P = parts(), recipe = C.defaults(P, 'Lyn');
+  for (const data of [null, [], 'portrait.png', { image: 'map.png', cell: [32, 32] }, { recipe: null },
+    { recipe: { ...recipe, face: 'PersonnageInconnu' } }, { recipe: { ...recipe, colors: { hair: 'rouge' } } },
+    { recipe: { ...recipe, map: { colors: { skin: 'invalide' } } } }, { recipe: { ...recipe, combat: [] } }])
+    assert.throws(() => C.importRecipe(data, P), /recette|Recette|Couleurs/);
+});
+
 test('composition : ordre cheveux arrière < tenue < visage < cheveux, décalages, recoloration', () => {
   const recipe = C.normalize({ colors: { hair: '#ff0000', skin: '#00ff00', cloth: '#0000ff' }, offsets: { face: [2, 1] } });
   const L = { hairb: layer([[10, 10, 2], [11, 10, 2]]), armor: layer([[10, 10, 16], [12, 10, 16]]), face: layer([[8, 9, 5]]), hair: layer([[11, 10, 2]]) };

@@ -376,5 +376,27 @@
   /** Canvas → base64 PNG (sans l'en-tête data:). */
   const base64 = (cv) => cv.toDataURL('image/png').split(',')[1];
 
-  root.CharGenUI = { load, open, render, build, base64 };
+  /** Choisir une recette exportée ; annuler ne modifie aucune création. */
+  function pickRecipe() {
+    return new Promise((resolve, reject) => {
+      const input = h('input', { type: 'file', accept: '.json,application/json', class: 'hidden', 'data-cg-import-file': true });
+      input.addEventListener('cancel', () => { input.remove(); resolve(null); }, { once: true });
+      input.addEventListener('change', async () => {
+        const file = input.files[0]; input.remove();
+        if (!file) { resolve(null); return; }
+        try {
+          if (file.size > 1024 * 1024) throw new Error('Recette trop volumineuse (1 Mo maximum).');
+          let data;
+          try { data = JSON.parse((await file.text()).replace(/^\uFEFF/, '')); }
+          catch (e) { throw new Error('Fichier JSON illisible. Choisis le fichier _recette.json exporté par le générateur.'); }
+          const imported = C.importRecipe(data, await load());
+          if (!imported.name) imported.name = file.name.replace(/(_recette)?\.json$/i, '') || 'Personnage';
+          resolve(imported);
+        } catch (e) { reject(e); }
+      }, { once: true });
+      document.body.append(input); input.click();
+    });
+  }
+
+  root.CharGenUI = { load, open, render, build, base64, pickRecipe };
 })(self);
