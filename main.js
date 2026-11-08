@@ -149,7 +149,10 @@ handle('project:new', async (e, { name, template }) => {
   });
   if (res.canceled || !res.filePath) return null;
   const dir = res.filePath;
-  const project = io.createProject(dir, name, template, ASSETS);
+  const sample = path.join(ASSETS, 'sample-project');
+  const project = template === 'sample' && io.isProjectDir(sample)
+    ? io.createProjectFromTemplate(dir, name, sample, ASSETS)
+    : io.createProject(dir, name, template, ASSETS);
   addRecent(dir, project.meta.name);
   return payload(dir, project);
 });

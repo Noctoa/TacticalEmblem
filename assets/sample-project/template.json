@@ -1,0 +1,10 @@
+{
+  "sourceName": "Mon Tactical RPG",
+  "resourcePacks": [
+    "fe-6-7-blazing-blade",
+    "monstres",
+    "fe-8-sacred-stone",
+    "fe-9-10-radiance",
+    "fe7-unites-generiques"
+  ]
+}

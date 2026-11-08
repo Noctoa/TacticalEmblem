@@ -279,6 +279,62 @@ function createProject(dir, name, template, assetsDir) {
   return loadProject(dir);
 }
 
+/** Instancie un projet d’exemple fourni, avec les ressources communes et ses fichiers propres.
+ * Les sauvegardes de parties et dossiers de travail du projet d’origine ne font pas partie du modèle.
+ */
+function createProjectFromTemplate(dir, name, templateDir, assetsDir) {
+  if (fs.existsSync(dir) && fs.readdirSync(dir).length) throw new Error('Le dossier choisi n’est pas vide.');
+  if (!isProjectDir(templateDir)) throw new Error('Projet d’exemple introuvable.');
+  const info = readJson(path.join(templateDir, 'template.json'), {}), packs = info.resourcePacks || [];
+  if (!Array.isArray(packs) || packs.some(id => typeof id !== 'string' || !/^[a-z0-9][a-z0-9-]*$/.test(id))) throw new Error('Packs du projet d’exemple invalides.');
+  const pluginsIO = require('./plugins-io');
+  const resourceDirs = packs.map(id => {
+    const source = path.join(path.dirname(assetsDir), 'plugins', id), manifest = pluginsIO.readManifest(source);
+    const resources = path.join(source, manifest.ressources);
+    if (manifest.id !== id || !fs.existsSync(resources)) throw new Error('Ressources du projet d’exemple introuvables : ' + id);
+    return resources;
+  });
+  const resourcePaths = readJson(path.join(templateDir, 'resource-paths.json'), []), spelling = new Map();
+  if (!Array.isArray(resourcePaths) || resourcePaths.some(p => typeof p !== 'string' || p.includes('\\') || p.split('/').some(part => !part || part === '.' || part === '..')))
+    throw new Error('Chemins de ressources du projet d’exemple invalides.');
+  for (const rel of resourcePaths) {
+    const parts = rel.split('/');
+    for (let i = 1; i <= parts.length; i++) { const prefix = parts.slice(0, i).join('/'); spelling.set(prefix.toLowerCase(), prefix); }
+  }
+  const copyResources = (source, overwrite, prefix = '') => {
+    if (!fs.existsSync(source)) return;
+    const walk = (folder, rel) => {
+      for (const entry of fs.readdirSync(folder, { withFileTypes: true })) {
+        if (!rel && prefix === 'interface' && UI_SKIP.has(entry.name)) continue;
+        const part = rel ? rel + '/' + entry.name : entry.name, from = path.join(folder, entry.name);
+        if (entry.isDirectory()) { walk(from, part); continue; }
+        if (entry.name === '.gitkeep' || (prefix === 'interface' && !/\.png$/i.test(entry.name))) continue;
+        const key = prefix ? prefix + '/' + part : part, parent = path.posix.dirname(key);
+        // Les clés du catalogue sont sensibles à la casse, même sur Windows.
+        const canonical = spelling.get(key.toLowerCase()) || (spelling.has(parent.toLowerCase()) ? spelling.get(parent.toLowerCase()) + '/' + path.posix.basename(key) : key);
+        const dest = path.join(dir, Layout.ROOT, ...canonical.split('/'));
+        if (!overwrite && fs.existsSync(dest)) continue;
+        fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.copyFileSync(from, dest);
+      }
+    };
+    walk(source, '');
+  };
+  copyResources(path.join(assetsDir, 'default', Layout.ROOT), true);
+  for (const source of resourceDirs) copyResources(source, false);
+  copyResources(path.join(__dirname, '..', 'renderer', 'img'), false, 'interface');
+  copyResources(path.join(templateDir, Layout.ROOT), true);
+  Layout.ensureDirs(dir);
+  for (const folder of ['data', 'textes', 'plugins']) {
+    const source = path.join(templateDir, folder);
+    if (fs.existsSync(source)) copyDir(source, path.join(dir, folder));
+  }
+  fs.copyFileSync(path.join(templateDir, PROJECT_FILE), path.join(dir, PROJECT_FILE));
+  const project = loadProject(dir, assetsDir);
+  project.meta.name = name || project.meta.name;
+  saveProject(dir, project);
+  return loadProject(dir);
+}
+
 /**
  * Générateur de personnage : écrit ses images dans ressources/personnages/<Nom>/.
  * files : [{ name: 'portrait.png' | 'map_genere.png' | …, base64 } | { name: '….json', json }] ; noms simples uniquement.
@@ -363,4 +419,4 @@ function writeGenerated(dir, owner, files) {
   return { dir: rel, files: out, resources: scanResources(dir) };
 }
 
-module.exports = { installInterface, writeGenerated, exportGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };
+module.exports = { createProjectFromTemplate, installInterface, writeGenerated, exportGenerated, PROJECT_FILE, DB_KEYS, RESOURCE_DIRS, DIRS: Layout.DIRS, setTeamColors: Layout.setTeamColors, loadProject, saveProject, createProject, isProjectDir, scanResources, installDefaults };

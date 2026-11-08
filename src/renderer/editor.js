@@ -132,7 +132,7 @@
     const name = await UI.prompt('Nouveau projet', 'Mon Tactical RPG', 'Nom du jeu');
     if (!name) return;
     const template = await UI.choose('Contenu de départ', [
-      { value: 'sample', label: "Projet d'exemple", desc: 'Base de données complète, un camp, deux chapitres de deux actes et un évènement (boss, renforts, dialogues).', primary: true },
+      { value: 'sample', label: "Projet d'exemple", desc: 'Reprend « Mon Tactical RPG » : les chapitres d’Acania, ses cartes, personnages, événements, dialogues et ressources.', primary: true },
       { value: 'empty', label: 'Projet vide', desc: 'Base de données par défaut (classes, armes, terrains), une map vierge.' }
     ]);
     if (!template) return;

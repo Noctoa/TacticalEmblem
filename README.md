@@ -27,7 +27,7 @@ npm test
 
 ## Ce que fait l'éditeur
 
-**Projet** — Nouveau projet vide ou avec le chapitre d'exemple (« Prologue — Les brigands du fort » : Eliwood, Lyn et Hector contre des brigands, un boss, des renforts au tour 3, des dialogues). Dans les deux cas, les ressources par défaut (sprites, animations, portraits) sont copiées dans le projet. Ctrl+S pour enregistrer, l'appli prévient si on ferme avec des modifs non enregistrées.
+**Projet** — **Nouveau projet › Projet d’exemple** reprend désormais **Mon Tactical RPG** et ses chapitres d’Acania : 36 personnages, 11 actes, 10 cartes, événements, dialogues, réglages, plugins et ressources. Le nom saisi est appliqué au nouveau projet ; ses modifications restent indépendantes du modèle et du dossier d’origine. Les sauvegardes de parties ne sont pas reprises. Le modèle fourni est rangé dans `assets/sample-project` et réutilise les ressources communes des packs livrés avec l’application. **Projet vide** garde son fonctionnement habituel. Ctrl+S pour enregistrer, l’appli prévient si on ferme avec des modifications non enregistrées.
 
 **Maps** (mode Tiles, F1)
 - palette de tileset avec sélection rectangulaire (tampon multi-tiles)
