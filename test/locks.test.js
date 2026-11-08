@@ -71,7 +71,34 @@ test('porte fermée : tous les déplacements bloqués ; ouverte : passage pour l
   assert.ok(!R.threatTiles(enemy, ctx, db).has(R.key(4, 1)));
   L.claim(ch, 'doors', door, unit, state, db);
   assert.strictEqual(ctx.terrainAt(2, 1), floor); assert.ok(R.reachable(unit, ctx).has(R.key(3, 1))); assert.ok(R.threatTiles(enemy, ctx, db).has(R.key(4, 1)));
-  assert.strictEqual(base(2, 1), wall); assert.ok(L.floorTile({ tilesets: [{ tilesetId: db.tilesets[0].id, firstgid: 1 }] }, db, 'floor'));
+  assert.strictEqual(base(2, 1), wall);
+});
+
+test('apparence des portes ouvertes : sol peint fréquent, jamais la première tuile de la planche ni un coffre placé', () => {
+  const ts = { id: 'castle', tileCount: 16, tileTerrain: { 0: 'floor', 2: 'floor', 7: 'floor' } }, db = { tilesets: [ts] };
+  // 0 = coffre ouvert dans la planche, 2 = décor de sol, 7 = dallage utilisé par la map.
+  const map = { width: 4, height: 2, tilesets: [{ tilesetId: ts.id, firstgid: 1 }], layers: [
+    { visible: false, data: Array(8).fill(1) },
+    { visible: true, data: [3, 8, 8, 8, 1, 1, 1, 1] },
+    { visible: true, data: Array(8).fill(1) }
+  ] };
+  const ch = { chests: [{ x: 0, y: 1 }, { x: 1, y: 1 }], doors: [{ x: 2, y: 1 }], villages: [{ x: 3, y: 1 }] };
+  const before = JSON.stringify({ map, ch, db });
+  assert.equal(L.floorTile(map, db, 'floor', ch).local, 7);
+  assert.equal(JSON.stringify({ map, ch, db }), before);
+  // Aucun sol sur la carte : laisser le rendu appliquer sa couleur de repli.
+  map.layers = [{ visible: true, data: Array(8).fill(0) }];
+  assert.equal(L.floorTile(map, db, 'floor', ch), null);
+});
+
+test('sol de porte : terrain peint, plusieurs tilesets et retournement de la tuile conservés', () => {
+  const db = { tilesets: [{ id: 'decor', tileCount: 16, tileTerrain: { 0: 'floor' } }, { id: 'ground', tileCount: 16, tileTerrain: { 2: 'road' } }] };
+  const gid = (0x80000000 | 103) >>> 0;
+  const map = { width: 2, height: 1, terrain: ['floor', 'floor'], tilesets: [{ tilesetId: 'decor', firstgid: 1 }, { tilesetId: 'ground', firstgid: 101 }],
+    layers: [{ visible: true, data: [gid, gid] }] };
+  const tile = L.floorTile(map, db, 'floor');
+  assert.strictEqual(tile.tileset, db.tilesets[1]); assert.equal(tile.local, 2); assert.equal(tile.gid, gid);
+  assert.equal(L.floorTile(map, db, 'water'), null);
 });
 test('reprise de début d’acte : portes refermées, clés et récompenses restaurées ensemble', () => {
   const { db, ch, door, chest, unit, state } = fixture(); C.commit(state.campaign, [unit]); const checkpoint = C.checkpoint(ch.id, state.campaign, [], {});

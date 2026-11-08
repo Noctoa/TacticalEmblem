@@ -349,7 +349,12 @@
     b.imageSmoothingEnabled = false;
     b.fillStyle = '#14161b'; b.fillRect(0, 0, base.width, base.height);
     const chapter = G.mode === 'lobby' ? { villages: [] } : G.chapter;
-    Render.drawMap(b, Villages.visualMap(m, chapter, villageState(), G.db), { scale: 1, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+    const visualMap = Villages.visualMap(m, chapter, villageState(), G.db);
+    Render.drawMap(b, visualMap, { scale: 1, baseUrl: G.baseUrl, tilesets: G.db.tilesets });
+    // Calculé avec le fond de carte, sans reparcourir les calques à chaque image.
+    G.doorFloorTiles = new Map();
+    for (const door of chapter.doors || []) if (!G.doorFloorTiles.has(door.openTerrainId))
+      G.doorFloorTiles.set(door.openTerrainId, Locks.floorTile(visualMap, G.db, door.openTerrainId, chapter));
     VillageVisuals.draw(b, m, chapter, villageState());
   }
 
@@ -734,8 +739,8 @@
       const [x, y, w, hh] = tileRect(object.x, object.y), open = Locks.opened(G.chapter, kind, object, lockState());
       if (kind === 'doors') {
         if (open) {
-          const tile = Locks.floorTile(G.map, G.db, object.openTerrainId), img = tile && Render.readyImage(G.baseUrl, tile.tileset.image);
-          if (img) Render.drawTile(ctx, img, tile.tileset, tile.local, x, y, w, hh, 0);
+          const tile = G.doorFloorTiles.get(object.openTerrainId), img = tile && Render.readyImage(G.baseUrl, tile.tileset.image);
+          if (img) Render.drawTile(ctx, img, tile.tileset, tile.local, x, y, w, hh, tile.gid);
           else { ctx.fillStyle = (R.byId(G.db.terrains, object.openTerrainId) || {}).color || '#a89b7a'; ctx.fillRect(x, y, w, hh); }
           ctx.strokeStyle = '#c7b488'; ctx.lineWidth = 2; ctx.strokeRect(x + 1, y + 1, w - 2, hh - 2);
         } else {

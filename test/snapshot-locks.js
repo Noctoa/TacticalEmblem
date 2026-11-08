@@ -17,6 +17,8 @@ module.exports = (editor, openPlaytest) => {
       const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'tf-locks-ui-')), 'Jeu'), p = io.createProject(dir, 'Serrures', 'sample', path.join(__dirname, '..', 'assets'));
       const ch = p.db.chapters[0], map = p.maps.find(m => m.id === ch.mapId);
       Object.assign(map, { width: 9, height: 6, terrain: Array(54).fill('wall') }); map.layers.forEach((layer, index) => layer.data = Array(54).fill(index ? 0 : 12));
+      // Une tuile « Sol » en début de planche qui n’est pas le dallage de la map.
+      p.db.tilesets[0].tileTerrain[0] = 'floor';
       for (let x = 1; x <= 7; x++) { map.terrain[2 * 9 + x] = 'floor'; map.layers[0].data[2 * 9 + x] = 13; }
       map.terrain[1 * 9 + 4] = 'floor'; map.layers[0].data[1 * 9 + 4] = 13;
       Object.assign(ch, { players: [{ id: 'p1', unitId: 'c_eliwood', x: 3, y: 2 }, { id: 'p2', unitId: 'c_lyn', x: 2, y: 2 }, { id: 'p3', unitId: 'c_hector', x: 4, y: 1 }, { id: 'p4', unitId: 'c_cloud', x: 1, y: 2 }], objective: { type: 'survive', turns: 99 }, requiredUnits: ['c_eliwood'], villages: [], allies: [], events: [], gold: 0, final: false });
@@ -60,6 +62,8 @@ module.exports = (editor, openPlaytest) => {
         await js(wc, `PlaytestState.units.find(u => u.sourceId === 'c_hector').inventory[0].id = 'i_chest_key'`); await menu(wc, 'c_hector');
         assert.equal(await js(wc, `PlaytestState.menu.items.find(i => i.label === 'Ouvrir la porte').disabled`), true);
         await js(wc, `PlaytestState.units.find(u => u.sourceId === 'c_hector').inventory[0].id = 'i_door_key'`); await menu(wc, 'c_hector'); await open(wc, 'Ouvrir la porte', 'Porte du fort');
+        assert.equal(await js(wc, `PlaytestState.doorFloorTiles.get('floor').local`), 12);
+        await shot(wc, 'door-passage');
         assert.equal(await js(wc, `PlaytestState.units.find(u => u.sourceId === 'c_hector').inventory.some(i => i.id === 'i_door_key')`), false);
         await menu(wc, 'c_cloud'); assert.equal(await js(wc, 'PlaytestState.reach.has(Rules.key(5, 2))'), true);
         assert.equal(await js(wc, 'PlaytestState.campaign.gold'), 620);

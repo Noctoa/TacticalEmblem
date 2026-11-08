@@ -81,13 +81,29 @@
     const door = at(ch, 'doors', x, y);
     return !door ? base : !openedDoors.has(door.id) ? blockedTerrain : R.byId(db.terrains, door.openTerrainId) || base;
   }
-  function floorTile(map, db, terrainId) {
-    for (const ref of map.tilesets || []) {
-      const ts = R.byId(db.tilesets, ref.tilesetId); if (!ts) continue;
-      const entry = Object.entries(ts.tileTerrain || {}).find(([, id]) => id === terrainId);
-      if (entry) return { tileset: ts, local: Number(entry[0]) };
+  /** Sol représentatif déjà peint sur le calque de fond, sans les cases d’interaction.
+   * Un terrain ne définit pas une apparence : sa première tuile peut être un coffre ou un décor.
+   * Sans sol présent sur la carte, le rendu utilise la couleur du terrain.
+   */
+  function floorTile(map, db, terrainId, ch = {}) {
+    const excluded = new Set(['doors', 'chests', 'villages', 'shops'].flatMap(kind => (ch[kind] || []).map(o => o.y * map.width + o.x)));
+    const layers = (map.layers || []).filter(layer => layer.visible), candidates = new Map();
+    let best = null;
+    for (let i = 0; i < map.width * map.height; i++) {
+      if (excluded.has(i)) continue;
+      for (const layer of layers) {
+        const gid = layer.data[i] >>> 0, tile = R.resolveGid(map, db.tilesets, gid);
+        if (!tile) continue;
+        const terrain = (map.terrain || [])[i] || (tile.tileset.tileTerrain || {})[tile.local];
+        if (terrain === terrainId) {
+          const key = String(gid), candidate = candidates.get(key) || { tile: { ...tile, gid }, count: 0 };
+          candidate.count++; candidates.set(key, candidate);
+          if (!best || candidate.count > best.count) best = candidate;
+        }
+        break; // Les décors des calques supérieurs ne servent jamais de sol à une porte.
+      }
     }
-    return null;
+    return best ? best.tile : null;
   }
   function references(db, kind, id) {
     return (db.chapters || []).flatMap(ch => lists.flatMap(type => list(ch, type).filter(o => kind === 'units' ? (o.allowedUnits || []).includes(id) : kind === 'terrains' ? o.openTerrainId === id : o.keyItemId === id || (o.reward || {}).itemId === id).map(o => `${ch.name} — ${o.name || o.id}`)));
