@@ -1,0 +1,141 @@
+{
+ "type": "battler",
+ "name": "Centaur Armor Promo — Staff",
+ "facing": "left",
+ "cell": [
+  63,
+  66
+ ],
+ "anchor": [
+  30,
+  64
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    17,
+    50,
+    50,
+    50,
+    17
+   ],
+   "hit": 4
+  },
+  "dodge": {
+   "frames": [
+    0,
+    5,
+    6,
+    5
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Dutch Introvert, Alfred Kamon, Starter, Pikmin1211"
+}

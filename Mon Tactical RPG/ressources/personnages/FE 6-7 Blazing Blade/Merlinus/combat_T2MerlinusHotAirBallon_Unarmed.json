@@ -1,0 +1,101 @@
+{
+ "type": "battler",
+ "name": "T2 Merlinus Hot Air Ballon — Unarmed",
+ "facing": "left",
+ "cell": [
+  56,
+  105
+ ],
+ "anchor": [
+  28,
+  104
+ ],
+ "columns": 12,
+ "count": 2,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Knabepicer, 7743"
+}

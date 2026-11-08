@@ -1,0 +1,242 @@
+[
+ {
+  "id": "plain",
+  "name": "Plaine",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#9ccc65",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-plaine.png"
+ },
+ {
+  "id": "forest",
+  "name": "Forêt",
+  "avoid": 20,
+  "def": 1,
+  "heal": 0,
+  "color": "#2e7d32",
+  "cost": {
+   "foot": 2,
+   "horse": 3,
+   "armor": 2,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-foret.png"
+ },
+ {
+  "id": "bush",
+  "name": "Buisson",
+  "avoid": 10,
+  "def": 0,
+  "heal": 0,
+  "color": "#66bb6a",
+  "cost": {
+   "foot": 1,
+   "horse": 2,
+   "armor": 2,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-plaine.png"
+ },
+ {
+  "id": "thicket",
+  "name": "Fourré",
+  "avoid": 40,
+  "def": 1,
+  "heal": 0,
+  "color": "#1b5e20",
+  "cost": {
+   "foot": 3,
+   "horse": 99,
+   "armor": 99,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-foret-ancienne.png"
+ },
+ {
+  "id": "mountain",
+  "name": "Montagne",
+  "avoid": 30,
+  "def": 2,
+  "heal": 0,
+  "color": "#8d6e63",
+  "cost": {
+   "foot": 4,
+   "horse": 99,
+   "armor": 99,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-montagne.png"
+ },
+ {
+  "id": "peak",
+  "name": "Pic",
+  "avoid": 40,
+  "def": 2,
+  "heal": 0,
+  "color": "#5d4037",
+  "cost": {
+   "foot": 99,
+   "horse": 99,
+   "armor": 99,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-montagne.png"
+ },
+ {
+  "id": "water",
+  "name": "Eau",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#1e88e5",
+  "cost": {
+   "foot": 99,
+   "horse": 99,
+   "armor": 99,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-mer.png"
+ },
+ {
+  "id": "road",
+  "name": "Route",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#d7b77a",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-plaine.png"
+ },
+ {
+  "id": "bridge",
+  "name": "Pont",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#a1887f",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-riviere.png"
+ },
+ {
+  "id": "sand",
+  "name": "Sable",
+  "avoid": 5,
+  "def": 0,
+  "heal": 0,
+  "color": "#fff176",
+  "cost": {
+   "foot": 2,
+   "horse": 3,
+   "armor": 3,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-desert.png"
+ },
+ {
+  "id": "fort",
+  "name": "Fort",
+  "avoid": 20,
+  "def": 2,
+  "heal": 20,
+  "color": "#90a4ae",
+  "cost": {
+   "foot": 2,
+   "horse": 2,
+   "armor": 2,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-fort.png"
+ },
+ {
+  "id": "village",
+  "name": "Village",
+  "avoid": 10,
+  "def": 0,
+  "heal": 0,
+  "color": "#ef9a9a",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-village.png"
+ },
+ {
+  "id": "wall",
+  "name": "Mur",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#424242",
+  "cost": {
+   "foot": 99,
+   "horse": 99,
+   "armor": 99,
+   "flier": 99
+  },
+  "battleback": "ressources/fonds-combat/fe6-rempart.png"
+ },
+ {
+  "id": "floor",
+  "name": "Sol",
+  "avoid": 0,
+  "def": 0,
+  "heal": 0,
+  "color": "#bcaaa4",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-chateau.png"
+ },
+ {
+  "id": "throne",
+  "name": "Trône",
+  "avoid": 30,
+  "def": 3,
+  "heal": 10,
+  "color": "#c62828",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-salle-du-trone.png"
+ },
+ {
+  "id": "gate",
+  "name": "Portail",
+  "avoid": 20,
+  "def": 3,
+  "heal": 10,
+  "color": "#6d4c41",
+  "cost": {
+   "foot": 1,
+   "horse": 1,
+   "armor": 1,
+   "flier": 1
+  },
+  "battleback": "ressources/fonds-combat/fe6-rempart.png"
+ }
+]

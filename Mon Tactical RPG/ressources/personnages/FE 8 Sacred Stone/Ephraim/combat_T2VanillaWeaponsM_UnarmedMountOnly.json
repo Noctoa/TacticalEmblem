@@ -1,0 +1,83 @@
+{
+ "type": "battler",
+ "name": "T2 Vanilla +Weapons [M] — Unarmed (Mount only)",
+ "facing": "left",
+ "cell": [
+  40,
+  45
+ ],
+ "anchor": [
+  20,
+  44
+ ],
+ "columns": 12,
+ "count": 4,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, Belle, eCut, Fates-Blade, UltraFenix, tatata"
+}

@@ -1,0 +1,111 @@
+{
+ "type": "battler",
+ "name": "Legion King [U] — Unarmed",
+ "facing": "left",
+ "cell": [
+  54,
+  57
+ ],
+ "anchor": [
+  32,
+  56
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    4
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    83,
+    50,
+    50,
+    117,
+    83
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    83,
+    50,
+    50,
+    117,
+    83
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    83,
+    50,
+    50,
+    117,
+    83
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    83,
+    50,
+    50,
+    117,
+    83
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    83,
+    50,
+    50,
+    117,
+    83
+   ]
+  }
+ },
+ "source": "FE-Repo — Huichelaar"
+}

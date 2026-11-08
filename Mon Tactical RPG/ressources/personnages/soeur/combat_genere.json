@@ -1,0 +1,129 @@
+{
+ "type": "battler",
+ "name": "soeur — [T1 Cleric-Base] Vanilla FE6 +Weapons [F] — Staff",
+ "facing": "left",
+ "cell": [
+  30,
+  38
+ ],
+ "anchor": [
+  16,
+  37
+ ],
+ "columns": 12,
+ "count": 9,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    17,
+    67,
+    100,
+    83,
+    67,
+    17,
+    67
+   ],
+   "hit": 5
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    17,
+    67,
+    100,
+    83,
+    67,
+    17,
+    67
+   ],
+   "hit": 5
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    17,
+    67,
+    100,
+    83,
+    67,
+    17,
+    67
+   ],
+   "hit": 5
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    17,
+    67,
+    100,
+    83,
+    67,
+    17,
+    67
+   ],
+   "hit": 5
+  },
+  "dodge": {
+   "frames": [
+    0,
+    7,
+    8,
+    7
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, Maiser6, Jeorge_Reds, Furious, RiriK, Yerek",
+ "teamColors": [
+  "#3838c0",
+  "#5080f8"
+ ]
+}

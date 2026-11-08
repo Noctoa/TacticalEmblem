@@ -1,0 +1,119 @@
+{
+ "type": "battler",
+ "name": "Lilina [F] — Staff",
+ "facing": "left",
+ "cell": [
+  38,
+  42
+ ],
+ "anchor": [
+  18,
+  41
+ ],
+ "columns": 12,
+ "count": 6,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    50,
+    17
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    50,
+    17
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    50,
+    17
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    50,
+    17
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    4,
+    5,
+    4,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — RedBean, 7743"
+}

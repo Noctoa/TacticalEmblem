@@ -1,0 +1,92 @@
+{
+ "id": "fe-9-10-radiance",
+ "name": "FE 9-10 Radiance",
+ "version": "0.3.0",
+ "kind": "ressources",
+ "description": "Portraits de 97 personnage(s) de « FE 9-10 Radiance » (100 image(s), face sets GBA 128×112). Sprites de map (6) et animations de combat (148) de 14 personnage(s), d'après FE-Repo. Sprites de map (6) et animations de combat (148) de 14 personnage(s), d'après FE-Repo. Sprites de map (6) et animations de combat (148) de 14 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe9:Ike": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Ike/Ike.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Ike/combat_VanguardIkeF_Sword"
+   },
+   "fe9:Titania": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Titania/Titania.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Titania/combat_GenericTitaniaKnightFaceEditF_Sword"
+   },
+   "fe9:Mist": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Mist/Mist.png"
+   },
+   "fe9:Soren": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Soren/Soren.png"
+   },
+   "fe9:Oscar": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Oscar/Oscar.png"
+   },
+   "fe9:Boyd": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Boyd/Boyd.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Boyd/combat_BoydM_Axe"
+   },
+   "fe9:Rhys": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Rhys/Rhys.png"
+   },
+   "fe9:Shinon": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Shinon/Shinon.png"
+   },
+   "fe9:Gatrie": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Gatrie/Gatrie.png"
+   },
+   "fe9:Mia": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Mia/Mia.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Mia/combat_MiaF_Sword"
+   },
+   "fe9:Elincia": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Elincia/Elincia.png"
+   },
+   "fe9:Jill": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Jill/Jill.png"
+   },
+   "fe10:Micaiah": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Micaiah/Micaiah.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Micaiah/combat_LightMageMicaiahF_Magic"
+   },
+   "fe10:Sothe": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Sothe/Sothe.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Sothe/combat_WhisperSothe_SwordKnifeCrit"
+   },
+   "fe10:Edward": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Edward/Edward.png"
+   },
+   "fe10:Nolan": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Nolan/Nolan.png"
+   },
+   "fe10:Leonardo": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Leonardo/Leonardo.png"
+   },
+   "fe10:Zihark": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Zihark/Zihark.png"
+   },
+   "fe10:Tormod": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Tormod/Tormod.png"
+   },
+   "fe10:Haar": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Haar/Haar.png"
+   },
+   "fe10:Sanaki": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Sanaki/Sanaki.png"
+   },
+   "fe10:Nephenee": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Nephenee/Nephenee.png",
+    "battler": "ressources/personnages/FE 9-10 Radiance/Nephenee/combat_NepheneeF_Lance"
+   },
+   "fe10:Lucia": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Lucia/Lucia.png"
+   },
+   "fe10:Pelleas": {
+    "portrait": "ressources/personnages/FE 9-10 Radiance/Pelleas/Pelleas.png"
+   }
+  }
+ }
+}

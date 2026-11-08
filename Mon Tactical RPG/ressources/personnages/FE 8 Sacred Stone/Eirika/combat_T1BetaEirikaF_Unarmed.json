@@ -1,0 +1,131 @@
+{
+ "type": "battler",
+ "name": "T1 Beta Eirika [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  42,
+  37
+ ],
+ "anchor": [
+  12,
+  35
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    67
+   ],
+   "hit": 3
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    67
+   ],
+   "hit": 3
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    67
+   ],
+   "hit": 3
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83
+   ],
+   "hit": 3
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83
+   ]
+  }
+ },
+ "source": "FE-Repo — Eldritch Abomination"
+}

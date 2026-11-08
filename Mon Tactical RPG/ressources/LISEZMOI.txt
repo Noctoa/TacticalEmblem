@@ -1,0 +1,20 @@
+Ressources du projet
+====================
+
+personnages/   un dossier par personnage (ou ennemi générique), avec dedans :
+                 - ses sprites de map      (planche .png + .json « type: mapsprite »)
+                 - son animation de combat (planche .png + .json « type: battler »)
+                 - son portrait            (image seule, face set 128×112 ou portrait simple)
+               Les noms de fichiers sont libres, les sous-dossiers aussi.
+tilesets/      images de tilesets (maps)
+fonds-combat/  décors des animations de combat (un par terrain, réglé dans Terrains et tilesets)
+animations/    planches des animations d'attaque (effets, projectiles), utilisées dans Base de données › Animations
+interface/     curseur, fenêtres…
+musiques/      musiques de phase
+jingles/       montée de niveau, victoire, game over
+sons/          effets sonores
+
+Couleurs : chaque planche est dans ses couleurs d'origine. Les versions bleue (joueur),
+rouge (ennemi), verte (allié) et grise sont calculées par l'éditeur ; les couleurs qui
+changent sont listées dans le .json (« teamColors ») et se règlent dans
+Base de données › Ressources.

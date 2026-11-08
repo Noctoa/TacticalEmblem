@@ -1,0 +1,52 @@
+[
+ {
+  "id": "t_hec_0",
+  "name": "Un second",
+  "unitId": "c_hector",
+  "after": "",
+  "alive": [],
+  "points": 10,
+  "once": true,
+  "script": "Hector: Eliwood. Les autres t'attendent pour décider de la route.\nEliwood: Et toi, tu en penses quoi ?\nHector: Que tu ne demandes l'avis de personne… mais que tu as souvent raison.\nEliwood: Souvent ?\nHector: Je reste poli. Pour une fois."
+ },
+ {
+  "id": "t_lyn_1",
+  "name": "Les guetteurs",
+  "unitId": "c_lyn",
+  "after": "",
+  "alive": [],
+  "points": 10,
+  "once": true,
+  "script": "Lyn: Eliwood. Le fort des brigands est juste au nord de la rivière.\nEliwood: Tu as repéré leurs guetteurs ?\nLyn: Trois. Et ils dorment mal."
+ },
+ {
+  "id": "t_hec_1",
+  "name": "Une bourse vide",
+  "unitId": "c_hector",
+  "after": "",
+  "alive": [],
+  "points": 10,
+  "once": true,
+  "script": "Hector: Le marchand a des haches d'acier. Tu me prêtes un peu d'or ?\nEliwood: Tu as ta propre bourse, Hector.\nHector: Elle est vide. Comme d'habitude."
+ },
+ {
+  "id": "t_lyn_2",
+  "name": "Après le fort",
+  "unitId": "c_lyn",
+  "after": "arc_1",
+  "alive": [],
+  "points": 15,
+  "once": true,
+  "script": "Lyn: Tu t'es bien battu, au fort.\nEliwood: Grâce à ton arc.\nLyn: Je sais. Mais c'est gentil de le dire."
+ },
+ {
+  "id": "t_cloud_1",
+  "name": "Un camp calme",
+  "unitId": "c_cloud",
+  "after": "arc_1",
+  "alive": [],
+  "points": 0,
+  "once": true,
+  "script": "Cloud: … Ton camp est calme.\nEliwood: Tu peux rester, si tu veux.\nCloud: Je reste. Pour l'instant."
+ }
+]

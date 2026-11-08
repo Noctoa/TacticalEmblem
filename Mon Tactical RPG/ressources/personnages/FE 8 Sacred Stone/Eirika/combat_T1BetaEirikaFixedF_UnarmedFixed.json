@@ -1,0 +1,85 @@
+{
+ "type": "battler",
+ "name": "T1 Beta Eirika Fixed [F] — Unarmed (Fixed)",
+ "facing": "left",
+ "cell": [
+  46,
+  37
+ ],
+ "anchor": [
+  16,
+  35
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    0
+   ],
+   "durations": [
+    67,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83,
+    83
+   ]
+  }
+ },
+ "source": "FE-Repo — Jono the Red, IS, JaidynReiman, HyperGammaSpace"
+}

@@ -1,0 +1,85 @@
+{
+ "type": "battler",
+ "name": "Zelgius v3 [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  52,
+  53
+ ],
+ "anchor": [
+  25,
+  52
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    0,
+    1,
+    2,
+    3,
+    4,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    67,
+    100,
+    100,
+    50,
+    100,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Nuramon, SaintRubenio, Leo_Link, UltraFenix"
+}

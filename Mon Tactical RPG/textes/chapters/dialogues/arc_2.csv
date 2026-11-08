@@ -1,0 +1,51 @@
+﻿id,fr
+ch_10.events.ev1.script.01,Sieur Kernos ...
+ch_10.events.ev1.script.02,Oui Falco ? Macro ? Mako ?
+ch_10.events.ev1.script.03,"C'est Malko votre honneur ... Et si je puis me permettre, les taxes que vous appliquez aux villageois sont bien trop conséquentes et successives pour que les habitants puissent suivre la cadence..."
+ch_10.events.ev1.script.04,Tu oses remettre en question mon autorité ?!
+ch_10.events.ev1.script.05,Loin de moi cette idée ! Je veux juste dire que vous y gagneriez peut-être plus à leur laisser un peu plus de temps ...
+ch_10.events.ev1.script.06,Tu oses me dire ce que je dois faire ?!
+ch_10.events.ev1.script.07,"Bien sûr que non, sieur Kernos !"
+ch_10.events.ev1.script.08,"Cela suffit ! C'est un acte de trahison ! Gardes, emmenez ce soldat avec vous !"
+ch_10.events.ev1.script.09,Oui votre honneur !
+ch_10.events.ev1.script.10,Erf ! Il faut que je m'échappe d'ici au plus vite !
+ch_10.events.ev2.script.01,Nan ! la sortie est bloquée !
+ch_10.events.ev2.script.02,On te tiens !
+ch_10.events.ev2.script.03,"Eh bien voilà ! Tu vois ce qu'il en coûte de trahir ton seigneur. Allez, jetez-le dans la salle latérale, je m'en occuperais demain."
+ch_10.events.ev2.script.04,"Gnn ! Lâchez-moi ! Je réussirais à m'enfuir, vous verrez !"
+ch_11.events.ev2.actions.2.text.01,Le sol ! Des créatures sortent du sol !
+ch_11.events.ev2.actions.2.text.02,Il faut sortir d'ici ! Et vite !
+ch_12.enemies.e1.battleTalks.bt_30746f65.text.01,R- Reste loin de mon grand-frère ! Je le protègerai !
+ch_12.enemies.e1.battleTalks.bt_30746f65.text.02,"Tu trembles ... Cela ne m'enchante pas mais j'ai une mission à remplir, et tu es en travers de mon chemin."
+ch_12.enemies.e1.battleTalks.bt_66cf8bee.text.01,Ne t'approche pas ! Je sais me défendre !
+ch_12.enemies.e1.battleTalks.bt_66cf8bee.text.02,"Non attends, tu fais erreur ! Je ne veux pas de tout ça ! Crois moi !"
+ch_12.enemies.e1.battleTalks.bt_66cf8bee.text.03,"Assez ! Tu as le culot de venir sur nos terres, tuer les nôtres et tu oses me dire que tu ne veux pas de tout ça ?! Je ne laisserai pas passer ça !"
+ch_12.enemies.e2.battleTalks.bt_315c10c3.text.01,"Je suis Shenos, Chef de la tribu des Melania. Pour avoir osé profaner nos plaines, je te condamne à mort au fil de mon épée."
+ch_12.enemies.e2.battleTalks.bt_315c10c3.text.02,"Tu te doutes bien que ce ne sera pas possible. Je ne suis pas si faible. Je suis juste les ordre, désolé d'avance."
+ch_12.enemies.e2.battleTalks.bt_315c10c3.text.03,"Ferme-là et sort ton épée, je protègerai ma tribu et ma sœur."
+ch_12.enemies.e2.battleTalks.bt_e1dd7c3b.text.01,"Toi là, tu hésites, je le vois dans ton regard."
+ch_12.enemies.e2.battleTalks.bt_e1dd7c3b.text.02,"Je... Je dois me battre, c'est la mission qui m'a été confiée par ma patrie, mais..."
+ch_12.enemies.e2.battleTalks.bt_e1dd7c3b.text.03,"Tu as l'air d'avoir plus de compassion que tes alliés. Malheureusement nous sommes tous les deux dans des camps opposés alors ne doute plus, ton adversaire c'est moi."
+ch_12.enemies.e2.battleTalks.bt_e1dd7c3b.text.04,Mais je ne-
+ch_12.enemies.e2.battleTalks.bt_e1dd7c3b.text.05,"Assez discuté, brandis ton arme !"
+ch_12.events.ev2.script.01,OUAISSSSS !!!
+ch_12.events.ev3.script.01,Shena ah... Enfuis-toi...
+ch_12.events.ev4.script.01,Grand-frère... J'ai... Peur...
+ch_12.events.ev5.script.01,Urgh...
+ch_12.events.ev5.script.02,Tu as été un bon adversaire. Repose-toi maintenant.
+ch_12.events.ev5.script.03,Grand-frère ! Grand-frère !!! Ne me laisse pas ! Je t'en supplie !
+ch_12.events.ev5.script.04,Il est déjà mort.
+ch_12.events.ev5.script.05,Nan ! Tais-toi ! Tais-toi !!! Je te déteste !!!
+ch_12.events.ev5.script.06,"Bien, il est temps de finir ma mission..."
+ch_12.events.ev5.script.07,Non ... Arrête... Non !!!
+ch_12.events.ev5.script.08,Arrêtez !!!
+ch_12.events.ev5.script.09,Hmm ? Arelia ?
+ch_12.events.ev5.script.10,"Ne faites pas ça ! Vous voyez bien que ce n'est qu'une jeune fille fragile ! Elle n'a rien d'un danger contre l'Empire, laissez-la partir !"
+ch_12.events.ev5.script.11,Arelia... Tu sais que cela serait considéré comme un acte de haute trahison contre l'empire par certaines personnes ?
+ch_12.events.ev5.script.12,"Je le sais, mais je ne peux pas vous laisser tuer de sang froid une jeune fille innocente."
+ch_12.events.ev5.script.13,"... Très bien, tu as gagné. Toi là, enfuis-toi d'ici et surtout ne te montre plus jamais, si nos chemins se recroisent, je serai obligé de finir ce que j'ai commencé. C'est mon devoir."
+ch_12.events.ev5.script.14,"Grrrr... Je reviendrai et je vengerai mon frère, tu m'entends ?!"
+ch_12.events.ev5.script.15,Hmpf. Elle est partie. On rentre Arelia.
+ch_12.events.ev5.script.16,Vous ne m'en voulez pas de vous avoir empêché de la tuer ?
+ch_12.events.ev5.script.17,"Bien sûr que non. Je déteste tuer sans raison, allons faire notre rapport à l'Empereur."
+ch_12.events.ev5.script.18,D'accord...

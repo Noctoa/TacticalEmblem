@@ -1,0 +1,98 @@
+{
+ "id": "monstres",
+ "name": "Monstres",
+ "version": "1.1.0",
+ "kind": "ressources",
+ "description": "Sprites de map (212) et animations de combat (200) des monstres de FE-Repo, rangés par famille (Amogus Imposter, Bael, Banshee, Battle Of Wesnoth, Blast Golem, Bombardino Crocodilo, Bonewalker, Cactus, Cultist, Cursed Sword, Cyclops, Demon King, Djinn, Dragon, Dryad, Evergrim, Fairy, Faoladh, Fire Imp, Gargoyle, Ghost, Gomorrah, Gorgon, Harpy, Kerendu, Kraken, Laguz, Living Armor, Living Doll, Loot Bug, Manakete, Mermaid, Mimic, Minotaur, Mogall, Mosquito, Nether Dryad, Ophanim, Phantom, Python, Rhea, Salamander, Scorpgal, Shark, Shield, Skibidi Toilet, Slime, Succubus, Sylph, Taguel, Tarvos, Tiger, Tome, Tralalero Tralala, Treant, Tung Sahun, Warbird, Wetgal, Wolf, Wyvern, Zombie) dans ressources/personnages/Monstres/. Les classes monstres FE8 du pack de classes (Bael, Gorgon, Mogall, Wight, Revenant…) reçoivent leurs sprites d'origine.",
+ "author": "Tactical Emblem (conversion) — sprites et animations : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "notice": "Ressources de fans (Nintendo / Intelligent Systems et communauté) : usage personnel, crédits à conserver.",
+ "ressources": "ressources",
+ "links": {
+  "classes": {
+   "fe8_revenant": {
+    "mapSprite": "ressources/personnages/Monstres/Zombie/map_Zombie",
+    "battler": "ressources/personnages/Monstres/Zombie/combat_RevenantVanillaWeapons_Monster"
+   },
+   "fe8_entombed": {
+    "mapSprite": "ressources/personnages/Monstres/Zombie/map_ZombieEntombed_Is",
+    "battler": "ressources/personnages/Monstres/Zombie/combat_VanillaEntombedRanged_Monster"
+   },
+   "fe8_bonewalker": {
+    "mapSprite": "ressources/personnages/Monstres/Bonewalker/map_BonewalkerSword",
+    "battler": "ressources/personnages/Monstres/Bonewalker/combat_BonewalkerVanillaWeapons_Sword"
+   },
+   "fe8_bonewalker_arc": {
+    "mapSprite": "ressources/personnages/Monstres/Bonewalker/map_BonewalkerBow",
+    "battler": "ressources/personnages/Monstres/Bonewalker/combat_BonewalkerVanillaWeapons_Bow"
+   },
+   "fe8_wight": {
+    "mapSprite": "ressources/personnages/Monstres/Bonewalker/map_BonewalkerWightSword",
+    "battler": "ressources/personnages/Monstres/Bonewalker/combat_WightRepal_Sword"
+   },
+   "fe8_wight_arc": {
+    "mapSprite": "ressources/personnages/Monstres/Bonewalker/map_BonewalkerWightBow",
+    "battler": "ressources/personnages/Monstres/Bonewalker/combat_WightRepal_Bow"
+   },
+   "fe8_mogall": {
+    "mapSprite": "ressources/personnages/Monstres/Mogall/map_Mogall",
+    "battler": "ressources/personnages/Monstres/Mogall/combat_VanillaFe8ArchMogall_Magic"
+   },
+   "fe8_arch_mogall": {
+    "mapSprite": "ressources/personnages/Monstres/Mogall/map_MogallArchMogall",
+    "battler": "ressources/personnages/Monstres/Mogall/combat_VanillaFe8ArchMogall_Magic"
+   },
+   "fe8_gargoyle": {
+    "mapSprite": "ressources/personnages/Monstres/Gargoyle/map_GoyleT1Lance",
+    "battler": "ressources/personnages/Monstres/Gargoyle/combat_VanillaFe8Deathgoyle_Lance"
+   },
+   "fe8_deathgoyle": {
+    "mapSprite": "ressources/personnages/Monstres/Gargoyle/map_GoyleT2Lance",
+    "battler": "ressources/personnages/Monstres/Gargoyle/combat_VanillaFe8Deathgoyle_Lance"
+   },
+   "fe8_bael": {
+    "mapSprite": "ressources/personnages/Monstres/Bael/map_Bael",
+    "battler": "ressources/personnages/Monstres/Bael/combat_VanillaFe8Bael_Monster"
+   },
+   "fe8_elder_bael": {
+    "mapSprite": "ressources/personnages/Monstres/Bael/map_BaelElder",
+    "battler": "ressources/personnages/Monstres/Bael/combat_ElderBaelVanilla_Monster"
+   },
+   "fe8_mauthe_doog": {
+    "mapSprite": "ressources/personnages/Monstres/Wolf/map_WolfMautheDoogT3",
+    "battler": "ressources/personnages/Monstres/Wolf/combat_HellhoundVanilla_Monster"
+   },
+   "fe8_gwyllgi": {
+    "mapSprite": "ressources/personnages/Monstres/Wolf/map_WolfGwyllgi",
+    "battler": "ressources/personnages/Monstres/Wolf/combat_GwyllgiVanilla_Monster"
+   },
+   "fe8_tarvos": {
+    "mapSprite": "ressources/personnages/Monstres/Tarvos/map_TarvosAxe",
+    "battler": "ressources/personnages/Monstres/Tarvos/combat_VanillaFe8Maelduin_Axe"
+   },
+   "fe8_maelduin": {
+    "mapSprite": "ressources/personnages/Monstres/Tarvos/map_TarvosMaelduinAxe",
+    "battler": "ressources/personnages/Monstres/Tarvos/combat_VanillaFe8Maelduin_Axe"
+   },
+   "fe8_gorgon_egg": {
+    "mapSprite": "ressources/personnages/Monstres/Gorgon/map_GorgonEggBlack"
+   },
+   "fe8_gorgon": {
+    "mapSprite": "ressources/personnages/Monstres/Gorgon/map_Gorgon",
+    "battler": "ressources/personnages/Monstres/Gorgon/combat_Vanilla_Magic"
+   },
+   "fe8_cyclops": {
+    "mapSprite": "ressources/personnages/Monstres/Cyclops/map_CyclopsAxe",
+    "battler": "ressources/personnages/Monstres/Cyclops/combat_VanillaBow_Axe"
+   },
+   "fe8_draco_zombie": {
+    "mapSprite": "ressources/personnages/Monstres/Dragon/map_Dracozombie"
+   },
+   "fe8_phantom": {
+    "mapSprite": "ressources/personnages/Monstres/Phantom/map_Phantom"
+   },
+   "fe8_demon_king": {
+    "mapSprite": "ressources/personnages/Monstres/Demon King/map_DemonKingStationary"
+   }
+  }
+ }
+}

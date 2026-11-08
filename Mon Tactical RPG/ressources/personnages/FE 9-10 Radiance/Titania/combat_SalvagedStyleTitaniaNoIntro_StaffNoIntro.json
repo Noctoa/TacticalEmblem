@@ -1,0 +1,159 @@
+{
+ "type": "battler",
+ "name": "SALVAGED-Style Titania (No Intro) — Staff (No Intro)",
+ "facing": "left",
+ "cell": [
+  80,
+  72
+ ],
+ "anchor": [
+  30,
+  70
+ ],
+ "columns": 12,
+ "count": 12,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    83,
+    17,
+    100,
+    167,
+    50,
+    33,
+    100
+   ],
+   "hit": 5
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    83,
+    17,
+    100,
+    167,
+    50,
+    33,
+    100
+   ],
+   "hit": 5
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    83,
+    17,
+    100,
+    167,
+    50,
+    33,
+    100
+   ],
+   "hit": 5
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    100,
+    100,
+    83,
+    17,
+    100,
+    167,
+    50,
+    33,
+    100
+   ],
+   "hit": 5
+  },
+  "dodge": {
+   "frames": [
+    0,
+    10,
+    11,
+    10,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Team SALVAGED, Victor Pouderoux, VelvetKitsune"
+}

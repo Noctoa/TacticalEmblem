@@ -1,0 +1,41 @@
+[
+ {
+  "id": "arc_1",
+  "name": "Prologue : La volonté d'Acania",
+  "kind": "story",
+  "description": "",
+  "unlock": {
+   "after": "",
+   "alive": [],
+   "from": "",
+   "to": ""
+  },
+  "acts": [
+   "ch_2",
+   "ch_3",
+   "ch_4",
+   "ch_7",
+   "ch_5",
+   "ch_6",
+   "ch_8",
+   "ch_9"
+  ]
+ },
+ {
+  "id": "arc_2",
+  "name": "Les péripéties d'Acania",
+  "kind": "event",
+  "description": "",
+  "unlock": {
+   "after": "ch_3",
+   "alive": [],
+   "from": "",
+   "to": ""
+  },
+  "acts": [
+   "ch_10",
+   "ch_11",
+   "ch_12"
+  ]
+ }
+]

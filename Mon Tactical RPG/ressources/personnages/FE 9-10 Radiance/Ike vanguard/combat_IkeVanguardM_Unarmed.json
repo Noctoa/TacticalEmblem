@@ -1,0 +1,87 @@
+{
+ "type": "battler",
+ "name": "Ike Vanguard [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  46,
+  44
+ ],
+ "anchor": [
+  16,
+  37
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    17
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    33,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — FlyingAce24, Primefusion, Seliost1"
+}

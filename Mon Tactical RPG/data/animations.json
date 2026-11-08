@@ -1,0 +1,4149 @@
+[
+ {
+  "id": "anim_slash",
+  "name": "Coup tranchant",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 45,
+  "hitFrame": 3,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": -34,
+      "y": -14,
+      "scale": 45,
+      "rotation": -25,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": -17,
+      "y": -7,
+      "scale": 63,
+      "rotation": -12,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 18,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "target",
+     "color": "#ffffff",
+     "strength": 80,
+     "duration": 2
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": 6,
+      "y": 2,
+      "scale": 84,
+      "rotation": 4,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 28,
+      "rotation": 0,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 85,
+      "rotation": 23,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": 11,
+      "y": 3,
+      "scale": 88,
+      "rotation": 8,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 39,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 100,
+      "rotation": 45,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": 17,
+      "y": 5,
+      "scale": 91,
+      "rotation": 11,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 49,
+      "rotation": 0,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 115,
+      "rotation": 68,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       4,
+       390,
+       119,
+       179
+      ],
+      "x": 22,
+      "y": 6,
+      "scale": 95,
+      "rotation": 15,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 130,
+      "rotation": 90,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   },
+   {
+    "cells": []
+   }
+  ]
+ },
+ {
+  "id": "anim_pierce",
+  "name": "Coup d’estoc",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 45,
+  "hitFrame": 3,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": -110,
+      "y": 0,
+      "scale": 35,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": -61,
+      "y": 0,
+      "scale": 53,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": -12,
+      "y": 0,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 6,
+      "y": 0,
+      "scale": 25,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "target",
+     "color": "#ffffff",
+     "strength": 80,
+     "duration": 2
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": 1,
+      "y": 0,
+      "scale": 74,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 6,
+      "y": 0,
+      "scale": 35,
+      "rotation": 8,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": 14,
+      "y": 0,
+      "scale": 78,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 6,
+      "y": 0,
+      "scale": 45,
+      "rotation": 15,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": 27,
+      "y": 0,
+      "scale": 81,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 6,
+      "y": 0,
+      "scale": 55,
+      "rotation": 23,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       5,
+       0,
+       246,
+       60
+      ],
+      "x": 40,
+      "y": 0,
+      "scale": 85,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 6,
+      "y": 0,
+      "scale": 65,
+      "rotation": 30,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   },
+   {
+    "cells": []
+   }
+  ]
+ },
+ {
+  "id": "anim_smash",
+  "name": "Coup lourd",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 45,
+  "hitFrame": 2,
+  "next": "",
+  "frames": [
+   {
+    "cells": []
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 25,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#ffffff",
+     "strength": 35,
+     "duration": 3
+    },
+    "shake": 10
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 38,
+      "rotation": 0,
+      "opacity": 83,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 51,
+      "rotation": 11,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 30,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 52,
+      "rotation": 0,
+      "opacity": 67,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 63,
+      "rotation": 23,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 47,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 74,
+      "rotation": 34,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 78,
+      "rotation": 0,
+      "opacity": 33,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       265,
+       259,
+       109,
+       121
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 85,
+      "rotation": 45,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 45,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 92,
+      "rotation": 0,
+      "opacity": 17,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 97,
+      "rotation": 0,
+      "opacity": 30,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       774,
+       187,
+       182
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 105,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 113,
+      "rotation": 0,
+      "opacity": 15,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       878,
+       97,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 130,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   }
+  ]
+ },
+ {
+  "id": "anim_arrow",
+  "name": "Flèche",
+  "kind": "projectile",
+  "on": "target",
+  "position": "center",
+  "speed": 60,
+  "hitFrame": 0,
+  "next": "anim_arrow_hit",
+  "travel": 260,
+  "arc": 6,
+  "rotate": true,
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       52,
+       126,
+       156,
+       35
+      ],
+      "x": -24,
+      "y": 0,
+      "scale": 42,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       52,
+       126,
+       156,
+       35
+      ],
+      "x": -26,
+      "y": 0,
+      "scale": 46,
+      "rotation": 0,
+      "opacity": 85,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_arrow_hit",
+  "name": "Impact de flèche",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 45,
+  "hitFrame": 1,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 45,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 30,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "target",
+     "color": "#ffffff",
+     "strength": 70,
+     "duration": 2
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 56,
+      "rotation": 9,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 38,
+      "rotation": 0,
+      "opacity": 68,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 67,
+      "rotation": 18,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 45,
+      "rotation": 0,
+      "opacity": 45,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 78,
+      "rotation": 27,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 53,
+      "rotation": 0,
+      "opacity": 23,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 89,
+      "rotation": 36,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       775,
+       5,
+       49,
+       53
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 100,
+      "rotation": 45,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_fire",
+  "name": "Feu",
+  "kind": "projectile",
+  "on": "target",
+  "position": "center",
+  "speed": 60,
+  "hitFrame": 0,
+  "next": "anim_fire_hit",
+  "travel": 380,
+  "arc": 26,
+  "rotate": false,
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": -18,
+      "y": 0,
+      "scale": 45,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       6,
+       83,
+       87
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 45,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": -18,
+      "y": 0,
+      "scale": 47,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       6,
+       83,
+       87
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 50,
+      "rotation": 10,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": -18,
+      "y": 0,
+      "scale": 48,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       6,
+       83,
+       87
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 45,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": -18,
+      "y": 0,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       6,
+       83,
+       87
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 50,
+      "rotation": -10,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_fire_hit",
+  "name": "Explosion de feu",
+  "kind": "normal",
+  "on": "target",
+  "position": "feet",
+  "speed": 50,
+  "hitFrame": 2,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -30,
+      "scale": 20,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 30,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#ff9040",
+     "strength": 30,
+     "duration": 3
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -51,
+      "scale": 39,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -61,
+      "scale": 49,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 100,
+      "rotation": 0,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -72,
+      "scale": 58,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 120,
+      "rotation": 0,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -74,
+      "scale": 59,
+      "rotation": 0,
+      "opacity": 86,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 140,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -75,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 71,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -77,
+      "scale": 61,
+      "rotation": 0,
+      "opacity": 57,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -79,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 43,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -81,
+      "scale": 64,
+      "rotation": 0,
+      "opacity": 29,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -82,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 14,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       104,
+       206,
+       278,
+       237
+      ],
+      "x": 0,
+      "y": -84,
+      "scale": 66,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_thunder",
+  "name": "Éclair",
+  "kind": "normal",
+  "on": "target",
+  "position": "feet",
+  "speed": 50,
+  "hitFrame": 3,
+  "next": "",
+  "frames": [
+   {
+    "cells": []
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 75,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#ffffff",
+     "strength": 50,
+     "duration": 2
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 75,
+      "rotation": 0,
+      "opacity": 30,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       488,
+       3,
+       78,
+       237
+      ],
+      "x": 22,
+      "y": -120,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       488,
+       3,
+       78,
+       237
+      ],
+      "x": 22,
+      "y": -120,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 67,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 55,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#fff4a0",
+     "strength": 45,
+     "duration": 3
+    },
+    "shake": 6
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 67,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       488,
+       3,
+       78,
+       237
+      ],
+      "x": 22,
+      "y": -120,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 33,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 33,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       488,
+       3,
+       78,
+       237
+      ],
+      "x": 22,
+      "y": -120,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 71,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       381,
+       4,
+       97,
+       243
+      ],
+      "x": 0,
+      "y": -125,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 79,
+      "rotation": 0,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 87,
+      "rotation": 0,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       767,
+       149,
+       87,
+       103
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 95,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   }
+  ]
+ },
+ {
+  "id": "anim_flux",
+  "name": "Flux",
+  "kind": "normal",
+  "on": "target",
+  "position": "feet",
+  "speed": 50,
+  "hitFrame": 6,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -26,
+      "y": -10,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -25,
+      "y": -17,
+      "scale": 46,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 26,
+      "y": -10,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -24,
+      "y": -25,
+      "scale": 53,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 25,
+      "y": -18,
+      "scale": 46,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -30,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -23,
+      "y": -32,
+      "scale": 59,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 24,
+      "y": -27,
+      "scale": 53,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -35,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 23,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -22,
+      "y": -40,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 23,
+      "y": -35,
+      "scale": 59,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -40,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 45,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -21,
+      "y": -46,
+      "scale": 64,
+      "rotation": 0,
+      "opacity": 88,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 22,
+      "y": -44,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -45,
+      "scale": 95,
+      "rotation": 0,
+      "opacity": 68,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -20,
+      "y": -52,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 21,
+      "y": -50,
+      "scale": 64,
+      "rotation": 0,
+      "opacity": 88,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -50,
+      "scale": 110,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "normal",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#40104a",
+     "strength": 40,
+     "duration": 4
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -20,
+      "y": -59,
+      "scale": 61,
+      "rotation": 0,
+      "opacity": 63,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 21,
+      "y": -57,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -53,
+      "scale": 112,
+      "rotation": 0,
+      "opacity": 77,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -19,
+      "y": -65,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 20,
+      "y": -63,
+      "scale": 61,
+      "rotation": 0,
+      "opacity": 63,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -56,
+      "scale": 114,
+      "rotation": 0,
+      "opacity": 64,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -18,
+      "y": -71,
+      "scale": 59,
+      "rotation": 0,
+      "opacity": 38,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 19,
+      "y": -69,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -59,
+      "scale": 116,
+      "rotation": 0,
+      "opacity": 51,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -17,
+      "y": -77,
+      "scale": 58,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 18,
+      "y": -76,
+      "scale": 59,
+      "rotation": 0,
+      "opacity": 38,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -61,
+      "scale": 119,
+      "rotation": 0,
+      "opacity": 39,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -17,
+      "y": -84,
+      "scale": 56,
+      "rotation": 0,
+      "opacity": 13,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 18,
+      "y": -82,
+      "scale": 58,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -64,
+      "scale": 121,
+      "rotation": 0,
+      "opacity": 26,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": -16,
+      "y": -90,
+      "scale": 55,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 17,
+      "y": -89,
+      "scale": 56,
+      "rotation": 0,
+      "opacity": 13,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -67,
+      "scale": 123,
+      "rotation": 0,
+      "opacity": 13,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       6,
+       453,
+       83,
+       87
+      ],
+      "x": 16,
+      "y": -95,
+      "scale": 55,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       10,
+       564,
+       81,
+       75
+      ],
+      "x": 0,
+      "y": -70,
+      "scale": 125,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "normal",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_heal",
+  "name": "Soin",
+  "kind": "normal",
+  "on": "target",
+  "position": "feet",
+  "speed": 50,
+  "hitFrame": 8,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 20,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 30,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 39,
+      "rotation": 0,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 49,
+      "rotation": 0,
+      "opacity": 70,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 53,
+      "rotation": 0,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 58,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -66,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 68,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 78,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -69,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 77,
+      "rotation": 0,
+      "opacity": 40,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 90,
+      "rotation": 0,
+      "opacity": 80,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -73,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -48,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 87,
+      "rotation": 0,
+      "opacity": 30,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 91,
+      "rotation": 0,
+      "opacity": 71,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -76,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -52,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 96,
+      "rotation": 0,
+      "opacity": 20,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 92,
+      "rotation": 0,
+      "opacity": 62,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -82,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -56,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "target",
+     "color": "#ffffff",
+     "strength": 50,
+     "duration": 3
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 106,
+      "rotation": 0,
+      "opacity": 10,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 93,
+      "rotation": 0,
+      "opacity": 53,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -88,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -60,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       388,
+       132,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": -8,
+      "scale": 115,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 94,
+      "rotation": 0,
+      "opacity": 44,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -94,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -66,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 96,
+      "rotation": 0,
+      "opacity": 36,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       268,
+       5,
+       40,
+       54
+      ],
+      "x": -20,
+      "y": -100,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -72,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 97,
+      "rotation": 0,
+      "opacity": 27,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -78,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 98,
+      "rotation": 0,
+      "opacity": 18,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       332,
+       5,
+       40,
+       54
+      ],
+      "x": 22,
+      "y": -84,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 99,
+      "rotation": 0,
+      "opacity": 9,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Rod01.png",
+      "rect": [
+       397,
+       12,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": -48,
+      "scale": 100,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "id": "anim_luna",
+  "name": "Luna",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 50,
+  "hitFrame": 5,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": -22,
+      "y": 0,
+      "scale": 40,
+      "rotation": -30,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": -22,
+      "y": 0,
+      "scale": 53,
+      "rotation": -30,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": -22,
+      "y": 0,
+      "scale": 65,
+      "rotation": -30,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": -22,
+      "y": 0,
+      "scale": 78,
+      "rotation": -30,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 30,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": -22,
+      "y": 0,
+      "scale": 90,
+      "rotation": -30,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 47,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#6080ff",
+     "strength": 35,
+     "duration": 3
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": 3,
+      "y": 0,
+      "scale": 95,
+      "rotation": 5,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 63,
+      "rotation": 0,
+      "opacity": 60,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": 5,
+      "y": 0,
+      "scale": 100,
+      "rotation": 10,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 45,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": 8,
+      "y": 0,
+      "scale": 105,
+      "rotation": 15,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 97,
+      "rotation": 0,
+      "opacity": 30,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       0,
+       594,
+       116,
+       164
+      ],
+      "x": 10,
+      "y": 0,
+      "scale": 110,
+      "rotation": 20,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 113,
+      "rotation": 0,
+      "opacity": 15,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       4,
+       837,
+       119,
+       119
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 130,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   },
+   {
+    "cells": []
+   }
+  ]
+ },
+ {
+  "id": "anim_sol",
+  "name": "Sol",
+  "kind": "normal",
+  "on": "target",
+  "position": "center",
+  "speed": 50,
+  "hitFrame": 5,
+  "next": "",
+  "frames": [
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 20,
+      "rotation": 0,
+      "opacity": 100,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 35,
+      "rotation": 0,
+      "opacity": 88,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 75,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 40,
+      "rotation": 0,
+      "opacity": 90,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 65,
+      "rotation": 0,
+      "opacity": 63,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 50,
+      "rotation": 0,
+      "opacity": 79,
+      "blend": "add",
+      "mirror": false
+     }
+    ],
+    "flash": {
+     "scope": "screen",
+     "color": "#ffd060",
+     "strength": 30,
+     "duration": 3
+    }
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 50,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 60,
+      "rotation": 0,
+      "opacity": 68,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 95,
+      "rotation": 0,
+      "opacity": 38,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 70,
+      "rotation": 0,
+      "opacity": 56,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 110,
+      "rotation": 0,
+      "opacity": 25,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 80,
+      "rotation": 0,
+      "opacity": 45,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 125,
+      "rotation": 0,
+      "opacity": 13,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 90,
+      "rotation": 0,
+      "opacity": 34,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Btl_Hit01.png",
+      "rect": [
+       18,
+       269,
+       96,
+       95
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 140,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     },
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 100,
+      "rotation": 0,
+      "opacity": 23,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 110,
+      "rotation": 0,
+      "opacity": 11,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": [
+     {
+      "image": "ressources/animations/heroes/Blt_Mag01.png",
+      "rect": [
+       140,
+       716,
+       102,
+       102
+      ],
+      "x": 0,
+      "y": 0,
+      "scale": 120,
+      "rotation": 0,
+      "opacity": 0,
+      "blend": "add",
+      "mirror": false
+     }
+    ]
+   },
+   {
+    "cells": []
+   }
+  ]
+ }
+]

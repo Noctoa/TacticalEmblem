@@ -1,0 +1,124 @@
+﻿id,fr
+w_iron_sword.name,Épée de fer
+w_slim_sword.name,Épée fine
+w_rapier.name,Rapière
+w_steel_sword.name,Épée d'acier
+w_killing_edge.name,Lame tueuse
+w_wind_sword.name,Lame du vent
+w_iron_lance.name,Lance de fer
+w_javelin.name,Javelot
+w_horseslayer.name,Lance anti-cheval
+w_iron_axe.name,Hache de fer
+w_hand_axe.name,Hachette
+w_iron_bow.name,Arc de fer
+w_fire.name,Feu
+w_lightning.name,Éclair
+w_flux.name,Flux
+w_heal.name,Soin
+w_mend.name,Guérison
+w_18.name,wolf beil 
+w_19.name,Marteau
+w_20.name,Hache d'argent
+w_fe_griffe_pourrie.name,Griffe pourrie
+w_fe_griffe_fetide.name,Griffe fétide
+w_fe_arc_d_acier.name,Arc d'acier
+w_fe_il_malefique.name,Œil maléfique
+w_fe_il_ecarlate.name,Œil écarlate
+w_fe_lance_d_acier.name,Lance d'acier
+w_fe_griffe_empoisonnee.name,Griffe empoisonnée
+w_fe_serre_mortelle.name,Serre mortelle
+w_fe_croc_ardent.name,Croc ardent
+w_fe_croc_infernal.name,Croc infernal
+w_fe_hache_d_acier.name,Hache d'acier
+w_fe_deferlante_demoniaque.name,Déferlante démoniaque
+w_fe_tir_des_ombres.name,Tir des ombres
+w_fe_souffle_maudit.name,Souffle maudit
+w_fe_lumiere_demoniaque.name,Lumière démoniaque
+w_fe_ravageur.name,Ravageur
+w_fe_tonnerre.name,Tonnerre
+w_fe_vent.name,Vent
+w_fe_elfeu.name,Elfeu
+w_fe_bolganone.name,Bolganone
+w_fe_fimbulvetr.name,Fimbulvetr
+w_fe_excalibur.name,Excalibur
+w_fe_meteore.name,Météore
+w_fe_falchion.name,Falchion
+w_fe_durandal.name,Durandal
+w_fe_sol_katti.name,Sol Katti
+w_fe_mani_katti.name,Mani Katti
+w_fe_ragnell.name,Ragnell
+w_fe_tyrfing.name,Tyrfing
+w_fe_balmung.name,Balmung
+w_fe_sigrun.name,Sigrun
+w_fe_epee_du_createur.name,Épée du Créateur
+w_fe_raijinto.name,Raijinto
+w_fe_siegfried.name,Siegfried
+w_fe_gungnir.name,Gungnir
+w_fe_gae_bolg.name,Gáe Bolg
+w_fe_siegmund.name,Siegmund
+w_fe_vidofnir.name,Vidofnir
+w_fe_lance_de_luin.name,Lance de Lúin
+w_fe_armads.name,Armads
+w_fe_garm.name,Garm
+w_fe_urvan.name,Urvan
+w_fe_aymr.name,Aymr
+w_fe_swanchika.name,Swanchika
+w_fe_parthia.name,Parthia
+w_fe_mulagir.name,Mulagir
+w_fe_nidhogg.name,Nidhogg
+w_fe_fujin_yumi.name,Fujin Yumi
+w_fe_failnaught.name,Failnaught
+w_fe_forseti.name,Forseti
+w_fe_mjollnir.name,Mjöllnir
+w_fe_valflame.name,Valflame
+w_fe_rexcalibur.name,Rexcalibur
+w_fe_naga.name,Naga
+w_fe_rexaura.name,Rexaura
+w_fe_gleipnir.name,Gleipnir
+w_fe_apocalypse.name,Apocalypse
+w_fe_thoron.name,Thoron
+w_79.name,Gladius Fidelis 
+w_fe_epee_de_bronze.name,Épée de bronze
+w_fe_epee_d_argent.name,Épée d'argent
+w_fe_epee_brave.name,Épée brave
+w_fe_estoc_anti_armure.name,Estoc anti-armure
+w_fe_tueuse_de_cheval.name,Tueuse de cheval
+w_fe_lame_du_tonnerre.name,Lame du tonnerre
+w_fe_lame_de_feu.name,Lame de feu
+w_fe_lame_runique.name,Lame runique
+w_fe_epee_courte.name,Épée courte
+w_fe_wo_dao.name,Wo Dao
+w_fe_lance_de_bronze.name,Lance de bronze
+w_fe_lance_fine.name,Lance fine
+w_fe_lance_d_argent.name,Lance d'argent
+w_fe_lance_tueuse.name,Lance tueuse
+w_fe_lance_brave.name,Lance brave
+w_fe_lance_courte.name,Lance courte
+w_fe_epieu.name,Épieu
+w_fe_lance_de_feu.name,Lance de feu
+w_fe_hache_de_bronze.name,Hache de bronze
+w_fe_hache_tueuse.name,Hache tueuse
+w_fe_hache_brave.name,Hache brave
+w_fe_tomahawk.name,Tomahawk
+w_fe_hallebarde.name,Hallebarde
+w_fe_hache_eclair.name,Hache-éclair
+w_fe_hache_du_bucheron.name,Hache du bûcheron
+w_fe_arc_de_bronze.name,Arc de bronze
+w_fe_arc_court.name,Arc court
+w_fe_arc_d_argent.name,Arc d'argent
+w_fe_arc_tueur.name,Arc tueur
+w_fe_arc_brave.name,Arc brave
+w_fe_arc_long.name,Arc long
+w_fe_baliste.name,Baliste
+w_fe_lueur.name,Lueur
+w_fe_divine.name,Divine
+w_fe_purge.name,Purge
+w_fe_aura.name,Aura
+w_fe_nosferatu.name,Nosferatu
+w_fe_luna.name,Luna
+w_fe_fenrir.name,Fenrir
+w_fe_eclipse.name,Éclipse
+w_fe_miasme.name,Miasme
+w_fe_recuperation.name,Récupération
+w_fe_physique.name,Physique
+w_fe_retablissement.name,Rétablissement

@@ -1,0 +1,131 @@
+{
+ "type": "battler",
+ "name": "T1 Soldier [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  31,
+  38
+ ],
+ "anchor": [
+  12,
+  37
+ ],
+ "columns": 12,
+ "count": 4,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ],
+   "hit": 3
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ],
+   "hit": 3
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ],
+   "hit": 3
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ],
+   "hit": 3
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    17,
+    33,
+    33,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — Spud, IS"
+}

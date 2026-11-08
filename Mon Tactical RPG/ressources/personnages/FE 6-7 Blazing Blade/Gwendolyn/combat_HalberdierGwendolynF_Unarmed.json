@@ -1,0 +1,87 @@
+{
+ "type": "battler",
+ "name": "Halberdier Gwendolyn [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  45,
+  39
+ ],
+ "anchor": [
+  15,
+  37
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    117,
+    117
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    117,
+    117
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    117,
+    117
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    0
+   ],
+   "durations": [
+    117,
+    117
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1,
+    0
+   ],
+   "durations": [
+    67,
+    67,
+    333,
+    67,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — UltraFenix, TheBlindArcher, Spud, Rexacuse, RedBean as base, tatata"
+}

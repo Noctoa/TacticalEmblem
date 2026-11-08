@@ -1,0 +1,82 @@
+{
+ "type": "battler",
+ "name": "Brave Lyn Nomad [F] — Bow",
+ "facing": "left",
+ "cell": [
+  74,
+  67
+ ],
+ "anchor": [
+  36,
+  66
+ ],
+ "columns": 12,
+ "count": 53,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    51,
+    52,
+    51
+   ],
+   "durations": [
+    17,
+    33,
+    17,
+    67
+   ]
+  },
+  "bow": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "projectile": "arrow",
+   "release": 0
+  },
+  "bowCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "projectile": "arrow",
+   "release": 0
+  }
+ },
+ "projectiles": {
+  "arrow": "arrow.png"
+ },
+ "source": "FE-Repo — RedBean, RiriK, Seliost1"
+}

@@ -1,0 +1,81 @@
+{
+ "type": "battler",
+ "name": "Stefan Repalette [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  19,
+  38
+ ],
+ "anchor": [
+  9,
+  37
+ ],
+ "columns": 12,
+ "count": 2,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — Greentea, RobertFPY, Seliost1"
+}

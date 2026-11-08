@@ -1,0 +1,85 @@
+{
+ "type": "battler",
+ "name": "Brigand",
+ "facing": "right",
+ "cell": [
+  81,
+  76
+ ],
+ "anchor": [
+  32,
+  57
+ ],
+ "columns": 12,
+ "count": 17,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    55
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11
+   ],
+   "durations": [
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55,
+    55
+   ],
+   "hit": 7,
+   "approach": [
+    1,
+    4
+   ],
+   "retreat": [
+    8,
+    10
+   ]
+  },
+  "ranged": {
+   "frames": [
+    12,
+    13,
+    14,
+    15,
+    16
+   ],
+   "durations": [
+    120,
+    90,
+    400,
+    90,
+    120
+   ],
+   "projectile": "axe",
+   "release": 1,
+   "catch": 3
+  }
+ },
+ "source": "Fire Emblem 7 — battle sprites (rip : Lexou / Grim & Bonzai)"
+}

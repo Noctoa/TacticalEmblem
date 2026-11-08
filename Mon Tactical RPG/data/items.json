@@ -1,0 +1,112 @@
+[
+ {
+  "id": "i_vulnerary",
+  "name": "Potion",
+  "effect": "heal",
+  "amount": 10,
+  "stat": "hp",
+  "uses": 3,
+  "price": 300,
+  "image": "item:vulnerary"
+ },
+ {
+  "id": "i_elixir",
+  "name": "Élixir",
+  "effect": "heal",
+  "amount": 99,
+  "stat": "hp",
+  "uses": 3,
+  "price": 3000,
+  "image": "item:pure-water"
+ },
+ {
+  "id": "i_energy_ring",
+  "name": "Bague de force",
+  "effect": "boost",
+  "amount": 2,
+  "stat": "str",
+  "uses": 1,
+  "price": 8000,
+  "image": "item:power-ring"
+ },
+ {
+  "id": "i_speedwing",
+  "name": "Aile vive",
+  "effect": "boost",
+  "amount": 2,
+  "stat": "spd",
+  "uses": 1,
+  "price": 8000,
+  "image": "item:speed-ring"
+ },
+ {
+  "id": "i_master_seal",
+  "name": "Sceau de promotion",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 2500,
+  "image": "item:knight-seal"
+ },
+ {
+  "id": "i_chest_key",
+  "name": "Clé de coffre",
+  "effect": "key",
+  "keyType": "chest",
+  "uses": 5,
+  "price": 300,
+  "image": "item:chest-key"
+ },
+ {
+  "id": "i_door_key",
+  "name": "Clé de porte",
+  "effect": "key",
+  "keyType": "door",
+  "uses": 1,
+  "price": 100,
+  "image": "item:door-key"
+ },
+ {
+  "id": "i_fe_embleme_du_heros",
+  "name": "Emblème du héros",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 10000,
+  "fromPack": "fe",
+  "image": "item:hero-crest"
+ },
+ {
+  "id": "i_fe_bouclier_de_chevalier",
+  "name": "Bouclier de chevalier",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 10000,
+  "fromPack": "fe",
+  "image": "item:knight-crest"
+ },
+ {
+  "id": "i_fe_guide_celeste",
+  "name": "Guide céleste",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 10000,
+  "fromPack": "fe",
+  "image": "item:magic-ring"
+ },
+ {
+  "id": "i_fe_rouleau_de_la_guilde",
+  "name": "Rouleau de la guilde",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 10000,
+  "fromPack": "fe",
+  "image": "item:manual"
+ },
+ {
+  "id": "i_fe_sceau_de_l_arche",
+  "name": "Sceau Celeste",
+  "effect": "promotion",
+  "uses": 1,
+  "price": 20000,
+  "fromPack": "fe"
+ }
+]

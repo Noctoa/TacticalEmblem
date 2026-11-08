@@ -1,0 +1,129 @@
+{
+ "type": "battler",
+ "name": "Linus Swift-Sword (Origin) [M] — Handaxe",
+ "facing": "left",
+ "cell": [
+  59,
+  48
+ ],
+ "anchor": [
+  34,
+  47
+ ],
+ "columns": 12,
+ "count": 10,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    4,
+    5,
+    6,
+    7,
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    33,
+    33,
+    250,
+    50,
+    17,
+    50,
+    17
+   ],
+   "hit": 6
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50,
+    17
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    4,
+    5,
+    6,
+    7,
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    33,
+    33,
+    250,
+    50,
+    17,
+    50,
+    17
+   ],
+   "hit": 6
+  },
+  "dodge": {
+   "frames": [
+    0,
+    8,
+    9,
+    8
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Greentea"
+}

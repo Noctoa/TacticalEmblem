@@ -1,0 +1,81 @@
+{
+ "type": "battler",
+ "name": "Vanilla FE7 Lloyd +Alt Pal [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  20,
+  38
+ ],
+ "anchor": [
+  10,
+  37
+ ],
+ "columns": 12,
+ "count": 2,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ],
+   "hit": 1
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1
+   ],
+   "durations": [
+    17,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, Glenwing"
+}

@@ -1,0 +1,275 @@
+[
+ {
+  "id": "sp_eli_lyn",
+  "a": "c_eliwood",
+  "b": "c_lyn",
+  "startPoints": 70,
+  "maxRank": "S",
+  "special": {
+   "rank": "B",
+   "name": "Lame inspirée",
+   "chance": 25,
+   "dmg": 3,
+   "hit": 10,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "Danse des deux lames",
+   "chance": 40,
+   "might": 3,
+   "hit": 10
+  },
+  "conversations": {
+   "C": "Lyn: Eliwood, tu tiens ton épée comme un noble.\nEliwood: Je suis un noble.\nLyn: Justement. On va corriger ça.",
+   "B": "Eliwood: Tu m'as couvert au pont. Merci.\nLyn: Tu m'aurais couverte aussi. C'est comme ça qu'on survit.",
+   "A": "Lyn: Quand tout ça sera fini… tu rentreras à Pherae ?\nEliwood: Je crois. Et toi ?\nLyn: Je ne sais pas encore. C'est la première fois que je n'ai pas envie de partir seule.",
+   "S": "Eliwood: Lyn. Viens à Pherae avec moi. Pas comme invitée.\nLyn: … Tu as mis du temps à le dire.\nEliwood: J'ai mis du temps à oser."
+  },
+  "ending": "Eliwood et Lyn partirent ensemble pour Pherae. Chaque été, ils retournaient dans les plaines de Sacae, où Lyn apprit à Eliwood à monter sans selle.",
+  "name": "Eliwood ♥ Lyn"
+ },
+ {
+  "id": "sp_eli_hec",
+  "a": "c_eliwood",
+  "b": "c_hector",
+  "startPoints": 90,
+  "maxRank": "A",
+  "special": {
+   "rank": "B",
+   "name": "Serment de frères",
+   "chance": 20,
+   "dmg": 4,
+   "hit": 0,
+   "crit": 10
+  },
+  "combo": {
+   "rank": "A",
+   "name": "Assaut des marquis",
+   "chance": 50,
+   "might": 4,
+   "hit": 15
+  },
+  "conversations": {
+   "C": "Hector: Tu frappes trop poliment, Eliwood.\nEliwood: Et toi, tu frappes tout ce qui bouge.\nHector: Ça marche, non ?",
+   "B": "Eliwood: Tu t'es jeté devant cette hache pour moi.\nHector: J'avais rien de mieux à faire.",
+   "A": "Hector: Quoi qu'il arrive à nos maisons, toi et moi, on reste frères d'armes.\nEliwood: Je n'en ai jamais douté.",
+   "S": ""
+  },
+  "ending": "Pherae et Ostia ne connurent jamais la guerre entre elles. Il paraît que les deux marquis réglaient leurs désaccords à l'entraînement, à l'aube.",
+  "name": "Eliwood ♥ Hector"
+ },
+ {
+  "id": "sp_hec_lyn",
+  "a": "c_hector",
+  "b": "c_lyn",
+  "startPoints": 20,
+  "maxRank": "S",
+  "special": {
+   "rank": "B",
+   "name": "Coup de grâce",
+   "chance": 20,
+   "dmg": 5,
+   "hit": 0,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "Hache et vent",
+   "chance": 35,
+   "might": 3,
+   "hit": 5
+  },
+  "conversations": {
+   "C": "Hector: T'es rapide, pour une fille de la plaine.\nLyn: Et toi, bruyant, pour un noble.",
+   "B": "Lyn: Tu as encore foncé tout seul.\nHector: Je savais que tu me suivrais.\nLyn: … Ne compte pas trop là-dessus.",
+   "A": "Hector: Lyn. Je ne sais pas faire de beaux discours.\nLyn: Alors n'en fais pas. Je suis là.",
+   "S": "Hector: Ostia a besoin d'une marquise qui sait se battre.\nLyn: Ostia, ou toi ?\nHector: … Les deux. Surtout moi."
+  },
+  "ending": "Hector et Lyn se marièrent à Ostia, au grand désespoir des conseillers. Leur fille apprit l'arc avant de savoir marcher.",
+  "name": "Hector ♥ Lyn"
+ },
+ {
+  "id": "sp_lyn_cloud",
+  "a": "c_lyn",
+  "b": "c_cloud",
+  "startPoints": 0,
+  "maxRank": "A",
+  "special": {
+   "rank": "B",
+   "name": "Lame silencieuse",
+   "chance": 20,
+   "dmg": 4,
+   "hit": 10,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "Tempête croisée",
+   "chance": 30,
+   "might": 5,
+   "hit": 0
+  },
+  "conversations": {
+   "C": "Lyn: Tu ne parles jamais ?\nCloud: … Pas besoin.",
+   "B": "Cloud: Ton arc. Tu tires mieux que les soldats que j'ai connus.\nLyn: C'est un compliment ?\nCloud: … Oui.",
+   "A": "Lyn: Tu repartiras, après ?\nCloud: Sûrement. Mais je saurai où revenir.",
+   "S": ""
+  },
+  "ending": "Lyn et Cloud parcoururent ensemble les routes de l'ouest. Ils ne restaient jamais longtemps au même endroit, mais toujours au même côté du feu de camp.",
+  "name": "Lyn ♥ Cloud"
+ },
+ {
+  "id": "sp_5",
+  "name": "Eliane ♥ Eliwood",
+  "a": "c_11",
+  "b": "c_eliwood",
+  "startPoints": 0,
+  "maxRank": "S",
+  "special": {
+   "rank": "B",
+   "name": "lame enflamée",
+   "chance": 25,
+   "dmg": 4,
+   "hit": 15,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "flamme héroique",
+   "chance": 30,
+   "might": 3,
+   "hit": 5
+  },
+  "conversations": {
+   "C": "Eliane: Chef ! Je suis prête à me battre !\nEliwood: Eliane ? Pas besoin d'être aussi formelle, tu peux me tutoyer.\nEliane: Oh je... Je ne me serais jamais permise... Et hum tu... Enfin, je voulais te dire que...\nHector: Eliwood ! On a un problème avec le convoi, on a besoin de toi !\nEliwood: Ok j'arrive ! Désolé Elianne, je dois y aller mais on pourra se reparler à un autre moment.\nEliane: Je... Oui d'accord. ( Argh ! J'ai laissé passer ma chance, j'étais si près du but ! )",
+   "B": "Eliane: Eliwood ! Tu as un moment ?\nEliwood: Oh, ça tombe bien Elianne, je te cherchais.\nEliane: Tu- tu me cherchais..?\nEliwood: Oui bien sûr, la dernière fois que l'on s'est parlé on a été dérangé. Donc, je me demandais de quoi tu voulais me parler.\nEliane: Ah euh oui hum je... Je voulais savoir si ça t'intéresserait de t'entrainer avec moi, à l'occasion... Ce serait bénéfique pour tous les deux et puis je dois encore m'améliorer...\nEliwood: Tu veux qu'on s'entraine ensemble ? Pourquoi pas, ça ne me dérange pas. J'ai du temps à tuer dans mes journées de toute façon, autant que cela soit productif.\nEliane: Tu acceptes vraiment ? Super ! Alors je te vois la prochaine fois à l'entrainement ! (AHHHH !! Il a dit oui ! Je vais pouvoir être seule avec lui... Il faut que je fasse des efforts !)",
+   "A": "Eliwood: Eh bien Elianne, on dirait que l'entrainement porte ses fruits. Ta magie de feu est encore plus puissante qu'avant et mon maniement de l'épée s'est encore amélioré. Tu as eue une excellente idée.\nEliane: Bien sûr, je suis excellente tu vois ! Et puis, ça nous aide à créer des liens comme ça...\nEliwood: C'est vrai, tu es une amie chère à mes yeux maintenant. Continuons à faire de notre mieux tous les deux.\nEliane: Une... Amie chère a tes yeux... Oui c'est la même chose pour moi... Je suis un peu fatigué de l'entrainement, je pense que je vais rentrer un peu plus tôt aujourd'hui...\nEliwood: Oh hum d'accord ? Qu'est-ce qui lui arrive aujourd'hui ? Elle avait l'air d'aller bien pourtant...",
+   "S": "Eliwood: Elianne ! Qu'est-ce qu'il se passe ?! Pourquoi tu m'esquives comme ça depuis la dernière fois ?\nEliane: Eliwood ? Je ne t'esquive pas voyons. Qu'est-ce qui te fait dire ça haha..?\nEliwood: À chaque fois que j'essaye de m'approcher de toi quand tu es libre, tu disparais dès que tu me vois. Et même quand l'on est en marche, tu te débrouilles pour te retrouver le plus loin de moi possible. Qu'est-ce qui se passe !\nEliane: Je... En fait je... Argh ! Je t'aime ok ?! Je sais bien que je ne suis qu'une \"Amie qui t'est chère\" mais depuis la première fois que je t'ai vu, mon cœur battait la chamade. L'entrainement était juste une excuse pour pouvoir rester près de toi, mais maintenant je sais que je n'ai aucune chance !\nEliwood: C'est donc ça... Eliane ne pleure pas, je ne suis pas très doué avec ces choses-là tu sais ? Je ne m'étais pas aperçu de ce que tu ressentais, et je m'en excuse. Mais je ressens la même chose pour toi Eliane.\nEliane: Mais tu avais dit que-\nEliwood: C'était une façade, je ne sais pas vraiment y faire avec tout ça, je te l'ai dit.\nEliane: Idiot ..."
+  },
+  "ending": "A la fin de la guerre les deux amoureux voyagèrent ensemble Eliane apprit a être une noble de la cour et Eliwood l'emmenait se promener en armure sur un cheval blanc."
+ },
+ {
+  "id": "sp_6",
+  "name": "Rekias ♥ A",
+  "a": "c_15",
+  "b": "c_13",
+  "startPoints": 0,
+  "maxRank": "A",
+  "special": {
+   "rank": "B",
+   "name": "Discipline villageoise",
+   "chance": 25,
+   "dmg": 2,
+   "hit": 15,
+   "crit": 10
+  },
+  "combo": {
+   "rank": "A",
+   "name": "fiertée d'acania",
+   "chance": 30,
+   "might": 5,
+   "hit": 5
+  },
+  "conversations": {
+   "C": "Rekias: Hé petit, je ne t'ai pas demandé, mais depuis combien de temps tu vivais au village ?\nA: Depuis ma naissance il me semble... En tout cas du peu que je me souvienne j'ai toujours habité ici.\nRekias: Ah oui, moi ça ne fait que quelques années. Je servais l'armée de ce pays fut un temps même si je n'étais qu'un simple soldat.\nA: Ah oui, mais pourtant tu as été le premier à te rebeller contre le chancelier Kernos. Tu devais certainement voir des tas et des tas de villages condamnés au même sort.\nRekias: C'est vrai, mais c'est en partie à cause de tout ça que j'ai quitté l'armée. Je ne voulais pas être mêlé à tout cela\nA: Oh je vois, compréhensible...",
+   "B": "Rekias: Hé petit, la dernière fois que j'ai parlé de moi, je me suis aperçu que tu ne m'avais presque pas parlé de toi. Comment ça se passait ta vie au village ?\nA: Oh, c'était assez paisible, jusqu'à récemment...\nRekias: Qu'est-ce qu'il s'est passé ?\nA: Eh bien, le village s'est fait attaqué par des brigands. Tout le village était en panique, je n'étais encore qu'un enfant, et mon père m'a dit d'attendre à l'intérieur pendant qu'il allait s'occuper des bandits. Il les avait presque tous eu à lui tout seul, jusqu'à ce que leur chef le prit par surprise et lui planta sa hache dans le dos... C'est qu'après tout ça que les gardes du château arrivèrent...\nRekias: Et ton père dans tout ça..?\nA: On m'a dit qu'il s'était battu vaillamment jusqu'à la mort et que cela avait permis aux soldats du château d'arriver a temps... Tu parles ! Le chancelier devait certainement bien le savoir, il voulait économiser ses soldats, et se débarrasser de l'un des hommes les plus forts du village en cas de rébellion ! Je ne lui pardonnerais jamais, même dans sa tombe.\nRekias: Et donc ton style de combat...\nA: Il vient de mon père oui, il m'a appris à manier une épée depuis que je suis tout petit, au cas où il ne serait plus là pour me défendre. Mais j'étais trop tétanisé à l'époque pour sortir et me battre avec lui.\nRekias: C'est normal, tu n'étais qu'un enfant. Et ta mère dans tout ça..?\nA: Je ne sais rien d'elle. Depuis que je suis enfant, je ne l'ai jamais vu et mon père ne me parlait jamais d'elle. Pourquoi ça ?\nRekias: Nan, pour rien.",
+   "A": "A: Rekias !\nRekias: Hmm ? Oui petit ?\nA: La dernière fois quand je t'ai parlé de ma mère, tu avais l'air de savoir quelque chose que tu ne voulais pas me dire.\nRekias: C'était si évident que ça ?\nA: Plutôt, oui. Qu'est-ce que c'était ?\nRekias: Petit... En fait, j'ai rencontré une fois dans ma vie, une femme qui avait la même aura que toi. La même prestance qui permet de lier un groupe juste par le charisme.\nA: C'était qui ?!\nRekias: L'Impératrice de ce pays.\nA: Quoi ?!\nRekias: Je l'ai rencontré une fois quand je devais faire un rapport important à la capitale, elle avait le même regard que toi. C'est pour ça que je t'ai demandé si tu vivais dans le village depuis toujours.\nA: Je vois... Merci de me l'avoir dit Rekias...\nRekias: Aucun problème, c'est fait pour ça les amis.",
+   "S": ""
+  },
+  "ending": ""
+ },
+ {
+  "id": "sp_7",
+  "name": "Rekias ♥ Malko",
+  "a": "c_15",
+  "b": "c_20",
+  "startPoints": 0,
+  "maxRank": "A",
+  "special": {
+   "rank": "B",
+   "name": "Posture héroïque",
+   "chance": 20,
+   "dmg": 3,
+   "hit": 10,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "fierté guerrière",
+   "chance": 30,
+   "might": 3,
+   "hit": 5
+  },
+  "conversations": {
+   "C": "Rekias: Hum, Malko c'est ça ?\nMalko: Oui, Rekias je présume ?\nRekias: Exactement, depuis combien de temps fais-tu partie de la garde du château d'Acania ?\nMalko: Oh, depuis 8 mois. Avant, j'étais assigné à un autre château, mais le propriétaire n'avait pas besoin de tant de gardes car il était apprécié par son peuple. Alors je suis parti.\nRekias: D'accord, tu as été plutôt malchanceux au final.\nMalko: On peut dire ça oui.",
+   "B": "Rekias: Hé Malko, tu te fait à ta nouvelle vie ?\nMalko: Pas trop le choix, tant que je vis le jour suivant, c'est que le jour d'aujourd'hui a été concluant.\nRekias: C'est une façon de voir les choses. Tu n'as jamais eu envie de faire quelque chose en particulier dans ta vie ?\nMalko: Pas que je sache. J'ai toujours voulu une vie tranquille sans problème, mais ça n'existe pas. J'imagine que j'aimerais vivre dans un endroit calme avec une famille aimante quand je serais vieux.\nRekias: Je te comprends. Je pense que chacun rêverait de cela.",
+   "A": "Malko: Hé Rekias, j'ai une question pour toi.\nRekias: Oui, je t'écoute ?\nMalko: La dernière fois, tu m'as demandé ce que tu aimerais faire après en avoir fini avec cette vie-là. Je me suis demandé ce que toi tu voudrais faire.\nRekias: Ce que moi je voudrais faire hein ? Eh bien, je pense que j'aimerais voyager dans différents pays et apprendre les différentes cultures.\nMalko: Ça m'a l'air d'être un assez beau projet. Ça te dérangerait que je vienne avec toi ? J'ai bien envie de voir du pays maintenant que tu m'en parles.\nRekias: Pourquoi pas, c'est toujours plus amusant à plusieurs.",
+   "S": ""
+  },
+  "ending": ""
+ },
+ {
+  "id": "sp_8",
+  "name": "A ♥ Emily",
+  "a": "c_13",
+  "b": "c_22",
+  "startPoints": 0,
+  "maxRank": "S",
+  "special": {
+   "rank": "B",
+   "name": "lame de lumière",
+   "chance": 20,
+   "dmg": 0,
+   "hit": 10,
+   "crit": 20
+  },
+  "combo": {
+   "rank": "S",
+   "name": "Paradis d'épée",
+   "chance": 30,
+   "might": 8,
+   "hit": 20
+  },
+  "conversations": {
+   "C": "Emily: Bonjour Monsieur, vous allez bien ?\nA: Hum... Monsieur ? C'est un peu... Spécial, non ?\nEmily: Oh excusez-moi. Comment voulez-vous que je m'adresse à vous dans ce cas ?\nA: Tu peux juste me tutoyer, ce sera plus simple je pense.\nEmily: Très bien alors. J'espère qu'on pourra bien s'entendre toi et moi.\nA: De même !",
+   "B": "A: Oh Emily, qu'est-ce que tu fais ?\nEmily: Je prie pour que tout le monde soit sain et sauf à la fin de la journée.\nA: Tu as l'air d'être vraiment dévouée, tu fais ça souvent ?\nEmily: Tous les jours, je ne vais pas prendre le risque de louper un jour et de me retrouver avec de graves blessés.\nA: C'est plutôt mignon, enfin professionnel je veux dire.\nEmily: Je... Hum, oui...\nA: Alors je te laisse à ta prière Emily, mais n'en fais pas trop.\nEmily: D'accord...",
+   "A": "A: Emily ! Qu'est-ce que tu fais cette fois ?\nEmily: Je m'entraine à l'incantation des magies de lumière.\nA: Ah oui pourquoi ça ? Tu es déjà très utile à tout le monde en soignant les blessés.\nEmily: Je veux être encore plus utile, et puis je veux protéger une personne qui m'est chère.\nA: Ah oui ? Qui ça ?\nEmily: Je... Hum, à la prochaine !\nA: Hein ? Elle est juste partie comme ça...",
+   "S": "Emily: Hum... Je peux te parler s'il te plait ?\nA: Euh, oui bien sûr Emily. Qu'est-ce qui se passe ?\nEmily: Je voulais m'excuser d'être partie comme une voleuse. La dernière fois, en fait je...\nA: Hmm..?\nEmily: C'est-à-dire que quand tu m'as demandé qui était la personne chère à mes yeux, eh bien en fait, la vérité c'est que je... Je t-\nA: Je t'aime.\nEmily: Je... Attends quoi ?!\nA: Je t'aime Emily. Je n'en étais pas sûr avant, mais depuis la dernière fois qu'on s'est parlé, eh bien, j'ai ressenti quelque chose... Quand tu m'as dit que tu voulais protéger la personne qui comptait pour toi, je crois bien que j'ai ressenti de la jalousie...\nEmily: Mais... Tu n'as pas à être jaloux tu sais ? Parce que la personne qui compte pour moi, c'est toi... Je t'aime.\nA: Alors, j'ai vraiment ressenti de la jalousie envers moi-même ?\nEmily: On dirait bien, hihi.\nA: Et dire que je me mordais la lèvre de stress... Enfin, à partir de maintenant, je ne te lâche plus d'une semelle, je ne laisserais personne te faire du mal.\nEmily: Moi de même, je serai toujours là pour soigner mon héros..."
+  },
+  "ending": "Après leur périple, les deux amoureux se marièrent. Emily continuait à prier pour que sa famille soit heureuse et ne manque de rien, tandis que le couple vivait une vie tranquille dans un petit village loin des conflits. ",
+  "locks": {
+   "S": ""
+  }
+ },
+ {
+  "id": "sp_10",
+  "name": "Emily ♥ Eliane",
+  "a": "c_22",
+  "b": "c_11",
+  "startPoints": 0,
+  "maxRank": "A",
+  "special": {
+   "rank": "B",
+   "name": "Attaque spéciale",
+   "chance": 20,
+   "dmg": 3,
+   "hit": 10,
+   "crit": 0
+  },
+  "combo": {
+   "rank": "A",
+   "name": "Attaque duo",
+   "chance": 30,
+   "might": 3,
+   "hit": 5
+  },
+  "conversations": {
+   "C": "Eliane: Emily !\nEmily: Hmm ? Oui Eliane ? En quoi puis-je t'aider ?\nEliane: Eh bien, il n'y a pas beaucoup de filles dans le groupe, et je me suis dit qu'on pourrait discuter un peu toutes les deux.\nEmily: Oh oui, très bonne idée. Et de quoi souhaiterais-tu parler ?\nEliane: Eh bien, des choses de filles... Tu sais par exemple, les amours...\nEmily: Euh... Eliane, j'ai oublié que j'étais occupée. À la prochaine.\nEliane: Elle a fui...",
+   "B": "Eliane: Tu ne m'échapperas pas cette fois-ci Emily !\nEmily: Oh ?! Euh... Eliane ? Voyons, de quoi parles-tu ?\nEliane: Tu sais très bien de quoi je parle Emily ! La dernière fois, tu t'es enfui avant qu'on puisse arriver à la partie croustillante !\nEmily: Quoi ? Bien sûr que non ! J'étais juste occupée ! Et d'ailleurs j'avais oublié, mais je dois vérifier quelque chose avec le convoi...\nEliane: Elle a encore fui... La prochaine fois, je l'aurais !",
+   "A": "Emily: Eliane...\nEliane: Hmm ? Qu'est-ce qui se passe Emily ?\nEmily: Supposons, juste supposons qu'un garçon me plaise vraiment...\nEliane: Alors j'avais raison ! Tu aimes le petit villageois qui se la joue au chef hein ?\nEmily: Eliane !!!\nEliane: Ne fais pas la surprise ! Ça se voit comme ton nez au milieu de ta figure !\nEmily: Tu parle beaucoup, alors que tu rêves de ton noble aux cheveux rouges toutes les nuits !\nEliane: Quoi ?! Comment ?!\nEmily: Ça se voit comme ton nez au milieu de ta figure !\nEliane: Hé, mais c'est- Ah... Touché...\nEmily: Hihi...",
+   "S": ""
+  },
+  "ending": ""
+ }
+]

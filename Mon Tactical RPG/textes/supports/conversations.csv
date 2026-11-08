@@ -1,0 +1,165 @@
+﻿id,fr
+sp_eli_lyn.conversations.C.01,"Eliwood, tu tiens ton épée comme un noble."
+sp_eli_lyn.conversations.C.02,Je suis un noble.
+sp_eli_lyn.conversations.C.03,Justement. On va corriger ça.
+sp_eli_lyn.conversations.B.01,Tu m'as couvert au pont. Merci.
+sp_eli_lyn.conversations.B.02,Tu m'aurais couverte aussi. C'est comme ça qu'on survit.
+sp_eli_lyn.conversations.A.01,Quand tout ça sera fini… tu rentreras à Pherae ?
+sp_eli_lyn.conversations.A.02,Je crois. Et toi ?
+sp_eli_lyn.conversations.A.03,Je ne sais pas encore. C'est la première fois que je n'ai pas envie de partir seule.
+sp_eli_lyn.conversations.S.01,Lyn. Viens à Pherae avec moi. Pas comme invitée.
+sp_eli_lyn.conversations.S.02,… Tu as mis du temps à le dire.
+sp_eli_lyn.conversations.S.03,J'ai mis du temps à oser.
+sp_eli_hec.conversations.C.01,"Tu frappes trop poliment, Eliwood."
+sp_eli_hec.conversations.C.02,"Et toi, tu frappes tout ce qui bouge."
+sp_eli_hec.conversations.C.03,"Ça marche, non ?"
+sp_eli_hec.conversations.B.01,Tu t'es jeté devant cette hache pour moi.
+sp_eli_hec.conversations.B.02,J'avais rien de mieux à faire.
+sp_eli_hec.conversations.A.01,"Quoi qu'il arrive à nos maisons, toi et moi, on reste frères d'armes."
+sp_eli_hec.conversations.A.02,Je n'en ai jamais douté.
+sp_hec_lyn.conversations.C.01,"T'es rapide, pour une fille de la plaine."
+sp_hec_lyn.conversations.C.02,"Et toi, bruyant, pour un noble."
+sp_hec_lyn.conversations.B.01,Tu as encore foncé tout seul.
+sp_hec_lyn.conversations.B.02,Je savais que tu me suivrais.
+sp_hec_lyn.conversations.B.03,… Ne compte pas trop là-dessus.
+sp_hec_lyn.conversations.A.01,Lyn. Je ne sais pas faire de beaux discours.
+sp_hec_lyn.conversations.A.02,Alors n'en fais pas. Je suis là.
+sp_hec_lyn.conversations.S.01,Ostia a besoin d'une marquise qui sait se battre.
+sp_hec_lyn.conversations.S.02,"Ostia, ou toi ?"
+sp_hec_lyn.conversations.S.03,… Les deux. Surtout moi.
+sp_lyn_cloud.conversations.C.01,Tu ne parles jamais ?
+sp_lyn_cloud.conversations.C.02,… Pas besoin.
+sp_lyn_cloud.conversations.B.01,Ton arc. Tu tires mieux que les soldats que j'ai connus.
+sp_lyn_cloud.conversations.B.02,C'est un compliment ?
+sp_lyn_cloud.conversations.B.03,… Oui.
+sp_lyn_cloud.conversations.A.01,"Tu repartiras, après ?"
+sp_lyn_cloud.conversations.A.02,Sûrement. Mais je saurai où revenir.
+sp_5.conversations.C.01,Chef ! Je suis prête à me battre !
+sp_5.conversations.C.02,"Eliane ? Pas besoin d'être aussi formelle, tu peux me tutoyer."
+sp_5.conversations.C.03,"Oh je... Je ne me serais jamais permise... Et hum tu... Enfin, je voulais te dire que..."
+sp_5.conversations.C.04,"Eliwood ! On a un problème avec le convoi, on a besoin de toi !"
+sp_5.conversations.C.05,"Ok j'arrive ! Désolé Elianne, je dois y aller mais on pourra se reparler à un autre moment."
+sp_5.conversations.C.06,"Je... Oui d'accord. ( Argh ! J'ai laissé passer ma chance, j'étais si près du but ! )"
+sp_5.conversations.B.01,Eliwood ! Tu as un moment ?
+sp_5.conversations.B.02,"Oh, ça tombe bien Elianne, je te cherchais."
+sp_5.conversations.B.03,Tu- tu me cherchais..?
+sp_5.conversations.B.04,"Oui bien sûr, la dernière fois que l'on s'est parlé on a été dérangé. Donc, je me demandais de quoi tu voulais me parler."
+sp_5.conversations.B.05,"Ah euh oui hum je... Je voulais savoir si ça t'intéresserait de t'entrainer avec moi, à l'occasion... Ce serait bénéfique pour tous les deux et puis je dois encore m'améliorer..."
+sp_5.conversations.B.06,"Tu veux qu'on s'entraine ensemble ? Pourquoi pas, ça ne me dérange pas. J'ai du temps à tuer dans mes journées de toute façon, autant que cela soit productif."
+sp_5.conversations.B.07,Tu acceptes vraiment ? Super ! Alors je te vois la prochaine fois à l'entrainement ! (AHHHH !! Il a dit oui ! Je vais pouvoir être seule avec lui... Il faut que je fasse des efforts !)
+sp_5.conversations.A.01,"Eh bien Elianne, on dirait que l'entrainement porte ses fruits. Ta magie de feu est encore plus puissante qu'avant et mon maniement de l'épée s'est encore amélioré. Tu as eue une excellente idée."
+sp_5.conversations.A.02,"Bien sûr, je suis excellente tu vois ! Et puis, ça nous aide à créer des liens comme ça..."
+sp_5.conversations.A.03,"C'est vrai, tu es une amie chère à mes yeux maintenant. Continuons à faire de notre mieux tous les deux."
+sp_5.conversations.A.04,"Une... Amie chère a tes yeux... Oui c'est la même chose pour moi... Je suis un peu fatigué de l'entrainement, je pense que je vais rentrer un peu plus tôt aujourd'hui..."
+sp_5.conversations.A.05,Oh hum d'accord ? Qu'est-ce qui lui arrive aujourd'hui ? Elle avait l'air d'aller bien pourtant...
+sp_5.conversations.S.01,Elianne ! Qu'est-ce qu'il se passe ?! Pourquoi tu m'esquives comme ça depuis la dernière fois ?
+sp_5.conversations.S.02,Eliwood ? Je ne t'esquive pas voyons. Qu'est-ce qui te fait dire ça haha..?
+sp_5.conversations.S.03,"À chaque fois que j'essaye de m'approcher de toi quand tu es libre, tu disparais dès que tu me vois. Et même quand l'on est en marche, tu te débrouilles pour te retrouver le plus loin de moi possible. Qu'est-ce qui se passe !"
+sp_5.conversations.S.04,"Je... En fait je... Argh ! Je t'aime ok ?! Je sais bien que je ne suis qu'une ""Amie qui t'est chère"" mais depuis la première fois que je t'ai vu, mon cœur battait la chamade. L'entrainement était juste une excuse pour pouvoir rester près de toi, mais maintenant je sais que je n'ai aucune chance !"
+sp_5.conversations.S.05,"C'est donc ça... Eliane ne pleure pas, je ne suis pas très doué avec ces choses-là tu sais ? Je ne m'étais pas aperçu de ce que tu ressentais, et je m'en excuse. Mais je ressens la même chose pour toi Eliane."
+sp_5.conversations.S.06,Mais tu avais dit que-
+sp_5.conversations.S.07,"C'était une façade, je ne sais pas vraiment y faire avec tout ça, je te l'ai dit."
+sp_5.conversations.S.08,Idiot ...
+sp_6.conversations.C.01,"Hé petit, je ne t'ai pas demandé, mais depuis combien de temps tu vivais au village ?"
+sp_6.conversations.C.02,Depuis ma naissance il me semble... En tout cas du peu que je me souvienne j'ai toujours habité ici.
+sp_6.conversations.C.03,"Ah oui, moi ça ne fait que quelques années. Je servais l'armée de ce pays fut un temps même si je n'étais qu'un simple soldat."
+sp_6.conversations.C.04,"Ah oui, mais pourtant tu as été le premier à te rebeller contre le chancelier Kernos. Tu devais certainement voir des tas et des tas de villages condamnés au même sort."
+sp_6.conversations.C.05,"C'est vrai, mais c'est en partie à cause de tout ça que j'ai quitté l'armée. Je ne voulais pas être mêlé à tout cela"
+sp_6.conversations.C.06,"Oh je vois, compréhensible..."
+sp_6.conversations.B.01,"Hé petit, la dernière fois que j'ai parlé de moi, je me suis aperçu que tu ne m'avais presque pas parlé de toi. Comment ça se passait ta vie au village ?"
+sp_6.conversations.B.02,"Oh, c'était assez paisible, jusqu'à récemment..."
+sp_6.conversations.B.03,Qu'est-ce qu'il s'est passé ?
+sp_6.conversations.B.04,"Eh bien, le village s'est fait attaqué par des brigands. Tout le village était en panique, je n'étais encore qu'un enfant, et mon père m'a dit d'attendre à l'intérieur pendant qu'il allait s'occuper des bandits. Il les avait presque tous eu à lui tout seul, jusqu'à ce que leur chef le prit par surprise et lui planta sa hache dans le dos... C'est qu'après tout ça que les gardes du château arrivèrent..."
+sp_6.conversations.B.05,Et ton père dans tout ça..?
+sp_6.conversations.B.06,"On m'a dit qu'il s'était battu vaillamment jusqu'à la mort et que cela avait permis aux soldats du château d'arriver a temps... Tu parles ! Le chancelier devait certainement bien le savoir, il voulait économiser ses soldats, et se débarrasser de l'un des hommes les plus forts du village en cas de rébellion ! Je ne lui pardonnerais jamais, même dans sa tombe."
+sp_6.conversations.B.07,Et donc ton style de combat...
+sp_6.conversations.B.08,"Il vient de mon père oui, il m'a appris à manier une épée depuis que je suis tout petit, au cas où il ne serait plus là pour me défendre. Mais j'étais trop tétanisé à l'époque pour sortir et me battre avec lui."
+sp_6.conversations.B.09,"C'est normal, tu n'étais qu'un enfant. Et ta mère dans tout ça..?"
+sp_6.conversations.B.10,"Je ne sais rien d'elle. Depuis que je suis enfant, je ne l'ai jamais vu et mon père ne me parlait jamais d'elle. Pourquoi ça ?"
+sp_6.conversations.B.11,"Nan, pour rien."
+sp_6.conversations.A.01,Rekias !
+sp_6.conversations.A.02,Hmm ? Oui petit ?
+sp_6.conversations.A.03,"La dernière fois quand je t'ai parlé de ma mère, tu avais l'air de savoir quelque chose que tu ne voulais pas me dire."
+sp_6.conversations.A.04,C'était si évident que ça ?
+sp_6.conversations.A.05,"Plutôt, oui. Qu'est-ce que c'était ?"
+sp_6.conversations.A.06,"Petit... En fait, j'ai rencontré une fois dans ma vie, une femme qui avait la même aura que toi. La même prestance qui permet de lier un groupe juste par le charisme."
+sp_6.conversations.A.07,C'était qui ?!
+sp_6.conversations.A.08,L'Impératrice de ce pays.
+sp_6.conversations.A.09,Quoi ?!
+sp_6.conversations.A.10,"Je l'ai rencontré une fois quand je devais faire un rapport important à la capitale, elle avait le même regard que toi. C'est pour ça que je t'ai demandé si tu vivais dans le village depuis toujours."
+sp_6.conversations.A.11,Je vois... Merci de me l'avoir dit Rekias...
+sp_6.conversations.A.12,"Aucun problème, c'est fait pour ça les amis."
+sp_7.conversations.C.01,"Hum, Malko c'est ça ?"
+sp_7.conversations.C.02,"Oui, Rekias je présume ?"
+sp_7.conversations.C.03,"Exactement, depuis combien de temps fais-tu partie de la garde du château d'Acania ?"
+sp_7.conversations.C.04,"Oh, depuis 8 mois. Avant, j'étais assigné à un autre château, mais le propriétaire n'avait pas besoin de tant de gardes car il était apprécié par son peuple. Alors je suis parti."
+sp_7.conversations.C.05,"D'accord, tu as été plutôt malchanceux au final."
+sp_7.conversations.C.06,On peut dire ça oui.
+sp_7.conversations.B.01,"Hé Malko, tu te fait à ta nouvelle vie ?"
+sp_7.conversations.B.02,"Pas trop le choix, tant que je vis le jour suivant, c'est que le jour d'aujourd'hui a été concluant."
+sp_7.conversations.B.03,C'est une façon de voir les choses. Tu n'as jamais eu envie de faire quelque chose en particulier dans ta vie ?
+sp_7.conversations.B.04,"Pas que je sache. J'ai toujours voulu une vie tranquille sans problème, mais ça n'existe pas. J'imagine que j'aimerais vivre dans un endroit calme avec une famille aimante quand je serais vieux."
+sp_7.conversations.B.05,Je te comprends. Je pense que chacun rêverait de cela.
+sp_7.conversations.A.01,"Hé Rekias, j'ai une question pour toi."
+sp_7.conversations.A.02,"Oui, je t'écoute ?"
+sp_7.conversations.A.03,"La dernière fois, tu m'as demandé ce que tu aimerais faire après en avoir fini avec cette vie-là. Je me suis demandé ce que toi tu voudrais faire."
+sp_7.conversations.A.04,"Ce que moi je voudrais faire hein ? Eh bien, je pense que j'aimerais voyager dans différents pays et apprendre les différentes cultures."
+sp_7.conversations.A.05,Ça m'a l'air d'être un assez beau projet. Ça te dérangerait que je vienne avec toi ? J'ai bien envie de voir du pays maintenant que tu m'en parles.
+sp_7.conversations.A.06,"Pourquoi pas, c'est toujours plus amusant à plusieurs."
+sp_8.conversations.C.01,"Bonjour Monsieur, vous allez bien ?"
+sp_8.conversations.C.02,"Hum... Monsieur ? C'est un peu... Spécial, non ?"
+sp_8.conversations.C.03,Oh excusez-moi. Comment voulez-vous que je m'adresse à vous dans ce cas ?
+sp_8.conversations.C.04,"Tu peux juste me tutoyer, ce sera plus simple je pense."
+sp_8.conversations.C.05,Très bien alors. J'espère qu'on pourra bien s'entendre toi et moi.
+sp_8.conversations.C.06,De même !
+sp_8.conversations.B.01,"Oh Emily, qu'est-ce que tu fais ?"
+sp_8.conversations.B.02,Je prie pour que tout le monde soit sain et sauf à la fin de la journée.
+sp_8.conversations.B.03,"Tu as l'air d'être vraiment dévouée, tu fais ça souvent ?"
+sp_8.conversations.B.04,"Tous les jours, je ne vais pas prendre le risque de louper un jour et de me retrouver avec de graves blessés."
+sp_8.conversations.B.05,"C'est plutôt mignon, enfin professionnel je veux dire."
+sp_8.conversations.B.06,"Je... Hum, oui..."
+sp_8.conversations.B.07,"Alors je te laisse à ta prière Emily, mais n'en fais pas trop."
+sp_8.conversations.B.08,D'accord...
+sp_8.conversations.A.01,Emily ! Qu'est-ce que tu fais cette fois ?
+sp_8.conversations.A.02,Je m'entraine à l'incantation des magies de lumière.
+sp_8.conversations.A.03,Ah oui pourquoi ça ? Tu es déjà très utile à tout le monde en soignant les blessés.
+sp_8.conversations.A.04,"Je veux être encore plus utile, et puis je veux protéger une personne qui m'est chère."
+sp_8.conversations.A.05,Ah oui ? Qui ça ?
+sp_8.conversations.A.06,"Je... Hum, à la prochaine !"
+sp_8.conversations.A.07,Hein ? Elle est juste partie comme ça...
+sp_8.conversations.S.01,Hum... Je peux te parler s'il te plait ?
+sp_8.conversations.S.02,"Euh, oui bien sûr Emily. Qu'est-ce qui se passe ?"
+sp_8.conversations.S.03,"Je voulais m'excuser d'être partie comme une voleuse. La dernière fois, en fait je..."
+sp_8.conversations.S.04,Hmm..?
+sp_8.conversations.S.05,"C'est-à-dire que quand tu m'as demandé qui était la personne chère à mes yeux, eh bien en fait, la vérité c'est que je... Je t-"
+sp_8.conversations.S.06,Je t'aime.
+sp_8.conversations.S.07,Je... Attends quoi ?!
+sp_8.conversations.S.08,"Je t'aime Emily. Je n'en étais pas sûr avant, mais depuis la dernière fois qu'on s'est parlé, eh bien, j'ai ressenti quelque chose... Quand tu m'as dit que tu voulais protéger la personne qui comptait pour toi, je crois bien que j'ai ressenti de la jalousie..."
+sp_8.conversations.S.09,"Mais... Tu n'as pas à être jaloux tu sais ? Parce que la personne qui compte pour moi, c'est toi... Je t'aime."
+sp_8.conversations.S.10,"Alors, j'ai vraiment ressenti de la jalousie envers moi-même ?"
+sp_8.conversations.S.11,"On dirait bien, hihi."
+sp_8.conversations.S.12,"Et dire que je me mordais la lèvre de stress... Enfin, à partir de maintenant, je ne te lâche plus d'une semelle, je ne laisserais personne te faire du mal."
+sp_8.conversations.S.13,"Moi de même, je serai toujours là pour soigner mon héros..."
+sp_10.conversations.C.01,Emily !
+sp_10.conversations.C.02,Hmm ? Oui Eliane ? En quoi puis-je t'aider ?
+sp_10.conversations.C.03,"Eh bien, il n'y a pas beaucoup de filles dans le groupe, et je me suis dit qu'on pourrait discuter un peu toutes les deux."
+sp_10.conversations.C.04,"Oh oui, très bonne idée. Et de quoi souhaiterais-tu parler ?"
+sp_10.conversations.C.05,"Eh bien, des choses de filles... Tu sais par exemple, les amours..."
+sp_10.conversations.C.06,"Euh... Eliane, j'ai oublié que j'étais occupée. À la prochaine."
+sp_10.conversations.C.07,Elle a fui...
+sp_10.conversations.B.01,Tu ne m'échapperas pas cette fois-ci Emily !
+sp_10.conversations.B.02,"Oh ?! Euh... Eliane ? Voyons, de quoi parles-tu ?"
+sp_10.conversations.B.03,"Tu sais très bien de quoi je parle Emily ! La dernière fois, tu t'es enfui avant qu'on puisse arriver à la partie croustillante !"
+sp_10.conversations.B.04,"Quoi ? Bien sûr que non ! J'étais juste occupée ! Et d'ailleurs j'avais oublié, mais je dois vérifier quelque chose avec le convoi..."
+sp_10.conversations.B.05,"Elle a encore fui... La prochaine fois, je l'aurais !"
+sp_10.conversations.A.01,Eliane...
+sp_10.conversations.A.02,Hmm ? Qu'est-ce qui se passe Emily ?
+sp_10.conversations.A.03,"Supposons, juste supposons qu'un garçon me plaise vraiment..."
+sp_10.conversations.A.04,Alors j'avais raison ! Tu aimes le petit villageois qui se la joue au chef hein ?
+sp_10.conversations.A.05,Eliane !!!
+sp_10.conversations.A.06,Ne fais pas la surprise ! Ça se voit comme ton nez au milieu de ta figure !
+sp_10.conversations.A.07,"Tu parle beaucoup, alors que tu rêves de ton noble aux cheveux rouges toutes les nuits !"
+sp_10.conversations.A.08,Quoi ?! Comment ?!
+sp_10.conversations.A.09,Ça se voit comme ton nez au milieu de ta figure !
+sp_10.conversations.A.10,"Hé, mais c'est- Ah... Touché..."
+sp_10.conversations.A.11,Hihi...

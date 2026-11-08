@@ -1,0 +1,133 @@
+{
+ "type": "battler",
+ "name": "Repal with Joshua Hat [M] — Staff",
+ "facing": "left",
+ "cell": [
+  31,
+  39
+ ],
+ "anchor": [
+  20,
+  38
+ ],
+ "columns": 12,
+ "count": 7,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    33,
+    100,
+    17,
+    83,
+    33,
+    67
+   ],
+   "hit": 4
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    33,
+    100,
+    17,
+    83,
+    33,
+    67
+   ],
+   "hit": 4
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    33,
+    100,
+    17,
+    83,
+    33,
+    67
+   ],
+   "hit": 4
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    67,
+    33,
+    100,
+    17,
+    83,
+    33,
+    67
+   ],
+   "hit": 4
+  },
+  "dodge": {
+   "frames": [
+    0,
+    5,
+    6,
+    6
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — ltranc, Teraspark, SD9K"
+}

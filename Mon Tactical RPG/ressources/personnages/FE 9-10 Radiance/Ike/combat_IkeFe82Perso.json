@@ -1,0 +1,68 @@
+{
+ "type": "battler",
+ "name": "Ike FE8 2",
+ "facing": "left",
+ "cell": [
+  43,
+  39
+ ],
+ "anchor": [
+  21,
+  38
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+   ]
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+   ],
+   "hit": 1
+  }
+ },
+ "source": "Livraison Tactical Emblem — Ike_1.gif"
+}
