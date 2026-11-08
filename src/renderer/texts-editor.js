@@ -183,7 +183,8 @@
           if (!v || f.rows.some(x => x !== r && x.id === v)) { e.target.value = r.id; return UI.toast('Identifiant vide ou déjà utilisé.', 'warn'); }
           r.id = v; e.target.value = v; change();
         } });
-        const row = h('div', { class: 'tx-row' + (S.row === r.id ? ' on' : '') }, id, ta,
+        const textCell = UI.nameReferenceButton && (!auto || f.field !== 'name') ? h('div', { class: 'tx-text-cell' }, ta, UI.nameReferenceButton(ta)) : ta;
+        const row = h('div', { class: 'tx-row' + (S.row === r.id ? ' on' : '') }, id, textCell,
           h('button', { class: 'mini', title: 'Copier la référence pour un dialogue', html: Icons.icon('copy'), onclick: () => { copy('@' + f.id + '#' + r.id); } }),
           auto ? h('span', {}) : h('button', { class: 'mini', title: 'Supprimer ce texte', html: Icons.icon('trash'), onclick: () => { f.rows.splice(f.rows.indexOf(r), 1); change(); render(); } }));
         list.append(row);
@@ -234,7 +235,8 @@
       const grow = () => { ta.style.height = 'auto'; ta.style.height = Math.max(36, ta.scrollHeight + 2) + 'px'; };
       ta.addEventListener('input', () => { if (ta.value) r.t[S.dst] = ta.value; else delete r.t[S.dst]; change(); grow(); });
       requestAnimationFrame(grow);
-      return h('div', { class: 'tx-row tx-row-tr' }, h('span', { class: 'tx-id ro' }, r.id), h('div', { class: 'tx-src' + (r.t[S.src] ? '' : ' muted') }, r.t[S.src] || '(vide)'), ta);
+      const textCell = UI.nameReferenceButton && f.field !== 'name' ? h('div', { class: 'tx-text-cell' }, ta, UI.nameReferenceButton(ta)) : ta;
+      return h('div', { class: 'tx-row tx-row-tr' }, h('span', { class: 'tx-id ro' }, r.id), h('div', { class: 'tx-src' + (r.t[S.src] ? '' : ' muted') }, r.t[S.src] || '(vide)'), textCell);
     }));
     return h('section', { class: 'studio-card wide tx-card' },
       h('div', { class: 'tx-card-head' }, h('h3', { class: 'studio-card-title' }, 'Traduction'),
@@ -257,8 +259,9 @@
   const unitNamed = (name) => { const n = String(name || '').trim().toLowerCase(); return n ? db().units.find(u => String(u.name || '').trim().toLowerCase() === n) : null; };
   /** Boîte de dialogue d'aperçu ; who : orateur d'une réplique (sinon le personnage du fichier). */
   function dialogueBox(f, text, who) {
-    const name = who !== undefined ? who : Texts.speakerOf(f, db());
-    return [h('div', { class: 'tx-dlg' }, h('div', { class: 'tx-dlg-face' }, faceOf(f, 'main', who)),
+    const name = UI.resolveCharacterNames(who !== undefined ? who : Texts.speakerOf(f, db()));
+    text = UI.resolveCharacterNames(text);
+    return [h('div', { class: 'tx-dlg' }, h('div', { class: 'tx-dlg-face' }, faceOf(f, 'main', name)),
       h('div', { class: 'tx-dlg-box' }, h('div', { class: 'tx-dlg-name' }, name || '—'), h('div', { class: 'tx-dlg-text' }, text || h('span', { class: 'muted' }, 'Choisis un texte pour le voir dans la boîte de dialogue.'))))];
   }
   function copy(s) {

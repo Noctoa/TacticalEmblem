@@ -224,9 +224,10 @@
   }
   /** Texte des dialogues : nom d'origine du protagoniste → nom choisi, {héros} → son nom. */
   function avatarText(text) {
-    if (!self.CharGen) return text;
-    const hero = R.byId(G.db.units, CharGen.avatarConfig(G.project.meta, G.db).unitId);
-    return CharGen.renameText(text, G.avatar ? G.avatar.from : '', G.avatar ? G.avatar.to : (hero ? hero.name : ''));
+    const avatarId = G.avatar ? G.avatar.unitId : CharGen.avatarConfig(G.project.meta, G.db).unitId;
+    const hero = R.byId(G.db.units, avatarId);
+    return Texts.resolveNames(text, G.db, { avatarId,
+      mapText: value => CharGen.renameText(value, G.avatar ? G.avatar.from : '', G.avatar ? G.avatar.to : (hero ? hero.name : '')) });
   }
 
   /** Charge un chapitre. Les niveaux, objets, affinités et le convoi sont conservés d'un chapitre à l'autre. */

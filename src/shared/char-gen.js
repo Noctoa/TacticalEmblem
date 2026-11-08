@@ -684,9 +684,10 @@
   }
   /** Remplace le nom d'origine par le nom choisi (mots entiers) et {héros} / {hero} par le nom du protagoniste. */
   function renameText(text, from, to) {
-    let s = String(text || '').replace(/\{(héros|heros|hero)\}/gi, to || from || '');
-    if (from && to && from !== to) s = s.replace(new RegExp('(^|[^\\p{L}\\p{N}_])' + from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\p{L}\\p{N}_])', 'gu'), (m, pre) => pre + to);
-    return s;
+    const pattern = from && to && from !== to ? new RegExp('(^|[^\\p{L}\\p{N}_])' + from.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(?![\\p{L}\\p{N}_])', 'gu') : null;
+    // Le nom issu d’une variable ne doit pas être renommé une deuxième fois.
+    return String(text || '').split(/(\{(?:héros|heros|hero)\})/gi).map((part, i) =>
+      i % 2 ? to || from || '' : pattern ? part.replace(pattern, (m, pre) => pre + to) : part).join('');
   }
   /** Validation de la création du joueur sauvegardée dans la campagne : { unitId, name, recipe }. */
   function validateAvatar(a, parts) {

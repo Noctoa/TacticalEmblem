@@ -14,7 +14,36 @@
   const REF = /^\s*@([^#\s]+#\S+)\s*$/;
   const db = () => (window.Editor && Editor.db && Editor.db()) || { units: [] };
   const texts = () => (window.Editor && Editor.project && Editor.project() && Editor.project().texts) || null;
-  const unitNamed = (name) => { const n = String(name || '').trim().toLowerCase(); return n ? (db().units || []).find(u => String(u.name || '').trim().toLowerCase() === n) : null; };
+  const nameContext = () => ({ avatarId: CharGen.avatarConfig(Editor.project().meta, db()).unitId });
+  const displayNames = text => Texts.resolveNames(text, db(), nameContext());
+  const unitNamed = (name) => { const n = displayNames(name).trim().toLowerCase(); return n ? (db().units || []).find(u => String(u.name || '').trim().toLowerCase() === n) : null; };
+
+  async function namePicker(textarea) {
+    const start = textarea.selectionStart, end = textarea.selectionEnd, units = db().units || [];
+    const avatarId = nameContext().avatarId, avatar = units.find(u => u.id === avatarId);
+    const token = await UI.modal((box, close) => {
+      const list = h('div', { class: 'tx-pick-list' });
+      const fill = query => {
+        const q = query.trim().toLocaleLowerCase();
+        list.replaceChildren(...units.filter(u => !q || (u.name + ' ' + u.id).toLocaleLowerCase().includes(q)).map(u =>
+          h('button', { class: 'tx-pick-row', type: 'button', 'data-name-unit': u.id, onclick: () => close(Texts.characterNameRef(u.id)) },
+            face(u.name), h('span', {}, u.name), h('code', {}, Texts.characterNameRef(u.id)))));
+      };
+      box.append(h('h3', {}, 'Insérer le nom d’un personnage'),
+        h('p', { class: 'form-info' }, 'Le nom sera lu dans la base au moment du dialogue. @A affiche le nom du protagoniste, y compris celui choisi par le joueur dans le générateur.'),
+        avatar ? h('button', { class: 'primary', type: 'button', 'data-name-avatar': true, onclick: () => close('@A') }, 'Protagoniste : ' + avatar.name + ' (@A)') : null,
+        h('input', { type: 'search', placeholder: 'Rechercher un personnage…', 'data-name-search': true, oninput: e => fill(e.target.value) }), list,
+        h('div', { class: 'modal-actions' }, h('button', { type: 'button', onclick: () => close(null) }, 'Annuler')));
+      fill('');
+    }, { wide: true });
+    if (!token) return;
+    textarea.setRangeText(token, start, end, 'end');
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    textarea.dispatchEvent(new Event('change', { bubbles: true }));
+    textarea.focus({ preventScroll: true });
+  }
+  const nameButton = textarea => h('button', { class: 'small ghost name-ref-btn', type: 'button', 'data-name-ref': true,
+    title: 'Insérer un nom de personnage à la position du curseur (@A : protagoniste)', onclick: () => namePicker(textarea) }, '＋ Nom');
 
   function parse(value) {
     return String(value || '').split('\n').filter(l => l.trim()).map(l => {
@@ -48,7 +77,7 @@
   /** Aperçu : les répliques une à une dans la boîte de dialogue, avec le portrait. */
   function preview(value) {
     const t = texts();
-    const script = t ? Texts.resolve(value, t, t.main, db()) : value;
+    const script = displayNames(t ? Texts.resolve(value, t, t.main, db()) : value);
     const lines = String(script || '').split('\n').filter(l => l.trim()).map(l => Texts.parseLine(l));
     if (!lines.length) return UI.toast('Ce dialogue est vide.', 'warn');
     let i = 0;
@@ -116,7 +145,7 @@
         h('p', { class: 'form-info' }, 'Les répliques viennent du fichier de textes du personnage (outil Textes › Personnages) : une même réplique peut servir dans plusieurs dialogues, et se traduit une seule fois.'),
         h('div', { class: 'dlg-pick-top' }, sel, h('input', { type: 'search', placeholder: 'Rechercher…', oninput: (e) => { query = e.target.value; fill(); } })),
         prev, list,
-        h('div', { class: 'dlg-pick-new' }, fresh, h('button', { class: 'primary', type: 'button', 'data-pick-add': true, onclick: () => {
+        h('div', { class: 'dlg-pick-new' }, fresh, nameButton(fresh), h('button', { class: 'primary', type: 'button', 'data-pick-add': true, onclick: () => {
           if (!fresh.value.trim()) return fresh.focus();
           const ref = Texts.storeLine(t, db(), unit.id, fresh.value.replace(/\s*\n\s*/g, ' ')); dirty(); close(ref);
         } }, 'Ajouter et utiliser')),
@@ -176,7 +205,7 @@
         } }, 'Changer');
         return h('div', { class: 'dlg-row char', 'data-dlg-row': String(i) }, face(name),
           h('div', { class: 'dlg-main' }, h('div', { class: 'dlg-ref-head' }, h('b', { 'data-dlg-speaker': String(i) }, name), h('code', { title: 'Réplique du fichier de textes du personnage' }, '@' + r.ref), uses,
-            window.TextsEditor ? h('button', { class: 'small ghost', type: 'button', title: 'Ouvrir le fichier de ' + name + ' dans l’outil Textes (traductions)', onclick: () => TextsEditor.open(c.file.id) }, 'Traduire') : null), text), tools);
+            window.TextsEditor ? h('button', { class: 'small ghost', type: 'button', title: 'Ouvrir le fichier de ' + name + ' dans l’outil Textes (traductions)', onclick: () => TextsEditor.open(c.file.id) }, 'Traduire') : null), text, nameButton(text)), tools);
       }
       if (r.ref) {
         const info = refInfo(r.ref);
@@ -205,7 +234,7 @@
         if (ref) { rows[i] = { ref }; render(); write(); }
       } });
       tools.prepend(choose);
-      return h('div', { class: 'dlg-row', 'data-dlg-row': String(i) }, faceBox, h('div', { class: 'dlg-main' }, who, text), tools);
+      return h('div', { class: 'dlg-row', 'data-dlg-row': String(i) }, faceBox, h('div', { class: 'dlg-main' }, who, text, nameButton(text)), tools);
     }
 
     function render() {
@@ -243,4 +272,7 @@
   UI.dialogueEditor = dialogueEditor;
   UI.dialoguePreview = preview;
   UI.pickCharacterLine = pickLine;
+  UI.nameReferenceButton = nameButton;
+  UI.characterNamePicker = namePicker;
+  UI.resolveCharacterNames = displayNames;
 })();

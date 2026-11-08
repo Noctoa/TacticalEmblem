@@ -35,6 +35,36 @@ test('références : réplique d\'un personnage, texte en ligne, langue de secou
   assert.equal(T.create(texts, { name: 'Lyn', kind: 'character' }).id, 'lyn_2');
 });
 
+test('noms dans les dialogues : @A et référence stable, nom actuel sans modifier le texte source', () => {
+  const db = { units: [{ id: 'u1', name: 'Lyn' }, { id: 'avatar', name: 'Kael', generator: {} }] };
+  const context = { avatarId: 'avatar' }, ref = T.characterNameRef('u1');
+  const script = '@A: Bonjour, ' + ref + ' ! @A est arrivé.';
+  assert.equal(T.resolveNames(script, db, context), 'Kael: Bonjour, Lyn ! Kael est arrivé.');
+  db.units[0].name = 'Lyndis'; db.units[1].name = 'Élise';
+  assert.equal(T.resolveNames(script, db, context), 'Élise: Bonjour, Lyndis ! Élise est arrivé.');
+  assert.equal(script, '@A: Bonjour, @{u1} ! @A est arrivé.');
+  assert.equal(T.resolveNames('@{missing}', db, context), '[personnage manquant : missing]');
+  assert.equal(T.resolveNames('@A', { units: [] }), '[personnage manquant : @A]');
+  db.units[1].name = 'Le héros @A';
+  assert.equal(T.resolveNames('@A', db, context), 'Le héros @A', 'le nom inséré n’est pas interprété une seconde fois');
+  const C = require('../src/shared/char-gen');
+  const renamed = { units: [{ id: 'A', name: 'A Second' }] };
+  assert.equal(T.resolveNames('@A: A, @{A} et {héros}.', renamed, { avatarId: 'A', mapText: value => C.renameText(value, 'A', 'A Second') }),
+    'A Second: A Second, A Second et A Second.', 'le renommage historique ne modifie ni les références ni les noms insérés');
+});
+
+test('noms dynamiques dans les CSV traduits : références et adresses e-mail préservées', () => {
+  const texts = T.normalize({ languages: [{ code: 'fr' }, { code: 'en' }], main: 'fr', files: [] });
+  const db = { units: [{ id: 'hero', name: 'Kael' }, { id: 'lyn', name: 'Lyn' }] };
+  const f = T.create(texts, { kind: 'character', name: 'Lyn', ref: 'lyn' });
+  T.addRow(f, { fr: 'Bonjour, @A et @{lyn} !', en: 'Hello, @A and @{lyn}!' });
+  const source = '@lyn#0000\nNarrateur: {@lyn#0000}';
+  assert.equal(T.resolveNames(T.resolve(source, texts, 'en', db), db, { avatarId: 'hero' }), 'Lyn: Hello, Kael and Lyn!\nNarrateur: Hello, Kael and Lyn!');
+  const literal = 'mail@A.fr @Arthur @A_name @@A @A#0001 {@A#0001} @@{lyn}';
+  assert.equal(T.resolveNames(literal, db), literal);
+  assert.equal(f.rows[0].t.fr, 'Bonjour, @A et @{lyn} !');
+});
+
 test('remplissage depuis la base et import CSV', () => {
   const texts = T.empty();
   const f = T.create(texts, { name: 'Armes', kind: 'weapon' });

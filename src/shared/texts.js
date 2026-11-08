@@ -114,6 +114,24 @@
   }
   function lookup(texts, ref, lang) { const f = find(texts, ref); return f ? pick(f.row, texts, lang) : null; }
 
+  /** Références de noms : @A = protagoniste, @{id} = personnage stable de la base. */
+  const characterNameRef = id => '@{' + id + '}';
+  function resolveNames(text, db, context = {}) {
+    const units = (db && db.units) || [];
+    const avatarId = context.avatarId || (units.find(u => u.protagonist) || units[0] || {}).id;
+    const src = String(text || ''), mapText = context.mapText || (value => value);
+    let out = '', at = 0;
+    for (const match of src.matchAll(/(?<![\p{L}\p{N}_@])@A(?![\p{L}\p{N}_#])|(?<!@)@\{([^{}\r\n]+)\}/gu)) {
+      const [all, id] = match;
+      const key = id === undefined ? avatarId : id;
+      const unit = units.find(u => u.id === key);
+      out += mapText(src.slice(at, match.index));
+      out += unit ? unit.name : '[personnage manquant : ' + (id === undefined ? '@A' : id) + ']';
+      at = match.index + all.length;
+    }
+    return out + mapText(src.slice(at));
+  }
+
   function resolve(script, texts, lang, db) {
     const src = String(script || '');
     if (!texts || !texts.files || !/@/.test(src)) return src;
@@ -485,5 +503,5 @@
     return syncDb(texts, db, meta);
   }
 
-  return { characterFile, storeLine, lineTranslations, moveToCharacters, unitByName, DB_TEXT_FILES, DB_TEXT_FIELDS, baseFileId, baseGroups, fieldOf, parseLine, joinLine, renameSpeaker, collect, syncDb, setDbText, localizeDb, applyMain, KINDS, LANG_NAMES, FILE_ID, empty, normalize, slug, create, nextRowId, addRow, fillFromDb, speakerOf, find, lookup, resolve, stats, parseCsv, rowsFromCsv, toCsv, importCsv, validate };
+  return { characterNameRef, resolveNames, characterFile, storeLine, lineTranslations, moveToCharacters, unitByName, DB_TEXT_FILES, DB_TEXT_FIELDS, baseFileId, baseGroups, fieldOf, parseLine, joinLine, renameSpeaker, collect, syncDb, setDbText, localizeDb, applyMain, KINDS, LANG_NAMES, FILE_ID, empty, normalize, slug, create, nextRowId, addRow, fillFromDb, speakerOf, find, lookup, resolve, stats, parseCsv, rowsFromCsv, toCsv, importCsv, validate };
 });

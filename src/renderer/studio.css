@@ -234,6 +234,8 @@ body[data-view="texts"] .rail-btn[data-rail="map"] { background: transparent; co
 .dlg-who { width: 220px; max-width: 100%; padding: 2px 8px; height: 26px; font-size: 12.5px; font-weight: 600; color: var(--gold-2); background: transparent; border: 1px solid var(--line); }
 .dlg-who::placeholder { color: var(--muted); font-weight: 400; font-style: italic; }
 .dlg-text { resize: none; min-height: 34px; overflow: hidden; line-height: 1.45; }
+.name-ref-btn { align-self: flex-end; font-size: 11px; padding: 2px 6px; }
+.tx-text-cell { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .dlg-tools { display: flex; gap: 2px; opacity: .45; }
 .dlg-row:hover .dlg-tools, .dlg-row:focus-within .dlg-tools { opacity: 1; }
 .dlg-row.ref { background: transparent; border: 1px dashed var(--line); }

@@ -7,7 +7,7 @@
 const fs = require('fs'), path = require('path'), os = require('os');
 const { app } = require('electron');
 const io = require('../src/main/project-io');
-module.exports = (editor) => {
+module.exports = (editor, openPlaytest) => {
   const out = process.env.TF_SNAPSHOT; fs.mkdirSync(out, { recursive: true });
   const errors = [], result = {}, wc = editor.webContents;
   wc.setBackgroundThrottling(false);
@@ -88,6 +88,60 @@ module.exports = (editor) => {
       assert(result.chapitres.length >= 2 && /arc_1 = Chapitre 1/.test(result.chapitres[0]), 'chapitres : ' + result.chapitres);
       await js(`TextsEditor.open(${JSON.stringify('base_chapters_dialogues_arc_1')})`); await wait(400);
       await shot('d_chapitre');
+      // Insérer un nom au curseur, garder la référence et l’interpréter dans l’aperçu.
+      await js(`DBEditor.open('supports'); (() => { const t = document.querySelector('[data-dlg-text]'); t.value = 'Bonjour, X !'; t.dispatchEvent(new Event('input')); t.setSelectionRange(9, 10); document.querySelector('[data-dlg-row] [data-name-ref]').click(); })()`);
+      await until(`!!document.querySelector('[data-name-avatar]')`);
+      await js(`document.querySelector('[data-name-avatar]').click()`);
+      assert(await js(`document.querySelector('[data-dlg-text]').value === 'Bonjour, @A !'`), 'nom inséré à la place de la sélection');
+      await js(`(() => { const t = document.querySelector('[data-dlg-text]'); t.setSelectionRange(t.value.length, t.value.length); document.querySelector('[data-dlg-row] [data-name-ref]').click(); })()`);
+      await until(`!!document.querySelector('[data-name-unit="c_lyn"]')`);
+      await js(`document.querySelector('[data-name-unit="c_lyn"]').click()`);
+      assert(await js(`document.querySelector('[data-dlg-text]').value.endsWith('@{c_lyn}')`), 'référence stable insérée');
+      await js(`document.querySelector('[data-dlg-preview]').click()`);
+      await until(`!!document.querySelector('[data-dlg-preview-box]')`);
+      assert(await js(`document.querySelector('[data-dlg-preview-box] .tx-dlg-text').textContent === 'Bonjour, Eliwood !Lyndis'`), 'noms lus dans la base');
+      await shot('e_noms_apercu');
+      await js(`document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))`);
+      // L’outil Textes propose aussi l’insertion et garde les variables dans le CSV.
+      await js(`(() => { const t = Editor.project().texts; const f = Texts.create(t, { name: 'Mentions', kind: 'character', ref: 'c_lyn' }); Texts.addRow(f, { fr: 'Bonjour, @A et @{c_lyn} !' }); TextsEditor.open(f.id); })()`);
+      assert(await js(`document.querySelector('[data-text-row]').value === 'Bonjour, @A et @{c_lyn} !'`), 'variables dans le texte source');
+      assert(await js(`document.querySelector('[data-text-preview] .tx-dlg-text').textContent === 'Bonjour, Eliwood et Lyndis !'`), 'aperçu de l’outil Textes');
+      assert(await js(`!!document.querySelector('.tx-text-cell [data-name-ref]')`), 'insertion disponible dans les textes');
+      await shot('f_noms_textes');
+      await js(`(() => {
+        const p = Editor.project(), ch = p.db.chapters[0];
+        p.meta.lobby.enabled = false; p.meta.avatar = { enabled: true, unitId: 'c_eliwood', rename: true };
+        ch.deployment = { enabled: false };
+        ch.events = [{ id: 'mentions', trigger: { type: 'start' }, once: true, script: '@mentions#0000\\n@A: Je suis @A.', actions: [] }];
+      })()`);
+      await js(`Editor.command('save')`);
+      assert(io.loadProject(dir).db.chapters[0].events[0].script.includes('@A'), 'référence enregistrée sans remplacement');
+      // Le nom choisi par le joueur est utilisé en jeu et après reprise de la sauvegarde.
+      const start = async choice => {
+        const win = openPlaytest(dir, 'ch_1'), game = win.webContents;
+        game.setBackgroundThrottling(false); game.on('console-message', (e, l, m) => { if (l >= 3) errors.push(m); });
+        await new Promise(resolve => game.once('did-finish-load', resolve));
+        const run = c => game.executeJavaScript(c, true);
+        const ready = async c => { const end = Date.now() + 25000; while (Date.now() < end) { if (await run(c)) return; await wait(80); } throw new Error('Délai jeu : ' + c); };
+        await ready(`!!document.querySelector('.choice-list')`);
+        await run(`[...document.querySelectorAll('.choice-list button')].find(b => b.textContent.includes(${JSON.stringify(choice)})).click()`);
+        return { win, game, run, ready };
+      };
+      const first = await start('Classique');
+      await first.ready(`!!document.querySelector('[data-cg-name]')`);
+      await first.run(`(() => { const n = document.querySelector('[data-cg-name]'); n.value = 'Kael'; n.dispatchEvent(new Event('input')); document.querySelector('[data-cg-ok]').click(); })()`);
+      await first.ready(`document.querySelector('#dialogue .dlg-text').textContent === 'Bonjour, Kael et Lyndis !'`);
+      assert(await first.run(`document.querySelector('#dialogue .dlg-name').textContent === 'Lyndis'`), 'orateur du fichier de textes');
+      await first.run(`PlaytestState.dialogue.next()`);
+      await first.ready(`document.querySelector('#dialogue .dlg-text').textContent === 'Je suis Kael.'`);
+      assert(await first.run(`document.querySelector('#dialogue .dlg-name').textContent === 'Kael'`), '@A fonctionne aussi comme orateur');
+      assert(await first.run(`!document.querySelector('#dialogue').classList.contains('hidden')`), 'dialogue visible');
+      await first.game.capturePage(); await wait(200);
+      fs.writeFileSync(path.join(out, 'g_nom_joueur.png'), (await first.game.capturePage()).toPNG());
+      await first.run(`PlaytestDebug.saveSlot(1)`); first.win.close();
+      const resumed = await start('Continuer');
+      await resumed.ready(`document.querySelector('#dialogue .dlg-text').textContent === 'Bonjour, Kael et Lyndis !'`);
+      result.nomsDynamiques = true; result.nomJoueur = 'Kael'; result.nomApresReprise = true;
     } catch (e) { errors.push(String(e && e.stack || e)); }
     finish();
   });
