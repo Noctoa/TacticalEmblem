@@ -1,0 +1,82 @@
+{
+ "type": "battler",
+ "name": "Rebecca +Quiver [F] — Bow (Without Recoil)",
+ "facing": "left",
+ "cell": [
+  59,
+  64
+ ],
+ "anchor": [
+  28,
+  60
+ ],
+ "columns": 12,
+ "count": 26,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    24,
+    25,
+    24
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  },
+  "bow": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  },
+  "bowCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  }
+ },
+ "projectiles": {
+  "arrow": "arrow.png"
+ },
+ "source": "FE-Repo — Nuramon"
+}

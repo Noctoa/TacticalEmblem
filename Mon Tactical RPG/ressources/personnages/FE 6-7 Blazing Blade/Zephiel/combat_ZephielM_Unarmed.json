@@ -1,0 +1,59 @@
+{
+ "type": "battler",
+ "name": "Zephiel [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  48,
+  50
+ ],
+ "anchor": [
+  16,
+  48
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    33,
+    17,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — Red Bean, Piero"
+}

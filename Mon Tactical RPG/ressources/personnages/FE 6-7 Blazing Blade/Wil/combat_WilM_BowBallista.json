@@ -1,0 +1,134 @@
+{
+ "type": "battler",
+ "name": "Wil [M] — Bow (Ballista)",
+ "facing": "left",
+ "cell": [
+  165,
+  106
+ ],
+ "anchor": [
+  121,
+  103
+ ],
+ "columns": 12,
+ "count": 9,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1
+   ],
+   "durations": [
+    17,
+    383,
+    33,
+    17,
+    17,
+    17,
+    33
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    6,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1
+   ],
+   "durations": [
+    17,
+    800,
+    383,
+    33,
+    17,
+    17,
+    17,
+    33
+   ],
+   "hit": 3
+  },
+  "dodge": {
+   "frames": [
+    0,
+    7,
+    8,
+    7
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  },
+  "bow": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1
+   ],
+   "durations": [
+    17,
+    383,
+    33,
+    17,
+    17,
+    17,
+    33
+   ],
+   "projectile": "arrow",
+   "release": 2
+  },
+  "bowCritical": {
+   "frames": [
+    0,
+    6,
+    1,
+    2,
+    3,
+    4,
+    5,
+    1
+   ],
+   "durations": [
+    17,
+    800,
+    383,
+    33,
+    17,
+    17,
+    17,
+    33
+   ],
+   "projectile": "arrow",
+   "release": 3
+  }
+ },
+ "projectiles": {
+  "arrow": "arrow.png"
+ },
+ "source": "FE-Repo — Greentea, qiuzf007"
+}

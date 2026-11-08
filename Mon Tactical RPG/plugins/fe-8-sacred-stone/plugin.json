@@ -1,0 +1,61 @@
+{
+ "id": "fe-8-sacred-stone",
+ "name": "FE 8 Sacred Stone",
+ "version": "0.3.0",
+ "kind": "ressources",
+ "description": "Portraits de 160 personnage(s) de « FE 8 Sacred Stone » (170 image(s), face sets GBA 128×112). Sprites de map (55) et animations de combat (432) de 22 personnage(s), d'après FE-Repo. Sprites de map (55) et animations de combat (432) de 22 personnage(s), d'après FE-Repo. Sprites de map (55) et animations de combat (432) de 22 personnage(s), d'après FE-Repo.",
+ "author": "Portraits : FE-Repo (Klokinator) et leurs auteurs, voir CREDITS.md",
+ "ressources": "ressources",
+ "links": {
+  "characters": {
+   "fe8:Eirika": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Eirika/Eirika.png",
+    "mapSprite": "ressources/personnages/FE 8 Sacred Stone/Eirika/map_LordEirikaSword",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Eirika/combat_T1VanillaWeaponsF_Sword"
+   },
+   "fe8:Ephraim": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Ephraim/Ephraim.png",
+    "mapSprite": "ressources/personnages/FE 8 Sacred Stone/Ephraim/map_LordEphraimLance2",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Ephraim/combat_T1VanillaDualSidedM_Sword"
+   },
+   "fe8:Seth": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Seth/Seth.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Seth/combat_SethV1_Sword"
+   },
+   "fe8:Franz": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Franz/Franz.png"
+   },
+   "fe8:Vanessa": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Vanessa/Vanessa.png"
+   },
+   "fe8:Neimi": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Neimi/Neimi.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Neimi/combat_ColmAndNeimiDuo_Sword"
+   },
+   "fe8:Colm": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Colm/Colm.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Colm/combat_Colm_Sword"
+   },
+   "fe8:Artur": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Artur/Artur.png"
+   },
+   "fe8:Lute": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Lute/Lute.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Lute/combat_VanillaFe8LuteFixesF_Magic"
+   },
+   "fe8:Joshua": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Joshua/Joshua.png",
+    "mapSprite": "ressources/personnages/FE 8 Sacred Stone/Joshua/map_NobleJoshua",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Joshua/combat_JoshuaM_Sword6"
+   },
+   "fe8:Tethys": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Tethys/Tethys.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Tethys/combat_VanillaFe8TethysWeapons_Sword"
+   },
+   "fe8:Innes": {
+    "portrait": "ressources/personnages/FE 8 Sacred Stone/Innes/Innes.png",
+    "battler": "ressources/personnages/FE 8 Sacred Stone/Innes/combat_InnesAltM_Bow"
+   }
+  }
+ }
+}

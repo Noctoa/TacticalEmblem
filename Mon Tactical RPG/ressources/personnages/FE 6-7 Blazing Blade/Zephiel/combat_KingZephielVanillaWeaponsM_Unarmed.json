@@ -1,0 +1,89 @@
+{
+ "type": "battler",
+ "name": "King Zephiel Vanilla +Weapons [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  54,
+  53
+ ],
+ "anchor": [
+  32,
+  52
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    67,
+    67,
+    67,
+    67
+   ],
+   "hit": 1
+  },
+  "critical": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    67,
+    67,
+    67,
+    67
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    117
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    117
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    33,
+    17,
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, Hairyblob from Deviantart, Maiser6, MageBoy, tatutachang, Tatata, Leo_Link, tatata"
+}

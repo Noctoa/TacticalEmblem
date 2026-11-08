@@ -1,0 +1,131 @@
+{
+ "type": "battler",
+ "name": "Cath Custom - Generic [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  44,
+  38
+ ],
+ "anchor": [
+  11,
+  36
+ ],
+ "columns": 12,
+ "count": 4,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    17,
+    17,
+    50,
+    17
+   ],
+   "hit": 3
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    17,
+    17,
+    50,
+    17
+   ],
+   "hit": 3
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    17,
+    17,
+    50,
+    17
+   ],
+   "hit": 3
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    17,
+    17,
+    50,
+    17
+   ],
+   "hit": 3
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    2,
+    3,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    17,
+    17,
+    50,
+    17
+   ]
+  }
+ },
+ "source": "FE-Repo — RiriK, Redbean"
+}

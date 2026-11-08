@@ -1,0 +1,141 @@
+{
+ "type": "battler",
+ "name": "Skinnyzerker Ross [M] — Handaxe",
+ "facing": "left",
+ "cell": [
+  44,
+  42
+ ],
+ "anchor": [
+  22,
+  41
+ ],
+ "columns": 12,
+ "count": 10,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    50,
+    50,
+    17
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    4,
+    5,
+    6,
+    7,
+    4,
+    5,
+    6,
+    7,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    33,
+    17
+   ],
+   "hit": 10
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    50,
+    33,
+    17
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    4,
+    5,
+    6,
+    7,
+    4,
+    5,
+    6,
+    7,
+    1,
+    2,
+    3,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    50,
+    33,
+    17
+   ],
+   "hit": 10
+  },
+  "dodge": {
+   "frames": [
+    0,
+    8,
+    9,
+    8
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Zomaxiee, IS, Maiser6, Waleed, Seliost1"
+}

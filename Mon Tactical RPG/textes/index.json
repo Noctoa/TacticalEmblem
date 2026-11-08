@@ -1,0 +1,254 @@
+{
+ "languages": [
+  {
+   "code": "fr",
+   "name": "Français"
+  }
+ ],
+ "main": "fr",
+ "files": [
+  {
+   "id": "base_units_name",
+   "name": "Noms des unités",
+   "kind": "base",
+   "ref": "units",
+   "field": "name"
+  },
+  {
+   "id": "base_units_bio",
+   "name": "Biographies des unités",
+   "kind": "base",
+   "ref": "units",
+   "field": "bio"
+  },
+  {
+   "id": "base_units_ending",
+   "name": "Épilogues des unités",
+   "kind": "base",
+   "ref": "units",
+   "field": "ending"
+  },
+  {
+   "id": "base_classes_name",
+   "name": "Noms des classes",
+   "kind": "base",
+   "ref": "classes",
+   "field": "name"
+  },
+  {
+   "id": "base_classes_description",
+   "name": "Descriptions des classes",
+   "kind": "base",
+   "ref": "classes",
+   "field": "description"
+  },
+  {
+   "id": "base_weapons_name",
+   "name": "Noms des armes",
+   "kind": "base",
+   "ref": "weapons",
+   "field": "name"
+  },
+  {
+   "id": "base_items_name",
+   "name": "Noms des objets",
+   "kind": "base",
+   "ref": "items",
+   "field": "name"
+  },
+  {
+   "id": "base_skills_name",
+   "name": "Noms des compétences",
+   "kind": "base",
+   "ref": "skills",
+   "field": "name"
+  },
+  {
+   "id": "base_ultimates_name",
+   "name": "Noms des ultimes",
+   "kind": "base",
+   "ref": "ultimates",
+   "field": "name"
+  },
+  {
+   "id": "base_ultimates_description",
+   "name": "Descriptions des ultimes",
+   "kind": "base",
+   "ref": "ultimates",
+   "field": "description"
+  },
+  {
+   "id": "base_terrains_name",
+   "name": "Noms des terrains",
+   "kind": "base",
+   "ref": "terrains",
+   "field": "name"
+  },
+  {
+   "id": "base_arcs_name",
+   "name": "Noms des chapitres",
+   "kind": "base",
+   "ref": "arcs",
+   "field": "name"
+  },
+  {
+   "id": "base_chapters_name",
+   "name": "Noms des actes",
+   "kind": "base",
+   "ref": "chapters",
+   "field": "name"
+  },
+  {
+   "id": "base_chapters_objective",
+   "name": "Objectifs des actes",
+   "kind": "base",
+   "ref": "chapters",
+   "field": "objective"
+  },
+  {
+   "id": "base_chapters_dialogues_arc_1",
+   "name": "Prologue : La volonté d'Acania",
+   "kind": "base",
+   "ref": "chapters",
+   "field": "dialogues",
+   "part": "arc_1"
+  },
+  {
+   "id": "base_chapters_dialogues_arc_2",
+   "name": "Les péripéties d'Acania",
+   "kind": "base",
+   "ref": "chapters",
+   "field": "dialogues",
+   "part": "arc_2"
+  },
+  {
+   "id": "base_talks_name",
+   "name": "Noms du camp",
+   "kind": "base",
+   "ref": "talks",
+   "field": "name"
+  },
+  {
+   "id": "base_talks_dialogues",
+   "name": "Dialogues du camp",
+   "kind": "base",
+   "ref": "talks",
+   "field": "dialogues"
+  },
+  {
+   "id": "base_supports_name",
+   "name": "Noms des affinités",
+   "kind": "base",
+   "ref": "supports",
+   "field": "name"
+  },
+  {
+   "id": "base_supports_ending",
+   "name": "Épilogues des affinités",
+   "kind": "base",
+   "ref": "supports",
+   "field": "ending"
+  },
+  {
+   "id": "base_supports_conversations",
+   "name": "Conversations des affinités",
+   "kind": "base",
+   "ref": "supports",
+   "field": "conversations"
+  },
+  {
+   "id": "base_system_name",
+   "name": "Noms du jeu",
+   "kind": "base",
+   "ref": "system",
+   "field": "name"
+  },
+  {
+   "id": "base_system_subtitle",
+   "name": "Sous-titres du jeu",
+   "kind": "base",
+   "ref": "system",
+   "field": "subtitle"
+  },
+  {
+   "id": "base_system_label",
+   "name": "Libellés du jeu",
+   "kind": "base",
+   "ref": "system",
+   "field": "label"
+  },
+  {
+   "id": "base_system_credits",
+   "name": "Crédits du jeu",
+   "kind": "base",
+   "ref": "system",
+   "field": "credits"
+  },
+  {
+   "id": "hector",
+   "name": "Hector",
+   "kind": "character",
+   "ref": "c_hector"
+  },
+  {
+   "id": "lyn",
+   "name": "Lyn",
+   "kind": "character",
+   "ref": "c_lyn"
+  },
+  {
+   "id": "eliwood",
+   "name": "Eliwood",
+   "kind": "character",
+   "ref": "c_eliwood"
+  },
+  {
+   "id": "arageas",
+   "name": "Arageas",
+   "kind": "character",
+   "ref": "c_29"
+  },
+  {
+   "id": "arelia",
+   "name": "Arelia",
+   "kind": "character",
+   "ref": "c_33"
+  },
+  {
+   "id": "shenos",
+   "name": "Shenos",
+   "kind": "character",
+   "ref": "c_34"
+  },
+  {
+   "id": "shena",
+   "name": "Shena",
+   "kind": "character",
+   "ref": "c_35"
+  },
+  {
+   "id": "personnage",
+   "name": "A",
+   "kind": "character",
+   "ref": "c_13"
+  },
+  {
+   "id": "rekias",
+   "name": "Rekias",
+   "kind": "character",
+   "ref": "c_15"
+  },
+  {
+   "id": "malko",
+   "name": "Malko",
+   "kind": "character",
+   "ref": "c_20"
+  },
+  {
+   "id": "emily",
+   "name": "Emily",
+   "kind": "character",
+   "ref": "c_22"
+  }
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "type": "battler",
+ "name": "Mia [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  27,
+  41
+ ],
+ "anchor": [
+  14,
+  40
+ ],
+ "columns": 12,
+ "count": 3,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    1
+   ],
+   "durations": [
+    17,
+    50,
+    33,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Redbean, RedBean, Knabepicer, UltraxBlade, Seliost1"
+}

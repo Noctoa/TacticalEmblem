@@ -1,0 +1,87 @@
+{
+ "type": "battler",
+ "name": "Armored Gerik [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  43,
+  44
+ ],
+ "anchor": [
+  14,
+  39
+ ],
+ "columns": 12,
+ "count": 6,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    3,
+    2,
+    5,
+    0
+   ],
+   "durations": [
+    17,
+    17,
+    17,
+    33,
+    50,
+    33,
+    50,
+    50,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Nuramon"
+}

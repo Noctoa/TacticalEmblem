@@ -1,0 +1,99 @@
+{
+ "type": "battler",
+ "name": "Nils +Weapons — Staff",
+ "facing": "left",
+ "cell": [
+  32,
+  38
+ ],
+ "anchor": [
+  18,
+  37
+ ],
+ "columns": 12,
+ "count": 6,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100
+   ],
+   "hit": 3
+  },
+  "critical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100
+   ],
+   "hit": 3
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100
+   ],
+   "hit": 3
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    1,
+    2,
+    3
+   ],
+   "durations": [
+    100,
+    100,
+    100,
+    100
+   ],
+   "hit": 3
+  },
+  "dodge": {
+   "frames": [
+    4,
+    5,
+    4
+   ],
+   "durations": [
+    50,
+    267,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — IS, FaerieFruit, Mikey Seregon, Marlon0024, Sirknite31, Saint Rubenio"
+}

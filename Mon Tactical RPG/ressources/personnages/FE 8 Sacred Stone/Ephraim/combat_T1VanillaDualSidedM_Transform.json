@@ -1,0 +1,109 @@
+{
+ "type": "battler",
+ "name": "T1 Vanilla +Dual-Sided [M] — Transform",
+ "facing": "left",
+ "cell": [
+  116,
+  88
+ ],
+ "anchor": [
+  42,
+  69
+ ],
+ "columns": 12,
+ "count": 17,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    7,
+    7,
+    8,
+    9,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+   ],
+   "durations": [
+    17,
+    100,
+    83,
+    83,
+    83,
+    83,
+    33,
+    33,
+    33,
+    33,
+    33,
+    167,
+    67,
+    67,
+    67,
+    33,
+    50,
+    50,
+    33,
+    17
+   ],
+   "hit": 10
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    67
+   ]
+  }
+ },
+ "source": "FE-Repo — Andy, IS, Seliost1, DerTheVaporeon, tatata, JonoTheRed, Beansy"
+}

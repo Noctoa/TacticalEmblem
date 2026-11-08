@@ -1,0 +1,145 @@
+{
+ "type": "battler",
+ "name": "Echidna [F] Repal — Handaxe",
+ "facing": "left",
+ "cell": [
+  36,
+  39
+ ],
+ "anchor": [
+  20,
+  38
+ ],
+ "columns": 12,
+ "count": 12,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    67,
+    17,
+    50,
+    50,
+    33
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    6,
+    7,
+    8,
+    9,
+    6,
+    1,
+    2,
+    3,
+    4,
+    5,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    33,
+    33,
+    33,
+    250,
+    67,
+    17,
+    50,
+    50,
+    33
+   ],
+   "hit": 7
+  },
+  "ranged": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    67,
+    17,
+    50,
+    50,
+    33
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    6,
+    7,
+    8,
+    9,
+    6,
+    1,
+    2,
+    3,
+    4,
+    5,
+    0
+   ],
+   "durations": [
+    17,
+    33,
+    33,
+    33,
+    33,
+    33,
+    250,
+    67,
+    17,
+    50,
+    50,
+    33
+   ],
+   "hit": 7
+  },
+  "dodge": {
+   "frames": [
+    0,
+    10,
+    11,
+    10
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Redbean, Seliost1"
+}

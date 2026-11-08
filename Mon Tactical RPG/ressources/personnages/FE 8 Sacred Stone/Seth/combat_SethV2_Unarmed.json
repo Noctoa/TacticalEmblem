@@ -1,0 +1,103 @@
+{
+ "type": "battler",
+ "name": "Seth v2 — Unarmed",
+ "facing": "left",
+ "cell": [
+  59,
+  62
+ ],
+ "anchor": [
+  40,
+  59
+ ],
+ "columns": 12,
+ "count": 5,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4
+   ],
+   "durations": [
+    17,
+    17,
+    17,
+    50,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Aruka, blood, Seal, Arkth, Aruka and Kenpuhu"
+}

@@ -1,0 +1,89 @@
+{
+ "type": "battler",
+ "name": "Amelia [F] — Unarmed",
+ "facing": "left",
+ "cell": [
+  32,
+  39
+ ],
+ "anchor": [
+  16,
+  38
+ ],
+ "columns": 12,
+ "count": 8,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "ranged": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "rangedCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    33
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    4,
+    6,
+    7,
+    0
+   ],
+   "durations": [
+    83,
+    33,
+    33,
+    67,
+    50,
+    33,
+    67,
+    67,
+    100,
+    83
+   ]
+  }
+ },
+ "source": "FE-Repo — SALVAGED, Team SALVAGED, Jey the Count, tatata"
+}

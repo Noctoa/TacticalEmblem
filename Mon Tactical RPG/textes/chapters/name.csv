@@ -1,0 +1,320 @@
+﻿id,fr
+ch_7.name,les nobles d'Elibe
+ch_7.enemies.e1.name,Cavalier
+ch_7.enemies.e2.name,Cavalier
+ch_7.enemies.e9.name,Brigand
+ch_7.enemies.e10.name,Brigand
+ch_7.enemies.e8.name,Eliane
+ch_7.enemies.e7.name,Soldat
+ch_7.enemies.e11.name,Soldat
+ch_7.enemies.e12.name,Brigand
+ch_7.enemies.e13.name,Mercenaire
+ch_7.enemies.e14.name,Mercenaire
+ch_7.enemies.e15.name,Mercenaire
+ch_7.enemies.e16.name,Akras
+ch_7.events.ev1.name,Nouvel événement
+ch_7.events.ev2.name,Nouvel événement
+ch_7.events.ev5.name,Nouvel événement
+ch_7.events.ev3.name,Nouvel événement
+ch_7.events.ev4.name,Nouvel événement
+ch_7.events.ev7.name,Nouvel événement (copie) (copie)
+ch_7.events.ev8.name,Nouvel événement
+ch_7.events.ev9.name,Nouvel événement
+ch_7.events.ev10.name,Nouvel événement
+ch_7.villages.villages_1374e73d-5b1d-45ba-9aee-f82d29ef117b.name,Village
+ch_7.chests.chests_937c2637-7875-44e1-afb7-1a8d8c2c1b4a.name,Coffre
+ch_2.name,La rébellion d'Acania
+ch_2.enemies.e6.name,Brigand
+ch_2.enemies.e11.name,kernos
+ch_2.enemies.e15.name,Soldat
+ch_2.enemies.e16.name,Soldat
+ch_2.enemies.e12.name,Mercenaire
+ch_2.enemies.e13.name,Mercenaire
+ch_2.enemies.e14.name,Mercenaire
+ch_2.enemies.e9.name,Brigand
+ch_2.enemies.e10.name,Brigand
+ch_2.enemies.e17.name,Brigand
+ch_2.events.ev1.name,Nouvel événement
+ch_2.events.ev3.name,Nouvel événement
+ch_2.events.ev2.name,Nouvel événement
+ch_2.events.ev4.name,Nouvel événement
+ch_2.events.ev5.name,Nouvel événement
+ch_2.events.ev6.name,Nouvel événement
+ch_2.villages.villages_7676c9c1-20af-4cc6-85ce-1874c2db42a8.name,Village
+ch_3.name,l'invasion
+ch_3.enemies.e1.name,Soldat
+ch_3.enemies.e2.name,Soldat
+ch_3.enemies.e4.name,Soldat
+ch_3.enemies.e6.name,Mercenaire
+ch_3.enemies.e7.name,Mercenaire
+ch_3.enemies.e8.name,Mercenaire
+ch_3.enemies.e9.name,chevalier
+ch_3.enemies.e10.name,chevalier
+ch_3.enemies.e11.name,chevalier
+ch_3.enemies.e12.name,chevalier
+ch_3.enemies.e13.name,Mercenaire
+ch_3.enemies.e14.name,Mercenaire
+ch_3.events.ev1.name,Nouvel événement
+ch_3.events.ev6.name,Nouvel événement
+ch_3.events.ev2.name,Nouvel événement
+ch_3.events.ev3.name,Nouvel événement
+ch_3.events.ev4.name,Nouvel événement
+ch_3.events.ev5.name,Nouvel événement
+ch_3.events.ev9.name,Nouvel événement (copie)
+ch_3.events.ev10.name,Nouvel événement (copie)
+ch_3.events.ev11.name,Nouvel événement
+ch_3.doors.doors_d41020d2-72d8-4774-975e-7f1ec8c6b28f.name,Porte
+ch_3.doors.doors_d5c241cf-9af3-44b9-a7bd-6ea72f5fb0f9.name,Porte
+ch_3.chests.chests_a93d49a9-5147-4927-9810-ec682fdd02b7.name,Coffre
+ch_3.chests.chests_06086cf1-a6cc-4a35-b4bf-33b40db53da8.name,Coffre
+ch_4.name,le siège 
+ch_4.enemies.e1.name,Mercenaire
+ch_4.enemies.e2.name,Mercenaire
+ch_4.enemies.e3.name,Soldat
+ch_4.enemies.e4.name,Soldat
+ch_4.enemies.e6.name,Soldat
+ch_4.enemies.e7.name,Soldat
+ch_4.enemies.e8.name,Soldat
+ch_4.enemies.e11.name,Mercenaire
+ch_4.enemies.e12.name,Mercenaire
+ch_4.enemies.e15.name,Mercenaire
+ch_4.enemies.e16.name,Mercenaire
+ch_4.enemies.e17.name,Soldat
+ch_4.enemies.e14.name,Soldat
+ch_4.enemies.e18.name,Mercenaire
+ch_4.enemies.e19.name,chevalier
+ch_4.enemies.e20.name,chevalier
+ch_4.enemies.e21.name,Mercenaire
+ch_4.enemies.e22.name,Mercenaire
+ch_4.enemies.e23.name,Soldat
+ch_4.enemies.e24.name,Soldat
+ch_4.enemies.e25.name,Emily
+ch_4.enemies.e26.name,Soldat
+ch_4.enemies.e27.name,Soldat
+ch_4.enemies.e28.name,chevalier
+ch_4.enemies.e29.name,chevalier
+ch_4.enemies.e30.name,chevalier
+ch_4.enemies.e31.name,chevalier
+ch_4.enemies.e32.name,Mercenaire
+ch_4.enemies.e33.name,Mercenaire
+ch_4.enemies.e34.name,Mercenaire
+ch_4.enemies.e35.name,Mercenaire
+ch_4.enemies.e36.name,Soldat
+ch_4.enemies.e37.name,Soldat
+ch_4.events.ev3.name,Nouvel événement
+ch_4.events.ev1.name,Nouvel événement
+ch_4.events.ev2.name,Nouvel événement
+ch_4.events.ev5.name,Nouvel événement
+ch_4.events.ev6.name,Nouvel événement (copie) (copie)
+ch_4.events.ev7.name,Nouvel événement (copie)
+ch_4.events.ev8.name,Nouvel événement (copie)
+ch_4.events.ev9.name,Nouvel événement
+ch_4.chests.chests_a1e7fb93-d964-47ac-855e-4855a35176f0.name,Coffre
+ch_4.chests.chests_c7aa6462-003d-4fe9-8fe3-8f44e0c2634a.name,Coffre
+ch_4.chests.chests_10183378-e0de-4bac-a626-693f86dcf7d1.name,Coffre
+ch_5.name,Le sauvetage
+ch_5.enemies.e28.name,Kresm
+ch_5.enemies.e17.name,Soldat
+ch_5.enemies.e18.name,Soldat
+ch_5.enemies.e19.name,Soldat
+ch_5.enemies.e20.name,Soldat
+ch_5.enemies.e21.name,Soldat
+ch_5.enemies.e22.name,Soldat
+ch_5.enemies.e24.name,Soldat
+ch_5.enemies.e25.name,Soldat
+ch_5.enemies.e29.name,Soldat
+ch_5.enemies.e31.name,Soldat
+ch_5.enemies.e33.name,Mercenaire
+ch_5.enemies.e34.name,Mercenaire
+ch_5.enemies.e35.name,Mercenaire
+ch_5.enemies.e36.name,Mercenaire
+ch_5.enemies.e37.name,Mercenaire
+ch_5.enemies.e38.name,Mercenaire
+ch_5.enemies.e39.name,Mercenaire
+ch_5.enemies.e40.name,Mercenaire
+ch_5.enemies.e41.name,Mercenaire
+ch_5.enemies.e42.name,Mercenaire
+ch_5.enemies.e43.name,Mercenaire
+ch_5.enemies.e26.name,Chevalier
+ch_5.enemies.e27.name,Chevalier
+ch_5.enemies.e30.name,Chevalier
+ch_5.enemies.e44.name,Chevalier
+ch_5.enemies.e32.name,Soldat
+ch_5.events.ev6.name,Nouvel événement
+ch_5.events.ev1.name,Nouvel événement
+ch_5.events.ev2.name,Nouvel événement
+ch_5.events.ev5.name,Nouvel événement
+ch_5.events.ev3.name,Nouvel événement
+ch_5.events.ev4.name,Nouvel événement
+ch_5.events.ev8.name,Nouvel événement (copie) (copie)
+ch_5.events.ev9.name,Nouvel événement (copie)
+ch_5.events.ev10.name,Nouvel événement (copie)
+ch_5.events.ev11.name,Nouvel événement (copie)
+ch_5.events.ev12.name,Nouvel événement (copie)
+ch_5.events.ev13.name,Nouvel événement (copie)
+ch_5.events.ev14.name,Nouvel événement (copie)
+ch_6.name,Le retour
+ch_6.events.ev1.name,Nouvel événement
+ch_6.events.ev2.name,Nouvel événement
+ch_6.events.ev4.name,Nouvel événement (copie) (copie)
+ch_6.events.ev5.name,Nouvel événement (copie)
+ch_6.events.ev6.name,Nouvel événement (copie)
+ch_6.events.ev7.name,Nouvel événement (copie)
+ch_6.events.ev8.name,Nouvel événement (copie)
+ch_6.events.ev9.name,Nouvel événement (copie)
+ch_6.events.ev10.name,Nouvel événement (copie)
+ch_6.villages.villages_6b4df3e9-ceed-4b8e-9b19-853d13020508.name,Village
+ch_6.villages.villages_58007d80-399c-47ec-b4f0-33c96a27150e.name,Village
+ch_6.chests.chests_7f8b327e-80db-4b55-8631-7fc44cf3c3c6.name,Coffre
+ch_6.shops.shop_4e77b75b-afb2-41ac-9d5d-575e6f509380.name,Marchand
+ch_6.shops.shop_b1086bca-b92b-4ee3-810e-cc96de017ec7.name,Marchand
+ch_8.name,l'Invasion
+ch_8.enemies.e4.name,Mercenaire
+ch_8.enemies.e7.name,Mercenaire
+ch_8.enemies.e8.name,Mercenaire
+ch_8.enemies.e10.name,Mercenaire
+ch_8.enemies.e12.name,Mercenaire
+ch_8.enemies.e14.name,Mercenaire
+ch_8.enemies.e15.name,Soldat
+ch_8.enemies.e16.name,Soldat
+ch_8.enemies.e17.name,Soldat
+ch_8.enemies.e18.name,Soldat
+ch_8.enemies.e20.name,Soldat
+ch_8.enemies.e22.name,Soldat
+ch_8.enemies.e25.name,Soldat
+ch_8.enemies.e29.name,Mercenaire
+ch_8.enemies.e30.name,chevalier
+ch_8.enemies.e31.name,chevalier
+ch_8.enemies.e32.name,chevalier
+ch_8.enemies.e33.name,chevalier
+ch_8.enemies.e34.name,chevalier
+ch_8.enemies.e35.name,chevalier
+ch_8.enemies.e23.name,Soeur
+ch_8.enemies.e24.name,Soeur
+ch_8.enemies.e27.name,Soeur
+ch_8.enemies.e26.name,Soeur
+ch_8.enemies.e28.name,Cavalier
+ch_8.enemies.e36.name,Cavalier
+ch_8.enemies.e37.name,Combattant
+ch_8.enemies.e38.name,Combattant
+ch_8.enemies.e39.name,Combattant
+ch_8.enemies.e40.name,Combattant
+ch_8.enemies.e41.name,Combattant
+ch_8.enemies.e42.name,Combattant
+ch_8.enemies.e43.name,Combattant
+ch_8.enemies.e44.name,Combattant
+ch_8.enemies.e45.name,Cavalier
+ch_8.enemies.e46.name,Cavalier
+ch_8.enemies.e47.name,Cavalier
+ch_8.enemies.e48.name,Cavalier
+ch_8.enemies.e49.name,Mereklar
+ch_8.enemies.e50.name,Arageas
+ch_8.events.ev1.name,Nouvel événement
+ch_8.events.ev2.name,Nouvel événement
+ch_8.events.ev3.name,Nouvel événement
+ch_8.events.ev4.name,Nouvel événement
+ch_8.events.ev5.name,Nouvel événement
+ch_8.events.ev6.name,Nouvel événement
+ch_8.events.ev7.name,Nouvel événement
+ch_8.events.ev10.name,Nouvel événement (copie) (copie)
+ch_8.events.ev11.name,Nouvel événement (copie)
+ch_8.events.ev12.name,Nouvel événement (copie)
+ch_8.events.ev13.name,Nouvel événement (copie)
+ch_8.events.ev14.name,Nouvel événement (copie)
+ch_8.events.ev15.name,Nouvel événement (copie)
+ch_8.events.ev16.name,Nouvel événement (copie)
+ch_9.name,Le Duel 
+ch_9.enemies.e1.name,A
+ch_9.events.ev1.name,Nouvel événement
+ch_9.events.ev2.name,Nouvel événement
+ch_9.events.ev4.name,Nouvel événement (copie) (copie)
+ch_9.events.ev5.name,Nouvel événement (copie)
+ch_10.name,La fuite de Malko
+ch_10.enemies.e1.name,Kernos
+ch_10.enemies.e3.name,Soldat
+ch_10.enemies.e6.name,Soldat
+ch_10.enemies.e7.name,Soldat
+ch_10.enemies.e5.name,Soldat
+ch_10.enemies.e8.name,Soldat
+ch_10.enemies.e9.name,Soldat
+ch_10.enemies.e10.name,Soldat
+ch_10.enemies.e11.name,Soldat
+ch_10.enemies.e12.name,Chevalier
+ch_10.enemies.e13.name,Chevalier
+ch_10.enemies.e14.name,Chevalier
+ch_10.enemies.e15.name,Chevalier
+ch_10.enemies.e16.name,Chevalier
+ch_10.enemies.e17.name,Chevalier
+ch_10.events.ev1.name,Nouvel événement
+ch_10.events.ev2.name,Nouvel événement
+ch_10.events.ev4.name,Nouvel événement (copie)
+ch_11.name,Le sanctuaire d'Acania
+ch_11.enemies.e1.name,Revenant · FE8
+ch_11.enemies.e2.name,Revenant · FE8
+ch_11.enemies.e3.name,Revenant · FE8
+ch_11.enemies.e5.name,Revenant · FE8
+ch_11.enemies.e6.name,Revenant · FE8
+ch_11.enemies.e7.name,Revenant · FE8
+ch_11.enemies.e8.name,Revenant · FE8
+ch_11.enemies.e9.name,Revenant · FE8
+ch_11.enemies.e11.name,Entombed · FE8
+ch_11.enemies.e12.name,Entombed · FE8
+ch_11.enemies.e13.name,Entombed · FE8
+ch_11.enemies.e14.name,Entombed · FE8
+ch_11.enemies.e18.name,Bonewalker · FE8
+ch_11.enemies.e19.name,Bonewalker · FE8
+ch_11.enemies.e21.name,Bonewalker · FE8
+ch_11.enemies.e22.name,Bonewalker · FE8
+ch_11.enemies.e20.name,Bonewalker (arc) · FE8
+ch_11.enemies.e23.name,Bonewalker (arc) · FE8
+ch_11.events.ev1.name,Nouvel événement
+ch_11.events.ev2.name,Nouvel événement
+ch_11.events.ev3.name,Nouvel événement
+ch_11.events.ev5.name,Nouvel événement (copie)
+ch_11.events.ev6.name,Nouvel événement (copie)
+ch_11.events.ev7.name,Nouvel événement (copie)
+ch_11.doors.doors_932fb3b6-3806-49b3-a340-ddff5d3d9bd3.name,Porte
+ch_12.name,La bataille des plaines
+ch_12.enemies.e1.name,Shena
+ch_12.enemies.e2.name,Shenos
+ch_12.enemies.e3.name,Swordmaster (M) · FE8
+ch_12.enemies.e4.name,Swordmaster (M) · FE8
+ch_12.enemies.e7.name,Nomad Trooper (M) · FE7
+ch_12.enemies.e8.name,Nomad Trooper (M) · FE7
+ch_12.enemies.e9.name,Cavalier (M) · FE7
+ch_12.enemies.e10.name,Cavalier (M) · FE7
+ch_12.enemies.e11.name,Cavalier (F) · FE7
+ch_12.enemies.e12.name,Cavalier (F) · FE7
+ch_12.enemies.e13.name,Myrmidon (M) · FE8
+ch_12.enemies.e14.name,Myrmidon (M) · FE8
+ch_12.enemies.e15.name,Myrmidon (F) · FE7
+ch_12.enemies.e16.name,Myrmidon (F) · FE7
+ch_12.enemies.e17.name,Archer (M) · FE7
+ch_12.enemies.e18.name,Archer (M) · FE7
+ch_12.enemies.e19.name,Archer (M) · FE7
+ch_12.enemies.e20.name,Archer (M) · FE7
+ch_12.enemies.e21.name,Myrmidon (M) · FE7
+ch_12.enemies.e22.name,Myrmidon (M) · FE7
+ch_12.enemies.e23.name,Myrmidon (M) · FE7
+ch_12.enemies.e24.name,Myrmidon (M) · FE7
+ch_12.enemies.e25.name,Myrmidon (M) · FE7
+ch_12.enemies.e26.name,Cavalier (M) · FE7
+ch_12.enemies.e27.name,Cavalier (M) · FE7
+ch_12.enemies.e28.name,Cavalier (F) · FE7
+ch_12.enemies.e29.name,Cavalier (F) · FE7
+ch_12.enemies.e30.name,Cavalier (F) · FE7
+ch_12.enemies.e31.name,Général
+ch_12.enemies.e33.name,Hero (M) · FE7
+ch_12.enemies.e34.name,Paladin (M) · FE7
+ch_12.enemies.e35.name,Wyvern Lord (M) · FE7
+ch_12.enemies.e36.name,Sage (F) · FE7
+ch_12.enemies.e37.name,Sage (F) · FE7
+ch_12.enemies.e38.name,Sage (F) · FE7
+ch_12.enemies.e39.name,Sage (F) · FE7
+ch_12.events.ev1.name,Nouvel événement
+ch_12.events.ev2.name,Nouvel événement
+ch_12.events.ev3.name,Nouvel événement
+ch_12.events.ev4.name,Nouvel événement
+ch_12.events.ev5.name,Nouvel événement
+ch_12.events.ev6.name,Nouvel événement
+ch_12.events.ev7.name,Nouvel événement

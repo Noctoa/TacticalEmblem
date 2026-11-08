@@ -1,0 +1,7 @@
+Interface du jeu (images du moteur Tactical Emblem)
+
+Ces images sont celles du jeu : fenêtres et curseur (ui/), interface de combat (ui/, ui/ff9, ui/radiant),
+annonces de phase (ui/phase-*.png), chiffres et bulles (feh/), icônes des compétences (skills/) et des objets
+(items/), météo (weather/), ultimes (ui/ultimate/), sauvegardes (ui/save/).
+Modifie-les librement en gardant le même nom et la même taille (les planches sont découpées en cases).
+Une image supprimée est recopiée telle qu'à l'origine à la prochaine ouverture du projet.

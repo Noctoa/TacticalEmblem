@@ -1,0 +1,219 @@
+﻿id,fr
+lord.name,Seigneur
+knight_lord.name,Chevalier-Seigneur
+lyn_lord.name,Seigneur (Lyn)
+blade_lord.name,Lame-Seigneur
+axe_lord.name,Seigneur (hache)
+great_lord.name,Grand Seigneur
+thief.name,Voleur
+cavalier.name,Cavalier
+knight.name,Chevalier
+fighter.name,Combattant
+mercenary.name,Mercenaire
+archer.name,Archer
+mage.name,Mage
+cleric.name,Soeur
+pegasus.name,Chevalière Pégase
+brigand.name,Brigand
+soldier.name,Soldat
+warrior.name,Guerrier
+hero.name,Héros
+paladin.name,Paladin
+great_knight.name,Grand chevalier
+general.name,Général
+recruit.name,Recrue
+cls_24.name,Prêtre
+cls_25.name,Villageois
+fe8_lord_eirika.name,Lord (Eirika) · FE8
+fe8_great_lord_ephraim.name,Great Lord (Ephraim) · FE8
+fe8_great_lord_eirika.name,Great Lord (Eirika) · FE8
+fe8_dancer.name,Dancer · FE8
+fe8_soldier.name,Soldier · FE8
+fe8_cavalier_m.name,Cavalier (M) · FE8
+fe8_cavalier_f.name,Cavalier (F) · FE8
+fe8_paladin_m.name,Paladin (M) · FE8
+fe8_paladin_f.name,Paladin (F) · FE8
+fe8_great_knight_m.name,Great Knight (M) · FE8
+fe8_great_knight_f.name,Great Knight (F) · FE8
+fe8_knight_m.name,Knight (M) · FE8
+fe8_knight_f.name,Knight (F) · FE8
+fe8_general_m.name,General (M) · FE8
+fe8_general_f.name,General (F) · FE8
+fe8_mercenary_m.name,Mercenary (M) · FE8
+fe8_mercenary_f.name,Mercenary (F) · FE8
+fe8_hero_m.name,Hero (M) · FE8
+fe8_hero_f.name,Hero (F) · FE8
+fe8_myrmidon_m.name,Myrmidon (M) · FE8
+fe8_myrmidon_f.name,Myrmidon (F) · FE8
+fe8_swordmaster_m.name,Swordmaster (M) · FE8
+fe8_swordmaster_f.name,Swordmaster (F) · FE8
+fe8_assassin_m.name,Assassin (M) · FE8
+fe8_assassin_f.name,Assassin (F) · FE8
+fe8_thief.name,Thief · FE8
+fe8_rogue.name,Rogue · FE8
+fe8_archer_m.name,Archer (M) · FE8
+fe8_archer_f.name,Archer (F) · FE8
+fe8_sniper_m.name,Sniper (M) · FE8
+fe8_sniper_f.name,Sniper (F) · FE8
+fe8_ranger_m.name,Ranger (M) · FE8
+fe8_ranger_f.name,Ranger (F) · FE8
+fe8_wyvern_rider_m.name,Wyvern Rider (M) · FE8
+fe8_wyvern_rider_f.name,Wyvern Rider (F) · FE8
+fe8_wyvern_lord_m.name,Wyvern Lord (M) · FE8
+fe8_wyvern_lord_f.name,Wyvern Lord (F) · FE8
+fe8_wyvern_knight_m.name,Wyvern Knight (M) · FE8
+fe8_wyvern_knight_f.name,Wyvern Knight (F) · FE8
+fe8_mage_m.name,Mage (M) · FE8
+fe8_mage_f.name,Mage (F) · FE8
+fe8_sage_m.name,Sage (M) · FE8
+fe8_sage_f.name,Sage (F) · FE8
+fe8_mage_knight_m.name,Mage Knight (M) · FE8
+fe8_mage_knight_f.name,Mage Knight (F) · FE8
+fe8_monk.name,Monk · FE8
+fe8_priest.name,Priest · FE8
+fe8_cleric.name,Cleric · FE8
+fe8_bishop_m.name,Bishop (M) · FE8
+fe8_bishop_f.name,Bishop (F) · FE8
+fe8_shaman_m.name,Shaman (M) · FE8
+fe8_shaman_f.name,Shaman (F) · FE8
+fe8_druid_m.name,Druid (M) · FE8
+fe8_druid_f.name,Druid (F) · FE8
+fe8_summoner_m.name,Summoner (M) · FE8
+fe8_summoner_f.name,Summoner (F) · FE8
+fe8_journeyman.name,Journeyman · FE8
+fe8_recruit.name,Recruit · FE8
+fe8_pupil.name,Pupil · FE8
+fe8_fighter.name,Fighter · FE8
+fe8_warrior.name,Warrior · FE8
+fe8_brigand.name,Brigand · FE8
+fe8_pirate.name,Pirate · FE8
+fe8_berserker.name,Berserker · FE8
+fe8_pegasus_knight.name,Pegasus Knight · FE8
+fe8_falcoknight.name,Falcoknight · FE8
+fe8_troubadour.name,Troubadour · FE8
+fe8_valkyrie.name,Valkyrie · FE8
+fe8_necromancer.name,Necromancer · FE8
+fe8_revenant.name,Revenant · FE8
+fe8_entombed.name,Entombed · FE8
+fe8_bonewalker.name,Bonewalker · FE8
+fe8_bonewalker_arc.name,Bonewalker (arc) · FE8
+fe8_wight.name,Wight · FE8
+fe8_wight_arc.name,Wight (arc) · FE8
+fe8_mogall.name,Mogall · FE8
+fe8_arch_mogall.name,Arch Mogall · FE8
+fe8_gargoyle.name,Gargoyle · FE8
+fe8_deathgoyle.name,Deathgoyle · FE8
+fe8_bael.name,Bael · FE8
+fe8_elder_bael.name,Elder Bael · FE8
+fe8_mauthe_doog.name,Mauthe Doog · FE8
+fe8_gwyllgi.name,Gwyllgi · FE8
+fe8_tarvos.name,Tarvos · FE8
+fe8_maelduin.name,Maelduin · FE8
+fe8_gorgon_egg.name,Gorgon Egg · FE8
+fe8_gorgon.name,Gorgon · FE8
+fe8_cyclops.name,Cyclops · FE8
+fe8_draco_zombie.name,Draco Zombie · FE8
+fe8_phantom.name,Phantom · FE8
+fe8_demon_king.name,Demon King · FE8
+fe9_ranger.name,Ranger · FE9
+fe9_lord.name,Lord · FE9
+fe9_hero.name,Hero · FE9
+fe9_myrmidon_m.name,Myrmidon (M) · FE9
+fe9_myrmidon_f.name,Myrmidon (F) · FE9
+fe9_swordmaster_m.name,Swordmaster (M) · FE9
+fe9_swordmaster_f.name,Swordmaster (F) · FE9
+fe9_soldier_m.name,Soldier (M) · FE9
+fe9_soldier_f.name,Soldier (F) · FE9
+fe9_halberdier_m.name,Halberdier (M) · FE9
+fe9_halberdier_f.name,Halberdier (F) · FE9
+fe9_fighter.name,Fighter · FE9
+fe9_warrior.name,Warrior · FE9
+fe9_archer.name,Archer · FE9
+fe9_sniper.name,Sniper · FE9
+fe9_knight.name,Knight · FE9
+fe9_general.name,General · FE9
+fe9_horse_knight_m.name,Horse Knight (M) · FE9
+fe9_horse_knight_f.name,Horse Knight (F) · FE9
+fe9_paladin_m.name,Paladin (M) · FE9
+fe9_paladin_f.name,Paladin (F) · FE9
+fe9_pegasus_knight.name,Pegasus Knight · FE9
+fe9_falcon_knight.name,Falcon Knight · FE9
+fe9_wyvern_rider_m.name,Wyvern Rider (M) · FE9
+fe9_wyvern_rider_f.name,Wyvern Rider (F) · FE9
+fe9_wyvern_lord_m.name,Wyvern Lord (M) · FE9
+fe9_wyvern_lord_f.name,Wyvern Lord (F) · FE9
+fe9_mage_m.name,Mage (M) · FE9
+fe9_mage_f.name,Mage (F) · FE9
+fe9_sage_m.name,Sage (M) · FE9
+fe9_sage_f.name,Sage (F) · FE9
+fe9_priest.name,Priest · FE9
+fe9_cleric.name,Cleric · FE9
+fe9_bishop_m.name,Bishop (M) · FE9
+fe9_bishop_f.name,Bishop (F) · FE9
+fe9_valkyrie.name,Valkyrie · FE9
+fe9_thief.name,Thief · FE9
+fe9_assassin_m.name,Assassin (M) · FE9
+fe9_bandit.name,Bandit · FE9
+fe9_berserker.name,Berserker · FE9
+fe7_lord_lyn.name,Lord (Lyn) · FE7
+fe7_lord_eliwood.name,Lord (Eliwood) · FE7
+fe7_lord_hector.name,Lord (Hector) · FE7
+fe7_blade_lord.name,Blade Lord · FE7
+fe7_knight_lord.name,Knight Lord · FE7
+fe7_great_lord.name,Great Lord · FE7
+fe7_dancer.name,Dancer · FE7
+fe7_bard.name,Bard · FE7
+fe7_soldier.name,Soldier · FE7
+fe7_cavalier_m.name,Cavalier (M) · FE7
+fe7_cavalier_f.name,Cavalier (F) · FE7
+fe7_paladin_m.name,Paladin (M) · FE7
+fe7_paladin_f.name,Paladin (F) · FE7
+fe7_knight_m.name,Knight (M) · FE7
+fe7_knight_f.name,Knight (F) · FE7
+fe7_general_m.name,General (M) · FE7
+fe7_general_f.name,General (F) · FE7
+fe7_mercenary_m.name,Mercenary (M) · FE7
+fe7_mercenary_f.name,Mercenary (F) · FE7
+fe7_hero_m.name,Hero (M) · FE7
+fe7_hero_f.name,Hero (F) · FE7
+fe7_myrmidon_m.name,Myrmidon (M) · FE7
+fe7_myrmidon_f.name,Myrmidon (F) · FE7
+fe7_swordmaster_m.name,Swordmaster (M) · FE7
+fe7_swordmaster_f.name,Swordmaster (F) · FE7
+fe7_thief_m.name,Thief (M) · FE7
+fe7_thief_f.name,Thief (F) · FE7
+fe7_assassin.name,Assassin · FE7
+fe7_archer_m.name,Archer (M) · FE7
+fe7_archer_f.name,Archer (F) · FE7
+fe7_sniper_m.name,Sniper (M) · FE7
+fe7_sniper_f.name,Sniper (F) · FE7
+fe7_nomad_m.name,Nomad (M) · FE7
+fe7_nomad_f.name,Nomad (F) · FE7
+fe7_nomad_trooper_m.name,Nomad Trooper (M) · FE7
+fe7_nomad_trooper_f.name,Nomad Trooper (F) · FE7
+fe7_wyvern_rider_m.name,Wyvern Rider (M) · FE7
+fe7_wyvern_rider_f.name,Wyvern Rider (F) · FE7
+fe7_wyvern_lord_m.name,Wyvern Lord (M) · FE7
+fe7_wyvern_lord_f.name,Wyvern Lord (F) · FE7
+fe7_mage_m.name,Mage (M) · FE7
+fe7_mage_f.name,Mage (F) · FE7
+fe7_sage_m.name,Sage (M) · FE7
+fe7_sage_f.name,Sage (F) · FE7
+fe7_monk.name,Monk · FE7
+fe7_cleric.name,Cleric · FE7
+fe7_bishop_m.name,Bishop (M) · FE7
+fe7_bishop_f.name,Bishop (F) · FE7
+fe7_shaman_m.name,Shaman (M) · FE7
+fe7_shaman_f.name,Shaman (F) · FE7
+fe7_druid_m.name,Druid (M) · FE7
+fe7_druid_f.name,Druid (F) · FE7
+fe7_fighter.name,Fighter · FE7
+fe7_warrior.name,Warrior · FE7
+fe7_brigand.name,Brigand · FE7
+fe7_pirate.name,Pirate · FE7
+fe7_corsair.name,Corsair · FE7
+fe7_berserker.name,Berserker · FE7
+fe7_pegasus_knight.name,Pegasus Knight · FE7
+fe7_falcoknight.name,Falcoknight · FE7
+fe7_troubadour.name,Troubadour · FE7
+fe7_valkyrie.name,Valkyrie · FE7

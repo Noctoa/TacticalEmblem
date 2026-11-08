@@ -1,0 +1,91 @@
+{
+ "type": "battler",
+ "name": "Guy [M] — Unarmed",
+ "facing": "left",
+ "cell": [
+  24,
+  38
+ ],
+ "anchor": [
+  12,
+  37
+ ],
+ "columns": 12,
+ "count": 2,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50
+   ],
+   "hit": 2
+  },
+  "critical": {
+   "frames": [
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50
+   ],
+   "hit": 2
+  },
+  "ranged": {
+   "frames": [
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50
+   ],
+   "hit": 2
+  },
+  "rangedCritical": {
+   "frames": [
+    0,
+    0,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50
+   ],
+   "hit": 2
+  },
+  "dodge": {
+   "frames": [
+    0,
+    1,
+    0
+   ],
+   "durations": [
+    17,
+    50,
+    50
+   ]
+  }
+ },
+ "source": "FE-Repo — Greentea"
+}

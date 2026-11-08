@@ -1,0 +1,435 @@
+{
+ "id": "fe7-unites-generiques",
+ "name": "Fire Emblem 7 — Unités génériques",
+ "version": "1.0.0",
+ "kind": "ressources",
+ "description": "Animations de combat, sprites de map et portraits des unités génériques de Fire Emblem 7 (soldat, chevalier, mage, archer, pirate, général…), reliés aux classes d'exemple et aux classes FE7 du pack de classes.",
+ "author": "Tactical Emblem (découpe) — planches : The Spriters Resource (Grim, Bonzai et leurs auteurs)",
+ "notice": "Ressources de fans (Nintendo / Intelligent Systems) : usage personnel.",
+ "ressources": "ressources",
+ "links": {
+  "classes": {
+   "archer": {
+    "folder": "Archer",
+    "battler": "ressources/personnages/Archer/combat_FE7",
+    "mapSprite": "ressources/personnages/Archer/map_FE7Male"
+   },
+   "knight": {
+    "folder": "Knight",
+    "battler": "ressources/personnages/Knight/combat_FE7",
+    "mapSprite": "ressources/personnages/Knight/map_FE7"
+   },
+   "mage": {
+    "folder": "Mage",
+    "battler": "ressources/personnages/Mage/combat_FE7",
+    "mapSprite": "ressources/personnages/Mage/map_FE7Male"
+   },
+   "cavalier": {
+    "folder": "Cavalier",
+    "battler": "ressources/personnages/Cavalier/combat_FE7",
+    "mapSprite": "ressources/personnages/Cavalier/map_FE7"
+   },
+   "fighter": {
+    "folder": "Fighter",
+    "battler": "ressources/personnages/Fighter/combat_FE7",
+    "mapSprite": "ressources/personnages/Fighter/map_FE7"
+   },
+   "mercenary": {
+    "folder": "Mercenary",
+    "battler": "ressources/personnages/Mercenary/combat_FE7",
+    "mapSprite": "ressources/personnages/Mercenary/map_FE7"
+   },
+   "fe_myrmidon": {
+    "folder": "Myrmidon",
+    "battler": "ressources/personnages/Myrmidon/combat_FE7",
+    "mapSprite": "ressources/personnages/Myrmidon/map_FE7Male"
+   },
+   "fe_swordmaster": {
+    "folder": "Swordmaster",
+    "mapSprite": "ressources/personnages/Swordmaster/map_FE7Male"
+   },
+   "warrior": {
+    "folder": "Warrior",
+    "battler": "ressources/personnages/Warrior/combat_FE7",
+    "mapSprite": "ressources/personnages/Warrior/map_FE7"
+   },
+   "hero": {
+    "folder": "Hero",
+    "mapSprite": "ressources/personnages/Hero/map_FE7"
+   },
+   "paladin": {
+    "folder": "Paladin",
+    "battler": "ressources/personnages/Paladin/combat_FE7",
+    "mapSprite": "ressources/personnages/Paladin/map_FE7"
+   },
+   "general": {
+    "folder": "General",
+    "battler": "ressources/personnages/General/combat_FE7",
+    "mapSprite": "ressources/personnages/General/map_FE7"
+   },
+   "thief": {
+    "folder": "Thief",
+    "battler": "ressources/personnages/Thief/combat_FE7",
+    "mapSprite": "ressources/personnages/Thief/map_FE7"
+   },
+   "cleric": {
+    "folder": "Cleric",
+    "mapSprite": "ressources/personnages/Cleric/map_FE7"
+   },
+   "pegasus": {
+    "folder": "Pegasus Knight",
+    "mapSprite": "ressources/personnages/Pegasus Knight/map_FE7"
+   },
+   "fe_falcon": {
+    "folder": "Falcon Knight",
+    "mapSprite": "ressources/personnages/Falcon Knight/map_FE7"
+   },
+   "fe_wyvern": {
+    "folder": "Wyvern Rider",
+    "mapSprite": "ressources/personnages/Wyvern Rider/map_FE7"
+   },
+   "soldier": {
+    "folder": "Soldier",
+    "battler": "ressources/personnages/Soldier/combat_FE7",
+    "mapSprite": "ressources/personnages/Soldier/map_FE7"
+   },
+   "brigand": {
+    "folder": "Brigand",
+    "mapSprite": "ressources/personnages/Brigand/map_FE7"
+   },
+   "fe_berserker": {
+    "folder": "Berserker",
+    "battler": "ressources/personnages/Berserker/combat_FE7",
+    "mapSprite": "ressources/personnages/Berserker/map_FE7"
+   },
+   "fe_dancer": {
+    "folder": "Dancer",
+    "battler": "ressources/personnages/Dancer/combat_FE7",
+    "mapSprite": "ressources/personnages/Dancer/map_FE7"
+   },
+   "fe_troubadour": {
+    "folder": "Troubadour",
+    "battler": "ressources/personnages/Troubadour/combat_FE7",
+    "mapSprite": "ressources/personnages/Troubadour/map_FE7"
+   },
+   "fe_valkyrie": {
+    "folder": "Valkyrie",
+    "mapSprite": "ressources/personnages/Valkyrie/map_FE7"
+   },
+   "fe_monk": {
+    "folder": "Monk",
+    "battler": "ressources/personnages/Monk/combat_FE7",
+    "mapSprite": "ressources/personnages/Monk/map_FE7"
+   },
+   "fe_bishop": {
+    "folder": "Bishop",
+    "mapSprite": "ressources/personnages/Bishop/map_FE7Male"
+   },
+   "fe_shaman": {
+    "folder": "Shaman",
+    "battler": "ressources/personnages/Shaman/combat_FE7",
+    "mapSprite": "ressources/personnages/Shaman/map_FE7Male"
+   },
+   "fe_druid": {
+    "folder": "Druid",
+    "battler": "ressources/personnages/Druid/combat_FE7",
+    "mapSprite": "ressources/personnages/Druid/map_FE7Male"
+   },
+   "fe_sage": {
+    "folder": "Sage",
+    "battler": "ressources/personnages/Sage/combat_FE7",
+    "mapSprite": "ressources/personnages/Sage/map_FE7Male"
+   },
+   "fe_sniper": {
+    "folder": "Sniper",
+    "battler": "ressources/personnages/Sniper/combat_FE7Male",
+    "mapSprite": "ressources/personnages/Sniper/map_FE7Male"
+   },
+   "fe_nomad": {
+    "folder": "Nomad",
+    "battler": "ressources/personnages/Nomad/combat_FE7",
+    "mapSprite": "ressources/personnages/Nomad/map_FE7Male"
+   },
+   "fe_assassin": {
+    "folder": "Assassin",
+    "battler": "ressources/personnages/Assassin/combat_FE7",
+    "mapSprite": "ressources/personnages/Assassin/map_FE7"
+   },
+   "pirate": {
+    "folder": "Pirate",
+    "battler": "ressources/personnages/Pirate/combat_FE7",
+    "mapSprite": "ressources/personnages/Pirate/map_FE7"
+   },
+   "fe7_soldier": {
+    "folder": "Soldier",
+    "battler": "ressources/personnages/Soldier/combat_FE7",
+    "mapSprite": "ressources/personnages/Soldier/map_FE7"
+   },
+   "fe7_dancer": {
+    "folder": "Dancer",
+    "battler": "ressources/personnages/Dancer/combat_FE7",
+    "mapSprite": "ressources/personnages/Dancer/map_FE7"
+   },
+   "fe7_assassin": {
+    "folder": "Assassin",
+    "battler": "ressources/personnages/Assassin/combat_FE7",
+    "mapSprite": "ressources/personnages/Assassin/map_FE7"
+   },
+   "fe7_bard": {
+    "folder": "Bard",
+    "mapSprite": "ressources/personnages/Bard/map_FE7"
+   },
+   "fe7_monk": {
+    "folder": "Monk",
+    "battler": "ressources/personnages/Monk/combat_FE7",
+    "mapSprite": "ressources/personnages/Monk/map_FE7"
+   },
+   "fe7_cleric": {
+    "folder": "Cleric",
+    "mapSprite": "ressources/personnages/Cleric/map_FE7"
+   },
+   "fe7_fighter": {
+    "folder": "Fighter",
+    "battler": "ressources/personnages/Fighter/combat_FE7",
+    "mapSprite": "ressources/personnages/Fighter/map_FE7"
+   },
+   "fe7_warrior": {
+    "folder": "Warrior",
+    "battler": "ressources/personnages/Warrior/combat_FE7",
+    "mapSprite": "ressources/personnages/Warrior/map_FE7"
+   },
+   "fe7_brigand": {
+    "folder": "Brigand",
+    "mapSprite": "ressources/personnages/Brigand/map_FE7"
+   },
+   "fe7_pirate": {
+    "folder": "Pirate",
+    "battler": "ressources/personnages/Pirate/combat_FE7",
+    "mapSprite": "ressources/personnages/Pirate/map_FE7"
+   },
+   "fe7_corsair": {
+    "folder": "Pirate",
+    "mapSprite": "ressources/personnages/Pirate/map_FE7"
+   },
+   "fe7_berserker": {
+    "folder": "Berserker",
+    "battler": "ressources/personnages/Berserker/combat_FE7",
+    "mapSprite": "ressources/personnages/Berserker/map_FE7"
+   },
+   "fe7_pegasus_knight": {
+    "folder": "Pegasus Knight",
+    "mapSprite": "ressources/personnages/Pegasus Knight/map_FE7"
+   },
+   "fe7_falcoknight": {
+    "folder": "Falcon Knight",
+    "mapSprite": "ressources/personnages/Falcon Knight/map_FE7"
+   },
+   "fe7_troubadour": {
+    "folder": "Troubadour",
+    "battler": "ressources/personnages/Troubadour/combat_FE7",
+    "mapSprite": "ressources/personnages/Troubadour/map_FE7"
+   },
+   "fe7_valkyrie": {
+    "folder": "Valkyrie",
+    "mapSprite": "ressources/personnages/Valkyrie/map_FE7"
+   },
+   "fe7_cavalier_m": {
+    "folder": "Cavalier",
+    "battler": "ressources/personnages/Cavalier/combat_FE7",
+    "mapSprite": "ressources/personnages/Cavalier/map_FE7"
+   },
+   "fe7_cavalier_f": {
+    "folder": "Cavalier",
+    "battler": "ressources/personnages/Cavalier/combat_FE7",
+    "mapSprite": "ressources/personnages/Cavalier/map_FE7"
+   },
+   "fe7_paladin_m": {
+    "folder": "Paladin",
+    "battler": "ressources/personnages/Paladin/combat_FE7",
+    "mapSprite": "ressources/personnages/Paladin/map_FE7"
+   },
+   "fe7_paladin_f": {
+    "folder": "Paladin",
+    "battler": "ressources/personnages/Paladin/combat_FE7",
+    "mapSprite": "ressources/personnages/Paladin/map_FE7"
+   },
+   "fe7_knight_m": {
+    "folder": "Knight",
+    "battler": "ressources/personnages/Knight/combat_FE7",
+    "mapSprite": "ressources/personnages/Knight/map_FE7"
+   },
+   "fe7_knight_f": {
+    "folder": "Knight",
+    "battler": "ressources/personnages/Knight/combat_FE7",
+    "mapSprite": "ressources/personnages/Knight/map_FE7"
+   },
+   "fe7_general_m": {
+    "folder": "General",
+    "battler": "ressources/personnages/General/combat_FE7",
+    "mapSprite": "ressources/personnages/General/map_FE7"
+   },
+   "fe7_general_f": {
+    "folder": "General",
+    "battler": "ressources/personnages/General/combat_FE7",
+    "mapSprite": "ressources/personnages/General/map_FE7"
+   },
+   "fe7_mercenary_m": {
+    "folder": "Mercenary",
+    "battler": "ressources/personnages/Mercenary/combat_FE7",
+    "mapSprite": "ressources/personnages/Mercenary/map_FE7"
+   },
+   "fe7_mercenary_f": {
+    "folder": "Mercenary",
+    "battler": "ressources/personnages/Mercenary/combat_FE7",
+    "mapSprite": "ressources/personnages/Mercenary/map_FE7"
+   },
+   "fe7_hero_m": {
+    "folder": "Hero",
+    "mapSprite": "ressources/personnages/Hero/map_FE7"
+   },
+   "fe7_hero_f": {
+    "folder": "Hero",
+    "mapSprite": "ressources/personnages/Hero/map_FE7Female"
+   },
+   "fe7_myrmidon_m": {
+    "folder": "Myrmidon",
+    "battler": "ressources/personnages/Myrmidon/combat_FE7",
+    "mapSprite": "ressources/personnages/Myrmidon/map_FE7Male"
+   },
+   "fe7_myrmidon_f": {
+    "folder": "Myrmidon",
+    "battler": "ressources/personnages/Myrmidon/combat_FE7",
+    "mapSprite": "ressources/personnages/Myrmidon/map_FE7Female"
+   },
+   "fe7_swordmaster_m": {
+    "folder": "Swordmaster",
+    "mapSprite": "ressources/personnages/Swordmaster/map_FE7Male"
+   },
+   "fe7_swordmaster_f": {
+    "folder": "Swordmaster",
+    "mapSprite": "ressources/personnages/Swordmaster/map_FE7Female"
+   },
+   "fe7_thief_m": {
+    "folder": "Thief",
+    "battler": "ressources/personnages/Thief/combat_FE7",
+    "mapSprite": "ressources/personnages/Thief/map_FE7"
+   },
+   "fe7_thief_f": {
+    "folder": "Thief",
+    "battler": "ressources/personnages/Thief/combat_FE7",
+    "mapSprite": "ressources/personnages/Thief/map_FE7"
+   },
+   "fe7_archer_m": {
+    "folder": "Archer",
+    "battler": "ressources/personnages/Archer/combat_FE7",
+    "mapSprite": "ressources/personnages/Archer/map_FE7Male"
+   },
+   "fe7_archer_f": {
+    "folder": "Archer",
+    "battler": "ressources/personnages/Archer/combat_FE7",
+    "mapSprite": "ressources/personnages/Archer/map_FE7Female"
+   },
+   "fe7_nomad_m": {
+    "folder": "Nomad",
+    "battler": "ressources/personnages/Nomad/combat_FE7",
+    "mapSprite": "ressources/personnages/Nomad/map_FE7Male"
+   },
+   "fe7_nomad_f": {
+    "folder": "Nomad",
+    "battler": "ressources/personnages/Nomad/combat_FE7",
+    "mapSprite": "ressources/personnages/Nomad/map_FE7Female"
+   },
+   "fe7_nomad_trooper_m": {
+    "folder": "Nomad Trooper",
+    "mapSprite": "ressources/personnages/Nomad Trooper/map_FE7Male"
+   },
+   "fe7_nomad_trooper_f": {
+    "folder": "Nomad Trooper",
+    "mapSprite": "ressources/personnages/Nomad Trooper/map_FE7Female"
+   },
+   "fe7_wyvern_rider_m": {
+    "folder": "Wyvern Rider",
+    "mapSprite": "ressources/personnages/Wyvern Rider/map_FE7"
+   },
+   "fe7_wyvern_rider_f": {
+    "folder": "Wyvern Rider",
+    "mapSprite": "ressources/personnages/Wyvern Rider/map_FE7"
+   },
+   "fe7_wyvern_lord_m": {
+    "folder": "Wyvern Lord",
+    "mapSprite": "ressources/personnages/Wyvern Lord/map_FE7"
+   },
+   "fe7_wyvern_lord_f": {
+    "folder": "Wyvern Lord",
+    "mapSprite": "ressources/personnages/Wyvern Lord/map_FE7"
+   },
+   "fe7_mage_m": {
+    "folder": "Mage",
+    "battler": "ressources/personnages/Mage/combat_FE7",
+    "mapSprite": "ressources/personnages/Mage/map_FE7Male"
+   },
+   "fe7_mage_f": {
+    "folder": "Mage",
+    "battler": "ressources/personnages/Mage/combat_FE7",
+    "mapSprite": "ressources/personnages/Mage/map_FE7Female"
+   },
+   "fe7_sage_m": {
+    "folder": "Sage",
+    "battler": "ressources/personnages/Sage/combat_FE7",
+    "mapSprite": "ressources/personnages/Sage/map_FE7Male"
+   },
+   "fe7_sage_f": {
+    "folder": "Sage",
+    "battler": "ressources/personnages/Sage/combat_FE7",
+    "mapSprite": "ressources/personnages/Sage/map_FE7Female"
+   },
+   "fe7_bishop_m": {
+    "folder": "Bishop",
+    "mapSprite": "ressources/personnages/Bishop/map_FE7Male"
+   },
+   "fe7_bishop_f": {
+    "folder": "Bishop",
+    "mapSprite": "ressources/personnages/Bishop/map_FE7Female"
+   },
+   "fe7_shaman_m": {
+    "folder": "Shaman",
+    "battler": "ressources/personnages/Shaman/combat_FE7",
+    "mapSprite": "ressources/personnages/Shaman/map_FE7Male"
+   },
+   "fe7_shaman_f": {
+    "folder": "Shaman",
+    "battler": "ressources/personnages/Shaman/combat_FE7",
+    "mapSprite": "ressources/personnages/Shaman/map_FE7Female"
+   },
+   "fe7_druid_m": {
+    "folder": "Druid",
+    "battler": "ressources/personnages/Druid/combat_FE7",
+    "mapSprite": "ressources/personnages/Druid/map_FE7Male"
+   },
+   "fe7_druid_f": {
+    "folder": "Druid",
+    "battler": "ressources/personnages/Druid/combat_FE7",
+    "mapSprite": "ressources/personnages/Druid/map_FE7Female"
+   },
+   "fe7_sniper_m": {
+    "folder": "Sniper",
+    "battler": "ressources/personnages/Sniper/combat_FE7Male",
+    "mapSprite": "ressources/personnages/Sniper/map_FE7Male"
+   },
+   "fe7_sniper_f": {
+    "folder": "Sniper",
+    "battler": "ressources/personnages/Sniper/combat_FE7Female",
+    "mapSprite": "ressources/personnages/Sniper/map_FE7Female"
+   }
+  },
+  "characters": {
+   "fe7:Sonia": {
+    "folder": "Sonia",
+    "portrait": "ressources/personnages/Sonia/portrait.png",
+    "battler": "ressources/personnages/Sonia/combat"
+   }
+  },
+  "battlebacks": {}
+ },
+ "scripts": []
+}

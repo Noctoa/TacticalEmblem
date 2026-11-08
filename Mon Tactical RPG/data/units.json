@@ -1,0 +1,3063 @@
+[
+ {
+  "isLord": true,
+  "mapSprite": "",
+  "battler": "ressources/personnages/FE 6-7 Blazing Blade/Eliwood/combat_T2VanillaWeaponsM_Sword",
+  "portrait": "ressources/personnages/Eliwood/portrait.png",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": true,
+  "ending": "Eliwood rentra à Pherae et succéda à son père. On dit qu'il gouverna avec douceur, et qu'il n'oublia jamais ceux qui s'étaient battus à ses côtés.",
+  "series": "Fire Emblem 7",
+  "id": "c_eliwood",
+  "name": "Eliwood",
+  "rarity": 5,
+  "classId": "lord",
+  "level": 1,
+  "color": "#c0392b",
+  "convoy": false,
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 45,
+   "lck": 45,
+   "def": 35,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_rapier"
+   },
+   {
+    "id": "w_iron_sword"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "bio": "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air.",
+  "ultimate": "ult_cri",
+  "weaponRanks": {
+   "sword": "D"
+  }
+ },
+ {
+  "isLord": true,
+  "mapSprite": "ressources/personnages/Lyn/map_genere",
+  "battler": "ressources/personnages/Lyn/combat_genere",
+  "portrait": "ressources/personnages/Lyn/portrait_genere.png",
+  "movBonus": 0,
+  "gender": "femme",
+  "protagonist": false,
+  "ending": "Lyn retourna dans les plaines de Sacae. Les nomades parlent encore de la cavalière qui chevauchait plus vite que le vent.",
+  "series": "Fire Emblem 7",
+  "id": "c_lyn",
+  "name": "Lyn",
+  "rarity": 5,
+  "classId": "lyn_lord",
+  "level": 1,
+  "color": "#16a34a",
+  "stats": {
+   "hp": 19,
+   "str": 6,
+   "mag": 0,
+   "skl": 9,
+   "spd": 11,
+   "lck": 5,
+   "def": 4,
+   "res": 3
+  },
+  "growths": {
+   "hp": 70,
+   "str": 40,
+   "mag": 5,
+   "skl": 60,
+   "spd": 60,
+   "lck": 55,
+   "def": 20,
+   "res": 30
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   },
+   {
+    "id": "w_iron_bow"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "bio": "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc.",
+  "ultimate": "ult_assaut",
+  "convoy": false,
+  "generator": {
+   "hair": "Lyn",
+   "face": "Lyn",
+   "armor": "Lyn",
+   "token": "Lyn",
+   "colors": {
+    "skin": "#f8c880",
+    "hair": "#26544d",
+    "eyes": "",
+    "metal": "#589c80",
+    "trim": "#c4a864",
+    "cloth": "#2b6578",
+    "leather": "#842034"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "lord-f-lyn-sword",
+   "gender": "f",
+   "ramps": {
+    "skin": [
+     "#f8f8c8",
+     "#f8c880",
+     "#e89860",
+     "#987048",
+     "#604848"
+    ],
+    "metal": [
+     "#80d78c",
+     "#589c80",
+     "#356559"
+    ],
+    "trim": [
+     "#e4dca8",
+     "#c4a864",
+     "#846448"
+    ],
+    "leather": [
+     "#d02838",
+     "#842034",
+     "#582030"
+    ]
+   }
+  },
+  "battleColors": "custom:#3d90ab,#2b6578,#1e4654",
+  "weaponRanks": {
+   "sword": "D"
+  }
+ },
+ {
+  "isLord": true,
+  "mapSprite": "ressources/personnages/Hector/map_genere",
+  "battler": "ressources/personnages/Hector/combat_genere",
+  "portrait": "ressources/personnages/Hector/portrait_genere.png",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": false,
+  "ending": "Hector devint marquis d'Ostia. Il garda la même hache, le même caractère, et une fâcheuse tendance à régler les conflits lui-même.",
+  "series": "Fire Emblem 7",
+  "id": "c_hector",
+  "name": "Hector",
+  "rarity": 5,
+  "classId": "axe_lord",
+  "level": 1,
+  "color": "#2563eb",
+  "stats": {
+   "hp": 19,
+   "str": 7,
+   "mag": 0,
+   "skl": 4,
+   "spd": 5,
+   "lck": 3,
+   "def": 8,
+   "res": 0
+  },
+  "growths": {
+   "hp": 90,
+   "str": 60,
+   "mag": 5,
+   "skl": 45,
+   "spd": 35,
+   "lck": 30,
+   "def": 50,
+   "res": 25
+  },
+  "inventory": [
+   {
+    "id": "w_iron_axe"
+   },
+   {
+    "id": "w_hand_axe"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "bio": "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite.",
+  "ultimate": "ult_meteore",
+  "convoy": false,
+  "generator": {
+   "hair": "Hector",
+   "face": "Hector",
+   "armor": "Hector",
+   "token": "Hector",
+   "colors": {
+    "skin": "#f8d870",
+    "hair": "#304494",
+    "eyes": "",
+    "metal": "#4c495b",
+    "trim": "#d4a058",
+    "cloth": "#304494",
+    "leather": "#a41008"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "lord-m-hector-axe",
+   "gender": "m",
+   "ramps": {
+    "hair": [
+     "#4c63d3",
+     "#304494",
+     "#303962"
+    ],
+    "skin": [
+     "#f8f8b8",
+     "#f8d870",
+     "#e89850",
+     "#987048",
+     "#604848"
+    ],
+    "trim": [
+     "#f4e498",
+     "#d4a058",
+     "#805c44"
+    ],
+    "cloth": [
+     "#4c63d3",
+     "#304494",
+     "#303962"
+    ],
+    "leather": [
+     "#ec1c18",
+     "#a41008",
+     "#601018"
+    ]
+   }
+  },
+  "battleColors": "custom:#4c63d3,#304494,#303962",
+  "weaponRanks": {
+   "axe": "D"
+  }
+ },
+ {
+  "isLord": false,
+  "mapSprite": "ressources/personnages/Cloud/map",
+  "battler": "ressources/personnages/Cloud/combat",
+  "portrait": "ressources/personnages/Cloud/portrait.png",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": false,
+  "ending": "Cloud reprit la route aussi silencieusement qu'il était arrivé. Personne ne sut jamais vraiment d'où il venait.",
+  "series": "Final Fantasy VII",
+  "id": "c_cloud",
+  "name": "Cloud",
+  "rarity": 5,
+  "classId": "mercenary",
+  "level": 8,
+  "color": "#ca8a04",
+  "recruitAfter": "",
+  "stats": {
+   "hp": 28,
+   "str": 10,
+   "mag": 0,
+   "skl": 12,
+   "spd": 11,
+   "lck": 6,
+   "def": 8,
+   "res": 2
+  },
+  "growths": {
+   "hp": 80,
+   "str": 50,
+   "mag": 5,
+   "skl": 50,
+   "spd": 45,
+   "lck": 30,
+   "def": 30,
+   "res": 15
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   },
+   {
+    "id": "w_wind_sword"
+   },
+   {
+    "id": "i_vulnerary"
+   },
+   {
+    "id": "i_master_seal"
+   }
+  ],
+  "bio": "Mercenaire de passage. Il ne combat que pour lui-même… en théorie.",
+  "ultimate": "ult_assaut",
+  "convoy": false
+ },
+ {
+  "isLord": false,
+  "mapSprite": "",
+  "battler": "",
+  "portrait": "",
+  "movBonus": 0,
+  "gender": "femme",
+  "protagonist": false,
+  "ending": "",
+  "series": "Fire Emblem 7",
+  "id": "c_rebecca",
+  "name": "Rebecca",
+  "rarity": 5,
+  "classId": "archer",
+  "level": 1,
+  "color": "#65a30d",
+  "stats": {
+   "hp": 17,
+   "str": 4,
+   "mag": 0,
+   "skl": 4,
+   "spd": 6,
+   "lck": 4,
+   "def": 3,
+   "res": 1
+  },
+  "growths": {
+   "hp": 60,
+   "str": 40,
+   "mag": 5,
+   "skl": 50,
+   "spd": 60,
+   "lck": 50,
+   "def": 15,
+   "res": 30
+  },
+  "inventory": [
+   {
+    "id": "w_iron_bow"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "bio": "Chasseresse du village de Pherae. Elle ne rate jamais un lapin… ni un brigand.",
+  "convoy": false
+ },
+ {
+  "isLord": false,
+  "mapSprite": "",
+  "battler": "",
+  "portrait": "",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": false,
+  "ending": "",
+  "series": "Fire Emblem 7",
+  "id": "c_oswin",
+  "name": "Oswin",
+  "rarity": 4,
+  "classId": "knight",
+  "level": 9,
+  "color": "#64748b",
+  "stats": {
+   "hp": 28,
+   "str": 13,
+   "mag": 0,
+   "skl": 9,
+   "spd": 5,
+   "lck": 3,
+   "def": 13,
+   "res": 3
+  },
+  "growths": {
+   "hp": 90,
+   "str": 40,
+   "mag": 0,
+   "skl": 30,
+   "spd": 30,
+   "lck": 35,
+   "def": 55,
+   "res": 30
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   },
+   {
+    "id": "w_javelin"
+   }
+  ],
+  "bio": "Chevalier d'Ostia, fidèle à Hector. Lent, mais rien ne passe.",
+  "convoy": false
+ },
+ {
+  "isLord": false,
+  "mapSprite": "",
+  "battler": "",
+  "portrait": "",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": false,
+  "ending": "",
+  "series": "Fire Emblem 7",
+  "id": "c_matthew",
+  "name": "Matthew",
+  "rarity": 4,
+  "classId": "thief",
+  "level": 2,
+  "color": "#a16207",
+  "stats": {
+   "hp": 18,
+   "str": 4,
+   "mag": 0,
+   "skl": 4,
+   "spd": 11,
+   "lck": 2,
+   "def": 2,
+   "res": 0
+  },
+  "growths": {
+   "hp": 75,
+   "str": 30,
+   "mag": 0,
+   "skl": 40,
+   "spd": 70,
+   "lck": 50,
+   "def": 25,
+   "res": 20
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   },
+   {
+    "id": "i_chest_key"
+   }
+  ],
+  "bio": "Espion d'Ostia, toujours une plaisanterie aux lèvres.",
+  "convoy": false
+ },
+ {
+  "isLord": false,
+  "mapSprite": "",
+  "battler": "",
+  "portrait": "",
+  "movBonus": 0,
+  "gender": "femme",
+  "protagonist": false,
+  "ending": "",
+  "series": "Fire Emblem 7",
+  "id": "c_serra",
+  "name": "Serra",
+  "classId": "cleric",
+  "level": 1,
+  "color": "#f472b6",
+  "stats": {
+   "hp": 17,
+   "str": 2,
+   "mag": 5,
+   "skl": 8,
+   "spd": 6,
+   "lck": 6,
+   "def": 2,
+   "res": 5
+  },
+  "growths": {
+   "hp": 50,
+   "str": 5,
+   "mag": 50,
+   "skl": 30,
+   "spd": 50,
+   "lck": 60,
+   "def": 15,
+   "res": 55
+  },
+  "inventory": [
+   {
+    "id": "w_heal"
+   }
+  ],
+  "bio": "Prêtresse d'Ostia. Elle soigne vite, et parle encore plus vite.",
+  "ultimate": "ult_aurore",
+  "convoy": false
+ },
+ {
+  "isLord": false,
+  "mapSprite": "",
+  "battler": "",
+  "portrait": "",
+  "movBonus": 0,
+  "gender": "homme",
+  "protagonist": false,
+  "ending": "",
+  "series": "Fire Emblem 7",
+  "id": "c_dorcas",
+  "name": "Dorcas",
+  "classId": "fighter",
+  "level": 3,
+  "color": "#78350f",
+  "stats": {
+   "hp": 30,
+   "str": 7,
+   "mag": 0,
+   "skl": 7,
+   "spd": 6,
+   "lck": 3,
+   "def": 3,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 60,
+   "mag": 0,
+   "skl": 40,
+   "spd": 20,
+   "lck": 45,
+   "def": 25,
+   "res": 15
+  },
+  "inventory": [
+   {
+    "id": "w_iron_axe"
+   }
+  ],
+  "bio": "Guerrier de Bern parti gagner de quoi soigner sa femme.",
+  "convoy": false
+ },
+ {
+  "id": "c_10",
+  "name": "Reito",
+  "series": "",
+  "classId": "cavalier",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Nouvelle unité/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Nouvelle unité/map_genere",
+  "battler": "ressources/personnages/Nouvelle unité/combat_genere",
+  "generator": {
+   "hair": "Alen",
+   "face": "Sain",
+   "armor": "Alen",
+   "token": "Rath",
+   "colors": {
+    "skin": "#f8c090",
+    "hair": "#406ca8",
+    "eyes": "",
+    "metal": "#d4a058",
+    "trim": "#ccc4c0",
+    "cloth": "#e0c090",
+    "leather": "#ccc4c0"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     4
+    ],
+    "face": [
+     0,
+     4
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "nomad-m",
+   "ramps": {
+    "hair": [
+     "#4ca7d7",
+     "#406ca8",
+     "#484175"
+    ],
+    "skin": [
+     "#f8e8c0",
+     "#f8c090",
+     "#e88c58",
+     "#986848",
+     "#604848"
+    ],
+    "metal": [
+     "#f4e498",
+     "#d4a058",
+     "#805c44"
+    ],
+    "trim": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ],
+    "cloth": [
+     "#f4f8d0",
+     "#e0c090",
+     "#a47858"
+    ],
+    "leather": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ]
+   }
+  },
+  "battleColors": "custom:#f4f8d0,#e0c090,#a47858",
+  "recruitAfter": "",
+  "convoy": false
+ },
+ {
+  "id": "c_11",
+  "name": "Eliane",
+  "series": "FE custom",
+  "classId": "mage",
+  "level": 1,
+  "isLord": false,
+  "color": "#38f58a",
+  "stats": {
+   "hp": 21,
+   "str": 3,
+   "mag": 4,
+   "skl": 5,
+   "spd": 8,
+   "lck": 7,
+   "def": 2,
+   "res": 3
+  },
+  "growths": {
+   "hp": 65,
+   "str": 5,
+   "mag": 50,
+   "skl": 50,
+   "spd": 50,
+   "lck": 40,
+   "def": 30,
+   "res": 40
+  },
+  "inventory": [
+   {
+    "id": "w_fire"
+   }
+  ],
+  "portrait": "ressources/personnages/Eliane/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Eliane/map_genere",
+  "battler": "ressources/personnages/Eliane/combat_genere",
+  "generator": {
+   "hair": "Lilina",
+   "face": "Lilina",
+   "armor": "Limstella",
+   "token": "LightMageFemale",
+   "colors": {
+    "skin": "#e8a656",
+    "hair": "#3c946c",
+    "eyes": "",
+    "metal": "#90948c",
+    "trim": "#6c8844",
+    "cloth": "#882840",
+    "leather": "#c4a864"
+   },
+   "offsets": {
+    "hair": [
+     -1,
+     -1
+    ],
+    "face": [
+     -1,
+     -1
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "mage-f",
+   "ramps": {
+    "hair": [
+     "#70db97",
+     "#3c946c",
+     "#2c6149"
+    ],
+    "skin": [
+     "#fad085",
+     "#e8a656",
+     "#bf823d",
+     "#8f592a",
+     "#604848"
+    ],
+    "metal": [
+     "#d0ccc4",
+     "#90948c",
+     "#646060"
+    ],
+    "trim": [
+     "#98c35c",
+     "#6c8844",
+     "#485530"
+    ],
+    "cloth": [
+     "#dc2c3c",
+     "#882840",
+     "#582438"
+    ],
+    "leather": [
+     "#e4dca8",
+     "#c4a864",
+     "#846448"
+    ]
+   }
+  },
+  "battleColors": "custom:#dc2c3c,#882840,#582438",
+  "convoy": false,
+  "recruitAfter": "ch_7"
+ },
+ {
+  "id": "c_13",
+  "name": "A",
+  "series": "FE custom",
+  "classId": "cls_25",
+  "level": 1,
+  "isLord": true,
+  "color": "#afff4d",
+  "stats": {
+   "hp": 18,
+   "str": 3,
+   "mag": 1,
+   "skl": 2,
+   "spd": 3,
+   "lck": 7,
+   "def": 4,
+   "res": 2
+  },
+  "growths": {
+   "hp": 70,
+   "str": 40,
+   "mag": 40,
+   "skl": 45,
+   "spd": 45,
+   "lck": 45,
+   "def": 35,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "portrait": "",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [
+   {
+    "level": 10,
+    "skillId": "skill_miracle"
+   }
+  ],
+  "protagonist": true,
+  "convoy": true,
+  "mapSprite": "ressources/personnages/Nouvelle unité/map_genere",
+  "battler": ""
+ },
+ {
+  "id": "c_14",
+  "name": "Kernos",
+  "series": "FE custom",
+  "classId": "knight",
+  "level": 3,
+  "isLord": false,
+  "color": "#4f4dff",
+  "stats": {
+   "hp": 25,
+   "str": 6,
+   "mag": 0,
+   "skl": 6,
+   "spd": 4,
+   "lck": 7,
+   "def": 9,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 40,
+   "mag": 5,
+   "skl": 45,
+   "spd": 35,
+   "lck": 45,
+   "def": 55,
+   "res": 20
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   },
+   {
+    "id": "w_javelin"
+   }
+  ],
+  "portrait": "ressources/personnages/kernos/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/kernos/map_genere",
+  "battler": "ressources/personnages/kernos/combat_genere",
+  "generator": {
+   "hair": "Elbert",
+   "face": "Aias",
+   "armor": "Bors",
+   "token": "Knight",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#385028",
+    "eyes": "#90a448",
+    "metal": "#303454",
+    "trim": "#c8b8bc",
+    "cloth": "#303454",
+    "leather": "#ccc4c0"
+   },
+   "offsets": {
+    "hair": [
+     4,
+     -2
+    ],
+    "face": [
+     3,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "knight-m-lance",
+   "ramps": {
+    "hair": [
+     "#607428",
+     "#385028",
+     "#383420"
+    ],
+    "eyes": [
+     "#d0e36c",
+     "#90a448",
+     "#557045"
+    ],
+    "metal": [
+     "#344c6c",
+     "#303454",
+     "#22253c"
+    ],
+    "trim": [
+     "#f8ecec",
+     "#c8b8bc",
+     "#94888c"
+    ],
+    "cloth": [
+     "#344c6c",
+     "#303454",
+     "#22253c"
+    ],
+    "leather": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ]
+   }
+  },
+  "battleColors": "custom:#344c6c,#303454,#22253c",
+  "weaponRanks": {
+   "lance": "D"
+  }
+ },
+ {
+  "id": "c_15",
+  "name": "Rekias",
+  "series": "FE custom",
+  "classId": "fighter",
+  "level": 3,
+  "isLord": false,
+  "color": "#824dff",
+  "stats": {
+   "hp": 25,
+   "str": 8,
+   "mag": 0,
+   "skl": 7,
+   "spd": 6,
+   "lck": 7,
+   "def": 4,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 60,
+   "mag": 0,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 40,
+   "res": 25
+  },
+  "inventory": [
+   {
+    "id": "w_iron_axe"
+   },
+   {
+    "id": "w_hand_axe"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "portrait": "ressources/personnages/Rekias/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Rekias/map_genere",
+  "battler": "ressources/personnages/Rekias/combat_genere",
+  "generator": {
+   "hair": "Cormag",
+   "face": "Dieck",
+   "armor": "Astore",
+   "token": "Fighter",
+   "colors": {
+    "skin": "#eba464",
+    "hair": "#4c4058",
+    "eyes": "",
+    "metal": "#645060",
+    "trim": "#907cbc",
+    "cloth": "#443048",
+    "leather": "#403440"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     8
+    ],
+    "face": [
+     1,
+     4
+    ],
+    "armor": [
+     -1,
+     0
+    ]
+   },
+   "sprite": "fighter-m-axe",
+   "ramps": {
+    "hair": [
+     "#645c6c",
+     "#4c4058",
+     "#362e3f"
+    ],
+    "skin": [
+     "#f7d79e",
+     "#eba464",
+     "#c17d4a",
+     "#8a6139",
+     "#5d4343"
+    ],
+    "metal": [
+     "#a09098",
+     "#645060",
+     "#483945"
+    ],
+    "trim": [
+     "#abaee6",
+     "#907cbc",
+     "#654e86"
+    ],
+    "cloth": [
+     "#544460",
+     "#443048",
+     "#302233"
+    ],
+    "leather": [
+     "#584858",
+     "#403440",
+     "#2e252e"
+    ]
+   }
+  },
+  "battleColors": "custom:#544460,#443048,#302233",
+  "gender": "homme",
+  "weaponRanks": {
+   "axe": "D"
+  }
+ },
+ {
+  "id": "c_16",
+  "name": "Villageois 1",
+  "series": "",
+  "classId": "cls_25",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Villageois 1/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Villageois 1/map_genere",
+  "battler": "ressources/personnages/Villageois 1/combat_genere",
+  "generator": {
+   "hair": "Peasant1",
+   "face": "Peasant1",
+   "armor": "Peasant1",
+   "token": "Lord",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#885c3c",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "lord-m-eliwood-sword",
+   "ramps": {
+    "cloth": [
+     "#b47c40",
+     "#885c3c",
+     "#64443c"
+    ]
+   }
+  },
+  "battleColors": "custom:#b47c40,#885c3c,#64443c"
+ },
+ {
+  "id": "c_17",
+  "name": "Soldat",
+  "series": "",
+  "classId": "soldier",
+  "level": 5,
+  "isLord": false,
+  "color": "#9d4dff",
+  "stats": {
+   "hp": 21,
+   "str": 4,
+   "mag": 0,
+   "skl": 5,
+   "spd": 4,
+   "lck": 3,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   }
+  ],
+  "portrait": "ressources/personnages/Soldat/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Soldat/map_genere",
+  "battler": "ressources/personnages/Soldat/combat_genere",
+  "generator": {
+   "hair": "Guard",
+   "face": "Guard",
+   "armor": "Guard",
+   "token": "Soldier",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#544c64",
+    "eyes": "",
+    "metal": "#544c64",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "soldier-m-lance",
+   "ramps": {
+    "hair": [
+     "#787084",
+     "#544c64",
+     "#44384c"
+    ],
+    "metal": [
+     "#787084",
+     "#544c64",
+     "#44384c"
+    ]
+   }
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_18",
+  "name": "Mercenaire",
+  "series": "",
+  "classId": "mercenary",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 20,
+   "str": 4,
+   "mag": 0,
+   "skl": 5,
+   "spd": 5,
+   "lck": 4,
+   "def": 2,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Mercenaire/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Mercenaire/map_genere",
+  "battler": "ressources/personnages/Mercenaire/combat_genere",
+  "generator": {
+   "hair": "Alen",
+   "face": "Guard",
+   "armor": "Guard",
+   "token": "Mercenary",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     2,
+     10
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "mercenary-m"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_19",
+  "name": "Akras",
+  "series": "FE custom",
+  "classId": "general",
+  "level": 1,
+  "isLord": false,
+  "color": "#3a035e",
+  "stats": {
+   "hp": 28,
+   "str": 13,
+   "mag": 0,
+   "skl": 9,
+   "spd": 6,
+   "lck": 7,
+   "def": 15,
+   "res": 4
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_axe"
+   },
+   {
+    "id": "w_hand_axe"
+   }
+  ],
+  "portrait": "ressources/personnages/Akras/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Akras/map_genere",
+  "battler": "ressources/personnages/Akras/combat_genere",
+  "generator": {
+   "hair": "Gilliam",
+   "face": "Fargus",
+   "armor": "Duessel",
+   "token": "GeneralAxeIscaneus",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403c68",
+    "eyes": "",
+    "metal": "#603885",
+    "trim": "#ac6c44",
+    "cloth": "#342c58",
+    "leather": "#403440"
+   },
+   "offsets": {
+    "hair": [
+     -1,
+     -2
+    ],
+    "face": [
+     -1,
+     -3
+    ],
+    "armor": [
+     1,
+     0
+    ]
+   },
+   "sprite": "general-u-lance",
+   "ramps": {
+    "hair": [
+     "#44579b",
+     "#403c68",
+     "#302955"
+    ],
+    "metal": [
+     "#7b4fc6",
+     "#603885",
+     "#452552"
+    ],
+    "trim": [
+     "#d8a050",
+     "#ac6c44",
+     "#68443c"
+    ],
+    "cloth": [
+     "#2c447b",
+     "#342c58",
+     "#251f3f"
+    ],
+    "leather": [
+     "#584858",
+     "#403440",
+     "#2e252e"
+    ]
+   }
+  },
+  "battleColors": "custom:#2c447b,#342c58,#251f3f",
+  "weaponRanks": {
+   "lance": "C",
+   "axe": "D"
+  }
+ },
+ {
+  "id": "c_20",
+  "name": "Malko",
+  "series": "",
+  "classId": "soldier",
+  "level": 3,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 20,
+   "str": 6,
+   "mag": 0,
+   "skl": 8,
+   "spd": 6,
+   "lck": 5,
+   "def": 7,
+   "res": 3
+  },
+  "growths": {
+   "hp": 85,
+   "str": 50,
+   "mag": 0,
+   "skl": 55,
+   "spd": 40,
+   "lck": 40,
+   "def": 45,
+   "res": 25
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   },
+   {
+    "id": "w_javelin"
+   },
+   {
+    "id": "i_vulnerary"
+   },
+   {
+    "id": "i_chest_key"
+   }
+  ],
+  "portrait": "ressources/personnages/Malko/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Malko/map_genere",
+  "battler": "ressources/personnages/Malko/combat_genere",
+  "generator": {
+   "hair": "Lance",
+   "face": "Guy",
+   "armor": "Alen",
+   "token": "SoldierAltIscaneus",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#344890",
+    "eyes": "",
+    "metal": "#406ca8",
+    "trim": "#e0c090",
+    "cloth": "#406ca8",
+    "leather": "#e0c090"
+   },
+   "offsets": {
+    "hair": [
+     2,
+     1
+    ],
+    "face": [
+     2,
+     -4
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "soldier-m-lance",
+   "ramps": {
+    "hair": [
+     "#406fcf",
+     "#344890",
+     "#303561"
+    ],
+    "metal": [
+     "#4ca7d7",
+     "#406ca8",
+     "#484175"
+    ],
+    "trim": [
+     "#f4f8d0",
+     "#e0c090",
+     "#a47858"
+    ],
+    "cloth": [
+     "#4ca7d7",
+     "#406ca8",
+     "#484175"
+    ],
+    "leather": [
+     "#f4f8d0",
+     "#e0c090",
+     "#a47858"
+    ]
+   }
+  },
+  "battleColors": "custom:#4ca7d7,#406ca8,#484175"
+ },
+ {
+  "id": "c_21",
+  "name": "chevalier",
+  "series": "",
+  "classId": "knight",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 20,
+   "str": 6,
+   "mag": 0,
+   "skl": 7,
+   "spd": 4,
+   "lck": 3,
+   "def": 10,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   }
+  ],
+  "portrait": "ressources/personnages/chevalier/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/chevalier/map_genere",
+  "battler": "ressources/personnages/chevalier/combat_genere",
+  "generator": {
+   "hair": "Guard",
+   "face": "Guard",
+   "armor": "Zinc",
+   "token": "Knight",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403440",
+    "eyes": "",
+    "metal": "#403440",
+    "trim": "#744844",
+    "cloth": "#403440",
+    "leather": "#744844"
+   },
+   "offsets": {
+    "hair": [
+     -4,
+     -7
+    ],
+    "face": [
+     -4,
+     -7
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "knight-m-lance",
+   "ramps": {
+    "hair": [
+     "#584858",
+     "#403440",
+     "#2e252e"
+    ],
+    "metal": [
+     "#584858",
+     "#403440",
+     "#2e252e"
+    ],
+    "trim": [
+     "#9c5c4c",
+     "#744844",
+     "#583438"
+    ],
+    "cloth": [
+     "#584858",
+     "#403440",
+     "#2e252e"
+    ],
+    "leather": [
+     "#9c5c4c",
+     "#744844",
+     "#583438"
+    ]
+   }
+  },
+  "battleColors": "custom:#584858,#403440,#2e252e"
+ },
+ {
+  "id": "c_22",
+  "name": "Emily",
+  "series": "FE custom",
+  "classId": "cleric",
+  "level": 3,
+  "isLord": false,
+  "color": "#c1ff4d",
+  "stats": {
+   "hp": 19,
+   "str": 1,
+   "mag": 4,
+   "skl": 4,
+   "spd": 7,
+   "lck": 6,
+   "def": 5,
+   "res": 5
+  },
+  "growths": {
+   "hp": 65,
+   "str": 0,
+   "mag": 60,
+   "skl": 40,
+   "spd": 55,
+   "lck": 55,
+   "def": 20,
+   "res": 45
+  },
+  "inventory": [
+   {
+    "id": "w_heal"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "portrait": "ressources/personnages/Emily/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [
+   "skill_miracle"
+  ],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Emily/map_genere",
+  "battler": "ressources/personnages/Emily/combat_genere",
+  "generator": {
+   "hair": "Eleanora",
+   "face": "Priscilla",
+   "armor": "Elffin",
+   "token": "ClericAlt",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#8cac64",
+    "eyes": "#b49c38",
+    "metal": "#30a0a8",
+    "trim": "#e0c090",
+    "cloth": "#90948c",
+    "leather": "#506c38"
+   },
+   "offsets": {
+    "hair": [
+     -3,
+     0
+    ],
+    "face": [
+     0,
+     -2
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "cleric-f-serra",
+   "ramps": {
+    "hair": [
+     "#cfdb90",
+     "#8cac64",
+     "#496954"
+    ],
+    "eyes": [
+     "#e0e758",
+     "#b49c38",
+     "#846424"
+    ],
+    "metal": [
+     "#40e7c7",
+     "#30a0a8",
+     "#305275"
+    ],
+    "trim": [
+     "#f4f8d0",
+     "#e0c090",
+     "#a47858"
+    ],
+    "cloth": [
+     "#d0ccc4",
+     "#90948c",
+     "#646060"
+    ],
+    "leather": [
+     "#7ca74c",
+     "#506c38",
+     "#4c4430"
+    ]
+   }
+  },
+  "battleColors": "custom:#d0ccc4,#90948c,#646060",
+  "gender": "femme",
+  "recruitAfter": "ch_4"
+ },
+ {
+  "id": "c_23",
+  "name": "Kresm",
+  "series": "FE custom",
+  "classId": "hero",
+  "level": 1,
+  "isLord": false,
+  "color": "#b50810",
+  "stats": {
+   "hp": 25,
+   "str": 12,
+   "mag": 0,
+   "skl": 9,
+   "spd": 9,
+   "lck": 10,
+   "def": 7,
+   "res": 6
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_steel_sword"
+   },
+   {
+    "id": "w_slim_sword"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "portrait": "ressources/personnages/Kresm/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [
+   "skill_regeneration"
+  ],
+  "equippedSkills": [
+   "skill_regeneration"
+  ],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Kresm/map_genere",
+  "battler": "ressources/personnages/Kresm/combat_genere",
+  "generator": {
+   "hair": "Elbert",
+   "face": "Dieck",
+   "armor": "Eirk",
+   "token": "Hero",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#b07838",
+    "eyes": "#344480",
+    "metal": "#741c34",
+    "trim": "#485478",
+    "cloth": "#c0241c",
+    "leather": "#485478"
+   },
+   "offsets": {
+    "hair": [
+     1,
+     1
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "hero-m-sword",
+   "ramps": {
+    "hair": [
+     "#f0b058",
+     "#b07838",
+     "#6c4430"
+    ],
+    "eyes": [
+     "#206f9b",
+     "#344480",
+     "#402d53"
+    ],
+    "metal": [
+     "#b01830",
+     "#741c34",
+     "#4c182c"
+    ],
+    "trim": [
+     "#6b7b9f",
+     "#485478",
+     "#403d61"
+    ],
+    "cloth": [
+     "#f83830",
+     "#c0241c",
+     "#781c24"
+    ],
+    "leather": [
+     "#6b7b9f",
+     "#485478",
+     "#403d61"
+    ]
+   }
+  },
+  "battleColors": "custom:#f83830,#c0241c,#781c24",
+  "gender": "homme"
+ },
+ {
+  "id": "c_24",
+  "name": "Villageois 2",
+  "series": "",
+  "classId": "cls_25",
+  "level": 1,
+  "isLord": false,
+  "color": "#ffb54d",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Villageois 2/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Villageois 2/map_genere",
+  "battler": "ressources/personnages/Villageois 2/combat_genere",
+  "generator": {
+   "hair": "Peasant10",
+   "face": "Peasant10",
+   "armor": "Peasant10",
+   "token": "Mercenary",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#885c3c",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "villager-m-man",
+   "ramps": {
+    "hair": [
+     "#b47c40",
+     "#885c3c",
+     "#64443c"
+    ]
+   }
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_25",
+  "name": "Villageois 3",
+  "series": "",
+  "classId": "cls_25",
+  "level": 1,
+  "isLord": false,
+  "color": "#bca824",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Villageois 3/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Villageois 3/map_genere",
+  "battler": "ressources/personnages/Villageois 3/combat_genere",
+  "generator": {
+   "hair": "Peasant19",
+   "face": "Peasant19",
+   "armor": "Peasant19",
+   "token": "MyrmidonFemale",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#744844",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "villager-f-sword",
+   "ramps": {
+    "cloth": [
+     "#9c5c4c",
+     "#744844",
+     "#583438"
+    ]
+   }
+  },
+  "battleColors": "custom:#9c5c4c,#744844,#583438"
+ },
+ {
+  "id": "c_26",
+  "name": "cavalier",
+  "series": "",
+  "classId": "cavalier",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/cavalier/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/cavalier/map_genere",
+  "battler": "ressources/personnages/cavalier/combat_genere",
+  "generator": {
+   "hair": "Eliwood",
+   "face": "Eliwood",
+   "armor": "Eliwood",
+   "token": "Cavalier",
+   "colors": {
+    "skin": "#986040",
+    "hair": "#b41810",
+    "eyes": "#5c3c34",
+    "metal": "#885c3c",
+    "trim": "#5c4850",
+    "cloth": "#5c4850",
+    "leather": "#744844"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "cavalier-m-lance",
+   "ramps": {
+    "metal": [
+     "#b47c40",
+     "#885c3c",
+     "#64443c"
+    ],
+    "trim": [
+     "#846c70",
+     "#5c4850",
+     "#443038"
+    ],
+    "cloth": [
+     "#846c70",
+     "#5c4850",
+     "#443038"
+    ],
+    "leather": [
+     "#9c5c4c",
+     "#744844",
+     "#583438"
+    ]
+   }
+  },
+  "battleColors": "custom:#846c70,#5c4850,#443038"
+ },
+ {
+  "id": "c_27",
+  "name": "soeur",
+  "series": "",
+  "classId": "cleric",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/soeur/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/soeur/map_genere",
+  "battler": "ressources/personnages/soeur/combat_genere",
+  "generator": {
+   "hair": "Eliwood",
+   "face": "Eliwood",
+   "armor": "Eliwood",
+   "token": "Cleric",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "cleric-f-generic"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_28",
+  "name": "Combattant",
+  "series": "",
+  "classId": "fighter",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Combattant/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Combattant/map_genere",
+  "battler": "ressources/personnages/Combattant/combat_genere",
+  "generator": {
+   "hair": "Eliwood",
+   "face": "Eliwood",
+   "armor": "Eliwood",
+   "token": "Fighter",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "fighter-m-axe"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_29",
+  "name": "Arageas",
+  "series": "FE custom",
+  "classId": "great_knight",
+  "level": 15,
+  "isLord": false,
+  "color": "#bc5510",
+  "stats": {
+   "hp": 52,
+   "str": 26,
+   "mag": 13,
+   "skl": 24,
+   "spd": 22,
+   "lck": 23,
+   "def": 25,
+   "res": 18
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_79"
+   },
+   {
+    "id": "w_fe_lance_d_argent"
+   }
+  ],
+  "portrait": "ressources/personnages/Arageas/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [
+   "skill_garde",
+   "skill_esquive",
+   "skill_precision"
+  ],
+  "equippedSkills": [
+   "skill_garde",
+   "skill_esquive",
+   "skill_precision"
+  ],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Arageas/map_genere",
+  "battler": "ressources/personnages/Arageas/combat_genere",
+  "generator": {
+   "hair": "Noah",
+   "face": "Seth",
+   "armor": "Vigarde",
+   "token": "DarkKnightIscaneus",
+   "colors": {
+    "skin": "#bb7c53",
+    "hair": "#988494",
+    "eyes": "#7860a4",
+    "metal": "#c4a864",
+    "trim": "#5c403c",
+    "cloth": "#90243c",
+    "leather": "#c85624"
+   },
+   "offsets": {
+    "hair": [
+     -2,
+     -8
+    ],
+    "face": [
+     6,
+     -1
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "great-knight-m-axe",
+   "gender": "m",
+   "ramps": {
+    "hair": [
+     "#d0c0c8",
+     "#988494",
+     "#604c58"
+    ]
+   }
+  },
+  "battleColors": "custom:#cd3355,#90243c,#64192a",
+  "gender": "homme",
+  "ending": "Cette nuit-là, Arageas ne parvint pas à retrouver le groupe dans le brouillard. Quand il revint au village, le cadavre qui était censé se trouver sur place n'y était plus. Il retourna à la capitale Mesteros et fit son Rapport a l'Empereur. Plus personne n'entendit parler du groupe d'Eliwood sur les terres d'Acania depuis l'assaut du village, ni du jeune villageois dont on ne retrouva pas le corps. Cette \"guerre\" fut nommée \"Le massacre d'Acania\" dans les mois qui suivirent.",
+  "weaponRanks": {
+   "sword": "S",
+   "lance": "A",
+   "axe": "A"
+  },
+  "ultimate": ""
+ },
+ {
+  "id": "c_30",
+  "name": "Mereklar",
+  "series": "FE custom",
+  "classId": "general",
+  "level": 1,
+  "isLord": false,
+  "color": "#eb4b24",
+  "stats": {
+   "hp": 28,
+   "str": 10,
+   "mag": 0,
+   "skl": 11,
+   "spd": 8,
+   "lck": 7,
+   "def": 17,
+   "res": 4
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_lance"
+   },
+   {
+    "id": "w_hand_axe"
+   }
+  ],
+  "portrait": "ressources/personnages/Mereklar/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Mereklar/map_genere",
+  "battler": "ressources/personnages/Mereklar/combat_genere",
+  "generator": {
+   "hair": "Gonzalez",
+   "face": "Fargus",
+   "armor": "Debias",
+   "token": "GeneralHandaxeIscaneus",
+   "colors": {
+    "skin": "#f8c090",
+    "hair": "#986030",
+    "eyes": "",
+    "metal": "#741c34",
+    "trim": "#607c48",
+    "cloth": "#5c3c34",
+    "leather": "#5c403c"
+   },
+   "offsets": {
+    "hair": [
+     2,
+     -1
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "general-u-lance",
+   "ramps": {
+    "hair": [
+     "#d08838",
+     "#986030",
+     "#684028"
+    ],
+    "skin": [
+     "#f8e8c0",
+     "#f8c090",
+     "#e88c58",
+     "#986848",
+     "#604848"
+    ]
+   }
+  },
+  "battleColors": "custom:#83554a,#5c3c34,#402a24",
+  "weaponRanks": {
+   "lance": "B",
+   "axe": "C"
+  }
+ },
+ {
+  "id": "c_31",
+  "name": "Garde",
+  "series": "",
+  "classId": "soldier",
+  "level": 1,
+  "isLord": false,
+  "color": "#ff5e4d",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Garde/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Garde/map_genere",
+  "battler": "ressources/personnages/Garde/combat_genere",
+  "generator": {
+   "hair": "Guard",
+   "face": "Guard",
+   "armor": "Guard",
+   "token": "SolderAlt2Iscaneus",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "soldier-m-lance"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_32",
+  "name": "Brigand",
+  "series": "",
+  "classId": "lord",
+  "level": 1,
+  "isLord": false,
+  "color": "#ff4d4d",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Brigand/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Brigand/map_genere",
+  "battler": "ressources/personnages/Brigand/combat_genere",
+  "generator": {
+   "hair": "Bandit4",
+   "face": "Bandit4",
+   "armor": "Bandit4",
+   "token": "Bandit",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "brigand-m-axe"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_33",
+  "name": "Arelia",
+  "series": "FE custom",
+  "classId": "fe9_halberdier_f",
+  "level": 4,
+  "isLord": false,
+  "color": "#bc2955",
+  "stats": {
+   "hp": 38,
+   "str": 18,
+   "mag": 8,
+   "skl": 18,
+   "spd": 15,
+   "lck": 16,
+   "def": 13,
+   "res": 11
+  },
+  "growths": {
+   "hp": 70,
+   "str": 55,
+   "mag": 5,
+   "skl": 55,
+   "spd": 45,
+   "lck": 40,
+   "def": 40,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_fe_lance_d_acier"
+   },
+   {
+    "id": "w_javelin"
+   },
+   {
+    "id": "i_vulnerary"
+   }
+  ],
+  "portrait": "ressources/personnages/Arelia/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Arelia/map_genere",
+  "battler": "ressources/personnages/Arelia/combat_genere",
+  "generator": {
+   "hair": "Fae",
+   "face": "Rebecca",
+   "armor": "Melady",
+   "token": "ArcherFemale",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#882840",
+    "eyes": "#882840",
+    "metal": "#484458",
+    "trim": "#5c3c80",
+    "cloth": "#443048",
+    "leather": "#ccc4c0"
+   },
+   "offsets": {
+    "hair": [
+     -1,
+     -12
+    ],
+    "face": [
+     -4,
+     -4
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "halberdier-f-amelia",
+   "gender": "f",
+   "ramps": {
+    "hair": [
+     "#dc2c3c",
+     "#882840",
+     "#582438"
+    ],
+    "eyes": [
+     "#dc2c3c",
+     "#882840",
+     "#582438"
+    ],
+    "metal": [
+     "#6b6474",
+     "#484458",
+     "#383044"
+    ],
+    "trim": [
+     "#834fa3",
+     "#5c3c80",
+     "#492d61"
+    ],
+    "cloth": [
+     "#544460",
+     "#443048",
+     "#302233"
+    ],
+    "leather": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ]
+   }
+  },
+  "battleColors": "custom:#544460,#443048,#302233",
+  "weaponRanks": {
+   "lance": "C"
+  }
+ },
+ {
+  "id": "c_34",
+  "name": "Shenos",
+  "series": "FE custom",
+  "classId": "fe8_swordmaster_m",
+  "level": 8,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 35,
+   "str": 19,
+   "mag": 0,
+   "skl": 21,
+   "spd": 21,
+   "lck": 14,
+   "def": 14,
+   "res": 8
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_killing_edge"
+   },
+   {
+    "id": "w_wind_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Shenos/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Shenos/map_genere",
+  "battler": "ressources/personnages/Shenos/combat_genere",
+  "generator": {
+   "hair": "Rutoga",
+   "face": "Rath",
+   "armor": "Rath",
+   "token": "Swordmaster",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#386c50",
+    "eyes": "",
+    "metal": "#ccc4c0",
+    "trim": "#e0c088",
+    "cloth": "#303454",
+    "leather": "#c4602c"
+   },
+   "offsets": {
+    "hair": [
+     1,
+     -2
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "swordmaster-m",
+   "gender": "m",
+   "ramps": {
+    "hair": [
+     "#449b64",
+     "#386c50",
+     "#284534"
+    ],
+    "metal": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ],
+    "trim": [
+     "#f4f8bc",
+     "#e0c088",
+     "#9c7450"
+    ],
+    "cloth": [
+     "#344c6c",
+     "#303454",
+     "#22253c"
+    ],
+    "leather": [
+     "#f48424",
+     "#c4602c",
+     "#804428"
+    ]
+   }
+  },
+  "battleColors": "custom:#344c6c,#303454,#22253c",
+  "weaponRanks": {
+   "sword": "B"
+  }
+ },
+ {
+  "id": "c_35",
+  "name": "Shena",
+  "series": "FE custom",
+  "classId": "fe8_sage_f",
+  "level": 5,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 32,
+   "str": 5,
+   "mag": 18,
+   "skl": 19,
+   "spd": 19,
+   "lck": 21,
+   "def": 13,
+   "res": 16
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_fe_bolganone"
+   },
+   {
+    "id": "w_heal"
+   }
+  ],
+  "portrait": "ressources/personnages/Shena/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Shena/map_genere",
+  "battler": "ressources/personnages/Shena/combat_genere",
+  "generator": {
+   "hair": "Limstella",
+   "face": "Fiora",
+   "armor": "Lyn",
+   "token": "SageFemaleAlt",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#386c50",
+    "eyes": "",
+    "metal": "#ccc4c0",
+    "trim": "#c09050",
+    "cloth": "#303454",
+    "leather": "#c4602c"
+   },
+   "offsets": {
+    "hair": [
+     -5,
+     6
+    ],
+    "face": [
+     0,
+     2
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "sage-f-vanilla",
+   "gender": "f",
+   "ramps": {
+    "hair": [
+     "#449b64",
+     "#386c50",
+     "#284534"
+    ],
+    "metal": [
+     "#f6f8ee",
+     "#ccc4c0",
+     "#949494"
+    ],
+    "trim": [
+     "#e8d888",
+     "#c09050",
+     "#785840"
+    ],
+    "cloth": [
+     "#344c6c",
+     "#303454",
+     "#22253c"
+    ],
+    "leather": [
+     "#f48424",
+     "#c4602c",
+     "#804428"
+    ]
+   }
+  },
+  "battleColors": "custom:#344c6c,#303454,#22253c",
+  "weaponRanks": {
+   "anima": "B",
+   "staff": "C"
+  }
+ },
+ {
+  "id": "c_36",
+  "name": "Swordmaster F",
+  "series": "",
+  "classId": "lord",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Nouvelle unité/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Nouvelle unité/map_genere",
+  "battler": "ressources/personnages/Nouvelle unité/combat_genere",
+  "generator": {
+   "hair": "Ninian",
+   "face": "Neimi",
+   "armor": "Neimi",
+   "token": "SwordmasterFemale",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "blade-lord-f-lyn-sword",
+   "gender": "f"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ },
+ {
+  "id": "c_37",
+  "name": "Swordmaster M",
+  "series": "",
+  "classId": "lord",
+  "level": 1,
+  "isLord": false,
+  "color": "#4f8cff",
+  "stats": {
+   "hp": 18,
+   "str": 5,
+   "mag": 0,
+   "skl": 5,
+   "spd": 7,
+   "lck": 7,
+   "def": 5,
+   "res": 0
+  },
+  "growths": {
+   "hp": 80,
+   "str": 45,
+   "mag": 5,
+   "skl": 50,
+   "spd": 40,
+   "lck": 45,
+   "def": 30,
+   "res": 35
+  },
+  "inventory": [
+   {
+    "id": "w_iron_sword"
+   }
+  ],
+  "portrait": "ressources/personnages/Swordmaster M/portrait_genere.png",
+  "bio": "",
+  "personalSkill": "",
+  "learnedSkills": [],
+  "equippedSkills": [],
+  "skillLearning": [],
+  "mapSprite": "ressources/personnages/Swordmaster M/map_genere",
+  "battler": "ressources/personnages/Swordmaster M/combat_genere",
+  "generator": {
+   "hair": "Eliwood",
+   "face": "Eliwood",
+   "armor": "Eliwood",
+   "token": "GuySwordMaster",
+   "colors": {
+    "skin": "#c08c6e",
+    "hair": "#403219",
+    "eyes": "",
+    "metal": "#646464",
+    "trim": "#f7ad52",
+    "cloth": "#525273",
+    "leather": "#946442"
+   },
+   "offsets": {
+    "hair": [
+     0,
+     0
+    ],
+    "face": [
+     0,
+     0
+    ],
+    "armor": [
+     0,
+     0
+    ]
+   },
+   "sprite": "swordmaster-m",
+   "gender": "m"
+  },
+  "battleColors": "custom:#7575a4,#525273,#393950"
+ }
+]

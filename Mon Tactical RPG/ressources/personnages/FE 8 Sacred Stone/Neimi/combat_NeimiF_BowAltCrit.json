@@ -1,0 +1,82 @@
+{
+ "type": "battler",
+ "name": "Neimi [F] — Bow (Alt Crit)",
+ "facing": "left",
+ "cell": [
+  125,
+  108
+ ],
+ "anchor": [
+  90,
+  105
+ ],
+ "columns": 12,
+ "count": 39,
+ "anims": {
+  "stance": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    500
+   ],
+   "loop": true
+  },
+  "attack": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "critical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "hit": 0
+  },
+  "dodge": {
+   "frames": [
+    0,
+    37,
+    38,
+    37
+   ],
+   "durations": [
+    17,
+    50,
+    17,
+    50
+   ]
+  },
+  "bow": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  },
+  "bowCritical": {
+   "frames": [
+    0
+   ],
+   "durations": [
+    17
+   ],
+   "projectile": "arrow",
+   "release": 0
+  }
+ },
+ "projectiles": {
+  "arrow": "arrow.png"
+ },
+ "source": "FE-Repo — Aruka, Frostlax"
+}
