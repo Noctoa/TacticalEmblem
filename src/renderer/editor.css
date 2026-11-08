@@ -180,6 +180,10 @@
 /* événements */
 .events { display: flex; flex-direction: column; gap: 10px; }
 .event-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+.event-clipboard { margin-bottom: 14px; }
+.event-summary > span { overflow-wrap: anywhere; }
+.event-summary > button { float: right; margin: -4px 0 4px 12px; }
+.event-summary::after { content: ''; display: block; clear: both; }
 .event-head { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
 .event-head select, .event-head input { width: auto; }
 .event-head .grow { flex: 1; }

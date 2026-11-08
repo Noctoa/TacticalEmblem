@@ -1,19 +1,56 @@
 (function (root) {
   'use strict';
+  // Presse-papiers interne au projet : une copie indépendante, conservée en changeant d’acte.
+  let clipboard = null;
+  const clone = value => JSON.parse(JSON.stringify(value));
   function render(pane, ch, db, map, api) {
     const h = UI.h, options = (list, label) => (list || []).map(o => ({ value: o.id, label: label ? label(o) : o.name || o.id }));
     const changed = () => { api.change(); redraw(); };
     const box = h('div', { class: 'events', 'data-scenario-editor': true });
+    const validation = h('div', { 'data-event-validation': true });
+    const showErrors = () => validation.replaceChildren(...Scenario.validate(ch, db, map).map(error => h('p', { class: 'note' }, '⚠ ' + error)));
     const expanded = new Map();
     pane.append(h('div', { class: 'form-heading' }, 'Événements & dialogues'), box);
     const fields = (rows, model, dynamic) => UI.form(rows, model, { onChange: key => {
       if (key === 'objective.type') { model.objective.turns ??= 5; model.objective.x ??= 0; model.objective.y ??= 0; }
       if (key === 'remove' && !model.remove && model.statusId === 'all') model.statusId = 'poison';
-      api.change(); if ((dynamic || []).includes(key)) redraw();
+      api.change(); if ((dynamic || []).includes(key)) redraw(); else showErrors();
     } });
     const targets = options(db.units, u => u.name).map(o => ({ ...o, value: 'unit:' + o.value })).concat(options(ch.enemies));
     const interactions = type => options(ch[{ chest: 'chests', door: 'doors', village: 'villages', villagePillaged: 'villages' }[type]]);
     const flagHelp = 'Nom interne : commence par une lettre ; lettres, chiffres et _ uniquement. Absent = faux. Conservé entre les actes après victoire.';
+    const canPaste = () => clipboard && clipboard.db === db;
+    const pasteButton = position => h('button', { class: 'small' + (canPaste() ? ' primary' : ''), 'data-event-paste': position,
+      disabled: !canPaste(), title: canPaste() ? 'Coller une copie indépendante dans cet acte' : 'Copie d’abord un événement dans un acte de ce projet', onclick: pasteEvent }, 'Coller l’événement');
+    function addEvent() {
+      const events = ch.events || (ch.events = []);
+      events.push({ id: api.uid('ev', events), name: 'Nouvel événement', trigger: { type: 'start' }, once: true, script: '', actions: [] });
+      changed();
+    }
+    function pasteEvent() {
+      if (!canPaste()) return;
+      const events = ch.events || (ch.events = []), copy = clone(clipboard.event);
+      // L’identifiant source est réservé même si la liste d’arrivée est vide.
+      copy.id = api.uid('ev', events.concat({ id: copy.id }));
+      copy.name = (copy.name || clipboard.event.id) + ' (copie)';
+      let resetTargets = false;
+      const clear = (obj, key) => { if (obj && obj[key]) { obj[key] = ''; resetTargets = true; } };
+      if (clipboard.chapter !== ch) {
+        const tr = copy.trigger || {};
+        if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type) || (tr.type === 'death' && !String(tr.target || '').startsWith('unit:'))) clear(tr, 'target');
+        if (tr.type === 'area' && String(tr.who || '').startsWith('enemy:')) clear(tr, 'who');
+        for (const action of copy.actions || []) {
+          if (['reinforcement', 'door'].includes(action.type) || (action.type === 'status' && !String(action.target || '').startsWith('unit:'))) clear(action, 'target');
+          if (action.type === 'objective' && action.objective?.type === 'target') clear(action.objective, 'target');
+        }
+      }
+      events.push(copy);
+      changed();
+      const card = [...box.querySelectorAll('[data-event-id]')].find(el => el.dataset.eventId === copy.id);
+      card?.querySelector('summary').focus();
+      card?.scrollIntoView({ block: 'nearest' });
+      UI.toast(resetTargets ? 'Événement collé. Rechoisis les cibles propres à cet acte (interactions et unités placées).' : 'Événement collé.');
+    }
     function defaults(type) {
       const plug = Scenario.pluginAction(type);
       if (plug) return Object.assign({ plugin: plug.plugin || '' }, JSON.parse(JSON.stringify(plug.defaults || {})));
@@ -67,9 +104,22 @@
     function redraw() {
       box.querySelectorAll('[data-event-id]').forEach(card => expanded.set(card.dataset.eventId, card.open));
       box.innerHTML = '';
+      box.append(h('div', { class: 'event-clipboard' },
+        h('div', { class: 'insp-actions' }, h('button', { class: 'small', 'data-event-add-top': true, onclick: addEvent }, 'Ajouter un événement'),
+          pasteButton('top')),
+        h('p', { class: 'form-info', 'data-event-clipboard': true }, canPaste()
+          ? `Copié : ${clipboard.event.name || clipboard.event.id} — ${clipboard.chapterName}. Tu peux le coller dans un autre acte de ce projet.`
+          : 'Copie un événement, puis ouvre l’acte d’arrivée pour le coller.')));
       for (const [index, ev] of (ch.events || []).entries()) {
         const tr = ev.trigger, c = ev.conditions || { present: [], flags: [] };
-        const card = h('details', { class: 'event-card', open: expanded.get(ev.id) !== false, 'data-event-id': ev.id, style: { padding: '12px', marginBottom: '12px' } }, h('summary', {}, ev.name || `Événement ${index + 1}`));
+        const card = h('details', { class: 'event-card', open: expanded.get(ev.id) !== false, 'data-event-id': ev.id, style: { padding: '12px', marginBottom: '12px' } },
+          h('summary', { class: 'event-summary' }, h('span', {}, ev.name || `Événement ${index + 1}`),
+            h('button', { class: 'small ghost', 'data-event-copy': ev.id, title: 'Copier cet événement pour le coller dans un autre acte', onclick: e => {
+              e.preventDefault(); e.stopPropagation();
+              clipboard = { db, chapter: ch, chapterName: ch.name || ch.id, event: clone(ev) };
+              redraw();
+              UI.toast('Événement copié. Ouvre un autre acte puis clique sur « Coller l’événement ».');
+            } }, 'Copier')));
         card.append(fields([{ key: 'name', label: 'Nom de l’événement', type: 'text' },
           { key: 'once', label: 'Une seule fois par tentative', type: 'checkbox' }, { key: 'campaignOnce', label: 'Une seule fois dans toute la campagne (prioritaire)', type: 'checkbox' }],
           Object.assign(ev, { once: ev.once !== false })));
@@ -89,14 +139,14 @@
           options: () => Factions.extras().map(f => ({ value: f.id, label: f.name })), help: 'Au début de la phase de cette faction (après la phase ennemie). Une faction sans unité sur la map ne joue pas sa phase.' }], tr));
         if (tr.type === 'death') card.append(fields([{ key: 'target', label: 'Unité vaincue', type: 'select', empty: '— choisir —', options: targets }], tr));
         if (tr.type === 'area') card.append(fields(['x', 'y', 'w', 'h'].map(k => ({ key: k, label: { x: 'Zone X', y: 'Zone Y', w: 'Largeur', h: 'Hauteur' }[k], type: 'number', min: ['w', 'h'].includes(k) ? 1 : 0, max: 499 })), tr));
-        if (tr.type === 'area') card.append(fields([{ key: 'who', label: 'Déclenché par', type: 'select', options: () => Scenario.AREA_WHO.concat(Factions.extras().map(f => ({ value: f.id, label: 'Une unité de : ' + f.name })),
+        if (tr.type === 'area') card.append(fields([{ key: 'who', label: 'Déclenché par', type: 'select', empty: tr.who === '' ? '— choisir —' : undefined, options: () => Scenario.AREA_WHO.concat(Factions.extras().map(f => ({ value: f.id, label: 'Une unité de : ' + f.name })),
           (db.units || []).map(u => ({ value: 'unit:' + u.id, label: 'Personnage : ' + u.name })),
           (ch.enemies || []).map(e => ({ value: 'enemy:' + e.id, label: (Factions.ofPlacement(e) === 'enemy' ? 'Ennemi placé : ' : 'Unité placée (' + Factions.name(Factions.ofPlacement(e)) + ') : ') + (e.name || e.id) + ` (${e.x}, ${e.y})` }))),
           help: 'Par défaut, une unité du joueur ou un allié. Un ennemi ou un allié vert peut aussi déclencher l’événement en terminant son déplacement dans la zone.' }], tr));
         if (['chest', 'door', 'village', 'villagePillaged'].includes(tr.type)) card.append(fields([{ key: 'target', label: 'Interaction', type: 'select', empty: '— choisir —', options: interactions(tr.type) }], tr));
         if (tr.type === 'condition') card.append(h('p', { class: 'form-info' }, 'Évalué après les événements et actions, avant le résultat de mission. Sans « une seule fois », attend que les conditions deviennent fausses puis vraies pour se répéter.'));
         card.append(h('div', { class: 'form-heading' }, 'Conditions (toutes nécessaires)'),
-          UI.form([{ key: 'present', label: 'Personnages vivants et déployés', type: 'multicheck', options: options(db.units) }], c, { onChange: () => { ev.conditions = c; api.change(); } }));
+          UI.form([{ key: 'present', label: 'Personnages vivants et déployés', type: 'multicheck', options: options(db.units) }], c, { onChange: () => { ev.conditions = c; api.change(); showErrors(); } }));
         for (const [i, condition] of (c.flags || []).entries()) card.append(fields([
           { key: 'key', label: 'Information requise', type: 'text', help: flagHelp }, { key: 'value', label: 'Doit être vraie (décoché = fausse)', type: 'checkbox' }], condition),
           h('button', { class: 'small', onclick: () => { c.flags.splice(i, 1); ev.conditions = c; changed(); } }, 'Retirer cette condition'));
@@ -118,10 +168,9 @@
             h('button', { class: 'small danger', onclick: async () => { if (await UI.confirm('Supprimer cet événement ?', { danger: true })) { ch.events.splice(index, 1); changed(); } } }, 'Supprimer l’événement')));
         box.append(card);
       }
-      box.append(h('button', { class: 'small', 'data-event-add': true, onclick: () => {
-        const events = ch.events || (ch.events = []); events.push({ id: api.uid('ev', events), name: 'Nouvel événement', trigger: { type: 'start' }, once: true, script: '', actions: [] }); changed();
-      } }, 'Ajouter un événement'));
-      for (const error of Scenario.validate(ch, db, map)) box.append(h('p', { class: 'note' }, '⚠ ' + error));
+      box.append(h('div', { class: 'insp-actions' },
+        h('button', { class: 'small', 'data-event-add': true, onclick: addEvent }, 'Ajouter un événement'), pasteButton('bottom')));
+      box.append(validation); showErrors();
     }
     redraw();
   }
