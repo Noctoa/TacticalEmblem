@@ -538,7 +538,7 @@
      "type": "start"
     },
     "once": true,
-    "script": "Garde: Sieur Kernos ! Les villageois n'ont réussit à rassembler que 35% de la valeur des taxes imposées cette fois ci;\nKernos: que 35% ?! je suis déjà assez clément de passer de 1500 à 1000 écus, et ces inutiles n'arrivent même pas a rassembler aussi peu d'argents ?! Envoyez les mercenaires leur donner une bonne leçon !\nGarde: Hum sieur Kernos vous êtes sûr ..?\nKernos: j'ai l'air de rigoler ? Maintenant envoie les mercenaires tout de suite si tu ne veut pas perdre ta tête.\nGarde: Je- tout de suite sieur Kernos !",
+    "script": "Garde: Sieur Kernos ! Les villageois n'ont réussit à rassembler que 35% de la valeur des taxes imposées cette fois ci.\nKernos: Que 35% ?! je suis déjà assez clément de passer de 1500 à 1000 écus, et ces inutiles n'arrivent même pas a rassembler aussi peu d'argents ?! Envoyez les mercenaires leur donner une bonne leçon !\nGarde: Hum sieur Kernos vous êtes sûr ..?\nKernos: J'ai l'air de rigoler ? Maintenant envoie les mercenaires tout de suite si tu ne veut pas perdre ta tête.\nGarde: Je- tout de suite sieur Kernos !",
     "actions": []
    },
    {
@@ -831,7 +831,7 @@
      "with": [
       "c_13"
      ],
-     "text": "A : hein ? que fais tu attaché ici ? il ne me semblait pas avoir vu d'autre prisonniers ici .\nMalko : c'est normal, je suis le seul prisonnier ici . J'ai osé omettre l'idée que le délai pour réunir l'argent du village était bien trop cours, et qu'il fallait laisser plus de temps aux villageois pour réunir une telle somme, voila le résultat.\nA : et je t'en remercie. je viens moi même de ce village et nous avons pris le contrôle du fort. Seulement, des soldats sont apparus et nous avons été forcé de nous réfugier a l'intérieur du château .\nMalko : je vois, dans ce cas la détache moi, je me battrais avec vous jusqu'à la fin .\nA : si c'est ce que tu veux je ne m'y opposerais pas ."
+     "text": "A: Hein ? Que fais tu attaché ici ? Il ne me semblait pas avoir vu d'autre prisonniers ici.\nMalko: C'est normal, je suis le seul prisonnier ici. J'ai osé omettre l'idée que le délai pour réunir l'argent du village était bien trop cours, et qu'il fallait laisser plus de temps aux villageois pour réunir une telle somme, voila le résultat.\nA: Et je t'en remercie. je viens moi même de ce village et nous avons pris le contrôle du fort. Seulement, des soldats sont apparus et nous avons été forcé de nous réfugier à l'intérieur du château .\nMalko: Je vois, dans ce cas la détache moi, je me battrais avec vous jusqu'à la fin.\nA: Si c'est ce que tu veux je ne m'y opposerais pas"
     }
    }
   ],
@@ -843,7 +843,7 @@
      "type": "start"
     },
     "once": true,
-    "script": "A : Il y'a encore des ennemis dans le château, Il vas falloir trouver un moyen d'accéder a la salle du trône pour pouvoir se retrancher à l'intérieur .\nRekias : La clé devrait se trouver dans un des coffres des salles latérales, allons-y \nA : Il faut avancer vite si on veut pouvoir accéder a la salle du trône avant de se faire rattraper, cependant il faut rester prudent .",
+    "script": "A: Il y'a encore des ennemis dans le château, Il vas falloir trouver un moyen d'accéder à la salle du trône pour pouvoir se retrancher à l'intérieur.\nRekias: La clé devrait se trouver dans un des coffres des salles latérales, allons-y.\nA: Il faut avancer vite si on veut pouvoir accéder a la salle du trône avant de se faire rattraper, cependant il faut rester prudent.",
     "actions": [
      {
       "type": "dialogue",
@@ -1541,7 +1541,7 @@
      "turn": 4
     },
     "once": true,
-    "script": "A : il y'a d'autre ennemis qui rentrent dans le château continuez comme ça on ne faiblit pas !",
+    "script": "A: Il y'a d'autre ennemis qui rentrent dans le château continuez comme ça on ne faiblit pas !",
     "actions": [
      {
       "type": "reinforcement",
@@ -1569,7 +1569,7 @@
      "turn": 7
     },
     "once": true,
-    "script": "A : Encore d'autres ennemis, tenez bon ! On peut y arriver ! \nRekias : Ah ... Ah ... Je suis a bout ... Je ne vais plus tenir longtemps .\nMalko : Je peut tenir encore un peu ... Juste un peu ...\n",
+    "script": "A: Encore d'autres ennemis, tenez bon ! On peut y arriver !\nRekias: Ah ... Ah ... Je suis a bout ... Je ne vais plus tenir longtemps.\nMalko: Je peut tenir encore un peu ... Juste un peu ...",
     "actions": [
      {
       "type": "reinforcement",

@@ -1,7 +1,7 @@
 [
  {
   "isLord": true,
-  "mapSprite": "",
+  "mapSprite": "ressources/personnages/Eliwood/map_Lord",
   "battler": "ressources/personnages/FE 6-7 Blazing Blade/Eliwood/combat_T2VanillaWeaponsM_Sword",
   "portrait": "ressources/personnages/Eliwood/portrait.png",
   "movBonus": 0,
@@ -48,7 +48,7 @@
    }
   ],
   "bio": "Fils du marquis de Pherae. Calme, loyal, et plus têtu qu'il n'en a l'air.",
-  "ultimate": "ult_cri",
+  "ultimate": "",
   "weaponRanks": {
    "sword": "D"
   }
@@ -101,7 +101,7 @@
    }
   ],
   "bio": "Guerrière de la plaine de Sacae. Rapide à l'épée comme à l'arc.",
-  "ultimate": "ult_assaut",
+  "ultimate": "",
   "convoy": false,
   "generator": {
    "hair": "Lyn",
@@ -211,7 +211,7 @@
    }
   ],
   "bio": "Frère cadet du marquis d'Ostia. Fonce d'abord, réfléchit ensuite.",
-  "ultimate": "ult_meteore",
+  "ultimate": "",
   "convoy": false,
   "generator": {
    "hair": "Hector",
@@ -777,7 +777,8 @@
   },
   "battleColors": "custom:#dc2c3c,#882840,#582438",
   "convoy": false,
-  "recruitAfter": "ch_7"
+  "recruitAfter": "ch_7",
+  "colors": "original"
  },
  {
   "id": "c_13",
@@ -940,7 +941,8 @@
   "battleColors": "custom:#344c6c,#303454,#22253c",
   "weaponRanks": {
    "lance": "D"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_15",
@@ -1057,7 +1059,8 @@
   "gender": "homme",
   "weaponRanks": {
    "axe": "D"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_16",
@@ -1402,7 +1405,8 @@
   "weaponRanks": {
    "lance": "C",
    "axe": "D"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_20",
@@ -1511,7 +1515,8 @@
     ]
    }
   },
-  "battleColors": "custom:#4ca7d7,#406ca8,#484175"
+  "battleColors": "custom:#4ca7d7,#406ca8,#484175",
+  "colors": "original"
  },
  {
   "id": "c_21",
@@ -1723,7 +1728,8 @@
   },
   "battleColors": "custom:#d0ccc4,#90948c,#646060",
   "gender": "femme",
-  "recruitAfter": "ch_4"
+  "recruitAfter": "ch_4",
+  "colors": "original"
  },
  {
   "id": "c_23",
@@ -1839,7 +1845,8 @@
    }
   },
   "battleColors": "custom:#f83830,#c0241c,#781c24",
-  "gender": "homme"
+  "gender": "homme",
+  "colors": "original"
  },
  {
   "id": "c_24",
@@ -2340,7 +2347,8 @@
    "lance": "A",
    "axe": "A"
   },
-  "ultimate": ""
+  "ultimate": "",
+  "colors": "original"
  },
  {
   "id": "c_30",
@@ -2434,7 +2442,8 @@
   "weaponRanks": {
    "lance": "B",
    "axe": "C"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_31",
@@ -2578,9 +2587,11 @@
      0
     ]
    },
-   "sprite": "brigand-m-axe"
+   "sprite": "brigand-m-axe",
+   "gender": "m"
   },
-  "battleColors": "custom:#7575a4,#525273,#393950"
+  "battleColors": "custom:#7575a4,#525273,#393950",
+  "gender": "homme"
  },
  {
   "id": "c_33",
@@ -2695,7 +2706,8 @@
   "battleColors": "custom:#544460,#443048,#302233",
   "weaponRanks": {
    "lance": "C"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_34",
@@ -2802,7 +2814,8 @@
   "battleColors": "custom:#344c6c,#303454,#22253c",
   "weaponRanks": {
    "sword": "B"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_35",
@@ -2910,7 +2923,8 @@
   "weaponRanks": {
    "anima": "B",
    "staff": "C"
-  }
+  },
+  "colors": "original"
  },
  {
   "id": "c_36",
@@ -2969,8 +2983,8 @@
    },
    "offsets": {
     "hair": [
-     0,
-     0
+     7,
+     -3
     ],
     "face": [
      0,

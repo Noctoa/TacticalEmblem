@@ -1,7 +1,7 @@
 {
  "format": "tactics-forge",
- "version": 1,
- "name": "Mon Tactical RPG",
+ "version": "1",
+ "name": "Les héros d'Acania",
  "lobby": {
   "enabled": true,
   "name": "Camp de Varenne",
@@ -85,7 +85,7 @@
   "music": "",
   "newGameMode": "classic"
  },
- "credits": "Tactical Emblem :\nEdnidCorp.\nXarrin\nNoctoa\nReito\nOta\n\nAssets d’exemple :\nLexou\nLS\nGrim\nBonzai\nLord Zymeth\nTheFlyingMinotaur\nBlade\nAK\nCynon\nOurBoiRoy\nTheNinjaGuy914\ntrainboy2019\nMaelstrom210\n\nMusiques :\nYuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)\n\nGame Company :\nNintendo\nSquare-Enix",
+ "credits": "Tactical Emblem :\r\nEdnidCorp.\r\nXarrin\r\nNoctoa\r\nReito\r\nOta\r\n\r\nAssets d’exemple :\r\nLexou\r\nLS\r\nGrim\r\nBonzai\r\nLord Zymeth\r\nTheFlyingMinotaur\r\nBlade\r\nAK\r\nCynon\r\nOurBoiRoy\r\nTheNinjaGuy914\r\ntrainboy2019\r\nMaelstrom210\r\n\r\nMusiques :\r\nYuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)\r\n\r\nGame Company :\r\nNintendo\r\nSquare-Enix",
  "settings": {
   "trueHit": true,
   "doubleThreshold": 4,
@@ -168,7 +168,7 @@
   },
   "battlePlayer": ""
  },
- "savedAt": "2026-11-08T19:36:59.320Z",
+ "savedAt": "2026-11-09T16:21:50.770Z",
  "layout": 3,
  "avatar": {
   "enabled": true,

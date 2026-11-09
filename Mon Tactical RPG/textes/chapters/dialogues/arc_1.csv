@@ -21,10 +21,10 @@ ch_7.events.ev4.script.01,Le chemin est libre on rentre.
 ch_7.events.ev4.script.02,D'accord mais restons sur nos garde.
 ch_7.events.ev4.script.03,"Pas besoin, si un de leur soldat arrive, je n'aurais qu'a les pourfendre avec ma hache;"
 ch_7.villages.villages_1374e73d-5b1d-45ba-9aee-f82d29ef117b.script.01,lord Hector vous êtes revenus ! tenez voici votre hache vous en aurez besoin pour battre le général du château
-ch_2.events.ev1.script.01,"Sieur Kernos ! Les villageois n'ont réussit à rassembler que 35% de la valeur des taxes imposées cette fois ci;"
-ch_2.events.ev1.script.02,"que 35% ?! je suis déjà assez clément de passer de 1500 à 1000 écus, et ces inutiles n'arrivent même pas a rassembler aussi peu d'argents ?! Envoyez les mercenaires leur donner une bonne leçon !"
+ch_2.events.ev1.script.01,Sieur Kernos ! Les villageois n'ont réussit à rassembler que 35% de la valeur des taxes imposées cette fois ci.
+ch_2.events.ev1.script.02,"Que 35% ?! je suis déjà assez clément de passer de 1500 à 1000 écus, et ces inutiles n'arrivent même pas a rassembler aussi peu d'argents ?! Envoyez les mercenaires leur donner une bonne leçon !"
 ch_2.events.ev1.script.03,Hum sieur Kernos vous êtes sûr ..?
-ch_2.events.ev1.script.04,j'ai l'air de rigoler ? Maintenant envoie les mercenaires tout de suite si tu ne veut pas perdre ta tête.
+ch_2.events.ev1.script.04,J'ai l'air de rigoler ? Maintenant envoie les mercenaires tout de suite si tu ne veut pas perdre ta tête.
 ch_2.events.ev1.script.05,Je- tout de suite sieur Kernos !
 ch_2.events.ev3.script.01,"Hé, toi. Viens avec moi, on vas aller mettre une bonne raclée a ce Kernos. Le village ne peut pas survivre si on le laisse continuer comme ça !"
 ch_2.events.ev3.script.02,"Je... D'accord, je viens avec toi. Moi aussi je veut me venger de ce Kernos, à cause de sa passivité, mon père est mort durant la dernière attaque de bandits. je vais le lui faire payer !"
@@ -39,14 +39,14 @@ ch_2.events.ev4.script.05,Tu es fou ?! Et comment tu veux qu'on s'en sorte une f
 ch_2.events.ev4.script.06,Si t'as une meilleure idée je serais ravi de l'entendre ! Mais je ne suis pas sûr qu'on ait tout le temps pour réfléchir ! On vas se faire encercler si ça continue !
 ch_2.events.ev4.script.07,"Très bien, très bien ! Mais prépare toi, il va falloir se battre jusqu'à la mort !"
 ch_2.villages.villages_7676c9c1-20af-4cc6-85ce-1874c2db42a8.script.01,"Tenez, prenez ceci, c'est le peu qu'il nous reste à cause de toutes ces taxes. Je vous en supplie, mettez une raclée à ce noble de pacotille de la part de tout les habitant du village !"
-ch_3.allies.a1.talk.text.01,hein ? que fais tu attaché ici ? il ne me semblait pas avoir vu d'autre prisonniers ici .
-ch_3.allies.a1.talk.text.02,"c'est normal, je suis le seul prisonnier ici . J'ai osé omettre l'idée que le délai pour réunir l'argent du village était bien trop cours, et qu'il fallait laisser plus de temps aux villageois pour réunir une telle somme, voila le résultat."
-ch_3.allies.a1.talk.text.03,"et je t'en remercie. je viens moi même de ce village et nous avons pris le contrôle du fort. Seulement, des soldats sont apparus et nous avons été forcé de nous réfugier a l'intérieur du château ."
-ch_3.allies.a1.talk.text.04,"je vois, dans ce cas la détache moi, je me battrais avec vous jusqu'à la fin ."
-ch_3.allies.a1.talk.text.05,si c'est ce que tu veux je ne m'y opposerais pas .
-ch_3.events.ev1.script.01,"Il y'a encore des ennemis dans le château, Il vas falloir trouver un moyen d'accéder a la salle du trône pour pouvoir se retrancher à l'intérieur ."
-ch_3.events.ev1.script.02,"La clé devrait se trouver dans un des coffres des salles latérales, allons-y"
-ch_3.events.ev1.script.03,"Il faut avancer vite si on veut pouvoir accéder a la salle du trône avant de se faire rattraper, cependant il faut rester prudent ."
+ch_3.allies.a1.talk.text.01,Hein ? Que fais tu attaché ici ? Il ne me semblait pas avoir vu d'autre prisonniers ici.
+ch_3.allies.a1.talk.text.02,"C'est normal, je suis le seul prisonnier ici. J'ai osé omettre l'idée que le délai pour réunir l'argent du village était bien trop cours, et qu'il fallait laisser plus de temps aux villageois pour réunir une telle somme, voila le résultat."
+ch_3.allies.a1.talk.text.03,"Et je t'en remercie. je viens moi même de ce village et nous avons pris le contrôle du fort. Seulement, des soldats sont apparus et nous avons été forcé de nous réfugier à l'intérieur du château ."
+ch_3.allies.a1.talk.text.04,"Je vois, dans ce cas la détache moi, je me battrais avec vous jusqu'à la fin."
+ch_3.allies.a1.talk.text.05,Si c'est ce que tu veux je ne m'y opposerais pas
+ch_3.events.ev1.script.01,"Il y'a encore des ennemis dans le château, Il vas falloir trouver un moyen d'accéder à la salle du trône pour pouvoir se retrancher à l'intérieur."
+ch_3.events.ev1.script.02,"La clé devrait se trouver dans un des coffres des salles latérales, allons-y."
+ch_3.events.ev1.script.03,"Il faut avancer vite si on veut pouvoir accéder a la salle du trône avant de se faire rattraper, cependant il faut rester prudent."
 ch_3.events.ev1.actions.0.text.01,"Durant ce niveau le joueur doit prendre le trône, seul le personnage principal peut prendre le trône. Pour cela il doit être sur la case du trône puis choisir l'option ""prendre""."
 ch_3.events.ev6.script.01,On est attaqués ! Gardez bien vos position et tuez ces rebelles quand ils seront a portée ! Ils seront obligés d'avancer vers nous pour échapper aux renforts !
 ch_3.events.ev2.script.01,J'entends du bruit on dirait qu'on se bat à l'intérieur du château. C'est ma chance de pouvoir partir d'ici. Je me battrais pour le chef du groupe qui arrive.
@@ -67,9 +67,9 @@ ch_4.events.ev3.script.02,Je suis prêt. Ils périront tous sur ma hache !
 ch_4.events.ev3.script.03,Ma lance est impatiente de les empaler !
 ch_4.events.ev3.actions.0.text.01,Ce niveau est un niveau de survie. Durant un niveau de survie il faut tenir un certain nombre de tour sans que votre personnage principal ne meurt. ( un tour est compté comme tour allié + tour ennemi )
 ch_4.events.ev3.actions.0.text.02,Dans ce niveau il faut Survivre 10 Tour le 10eme Tour inclus.
-ch_4.events.ev1.script.01,il y'a d'autre ennemis qui rentrent dans le château continuez comme ça on ne faiblit pas !
+ch_4.events.ev1.script.01,Il y'a d'autre ennemis qui rentrent dans le château continuez comme ça on ne faiblit pas !
 ch_4.events.ev2.script.01,"Encore d'autres ennemis, tenez bon ! On peut y arriver !"
-ch_4.events.ev2.script.02,Ah ... Ah ... Je suis a bout ... Je ne vais plus tenir longtemps .
+ch_4.events.ev2.script.02,Ah ... Ah ... Je suis a bout ... Je ne vais plus tenir longtemps.
 ch_4.events.ev2.script.03,Je peut tenir encore un peu ... Juste un peu ...
 ch_4.events.ev5.script.01,Je suis a bout de force et il y'en a de plus en plus qui arrivent ...
 ch_4.events.ev5.script.02,C'est la fin ... On est fichu ...

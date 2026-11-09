@@ -1001,7 +1001,8 @@
    "w_iron_lance"
   ],
   "mapSprite": "ressources/personnages/Soldat/map_genere",
-  "battler": "ressources/personnages/Soldat/combat_genere"
+  "battler": "ressources/personnages/Soldat/combat_genere",
+  "colors": ""
  },
  {
   "id": "warrior",
@@ -1337,7 +1338,7 @@
     "skills": []
    }
   ],
-  "description": "guerrier cherchant a faire ses preuves, cherche encore sa voie\n",
+  "description": "guerrier cherchant a faire ses preuves, cherche encore sa voie\r\n",
   "dance": false,
   "crossWater": false
  },
