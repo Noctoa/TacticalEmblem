@@ -1,0 +1,218 @@
+{
+ "format": "tactics-forge",
+ "version": 1,
+ "name": "Mon Tactical RPG",
+ "lobby": {
+  "enabled": true,
+  "name": "Camp de Varenne",
+  "mapId": "map_camp",
+  "heroId": "c_eliwood",
+  "startGold": 500,
+  "music": "",
+  "start": {
+   "x": 7,
+   "y": 7
+  },
+  "board": {
+   "x": 10,
+   "y": 2,
+   "label": "Tableau des quêtes"
+  },
+  "shop": {
+   "enabled": true,
+   "x": 2,
+   "y": 2,
+   "name": "magasin",
+   "stock": [
+    "w_fire",
+    "w_flux",
+    "w_heal",
+    "i_vulnerary",
+    "i_elixir",
+    "i_chest_key",
+    "i_door_key",
+    "i_master_seal",
+    "w_iron_sword",
+    "w_iron_lance",
+    "w_iron_axe",
+    "w_iron_bow"
+   ]
+  },
+  "spots": [
+   {
+    "unitId": "c_lyn",
+    "x": 6,
+    "y": 3,
+    "after": ""
+   },
+   {
+    "unitId": "c_hector",
+    "x": 8,
+    "y": 3,
+    "after": ""
+   },
+   {
+    "unitId": "c_cloud",
+    "x": 12,
+    "y": 4,
+    "after": "arc_1"
+   }
+  ]
+ },
+ "pluginMigrations": [
+  "invocations",
+  "fonds-combat",
+  "animations",
+  "ultimates",
+  "musiques-fe"
+ ],
+ "animationDefaults": {
+  "sword": "anim_slash",
+  "lance": "anim_pierce",
+  "axe": "anim_smash",
+  "bow": "anim_arrow",
+  "anima": "anim_fire",
+  "light": "anim_thunder",
+  "dark": "anim_flux",
+  "staff": "anim_heal"
+ },
+ "author": "",
+ "startChapter": "ch_2",
+ "defaultTerrain": "plain",
+ "title": {
+  "subtitle": "Les héros d'Acania",
+  "background": "",
+  "music": "",
+  "newGameMode": "classic"
+ },
+ "credits": "Tactical Emblem :\nEdnidCorp.\nXarrin\nNoctoa\nReito\nOta\n\nAssets d’exemple :\nLexou\nLS\nGrim\nBonzai\nLord Zymeth\nTheFlyingMinotaur\nBlade\nAK\nCynon\nOurBoiRoy\nTheNinjaGuy914\ntrainboy2019\nMaelstrom210\n\nMusiques :\nYuka Tsujiyoko (Fire Emblem 6, Enhanced Soundtrack)\n\nGame Company :\nNintendo\nSquare-Enix",
+ "settings": {
+  "trueHit": true,
+  "doubleThreshold": 4,
+  "triangleDmg": 1,
+  "triangleHit": 15,
+  "effectiveMult": 3,
+  "critMult": 3,
+  "maxLevel": 20,
+  "battleAnims": true,
+  "debugMenu": true,
+  "overkill": true,
+  "overkillExp": 30,
+  "traineeExp": 2,
+  "colors": "map",
+  "aiDifficulty": "normal"
+ },
+ "convoy": {
+  "capacity": 100,
+  "items": [
+   {
+    "id": "i_vulnerary"
+   },
+   {
+    "id": "i_vulnerary"
+   },
+   {
+    "id": "i_elixir"
+   },
+   {
+    "id": "w_javelin"
+   },
+   {
+    "id": "w_hand_axe"
+   },
+   {
+    "id": "w_steel_sword"
+   },
+   {
+    "id": "w_iron_bow"
+   },
+   {
+    "id": "w_heal"
+   }
+  ]
+ },
+ "supports": {
+  "thresholds": [
+   20,
+   50,
+   90,
+   140
+  ],
+  "range": 3,
+  "gainAdjacent": 3,
+  "gainCombat": 2,
+  "bonus": {
+   "hit": 5,
+   "avoid": 5,
+   "crit": 3,
+   "critAvoid": 3
+  },
+  "endingRank": "A"
+ },
+ "audio": {
+  "volume": 0.6,
+  "playerPhase": "ressources/musiques/Winning_Road.mp3",
+  "allyPhase": "ressources/musiques/Winning_Road.mp3",
+  "enemyPhase": "ressources/musiques/Advance.mp3",
+  "levelUp": "ressources/jingles/Level_Up.mp3",
+  "gameOver": "ressources/jingles/Game_Over.mp3",
+  "victory": "",
+  "se": {
+   "cursor": "ressources/sons/curseur.wav",
+   "confirm": "ressources/sons/valider.wav",
+   "cancel": "ressources/sons/annuler.wav",
+   "hit": "ressources/sons/coup.wav",
+   "crit": "ressources/sons/critique.wav",
+   "miss": "ressources/sons/esquive.wav",
+   "death": "ressources/sons/defaite.wav"
+  },
+  "battlePlayer": ""
+ },
+ "savedAt": "2026-11-09T22:14:37.213Z",
+ "layout": 3,
+ "avatar": {
+  "enabled": true,
+  "unitId": "c_13",
+  "rename": true,
+  "camp": true
+ },
+ "plugins": {
+  "fe-6-7-blazing-blade": {
+   "enabled": true,
+   "version": "0.3.0",
+   "name": "FE 6-7 Blazing Blade"
+  },
+  "monstres": {
+   "enabled": true,
+   "version": "1.1.0",
+   "name": "Monstres"
+  },
+  "fe-8-sacred-stone": {
+   "enabled": true,
+   "version": "0.3.0",
+   "name": "FE 8 Sacred Stone"
+  },
+  "fe-9-10-radiance": {
+   "enabled": true,
+   "version": "0.3.0",
+   "name": "FE 9-10 Radiance"
+  },
+  "fe7-unites-generiques": {
+   "enabled": true,
+   "version": "1.0.0",
+   "name": "Fire Emblem 7 — Unités génériques"
+  }
+ },
+ "mapOrder": [
+  "map_1",
+  "map_camp",
+  "map_4",
+  "map_5",
+  "map_6",
+  "map_9",
+  "map_7",
+  "map_8",
+  "map_10",
+  "map_11"
+ ]
+}

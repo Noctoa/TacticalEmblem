@@ -1,0 +1,159 @@
+﻿id,fr
+ch_7.enemies.e8.talk.text.01,Je me rend ! Ne me tuez pas !!
+ch_7.enemies.e8.talk.text.02,"C'est un choix judicieux. Si tu te bats pour nous, je ne vois aucun inconvénients ."
+ch_7.enemies.e8.talk.text.03,"Bien sûr ! cependant, fait attention ! Notre chef est un puissant général ! mais avec ta rapière et ma magie, son armure ne fera pas long feu. Tu sais, comme ma magie haha ... Enfin bon on peut le battre ensemble !"
+ch_7.enemies.e8.talk.text.04,Hum je ... Merci pour l'astuce ... J'imagine ?
+ch_7.events.ev1.script.01,"il semblerait qu'il se passe quelque chose au loin, beaucoup de soldats sont stationnés. On dirait qu'il y'a une bataille, allons voir."
+ch_7.events.ev1.script.02,"On ne voit presque dans ce brouillard, faites attention a rester groupés. On ne sait jamais d'où l'ennemi peut surgir."
+ch_7.events.ev1.script.03,"Eliwood ! je vais aller aider le village plus haut, j'y ai laissé ma hache à l'intérieur de l'auberge durant ma dernière visite."
+ch_7.events.ev1.script.04,"Hector un jour tu oublieras ta tête ... Très bien ! Cependant, fait attention. Les brigands sont souvent actifs par ce temps. Rejoins nous dès que possible."
+ch_7.events.ev1.actions.0.text.01,Durant ce niveau votre personnage principal est Eliwood. Il permet de prendre les points et de recruter certaines unités tant qu'il est personnage principal.
+ch_7.events.ev2.script.01,"Rahhh ! je suis mal payé pour ce boulot ! En plus je vois rien et je n'ai pas envie de mourir ... Si seulement un beau prince aux cheveux ardents pouvais apparaitre et m'emmener avec lui ... Oh le rêve ! C'est décidé, si cela arrive je déserte avec lui !"
+ch_7.events.ev5.script.01,Général Akras ! on a repérés deux hommes et une Femme qui se rapprochent du châteaux. Ils sont armés.
+ch_7.events.ev5.script.02,Encore des problèmes ?! Occupez vous en avec nos hommes ! Et surtout n'hésitez pas a les attaquer si ils s'approchent trop près ! Personne ne doit compromettre la mission ordonnée par l'Empereur !
+ch_7.events.ev5.script.03,Compris général Akras ! Nous nous occuperons d'eux si ils s'approchent trop près !
+ch_7.events.ev3.script.01,"On dirait que l'armée postée en dehors du château attaque tout ceux qui s'approchent. Mettons les hors d'état de nuire, puis allons voir a l'intérieur du château."
+ch_7.events.ev3.script.02,"D'accord mais restons prudents, nous sommes en sous nombre."
+ch_7.events.ev3.script.03,"Ne t'inquiètes pas Lyn, ma hache te protègera si tu te fais attaquer."
+ch_7.events.ev3.script.04,"Je sais me défendre Hector, mais merci quand même ."
+ch_7.events.ev3.script.05,"Allez, allons-y ."
+ch_7.events.ev4.script.01,Le chemin est libre on rentre.
+ch_7.events.ev4.script.02,D'accord mais restons sur nos garde.
+ch_7.events.ev4.script.03,"Pas besoin, si un de leur soldat arrive, je n'aurais qu'a les pourfendre avec ma hache;"
+ch_7.villages.villages_1374e73d-5b1d-45ba-9aee-f82d29ef117b.script.01,lord Hector vous êtes revenus ! tenez voici votre hache vous en aurez besoin pour battre le général du château
+ch_2.events.ev1.script.01,"Sieur Kernos ! Les villageois n'ont réussit à rassembler que 35% de la valeur des taxes imposées cette fois ci;"
+ch_2.events.ev1.script.02,"que 35% ?! je suis déjà assez clément de passer de 1500 à 1000 écus, et ces inutiles n'arrivent même pas a rassembler aussi peu d'argents ?! Envoyez les mercenaires leur donner une bonne leçon !"
+ch_2.events.ev1.script.03,Hum sieur Kernos vous êtes sûr ..?
+ch_2.events.ev1.script.04,j'ai l'air de rigoler ? Maintenant envoie les mercenaires tout de suite si tu ne veut pas perdre ta tête.
+ch_2.events.ev1.script.05,Je- tout de suite sieur Kernos !
+ch_2.events.ev3.script.01,"Hé, toi. Viens avec moi, on vas aller mettre une bonne raclée a ce Kernos. Le village ne peut pas survivre si on le laisse continuer comme ça !"
+ch_2.events.ev3.script.02,"Je... D'accord, je viens avec toi. Moi aussi je veut me venger de ce Kernos, à cause de sa passivité, mon père est mort durant la dernière attaque de bandits. je vais le lui faire payer !"
+ch_2.events.ev3.script.03,"Bien dit petit, mais reste près de moi. Cela risque d'être dangereux, mieux vaut ne pas se séparer."
+ch_2.events.ev3.actions.0.text.01,Le personnage créée par le joueur est le personnage principal du prologue. Le personnage principal a accès au convoi durant les niveaux.
+ch_2.events.ev4.script.01,"On s'est enfin débarrassés de cette nuisance. Allez, retournons au -"
+ch_2.events.ev4.script.02,Ils sont la ! Encerclez les et tuez les !
+ch_2.events.ev4.script.03,"Merde ! Vite, il faut faire quelque chose où c'est ici que l'on mourra !"
+ch_2.events.ev4.script.04,"Rentrons dans le château, au moins on pourras contrôler l'afflux d'ennemi !"
+ch_2.events.ev4.script.05,Tu es fou ?! Et comment tu veux qu'on s'en sorte une fois a l'intérieur ?!
+ch_2.events.ev4.script.06,Si t'as une meilleure idée je serais ravi de l'entendre ! Mais je ne suis pas sûr qu'on ait tout le temps pour réfléchir ! On vas se faire encercler si ça continue !
+ch_2.events.ev4.script.07,"Très bien, très bien ! Mais prépare toi, il va falloir se battre jusqu'à la mort !"
+ch_2.villages.villages_7676c9c1-20af-4cc6-85ce-1874c2db42a8.script.01,"Tenez, prenez ceci, c'est le peu qu'il nous reste à cause de toutes ces taxes. Je vous en supplie, mettez une raclée à ce noble de pacotille de la part de tout les habitant du village !"
+ch_3.allies.a1.talk.text.01,hein ? que fais tu attaché ici ? il ne me semblait pas avoir vu d'autre prisonniers ici .
+ch_3.allies.a1.talk.text.02,"c'est normal, je suis le seul prisonnier ici . J'ai osé omettre l'idée que le délai pour réunir l'argent du village était bien trop cours, et qu'il fallait laisser plus de temps aux villageois pour réunir une telle somme, voila le résultat."
+ch_3.allies.a1.talk.text.03,"et je t'en remercie. je viens moi même de ce village et nous avons pris le contrôle du fort. Seulement, des soldats sont apparus et nous avons été forcé de nous réfugier a l'intérieur du château ."
+ch_3.allies.a1.talk.text.04,"je vois, dans ce cas la détache moi, je me battrais avec vous jusqu'à la fin ."
+ch_3.allies.a1.talk.text.05,si c'est ce que tu veux je ne m'y opposerais pas .
+ch_3.events.ev1.script.01,"Il y'a encore des ennemis dans le château, Il vas falloir trouver un moyen d'accéder a la salle du trône pour pouvoir se retrancher à l'intérieur ."
+ch_3.events.ev1.script.02,"La clé devrait se trouver dans un des coffres des salles latérales, allons-y"
+ch_3.events.ev1.script.03,"Il faut avancer vite si on veut pouvoir accéder a la salle du trône avant de se faire rattraper, cependant il faut rester prudent ."
+ch_3.events.ev1.actions.0.text.01,"Durant ce niveau le joueur doit prendre le trône, seul le personnage principal peut prendre le trône. Pour cela il doit être sur la case du trône puis choisir l'option ""prendre""."
+ch_3.events.ev6.script.01,On est attaqués ! Gardez bien vos position et tuez ces rebelles quand ils seront a portée ! Ils seront obligés d'avancer vers nous pour échapper aux renforts !
+ch_3.events.ev2.script.01,J'entends du bruit on dirait qu'on se bat à l'intérieur du château. C'est ma chance de pouvoir partir d'ici. Je me battrais pour le chef du groupe qui arrive.
+ch_3.events.ev2.actions.0.text.01,"Certaines unités alliées (de couleur vertes) peuvent être recrutées par le joueur. Pour cela, il faut se rendre sur une case adjacente et parler à ce personnage avec votre personnage principal."
+ch_3.events.ev3.script.01,Vite ! Il faut rentrer a l'intérieur et se préparer au combat !
+ch_3.events.ev4.script.01,Vite ! Il faut rentrer a l'intérieur et se préparer au combat !
+ch_3.events.ev5.script.01,On a réussit a prendre l'intégralité du Fort. J'espère que vous êtes prêt à vous battre pour votre vie !
+ch_3.events.ev5.script.02,Ce n'est pas comme si j'avais le choix. Je les passerais un par un au fil de ma hache !
+ch_3.events.ev5.script.03,J'avais déjà décidé de me battre jusqu'à ma mort. Autant le faire jusqu'au bout avec honneur !
+ch_4.enemies.e25.talk.text.01,Ahhhh !!! Au secours !
+ch_4.enemies.e25.talk.text.02,"Une soeur ? Qu'est ce que tu fais dans ce château ? C'est dangereux a l'intérieur, sort d'ici."
+ch_4.enemies.e25.talk.text.03,"Hein ? Vous ne m'attaquez pas ? OH ! Mais vous êtes blessés ! On m'a dit qu'il y'avait de violentes personnes a l'intérieur du château, et que les gardes avaient besoin de mes pouvoirs de guérison ..."
+ch_4.enemies.e25.talk.text.04,"Oui, c'est vrai. Le propriétaire du château persécutait notre village. Alors on s'est vengés. Puis on a plus eut d'autre choix que de se battre ici ."
+ch_4.enemies.e25.talk.text.05,C'est horrible ! Laissez moi rester avec vous ! Je vous soignerais du mieux que je peux !
+ch_4.enemies.e25.talk.text.06,"Je- vous êtes sûr ? C'est dangereux  mais ...  Bon, de toute façon toute aide est bonne a prendre, mais reste bien derrière nous ."
+ch_4.events.ev3.script.01,"Ils arrivent, préparez vous !"
+ch_4.events.ev3.script.02,Je suis prêt. Ils périront tous sur ma hache !
+ch_4.events.ev3.script.03,Ma lance est impatiente de les empaler !
+ch_4.events.ev3.actions.0.text.01,Ce niveau est un niveau de survie. Durant un niveau de survie il faut tenir un certain nombre de tour sans que votre personnage principal ne meurt. ( un tour est compté comme tour allié + tour ennemi )
+ch_4.events.ev3.actions.0.text.02,Dans ce niveau il faut Survivre 10 Tour le 10eme Tour inclus.
+ch_4.events.ev1.script.01,il y'a d'autre ennemis qui rentrent dans le château continuez comme ça on ne faiblit pas !
+ch_4.events.ev2.script.01,"Encore d'autres ennemis, tenez bon ! On peut y arriver !"
+ch_4.events.ev2.script.02,Ah ... Ah ... Je suis a bout ... Je ne vais plus tenir longtemps .
+ch_4.events.ev2.script.03,Je peut tenir encore un peu ... Juste un peu ...
+ch_4.events.ev5.script.01,Je suis a bout de force et il y'en a de plus en plus qui arrivent ...
+ch_4.events.ev5.script.02,C'est la fin ... On est fichu ...
+ch_4.events.ev5.script.03,"Je n'ai plus de force ... Au moins, c'est une fin honorable ..."
+ch_4.events.ev5.script.04,"Je peux encore vous soigner, je ne vous laisserais pas tomber ! Je vous en supplie, survivez !"
+ch_5.events.ev6.script.01,"Dans un niveau de mise en déroute, vous devez éliminer toutes les unités ennemies. Vaincre le boss de ce chapitre ne suffit pas a terminer le niveau."
+ch_5.events.ev1.script.01,"Je suis exténué, j'ai du mal a bouger, mais je peux encore un peu me battre ... Lâchez pas l'affaire ."
+ch_5.events.ev1.script.02,"Je ne vais pas mourir tout de suite, je peux encore bien en prendre une dizaine avant tout ça..."
+ch_5.events.ev1.script.03,Je vais continuer a me battre jusqu'à mon dernier souffle ...
+ch_5.events.ev1.script.04,"N'en faites pas trop je vous en supplie. Je vais vous soigner du mieux que je peux mais restez regroupés, ne vous mettez pas en danger tout seuls ."
+ch_5.events.ev2.script.01,C'est parti ! On les prend a revers et on aide les personnes qui se sont fait encercler !
+ch_5.events.ev2.script.02,"D'accord. je les entends au loin, ils devraient êtres dans la salle du trône."
+ch_5.events.ev2.script.03,Haha. Ma hache vas pouvoir s'en donner a coeur joie .
+ch_5.events.ev2.script.04,Je ferais de mon mieux ! ( Moi qui pensait que je pourrais fuir avec mon beau prince sur un cheval blanc ... maintenant on assaillit un château ... )
+ch_5.events.ev5.script.01,Monsieur Kresm ! On est prit à revers ! Ils vont tenter une percée des deux cotés !
+ch_5.events.ev5.script.02,"Je vois, c'est donc comme ça ... Foncez sur les deux groupes en même temps. Ne les laissez pas se regrouper, et si ils y arrivent. Je serais la pour les arrêter."
+ch_5.events.ev5.script.03,"C'est compris monsieur Kresm ! Allez tout le monde, on fonce sur eux et on se bat jusqu'au bout ! Notre vie a tous en dépend !"
+ch_5.events.ev3.script.01,"Ha ... Ha ... Attendez ! J'entends un combat de l'autre coté du château ! C'est notre chance ! Si on arrive à vaincre tout les soldats postés a l'intérieur du château et qu'on rejoint l'autre groupe, alors on pourras certainement faire une percée et sortir d'ici !"
+ch_5.events.ev3.script.02,C'est vrai ?! Alors dans ce cas ils n'auront aucune chance contre moi ! Je ne mourrais pas si près du but !
+ch_5.events.ev3.script.03,Notre honneur et notre esprit combatif vont enfin êtres récompensés ! Je peux encore tenir des heures !
+ch_5.events.ev3.script.04,Enfin ! On vas pouvoir sortir d'ici et je pourrais vous soigner correctement ! Mais faites attention à ne pas mourir en essayant d'en faire trop !
+ch_5.events.ev4.script.01,"Vous voila, vous avez l'air mal en point ."
+ch_5.events.ev4.script.02,"C'est presque rien comparé a ce qu'on imaginait. Mais, on sortirait bien de ce château pour avoir de vrais soins."
+ch_5.events.ev4.script.03,"Oh, Un Guerrier a la hache, tout comme moi. Je parie que ta hache vibrait du bon combat qui a été mené."
+ch_5.events.ev4.script.04,Je suis surtout a bout de fatigue . Si ma hache vibrait c'est que mes mains tremblaient de fatigue.
+ch_5.events.ev4.script.05,Aucune perte ? C'est impressionnant vu le nombre d'ennemis.
+ch_5.events.ev4.script.06,On a tenu bon. et encore plus quand on vous a entendu vous battre.
+ch_5.events.ev4.script.07,Oh ! Mais tu es la soeur qui est rentré dans le château avec les soldats. Qu'est ce qu'il s'est passé ?
+ch_5.events.ev4.script.08,je suis tombée nez a nez sur le chef de leur groupe et il n'avait rien d'un monstre au final ... Il était même très gentil ...
+ch_5.events.ev4.script.09,Ohhhhhhh je vois :D . (Je ne suis pas la seule a avoir craquée pour le chef d'un groupe aujourd'hui on dirait . )
+ch_5.events.ev4.script.10,"Allez? sortons d'ici et allons nous reposer au village, je n'en peux plus."
+ch_5.events.ev4.script.11,"Bien dit, demandons à organiser un banquet quand on arrivera."
+ch_6.events.ev1.script.01,Enfin de retour ! Je vais aller discuter un peu avec les villageois puis j'irais à l'auberge pour bien me reposer en vue du banquet de ce soir.
+ch_6.events.ev2.script.01,"Allez, un petit somme pour bien me reposer."
+ch_6.villages.villages_6b4df3e9-ceed-4b8e-9b19-853d13020508.script.01,"Tenez, ça appartenait a mes parents mais je n'ai aucune idée d'à quoi cela peut bien me servir. Cet objet vous servira certainement plus qu'à moi."
+ch_6.villages.villages_58007d80-399c-47ec-b4f0-33c96a27150e.script.01,"Oh vous êtes de retour ? Tenez, prenez ma hache, j'en prenais le plus grand soin mais je vous dois la vie, alors je vous la donne."
+ch_8.events.ev1.script.01,"Urgh. Il y'a trop de bruit dehors, qu'est ce qui se passe ?"
+ch_8.events.ev1.script.02,Hé réveille toi ! On est attaqués !
+ch_8.events.ev1.script.03,Comment ?! J'arrive !
+ch_8.events.ev2.script.01,AHHHH !!! AU SECOURS !!!!
+ch_8.events.ev2.script.02,ARGH NAN PAS CA !!!!
+ch_8.events.ev2.script.03,Incendiez l'entièreté du village ! Tuez touts les habitants ! Ils doivent payer pour avoir fait perdre de l'argent à l'Empereur en tuant le chancelier Kernos !
+ch_8.events.ev3.script.01,Bah ! On ne s'entend même plus parler avec tout ces cris. L'Empereur avait vraiment besoin de nous déployer ici pour un si petit village ? Les soldats faisaient parfaitement l'affaire.
+ch_8.events.ev3.script.02,"Si l'Empereur nous a déployés ici c'est qu'il a ses raisons. Surtout en prenant en compte l'état général du pays et les tensions directe avec les frontières, après tout, une poignée de villageois a tué le chancelier du château, en à prit le contrôle et à fait une percée en tuant un de nos général ainsi qu'un mercenaire pouvant facilement battre la plupart de nos généraux."
+ch_8.events.ev3.script.03,"Alors même si cela ne m'enchante guère, je resterais à l'entrée de ce village et j'accomplirais ma mission. Même si je déteste toute cette violence inutile."
+ch_8.events.ev3.script.04,C'est drôle à entendre de ta part quand on sait que tu pourrais tuer n'importe qui ici d'un coup de ta lame.
+ch_8.events.ev3.script.05,"Je le dois bien pour mon devoir. Maintenant, tiens ton poste. Ils ne tarderont pas à arriver."
+ch_8.events.ev3.script.06,AH ! Je n'attends que ça !
+ch_8.events.ev4.script.01,Mais qu'est ce qu'il se passe ?! Tout le village empeste le sang !
+ch_8.events.ev4.script.02,Des soldats sont entrés dans le village. En quelques secondes ils ont commencés à tuer tout les villageois qu'ils pouvaient trouver.
+ch_8.events.ev4.script.03,Je suis revenu .
+ch_8.events.ev4.script.04,Tu as obtenu des informations ?
+ch_8.events.ev4.script.05,"Il y'a du brouillard mais j'estimerait leur nombre a une quarantaine. Cela dit il y a deux généraux ennemis près de la porte, l'un semble a notre portée, l'autre ..."
+ch_8.events.ev4.script.06,"Une quarantaine ?! il y a plus de soldat dans le village, qu'il y'en avait dans tout le château !"
+ch_8.events.ev4.script.07,"Pas le choix, il vas falloir se battre pour survivre !"
+ch_8.events.ev4.script.08,Essayons de faire une percée et de battre le général le moins puissant avant de s'échapper.
+ch_8.events.ev4.script.09,Tu veux t'échapper ?! Tu n'as pas vu ce qu'ils ont fait aux villageois ?! Je vais tuer ces deux généraux si il le faut !
+ch_8.events.ev4.script.10,Ne teste pas ta chance on est déjà assez chanceux d'avoir survécu jusque la. Si tu meurt maintenant on arrivera a rien !
+ch_8.events.ev4.script.11,"Argh ! Je sais, Je sais ! Mais si on le croise, je ne promets pas de rester calme !"
+ch_8.events.ev4.script.12,"Allez tout le monde, en position !"
+ch_8.events.ev4.script.13,D'accord !
+ch_8.events.ev5.script.01,Ah ... Ah ... Ils n'en finissent pas d'arriver ...
+ch_8.events.ev5.script.02,"Allez, un petit effort. On doit leur rendre la monnaie de leur pièce."
+ch_8.events.ev5.script.03,"On a déjà tué pas mal d'ennemis, on pourra bientôt faire une percée. Continuez comme ça !"
+ch_8.events.ev6.script.01,Ils arriveront bientôt on dirait. Essaye de bien faire ton travail.
+ch_8.events.ev6.script.02,"Bien sûr, je vais les trancher un par un. Ne t'en fais pas ."
+ch_8.events.ev6.script.03,"Tant mieux, je n'ai vraiment pas envie de tuer qui que ce soit cette nuit."
+ch_8.events.ev7.script.01,ARGH ! Je les ai sous-estimés ... Arageas ... Occupe toi ... D'eux ...
+ch_8.events.ev7.script.02,Un de leurs généraux est tombé au combat ! Maintenant ! Une percée avant que l'autre général ne nous intercepte !
+ch_8.events.ev7.script.03,Vous parlez de moi ?
+ch_8.events.ev7.script.04,Quoi ?! Déjà ?!
+ch_8.events.ev7.script.05,Rahhh ! Prends ça !
+ch_8.events.ev7.script.06,"Oula petit, attention tu pourrais blesser quelqu'un avec ce coup. Mais malheureusement pour toi, ce ne sera pas moi."
+ch_8.events.ev7.script.07,Partez. Je le retiendrais autant que possible !
+ch_8.events.ev7.script.08,Mais !
+ch_8.events.ev7.script.09,Dégagez !
+ch_8.events.ev7.script.10,"Très bien, mais si ça tourne mal, enfuis toi aussi vite que tu peux !"
+ch_8.events.ev7.script.11,Oui ! ( Comment voudrais-tu que je m'enfuis face à ce monstre ? C'est impossible ... )
+ch_9.events.ev1.script.01,Alors tu as choisi de t'opposer à moi petit ? Tu dois bien comprendre que tu n'as aucune chance n'est-ce pas ?
+ch_9.events.ev1.script.02,On ne sait jamais avant d'avoir essayé ! Et puis j'ai une revanche à prendre pour tous les habitants que tu as tué !
+ch_9.events.ev1.script.03,"Moi ? Je n'en ai tué aucun. Mais malheureusement, vous avez pris la vie de tous les soldats et du général qui m'accompagnaient. Je n'aurai donc pas d'autre choix que de te tuer toi puis tous tes compagnons qui se sont enfuis."
+ch_9.events.ev1.script.04,"Essaye déjà de me battre, on en reparlera plus tard !"
+ch_9.events.ev1.script.05,Puisque tu es si pressé de mourir ... Sache que ça ne m'enchante pas de te tuer. En garde.
+ch_9.events.ev2.script.01,Non ... Pas ... Maintenant ... Je ne peux pas ... Mourir ... Maintenant ...
+ch_9.events.ev2.script.02,"Repose-toi durant tes derniers instants. Tu as gagné pas mal de temps, je vais avoir du mal à retrouver tes compagnons maintenant ..."
+ch_9.events.ev2.script.03,"Hé bien, on dirait que tu es en piteux état. Tu veux vivre n'est-ce pas ?"
+ch_9.events.ev2.script.04,Hein ..?
+ch_9.events.ev2.script.05,"Reste couché, tu pars avec moi. Le chemin risque d'être long."

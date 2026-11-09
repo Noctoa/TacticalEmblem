@@ -249,6 +249,18 @@
    "name": "Emily",
    "kind": "character",
    "ref": "c_22"
+  },
+  {
+   "id": "brigand",
+   "name": "Brigand",
+   "kind": "character",
+   "ref": "c_32"
+  },
+  {
+   "id": "bandit",
+   "name": "Bandit",
+   "kind": "character",
+   "ref": "c_38"
   }
  ]
 }

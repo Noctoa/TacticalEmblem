@@ -75,13 +75,8 @@ ch_4.enemies.e4.name,Soldat
 ch_4.enemies.e6.name,Soldat
 ch_4.enemies.e7.name,Soldat
 ch_4.enemies.e8.name,Soldat
-ch_4.enemies.e11.name,Mercenaire
-ch_4.enemies.e12.name,Mercenaire
-ch_4.enemies.e15.name,Mercenaire
-ch_4.enemies.e16.name,Mercenaire
 ch_4.enemies.e17.name,Soldat
 ch_4.enemies.e14.name,Soldat
-ch_4.enemies.e18.name,Mercenaire
 ch_4.enemies.e19.name,chevalier
 ch_4.enemies.e20.name,chevalier
 ch_4.enemies.e21.name,Mercenaire
@@ -95,12 +90,17 @@ ch_4.enemies.e28.name,chevalier
 ch_4.enemies.e29.name,chevalier
 ch_4.enemies.e30.name,chevalier
 ch_4.enemies.e31.name,chevalier
-ch_4.enemies.e32.name,Mercenaire
-ch_4.enemies.e33.name,Mercenaire
-ch_4.enemies.e34.name,Mercenaire
-ch_4.enemies.e35.name,Mercenaire
 ch_4.enemies.e36.name,Soldat
 ch_4.enemies.e37.name,Soldat
+ch_4.enemies.e38.name,Mercenaire
+ch_4.enemies.e39.name,Mercenaire
+ch_4.enemies.e40.name,Mercenaire
+ch_4.enemies.e41.name,Mercenaire
+ch_4.enemies.e34.name,Mercenaire
+ch_4.enemies.e35.name,Mercenaire
+ch_4.enemies.e42.name,Mercenaire
+ch_4.enemies.e33.name,Mercenaire
+ch_4.enemies.e43.name,Mercenaire
 ch_4.events.ev3.name,Nouvel événement
 ch_4.events.ev1.name,Nouvel événement
 ch_4.events.ev2.name,Nouvel événement
@@ -151,8 +151,8 @@ ch_5.events.ev9.name,Nouvel événement (copie)
 ch_5.events.ev10.name,Nouvel événement (copie)
 ch_5.events.ev11.name,Nouvel événement (copie)
 ch_5.events.ev12.name,Nouvel événement (copie)
-ch_5.events.ev13.name,Nouvel événement (copie)
-ch_5.events.ev14.name,Nouvel événement (copie)
+ch_5.events.ev15.name,Nouvel événement (copie) (copie)
+ch_5.events.ev16.name,Nouvel événement (copie)
 ch_6.name,Le retour
 ch_6.events.ev1.name,Nouvel événement
 ch_6.events.ev2.name,Nouvel événement
@@ -168,7 +168,7 @@ ch_6.villages.villages_58007d80-399c-47ec-b4f0-33c96a27150e.name,Village
 ch_6.chests.chests_7f8b327e-80db-4b55-8631-7fc44cf3c3c6.name,Coffre
 ch_6.shops.shop_4e77b75b-afb2-41ac-9d5d-575e6f509380.name,Marchand
 ch_6.shops.shop_b1086bca-b92b-4ee3-810e-cc96de017ec7.name,Marchand
-ch_8.name,l'Invasion
+ch_8.name,L'assaut
 ch_8.enemies.e4.name,Mercenaire
 ch_8.enemies.e7.name,Mercenaire
 ch_8.enemies.e8.name,Mercenaire
@@ -221,8 +221,8 @@ ch_8.events.ev11.name,Nouvel événement (copie)
 ch_8.events.ev12.name,Nouvel événement (copie)
 ch_8.events.ev13.name,Nouvel événement (copie)
 ch_8.events.ev14.name,Nouvel événement (copie)
-ch_8.events.ev15.name,Nouvel événement (copie)
-ch_8.events.ev16.name,Nouvel événement (copie)
+ch_8.events.ev17.name,Nouvel événement (copie) (copie)
+ch_8.events.ev18.name,Nouvel événement (copie)
 ch_9.name,Le Duel 
 ch_9.enemies.e1.name,A
 ch_9.events.ev1.name,Nouvel événement
