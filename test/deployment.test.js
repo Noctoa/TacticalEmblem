@@ -22,6 +22,19 @@ test('préparatifs activés par défaut, limites et personnages protégés impos
   delete ch.deployment; assert.equal(D.limit(ch), 3);
   ch.deployment = { enabled: false }; assert.equal(D.enabled(ch), false);
 });
+test('deux recrues et quatre cases : deux participants, aucune unité ajoutée pour remplir les cases libres', () => {
+  const { p, ch, db, terrain } = fixture();
+  p.meta.lobby.initialRoster = ['c_lyn', 'c_hector'];
+  ch.players = [{ unitId: 'c_lyn', x: 2, y: 2 }, { unitId: 'c_hector', x: 3, y: 2 }];
+  ch.requiredUnits = []; ch.deployment = { slots: [{ x: 4, y: 2 }, { x: 5, y: 2 }] };
+  const campaign = C.create('classic');
+  const members = Team.sync(campaign, db, p.meta).map(id => R.makeUnitFromCharacter(db.units.find(u => u.id === id), db, { x: 0, y: 0 }));
+  const plan = D.initial(ch, db, members, terrain);
+  assert.equal(D.slots(ch).length, 4);
+  assert.deepEqual(plan.map(p => p.unitId), ['c_lyn', 'c_hector']);
+  assert.deepEqual(D.errors(ch, db, members, plan, terrain), []);
+});
+
 test('effectif : les réservistes sont sélectionnables, pas les morts ni les alliés verts de cet acte', () => {
   const { ch, db, members, terrain } = fixture();
   ch.allies = [{ unitId: 'c_cloud', x: 8, y: 8 }];

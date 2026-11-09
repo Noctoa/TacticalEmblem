@@ -18,6 +18,18 @@ test('effectif indépendant des PNJ : personnage recruté absent de la map et PN
   assert.ok(!campaign.recruited.includes('c_lyn'));
   assert.ok(!campaign.recruited.includes('c_cloud'));
 });
+
+test('effectif explicite ou placements de départ : le héros du camp ne se rajoute pas aux deux recrues', () => {
+  const { db, meta } = fixture();
+  meta.lobby.heroId = 'c_eliwood'; meta.lobby.initialRoster = ['c_lyn', 'c_hector'];
+  assert.deepEqual(Team.initialIds(db, meta), ['c_lyn', 'c_hector']);
+  assert.deepEqual(Team.sync(C.create('classic'), db, meta), ['c_lyn', 'c_hector']);
+  meta.lobby.initialRoster = [];
+  assert.deepEqual(Team.initialIds(db, meta), [], 'un effectif volontairement vide reste vide');
+  delete meta.lobby.initialRoster;
+  db.chapters.find(ch => ch.id === meta.startChapter).players = [{ unitId: 'c_lyn' }, { unitId: 'c_hector' }];
+  assert.deepEqual(Team.initialIds(db, meta), ['c_lyn', 'c_hector']);
+});
 test('compatibilité : effectif de départ inféré, anciens PNJ sauvegardés exclus, chapitres déjà joués conservés', () => {
   const { db, meta } = fixture(); delete meta.lobby.initialRoster;
   const campaign = C.create('casual'); campaign.units.c_cloud = { inventory: [] };

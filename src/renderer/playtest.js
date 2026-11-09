@@ -250,6 +250,7 @@
     if (errors.length) throw new Error(errors.join('\n'));
     const recruitedBefore = Array.isArray(G.campaign.recruited) ? G.campaign.recruited.slice() : null;
     Team.sync(G.campaign, G.db, G.project.meta, ch.id);
+    ch.allies = TalkRecruit.availableAllies(ch, G.campaign);
     // recrues automatiques (« Rejoint l'effectif après ») arrivées en enchaînant les actes
     const joined = recruitedBefore ? G.campaign.recruited.filter(id => !recruitedBefore.includes(id)).map(id => (R.byId(G.db.units, id) || {}).name).filter(Boolean) : [];
     if (joined.length) UI.toast(`Nouvelle recrue : ${joined.join(', ')}`);
@@ -1274,6 +1275,7 @@
       }
       joined.done = false; joined.talk = null; joined.talked = true;
       Team.recruit(G.campaign, [joined.sourceId]);
+      Campaign.commit(G.campaign, [joined]);
       Music.se('confirm');
       float(joined.x, joined.y, 'Rejoint l\'équipe !', '#9fe0ff', true);
       UI.toast(`${joined.name} rejoint votre équipe et peut agir dès maintenant.`);

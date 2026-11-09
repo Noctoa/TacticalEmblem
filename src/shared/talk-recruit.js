@@ -28,6 +28,8 @@
   }
   /** Personnage qui rejoint l'équipe : la fiche choisie (ennemi) ou celle de l'allié. */
   const recruitId = (pl, kind) => (kind === 'allies' ? pl.unitId : (config(pl) || {}).joinAs);
+  /** Une recrue déjà acquise revient dans l’effectif, pas comme PNJ vert à recruter à nouveau. */
+  const availableAllies = (ch, campaign) => (ch.allies || []).filter(pl => !(campaign.recruited || []).includes(pl.unitId));
 
   function validate(ch, db) {
     const errors = [], players = new Set((ch.players || []).map(p => p.unitId));
@@ -61,5 +63,5 @@
   }
   /** Texte joué si le créateur n'en a pas écrit. */
   const defaultText = (speaker, target) => `${speaker.name}: Nous ne sommes pas ennemis. Rejoins-nous !\n${target.name}: … Très bien. Je me bats à vos côtés.`;
-  return { config, recruitId, validate, partners, defaultText };
+  return { config, recruitId, availableAllies, validate, partners, defaultText };
 });

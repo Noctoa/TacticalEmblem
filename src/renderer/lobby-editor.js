@@ -203,9 +203,7 @@
       const roster = { initialRoster: Team.initialIds(DB(), project().meta) };
       const rosterForm = UI.form([{ key: 'initialRoster', label: 'Effectif recruté au début de la partie', type: 'multicheck', options: () => DB().units.map(u => ({ value: u.id, label: u.name })) }], roster,
         { onChange: () => { c.initialRoster = roster.initialRoster; changed(); } });
-      const hero = Lobby.heroOf(c, DB());
-      rosterForm.querySelectorAll('.chip').forEach((b, i) => { if (hero && DB().units[i].id === hero.id) { b.disabled = true; b.title = 'Le héros du camp fait toujours partie de l’effectif.'; } });
-      box.append(api.section('Équipe de départ', rosterForm, h('p', { class: 'muted' }, 'Indépendant des personnages placés au camp. Les autres recrutements se règlent dans les fiches Unités.')));
+      box.append(api.section('Équipe de départ', rosterForm, h('p', { class: 'muted' }, 'Coche les personnages recrutés au départ. Le héros et les personnages placés au camp ne sont pas ajoutés automatiquement. Les autres recrutements se règlent dans les fiches Unités.')));
       const places = Lobby.places();
       box.append(api.section(places.length ? 'Boutique et lieux' : 'Boutique', UI.form([
         { type: 'row', fields: [{ key: 'shop.enabled', label: 'Boutique', type: 'checkbox' }, { key: 'shop.name', label: 'Nom du marchand', type: 'text' }] },

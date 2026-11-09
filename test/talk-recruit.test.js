@@ -40,3 +40,14 @@ test('qui peut parler : adjacent, personnage autorisé, une seule fois, unités 
   assert.deepEqual(T.partners(units, merc), [], 'un ennemi ne parle pas');
   assert.match(T.defaultText({ name: 'Lyn' }, { name: 'Cloud' }), /^Lyn: .*\nCloud: /);
 });
+
+test('acte suivant ou rejeu : une recrue ne redevient pas un PNJ vert exclu des participants', () => {
+  const chapter = ch();
+  chapter.allies.push({ id: 'a2', unitId: 'c_serra', talk: { enabled: false } });
+  chapter.allies.push({ id: 'a3', unitId: 'c_cloud' });
+  const before = JSON.stringify(chapter);
+  assert.deepEqual(T.availableAllies(chapter, { recruited: [] }), chapter.allies);
+  assert.deepEqual(T.availableAllies(chapter, { recruited: ['c_hector'] }).map(p => p.unitId), ['c_serra', 'c_cloud']);
+  assert.deepEqual(T.availableAllies(chapter, { recruited: ['c_hector', 'c_serra', 'c_cloud'] }), [], 'l’effectif est prioritaire sur les placements alliés');
+  assert.equal(JSON.stringify(chapter), before, 'les placements du projet ne sont pas modifiés');
+});

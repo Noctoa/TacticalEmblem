@@ -52,9 +52,10 @@ module.exports = (editor, openPlaytest) => {
         const form = [...document.querySelectorAll('#inspector .form')].find(el => el.textContent.includes('Effectif recruté au début'));
         const chips = [...form.querySelectorAll('.chip')];
         const hero = chips.find(el => el.textContent === 'Eliwood'), lyn = chips.find(el => el.textContent === 'Lyn');
-        if (!hero.disabled || !hero.classList.contains('on') || lyn.classList.contains('on')) return false;
+        if (hero.disabled || !hero.classList.contains('on') || lyn.classList.contains('on')) return false;
+        hero.click(); const removedHero = !Editor.project().meta.lobby.initialRoster.includes('c_eliwood'); hero.click();
         lyn.click(); const added = Editor.project().meta.lobby.initialRoster.includes('c_lyn');
-        lyn.click(); return added && !Editor.project().meta.lobby.initialRoster.includes('c_lyn');
+        lyn.click(); return removedHero && added && !Editor.project().meta.lobby.initialRoster.includes('c_lyn');
       })()`), true);
       await js(ewc, `DBEditor.open('units', 'c_cloud')`);
       assert.equal(await js(ewc, `(() => {

@@ -9,8 +9,11 @@
   function initialIds(db, meta) {
     const cfg = meta.lobby || {}, hero = Lobby.heroOf(cfg, db);
     const start = byId(db.chapters, meta.startChapter) || (db.chapters || [])[0];
-    const ids = Array.isArray(cfg.initialRoster) ? cfg.initialRoster : ((start && start.players) || []).map(p => p.unitId);
-    return [...new Set([...ids, ...(hero ? [hero.id] : [])])].filter(id => byId(db.units, id));
+    const explicit = Array.isArray(cfg.initialRoster);
+    const ids = explicit ? cfg.initialRoster : ((start && start.players) || []).map(p => p.unitId);
+    // Le héros du camp n’est pas une recrue implicite d’un effectif déjà défini.
+    const initial = !explicit && !ids.length && hero ? [hero.id] : ids;
+    return [...new Set(initial)].filter(id => byId(db.units, id));
   }
   function recruit(campaign, ids) {
     campaign.recruited = [...new Set([...(campaign.recruited || []), ...ids])];
